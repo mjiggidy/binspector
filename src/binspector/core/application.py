@@ -1,4 +1,58 @@
 """
 Main app controller
 """
+import logging
+from PySide6 import QtCore, QtWidgets
+from os import PathLike
+from . import settings, actions
+from ..widgets import mainwindow
 
+class BSMainApplication(QtWidgets.QApplication):
+	"""Main application"""
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._mainwindows:list[mainwindow.BSMainWindow] = []
+
+		self.setApplicationName("Binspector")
+		self.setApplicationVersion("0.0.1")
+		self.setStyle("Fusion")
+
+		self.setOrganizationName("GlowingPixel")
+		self.setOrganizationDomain("com.glowingpixel")
+		self.setDesktopFileName(self.organizationDomain() + "." + self.applicationName())
+
+		self._localStoragePath = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
+		QtCore.QDir().mkpath(self._localStoragePath)
+
+		logging.basicConfig(filename=QtCore.QDir(self._localStoragePath).filePath("bs_main.log"), level=logging.DEBUG)
+
+		self._settingsManager = settings.BSSettingsManager(
+			format   = QtCore.QSettings.Format.IniFormat,
+			basepath = self.localStoragePath()
+		)
+
+	def localStoragePath(self) -> PathLike[str]:
+		"""Get the local user storage path"""
+		return self._localStoragePath
+	
+	def settingsManager(self) -> settings.BSSettingsManager:
+		return self._settingsManager
+	
+	def createMainWindow(self) -> mainwindow.BSMainWindow:
+		"""Create a main window"""
+		
+		window = mainwindow.BSMainWindow()
+		
+		# Scope!
+		self._mainwindows.append(window)
+		#window.destroyed.connect(lambda: print(f"{self._mainwindows.remove(window)} {self._mainwindows}"))
+
+		window.setActionsManager(actions.ActionsManager)
+		window.setSettings(self._settingsManager.settings("bs_main"))
+		
+		logging.getLogger(__name__).debug("Created %s", window)
+		
+		return window

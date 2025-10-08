@@ -1,10 +1,18 @@
 import logging
 from PySide6 import QtWidgets
 from os import PathLike
+from .core import application
 
 def main(bin_paths:list[PathLike]) -> int:
-	logging.getLogger(__name__).debug("Launching with args: %s", bin_paths)
-	app = QtWidgets.QApplication()
+	
+	app = application.BSMainApplication()
+
+	for bin_path in bin_paths:
+		wnd = app.createMainWindow()
+		wnd.show()
+		wnd.loadBinFromPath(bin_path)
+		
+	
 	return app.exec()
 	
 

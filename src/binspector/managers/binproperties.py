@@ -1,9 +1,9 @@
 import avb, avbutils
 from PySide6 import QtCore, QtGui
-from ...models import viewmodelitems
+from ..models import viewmodelitems
 from . import base
 
-class LBBinViewColumDefinitionsManager(base.LBItemDefinitionView):
+class BSBinViewManager(base.LBItemDefinitionView):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -51,7 +51,7 @@ class LBBinViewPropertyDataManager(base.LBItemDefinitionView):
 		for key,val in bin_view.property_data.items():
 			self.addRow({"name": key, "value": val})
 
-class LBBinAppearanceSettingsManager(base.LBItemDefinitionView):
+class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 
 	sig_font_changed          = QtCore.Signal(QtGui.QFont)
 	sig_palette_changed       = QtCore.Signal(QtGui.QColor, QtGui.QColor)
@@ -111,7 +111,7 @@ class LBBinAppearanceSettingsManager(base.LBItemDefinitionView):
 				"Column": col,
 			}, add_new_headers=True)
 
-class LBBinSortingPropertiesManager(base.LBItemDefinitionView):
+class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 	"""Bin sorting"""
 
 	sig_bin_sorting_changed = QtCore.Signal(object)
@@ -139,7 +139,7 @@ class LBBinSortingPropertiesManager(base.LBItemDefinitionView):
 		
 		self.sig_bin_sorting_changed.emit([(QtCore.Qt.SortOrder(direction), column_name) for direction, column_name in sorting])
 
-class LBBinSiftSettingsManager(base.LBItemDefinitionView):
+class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 
 	sig_sift_enabled = QtCore.Signal(bool)
 
@@ -158,7 +158,7 @@ class LBBinSiftSettingsManager(base.LBItemDefinitionView):
 				"column": setting.column,
 			})
 
-class LBBinContentsManager(base.LBItemDefinitionView):
+class BSBinItemsManager(base.LBItemDefinitionView):
 
 	@QtCore.Slot(object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting):
