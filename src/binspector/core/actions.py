@@ -69,7 +69,7 @@ class ActionsManager:
 		self._actgrp_file.addAction(self._act_closewindow)
 
 		self._actgrp_app = QtGui.QActionGroup(self._parent)
-		self._actgp_file.addAction(self._act_quitapplication)
+		self._actgrp_file.addAction(self._act_quitapplication)
 
 		self._actgrp_view_mode = QtGui.QActionGroup(self._parent)
 		self._actgrp_view_mode.setExclusive(True)
