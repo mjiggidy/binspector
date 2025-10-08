@@ -174,12 +174,7 @@ class BinViewLoader(QtCore.QRunnable):
 				if "attributes" in comp.property_data:
 					user_attributes.update(comp.attributes.get("_USER",{}))
 
-
-					
-
-
 			markers = avbutils.get_markers_from_timeline(comp)
-			#print(comp.property_data)
 
 			item = {
 				avbutils.BIN_COLUMN_ROLES["Name"]: comp.name or "",
@@ -203,7 +198,6 @@ class BinViewLoader(QtCore.QRunnable):
 				item.update({"40_"+key: val})
 			
 			self._signals.sig_got_mob.emit(item)
-
 	
 	def signals(self) -> Signals:
 		return self._signals
