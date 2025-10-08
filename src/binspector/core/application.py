@@ -50,9 +50,13 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._mainwindows.append(window)
 		#window.destroyed.connect(lambda: print(f"{self._mainwindows.remove(window)} {self._mainwindows}"))
 
-		window.setActionsManager(actions.ActionsManager)
+		window.setActionsManager(actions.ActionsManager(window))
 		window.setSettings(self._settingsManager.settings("bs_main"))
+		
+		window.sig_request_new_window.connect(self.createMainWindow)
+		window.sig_request_quit_application.connect(self.closeAllWindows)
 		
 		logging.getLogger(__name__).debug("Created %s", window)
 		
+		window.show()
 		return window

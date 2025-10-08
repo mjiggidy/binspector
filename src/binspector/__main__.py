@@ -9,10 +9,8 @@ def main(bin_paths:list[PathLike]) -> int:
 
 	for bin_path in bin_paths:
 		wnd = app.createMainWindow()
-		wnd.show()
 		wnd.loadBinFromPath(bin_path)
 		
-	
 	return app.exec()
 	
 
