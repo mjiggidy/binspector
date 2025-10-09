@@ -2,8 +2,7 @@
 Actions
 """
 
-import dataclasses
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtGui, QtWidgets
 
 class ActionsManager:
 	"""Actions?"""

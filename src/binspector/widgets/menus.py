@@ -2,8 +2,8 @@
 Menus used by things that use menus
 """
 
-from PySide6 import QtGui, QtWidgets
-from ..core import actions
+from PySide6 import QtWidgets
+from ..managers import actions
 
 class BinWindowMenuBar(QtWidgets.QMenuBar):
 

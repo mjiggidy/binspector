@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtWidgets
 from os import PathLike
-from ..core import actions
+from ..managers import actions
 from ..managers import binproperties
 from ..widgets import binwidget, menus
 
@@ -92,4 +92,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def loadBinFromPath(self, bin_path:PathLike):
 		"""Load a bin from the given path"""
 
+		from ..core import binloader
+
+		binloader.BSBinViewLoader(bin_path)
+		
 		self.setWindowFilePath(bin_path)

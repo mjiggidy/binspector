@@ -4,7 +4,9 @@ Main app controller
 import logging
 from PySide6 import QtCore, QtWidgets
 from os import PathLike
-from . import settings, actions
+
+from ..managers import actions
+from . import settings
 from ..widgets import mainwindow
 
 class BSMainApplication(QtWidgets.QApplication):
