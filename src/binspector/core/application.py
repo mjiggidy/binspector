@@ -7,7 +7,7 @@ from os import PathLike
 
 from ..managers import actions
 from . import settings
-from ..widgets import mainwindow
+from ..widgets import mainwindow, menus
 
 class BSMainApplication(QtWidgets.QApplication):
 	"""Main application"""
@@ -16,8 +16,6 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		super().__init__(*args, **kwargs)
 
-		self._mainwindows:list[mainwindow.BSMainWindow] = []
-
 		self.setApplicationName("Binspector")
 		self.setApplicationVersion("0.0.1")
 		self.setStyle("Fusion")
@@ -25,6 +23,12 @@ class BSMainApplication(QtWidgets.QApplication):
 		self.setOrganizationName("GlowingPixel")
 		self.setOrganizationDomain("com.glowingpixel")
 		self.setDesktopFileName(self.organizationDomain() + "." + self.applicationName())
+
+		# NOTE: Need to sus-out ownership stuff if we doin this
+		#self.setQuitOnLastWindowClosed(False)
+		#self._default_menubar = menus.DefaultMenuBar(actions.ActionsManager(self))
+
+		self._mainwindows:list[mainwindow.BSMainWindow] = []
 
 		self._localStoragePath = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
 		QtCore.QDir().mkpath(self._localStoragePath)

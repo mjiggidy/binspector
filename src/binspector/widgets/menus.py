@@ -6,10 +6,11 @@ from PySide6 import QtWidgets
 from ..managers import actions
 
 class BinWindowMenuBar(QtWidgets.QMenuBar):
+	"""Menu shown for an active bin window"""
 
 	def __init__(self, action_manager:actions.ActionsManager, *args, **kwargs):
 		
-		super()	.__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		mnu_main = QtWidgets.QMenu("&File")
 		mnu_view = QtWidgets.QMenu("&View")
@@ -21,13 +22,9 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 		mnu_main.addSeparator()
 		mnu_main.addAction(action_manager.quitApplicationAction())
 
-		mnu_view.addAction(action_manager.viewBinAsList())
-		mnu_view.addAction(action_manager.viewBinAsFrame())
-		mnu_view.addAction(action_manager.viewBinAsScript())
+		mnu_view.addActions(action_manager.viewModesActionGroup().actions())
 		mnu_view.addSeparator()
-		mnu_view.addAction(action_manager.showBinDisplaySettings())
-		mnu_view.addAction(action_manager.showBinViewSettings())
-		mnu_view.addAction(action_manager.showBinAppearanceSettings())
+		mnu_view.addActions(action_manager.showBinSettingsActionGroup().actions())
 		mnu_view.addSeparator()
 
 		mnu_window.addAction(action_manager.closeWindowAction())
@@ -35,3 +32,18 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 		self.addMenu(mnu_main)
 		self.addMenu(mnu_view)
 		self.addMenu(mnu_window)
+
+class DefaultMenuBar(QtWidgets.QMenuBar):
+	"""Default, minimal menu bar, specifically for macOS when no bin windows are open"""
+
+	def __init__(self, action_manager:actions.ActionsManager, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		mnu_main = QtWidgets.QMenu("&File")
+		mnu_main.addAction(action_manager.newWindowAction())
+		mnu_main.addAction(action_manager.fileBrowserAction())
+		mnu_main.addSeparator()
+		mnu_main.addAction(action_manager.quitApplicationAction())
+
+		self.addMenu(mnu_main)

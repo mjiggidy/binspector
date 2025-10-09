@@ -52,8 +52,8 @@ class ActionsManager:
 		self._act_toggle_bindisplay_settings  = QtGui.QAction("Show Bin Display Settings", checkable=True, parent=self._parent)
 		self._act_toggle_bindisplay_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DocumentPageSetup))
 
-		self._act_toggle_bindview_settings    = QtGui.QAction("Show Bin View Settings", checkable=True, parent=self._parent)
-		self._act_toggle_bindview_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewRestore))
+		self._act_toggle_binview_settings    = QtGui.QAction("Show Bin View Settings", checkable=True, parent=self._parent)
+		self._act_toggle_binview_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewRestore))
 		
 		self._act_toggle_appearance_options = QtGui.QAction("Show Appearance Settings", checkable=True, parent=self._parent)
 		self._act_toggle_appearance_options.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.Battery))
@@ -61,20 +61,36 @@ class ActionsManager:
 
 		# Action Groups
 		self._actgrp_file = QtGui.QActionGroup(self._parent)
+		self._actgrp_file.addAction(self._act_newwindow)
 		self._actgrp_file.addAction(self._act_filebrowser)
 		
 		self._actgrp_window = QtGui.QActionGroup(self._parent)
-		self._actgrp_file.addAction(self._act_newwindow)
-		self._actgrp_file.addAction(self._act_closewindow)
+		self._actgrp_window.addAction(self._act_closewindow)
 
 		self._actgrp_app = QtGui.QActionGroup(self._parent)
-		self._actgrp_file.addAction(self._act_quitapplication)
+		self._actgrp_app.addAction(self._act_quitapplication)
 
 		self._actgrp_view_mode = QtGui.QActionGroup(self._parent)
 		self._actgrp_view_mode.setExclusive(True)
 		self._actgrp_view_mode.addAction(self._act_view_list)
 		self._actgrp_view_mode.addAction(self._act_view_frame)
 		self._actgrp_view_mode.addAction(self._act_view_script)
+
+		self._actgrp_bin_settings = QtGui.QActionGroup(self._parent)
+		self._actgrp_bin_settings.setExclusive(False)  # Doesn't always default??
+		self._actgrp_bin_settings.addAction(self._act_toggle_binview_settings)
+		self._actgrp_bin_settings.addAction(self._act_toggle_bindisplay_settings)
+		self._actgrp_bin_settings.addAction(self._act_toggle_appearance_options)
+	
+	def viewModesActionGroup(self) -> QtGui.QActionGroup:
+		"""Actions for toggling between bin view modes"""
+
+		return self._actgrp_view_mode
+	
+	def showBinSettingsActionGroup(self) -> QtGui.QActionGroup:
+		"""Actions for toggling display of settings toolboxes"""
+
+		return self._actgrp_bin_settings
 
 	def fileBrowserAction(self) -> QtGui.QAction:
 		"""User requests file browser"""
@@ -119,7 +135,7 @@ class ActionsManager:
 	def showBinViewSettings(self) -> QtGui.QAction:
 		"""Show bin view settings"""
 
-		return self._act_toggle_bindview_settings
+		return self._act_toggle_binview_settings
 	
 	def showBinAppearanceSettings(self) -> QtGui.QAction:
 		"""Show bin display settings"""

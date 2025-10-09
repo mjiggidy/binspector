@@ -15,44 +15,46 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		super().__init__()
 
 		self._settings = QtCore.QSettings()
-		self._actions  = actions.ActionsManager(parent=self)
 
+		# Define Managers
+		self._man_actions      = actions.ActionsManager(parent=self)
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
 		self._man_appearance   = binproperties.BSBinAppearanceSettingsManager()
 		self._man_sorting      = binproperties.BSBinSortingPropertiesManager()
 		self._man_binitems     = binproperties.BSBinItemsManager()
 
+		# Define widgets
 		self._bin = binwidget.BSBinContentsWidget()
+		
+		# The rest
+		self.setMenuBar(menus.BinWindowMenuBar(self._man_actions))
 		
 		self.setupWidgets()
 		self.setupActions()
 		self.setupSignals()
 
-		self.setMenuBar(menus.BinWindowMenuBar(self._actions))
 	
 	def setupWidgets(self):
 		
 		self.setCentralWidget(self._bin)
-		#self._bin.topSectionWidget().addAction(self._actions.fileBrowserAction())
 
 	def setupActions(self):
-		pass
-		#self.addAction(self._actions.fileBrowserAction())
+
+		self.addAction(self._man_actions.fileBrowserAction())
+		self.addAction(self._man_actions.newWindowAction())
+		self.addAction(self._man_actions.closeWindowAction())
+		self.addAction(self._man_actions.quitApplicationAction())
 	
 	def setupSignals(self):
 		
-		self.addAction(self._actions.fileBrowserAction())
-		self._actions.fileBrowserAction().triggered.connect(self.browseForBin)
+		self._man_actions.fileBrowserAction().triggered.connect(self.browseForBin)
+		self._man_actions.newWindowAction().triggered.connect(self.sig_request_new_window)
+		self._man_actions.closeWindowAction().triggered.connect(self.close)
+		self._man_actions.quitApplicationAction().triggered.connect(self.sig_request_quit_application)
 
-		self.addAction(self._actions.newWindowAction())
-		self._actions.newWindowAction().triggered.connect(self.sig_request_new_window)
 
-		self.addAction(self._actions.closeWindowAction())
-		self._actions.closeWindowAction().triggered.connect(self.close)
 
-		self.addAction(self._actions.quitApplicationAction())
-		self._actions.quitApplicationAction().triggered.connect(self.sig_request_quit_application)
 		
 
 	def setActionsManager(self, actions:actions.ActionsManager):
