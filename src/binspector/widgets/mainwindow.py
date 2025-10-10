@@ -45,6 +45,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# The rest
 		
 		self.setMenuBar(menus.BinWindowMenuBar(self._man_actions))
+
 		self.setupWidgets()
 		self.setupDock()
 		self.setupActions()
@@ -57,9 +58,13 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self.setCentralWidget(self._bin_main)
 
 		self._dock_bindisplay.setWidget(self._tool_bindisplay)
+		self._dock_bindisplay.hide()
 		self._dock_sifting.setWidget(self._tool_sifting)
+		self._dock_sifting.hide()
 		self._dock_appearance.setWidget(self._tool_appearance)
+		self._dock_appearance.hide()
 		self._dock_binview.setWidget(self._tool_binview)
+		self._dock_binview.hide()
 
 		self._bin_main.treeView().model().setSourceModel(self._man_binitems.viewModel())
 		self._tool_binview.setModel(self._man_binview.viewModel())
