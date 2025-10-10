@@ -6,7 +6,7 @@ class LBAbstractEnumFlagsView(QtWidgets.QWidget):
 	sig_flag_toggled  = QtCore.Signal(object, bool)
 	sig_flags_changed = QtCore.Signal(object)
 
-	def __init__(self, initial_values:enum.Flag=None, *args, **kwargs):
+	def __init__(self, initial_values:enum.Flag, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
