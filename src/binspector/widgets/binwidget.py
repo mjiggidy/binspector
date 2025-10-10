@@ -22,7 +22,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().setSpacing(0)
 
 		self._section_top       = QtWidgets.QToolBar()
-		self._tree_bin_contents = bintreeview.LBBinTreeView()
+		self._tree_bin_contents = bintreeview.BSBinTreeView()
 		self._section_bottom    = QtWidgets.QWidget()
 
 		self.layout().addWidget(self._section_top)
@@ -93,11 +93,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_bottom.layout().addWidget(self._btn_show_bin_display)
 
 
-	def treeView(self) -> bintreeview.LBBinTreeView:
+	def treeView(self) -> bintreeview.BSBinTreeView:
 		"""Get the main view"""
 		return self._tree_bin_contents
 	
-	def setTreeView(self, treeview:bintreeview.LBBinTreeView):
+	def setTreeView(self, treeview:bintreeview.BSBinTreeView):
 		self._tree_bin_contents = treeview
 	
 	def topSectionWidget(self) -> QtWidgets.QWidget:
@@ -115,7 +115,40 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(object)
 	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
 		pass
-		#self._btngrp_view_modes.button(mode.value).setChecked(True)
+
+	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
+	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
+
+		VARIATION     = 110  # Must be >100 to  have effect
+		VARIATION_MID = 105  # Must be >100 to  have effect
+
+		palette = self.palette()
+
+		palette.setColor(QtGui.QPalette.ColorRole.Text, fg_color)
+		palette.setColor(QtGui.QPalette.ColorRole.ButtonText, fg_color)
+		palette.setColor(QtGui.QPalette.ColorRole.Base, bg_color)
+		palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, bg_color.darker(VARIATION))
+		palette.setColor(QtGui.QPalette.ColorRole.Button, bg_color.darker(VARIATION))
+
+		palette.setColor(QtGui.QPalette.ColorRole.Window, bg_color.darker(VARIATION).darker(VARIATION))
+		palette.setColor(QtGui.QPalette.ColorRole.WindowText, fg_color)
+		palette.setColor(QtGui.QPalette.ColorRole.PlaceholderText, bg_color.lighter(VARIATION).lighter(VARIATION).lighter(VARIATION))
+
+
+		# Fusion scrollbar uses these colors per https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPalette.html
+		# Although it... like... doesn't? lol
+		palette.setColor(QtGui.QPalette.ColorRole.Light,    palette.color(QtGui.QPalette.ColorRole.Button).lighter(VARIATION))      # Lighter than Button color
+		palette.setColor(QtGui.QPalette.ColorRole.Midlight, palette.color(QtGui.QPalette.ColorRole.Button).lighter(VARIATION_MID))  # Between Button and Light
+		palette.setColor(QtGui.QPalette.ColorRole.Mid,      palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION_MID))   # Between Button and Dark
+		palette.setColor(QtGui.QPalette.ColorRole.Dark,     palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION))       # Darker than Button
+
+		self.setPalette(palette)
+	
+	@QtCore.Slot(QtGui.QFont)
+	def setBinFont(self, bin_font:QtGui.QFont):
+		self._tree_bin_contents.setFont(bin_font)
+		
+
 
 	@QtCore.Slot()
 	def _connectSourceModelSlots(self):
