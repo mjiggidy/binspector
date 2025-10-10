@@ -13,11 +13,11 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		self.viewModel().clear()
 
 		headers = [
-			viewmodelitems.TRTAbstractViewHeaderItem("order", "Order"),
-			viewmodelitems.TRTAbstractViewHeaderItem("title", "Title"),
-			viewmodelitems.TRTAbstractViewHeaderItem("format", "Format"),
-			viewmodelitems.TRTAbstractViewHeaderItem("type", "Type"),
-			viewmodelitems.TRTAbstractViewHeaderItem("hidden", "Is Hidden"),
+			viewmodelitems.LBAbstractViewHeaderItem("order", "Order"),
+			viewmodelitems.LBAbstractViewHeaderItem("title", "Title"),
+			viewmodelitems.LBAbstractViewHeaderItem("format", "Format"),
+			viewmodelitems.LBAbstractViewHeaderItem("type", "Type"),
+			viewmodelitems.LBAbstractViewHeaderItem("hidden", "Is Hidden"),
 		]
 		
 		for header in headers[::-1]:
@@ -33,24 +33,32 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		column_definition["format"] = avbutils.BinColumnFormat(column_definition["format"])
 		self.addRow(column_definition)
 
-class LBBinViewPropertyDataManager(base.LBItemDefinitionView):
+class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
+
+	sig_bin_display_changed = QtCore.Signal(object)
+
+	def __init__(self):
+
+		super().__init__()
 
 	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
+	def setBinDisplayFlags(self, bin_display:avbutils.BinDisplayItemTypes):
 
 		self.viewModel().clear()
 
 		headers = [
-			viewmodelitems.TRTAbstractViewHeaderItem("name", "Name"),
-			viewmodelitems.TRTAbstractViewHeaderItem("value", "Value"),
+			viewmodelitems.LBAbstractViewHeaderItem("name", "Name"),
+			viewmodelitems.LBAbstractViewHeaderItem("value", "Value"),
 		]
 		
 		for header in headers[::-1]:
 			self.addHeader(header)
 		
-		for key,val in bin_view.property_data.items():
-			self.addRow({"name": key, "value": val})
-
+		for f in bin_display:
+			self.addRow({"name": f.name, "value": f.value})
+		
+		self.sig_bin_display_changed.emit(bin_display)
+		
 class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 
 	sig_font_changed          = QtCore.Signal(QtGui.QFont)
@@ -70,6 +78,7 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 		was_iconic:bool):
 		
 		font = QtGui.QFont()
+		font.setPixelSize(mac_font_size)
 
 		if isinstance(bin_font, str) and QtGui.QFontDatabase.hasFamily(bin_font):
 			font.setFamily(bin_font)
@@ -77,18 +86,22 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 		elif isinstance(bin_font, int) and len(QtGui.QFontDatabase.families()) > bin_font:
 			font.setFamily(QtGui.QFontDatabase.families()[bin_font])
 		
-		font.setPixelSize(mac_font_size)
-
+		self.sig_font_changed.emit(font)
+		
 		self.setColumnWidths(column_widths)
 		self.setWindowRect(window_rect)
+
 		self.sig_was_iconic_changed.emit(was_iconic)
 		self.sig_column_widths_changed.emit(column_widths)
-		self.sig_font_changed.emit(font)
 		self.sig_palette_changed.emit(
 			QtGui.QColor.fromRgba64(*foreground_color),
 			QtGui.QColor.fromRgba64(*background_color),
 		)
 
+	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
+	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
+		#print(fg_color, bg_color)
+		self.sig_palette_changed.emit(fg_color, bg_color)
 
 	@QtCore.Slot(object)
 	def setWindowRect(self, window_rect:list[int]):
@@ -122,9 +135,9 @@ class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 		self.viewModel().clear()
 
 		headers = [
-			viewmodelitems.TRTAbstractViewHeaderItem("order", "Order"),
-			viewmodelitems.TRTAbstractViewHeaderItem("direction", "Direction"),
-			viewmodelitems.TRTAbstractViewHeaderItem("column", "Column")
+			viewmodelitems.LBAbstractViewHeaderItem("order", "Order"),
+			viewmodelitems.LBAbstractViewHeaderItem("direction", "Direction"),
+			viewmodelitems.LBAbstractViewHeaderItem("column", "Column")
 		]
 
 		for header in headers[::-1]:
@@ -147,9 +160,9 @@ class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avb.bin.SiftItem]):
 		self.sig_sift_enabled.emit(sift_enabled)
 
-		self.addHeader(viewmodelitems.TRTAbstractViewHeaderItem(field_name="string", display_name="String"))
-		self.addHeader(viewmodelitems.TRTAbstractViewHeaderItem(field_name="method", display_name="Method"))
-		self.addHeader(viewmodelitems.TRTAbstractViewHeaderItem(field_name="column", display_name="Column"))
+		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="string", display_name="String"))
+		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="method", display_name="Method"))
+		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="column", display_name="Column"))
 		for idx, setting in enumerate(sift_settings):
 			self.addRow({
 				"order": idx,
@@ -171,7 +184,7 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 				continue
 
 			self.addHeader(
-				viewmodelitems.TRTAbstractViewHeaderItem(
+				viewmodelitems.LBAbstractViewHeaderItem(
 					field_name="40_"+column["title"] if column["type"] == 40 else str(column["type"]),
 					field_id=column["type"],
 					format_id=column["format"],
@@ -181,4 +194,5 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	
 	@QtCore.Slot(object)
 	def addMob(self, mob_info:dict):
+#		print(mob_info)
 		self.addRow(mob_info)
