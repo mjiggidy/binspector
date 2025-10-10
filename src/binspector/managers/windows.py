@@ -1,3 +1,7 @@
+"""
+Window managers
+"""
+
 from ..widgets import mainwindow
 from PySide6 import QtCore, QtWidgets
 
@@ -7,6 +11,8 @@ class BSWindowManager(QtCore.QObject):
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
+
+		# TODO: Maybe remember window settings and stuff?
 
 		self._windows:list[QtWidgets.QWidget] = list()
 	
