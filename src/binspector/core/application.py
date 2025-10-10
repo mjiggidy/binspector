@@ -76,6 +76,6 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.show()
 
 		if show_file_browser:
-			window.browseForBin()
+			window.showFileBrowser()
 
 		return window
