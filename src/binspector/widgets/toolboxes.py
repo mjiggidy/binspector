@@ -10,7 +10,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	"""Fonts, colors, and dimensions"""
 
 	sig_font_changed = QtCore.Signal(QtGui.QFont)
-	sig_palette_changed = QtCore.Signal(QtGui.QPalette)
+	sig_palette_changed = QtCore.Signal(QtGui.QColor, QtGui.QColor)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -139,7 +139,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 		
 		self._btn_fg_color.setPalette(fg)
 		self._btn_fg_color.setText(self._format_color_text(fg.color(QtGui.QPalette.ColorRole.Button)))
-		self.sig_palette_changed.emit(self.binPalette())
+		self.sig_palette_changed.emit(*self.binPalette())
 
 	@QtCore.Slot(QtGui.QColor)
 	def setBinBackgroundColor(self, color:QtGui.QColor):
@@ -150,20 +150,20 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 		self._btn_bg_color.setPalette(bg)
 		self._btn_bg_color.setText(self._format_color_text(bg.color(QtGui.QPalette.ColorRole.Button)))
 
-		self.sig_palette_changed.emit(self.binPalette())
+		self.sig_palette_changed.emit(*self.binPalette())
 	
 	@staticmethod
 	def _format_color_text(color:QtGui.QColor) -> str:
 		return f"R: {color.red()}  G: {color.green()}  B: {color.blue()}"
 
-	@QtCore.Slot(QtGui.QPalette)
+	@QtCore.Slot(QtGui.QColor,QtGui.QColor)
 	def setBinPalette(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
 
 		self.blockSignals(True)
 		self.setBinForegroundColor(fg_color)
 		self.setBinBackgroundColor(bg_color)
 		self.blockSignals(False)
-		self.sig_palette_changed.emit(self.binPalette())
+		self.sig_palette_changed.emit(*self.binPalette())
 	
 	def binFont(self) -> QtGui.QFont:
 		font = self._cmb_fonts.currentFont()
