@@ -18,7 +18,6 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		self.setApplicationName("Binspector")
 		self.setApplicationVersion("0.0.1")
-		self.setQuitOnLastWindowClosed(False)
 		self.setStyle("Fusion")
 
 		self.setOrganizationName("GlowingPixel")
@@ -41,11 +40,13 @@ class BSMainApplication(QtWidgets.QApplication):
 		)
 		
 		# Setup default menu bar/actions (for macOS when no bin windows are open)
-		self._actionmanager = actions.ActionsManager()
-		self._default_menubar = menus.DefaultMenuBar(self._actionmanager)
-		self._actionmanager.newWindowAction().triggered.connect(self.createMainWindow)
-		self._actionmanager.fileBrowserAction().triggered.connect(lambda: self.createMainWindow(show_file_browser=True))
-		self._actionmanager.quitApplicationAction().triggered.connect(self.exit)
+		# NOTE: This is currently clumsy and weird.  I'll uh, come back to this
+#		self.setQuitOnLastWindowClosed(False)
+#		self._actionmanager = actions.ActionsManager()
+#		self._default_menubar = menus.DefaultMenuBar(self._actionmanager)
+#		self._actionmanager.newWindowAction().triggered.connect(self.createMainWindow)
+#		self._actionmanager.fileBrowserAction().triggered.connect(lambda: self.createMainWindow(show_file_browser=True))
+#		self._actionmanager.quitApplicationAction().triggered.connect(self.exit)
 		
 		# Setup window manager
 		self._binwindows_manager = windows.BSWindowManager()
@@ -62,7 +63,6 @@ class BSMainApplication(QtWidgets.QApplication):
 	@QtCore.Slot(bool)
 	def createMainWindow(self, show_file_browser:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
-		
 		window = self._binwindows_manager.createMainWindow()
 
 		window.setActionsManager(actions.ActionsManager(window))
@@ -73,7 +73,6 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_quit_application.connect(self.exit)
 		
 		logging.getLogger(__name__).debug("Created %s", window)
-		
 		window.show()
 
 		if show_file_browser:
