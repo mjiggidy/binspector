@@ -2,60 +2,74 @@
 Actions
 """
 
-from PySide6 import QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
-class ActionsManager:
-	"""Actions?"""
+class ActionsManager(QtCore.QObject):
+	"""General actions"""
 
-	def __init__(self, parent:QtWidgets.QWidget):
+	def __init__(self, parent:QtWidgets.QWidget|None=None):
 
-		self._parent = parent
+
+		self._parent = parent or self
+		super().__init__(parent=parent)
 
 		# File actions
-		self._act_filebrowser = QtGui.QAction("Open Bin...", self._parent)
+		self._act_filebrowser = QtGui.QAction("&Open Bin...")
+		"""Request file browser to choose new bin"""
 		self._act_filebrowser.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DocumentOpen))
 		self._act_filebrowser.setToolTip("Choose a bin to open")
 		self._act_filebrowser.setShortcut(QtGui.QKeySequence.StandardKey.Open)
 
 		# Window actions
-		self._act_newwindow = QtGui.QAction("New Window...", self._parent)
+		self._act_newwindow = QtGui.QAction("&New Window...")
+		"""Request new bin window"""
 		self._act_newwindow.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WindowNew))
 		self._act_newwindow.setToolTip("Open a new window")
 		self._act_newwindow.setShortcut(QtGui.QKeySequence.StandardKey.New)
+		self._act_newwindow.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
 
-		self._act_closewindow = QtGui.QAction("Close Window", self._parent)
+		self._act_closewindow = QtGui.QAction("Close &Window")
+		"""Close active bin window"""
 		self._act_closewindow.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WindowClose))
 		self._act_closewindow.setToolTip("Close this window")
 		self._act_closewindow.setShortcut(QtGui.QKeySequence.StandardKey.Close)
 
 		# Application actions
-		self._act_quitapplication = QtGui.QAction("&Quit", self._parent)
+		self._act_quitapplication = QtGui.QAction("&Quit")
+		"""Quit application"""
 		self._act_quitapplication.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ApplicationExit))
 		self._act_quitapplication.setToolTip(f"Quit {QtWidgets.QApplication.instance().applicationName()}")
 		self._act_quitapplication.setShortcut(QtGui.QKeySequence.StandardKey.Quit)
 		self._act_quitapplication.setMenuRole(QtGui.QAction.MenuRole.QuitRole)
+		self._act_quitapplication.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
 
 		# View modes
 		self._act_view_list   = QtGui.QAction("List View", checkable=True, checked=True, parent=self._parent)
+		"""Toggle Bin View Mode: List"""
 		self._act_view_list.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FormatJustifyFill))
 		self._act_view_list.setToolTip("Show items in list view mode")
 
 		self._act_view_frame  = QtGui.QAction("Frame View", checkable=True, parent=self._parent)
+		"""Toggle Bin View Mode: Frame"""
 		self._act_view_frame.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AudioCard))
 		self._act_view_frame.setToolTip("Show items in frame view mode")
 
 		self._act_view_script = QtGui.QAction("Script View", checkable=True, parent=self._parent)
+		"""Toggle Bin View Mode: Script"""
 		self._act_view_script.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
 		self._act_view_script.setToolTip("Show items in script view mode")
 
 		# Bin settings
 		self._act_toggle_bindisplay_settings  = QtGui.QAction("Show Bin Display Settings", checkable=True, parent=self._parent)
+		"""Toggle visibility of Bin Display Settings toolbox"""
 		self._act_toggle_bindisplay_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DocumentPageSetup))
 
 		self._act_toggle_binview_settings    = QtGui.QAction("Show Bin View Settings", checkable=True, parent=self._parent)
+		"""Toggle visibility of Binview Settings toolbox"""
 		self._act_toggle_binview_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewRestore))
 		
 		self._act_toggle_appearance_options = QtGui.QAction("Show Appearance Settings", checkable=True, parent=self._parent)
+		"""Toggle visibility of Fonts & Colors toolbox"""
 		self._act_toggle_appearance_options.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.Battery))
 
 
@@ -82,6 +96,21 @@ class ActionsManager:
 		self._actgrp_bin_settings.addAction(self._act_toggle_bindisplay_settings)
 		self._actgrp_bin_settings.addAction(self._act_toggle_appearance_options)
 	
+	def applicationActionsGroup(self) -> QtGui.QActionGroup:
+		"""Application-wide actions"""
+
+		return self._actgrp_app
+
+	def fileActionsGroup(self) -> QtGui.QActionGroup:
+		"""File operation actions"""
+
+		return self._actgrp_file
+
+	def windowActionsGroup(self) -> QtGui.QActionGroup:
+		"""Window actions"""
+
+		return self._actgrp_window
+
 	def viewModesActionGroup(self) -> QtGui.QActionGroup:
 		"""Actions for toggling between bin view modes"""
 

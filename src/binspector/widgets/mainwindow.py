@@ -1,7 +1,6 @@
 from PySide6 import QtCore, QtWidgets
 from os import PathLike
-from ..managers import actions
-from ..managers import binproperties
+from ..managers import actions, binproperties
 from ..widgets import binwidget, menus
 
 class BSMainWindow(QtWidgets.QMainWindow):
@@ -17,7 +16,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._settings = QtCore.QSettings()
 
 		# Define Managers
-		self._man_actions      = actions.ActionsManager(parent=self)
+		self._man_actions      = actions.ActionsManager()
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
 		self._man_appearance   = binproperties.BSBinAppearanceSettingsManager()
@@ -52,10 +51,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions.newWindowAction().triggered.connect(self.sig_request_new_window)
 		self._man_actions.closeWindowAction().triggered.connect(self.close)
 		self._man_actions.quitApplicationAction().triggered.connect(self.sig_request_quit_application)
-
-
-
-		
 
 	def setActionsManager(self, actions:actions.ActionsManager):
 		self._actions_manager = actions
