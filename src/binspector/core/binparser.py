@@ -12,7 +12,7 @@ def bin_view_setting_from_bin(bin_content:avb.bin.Bin) -> avb.bin.BinViewSetting
 	return bin_view
 	
 def sift_settings_from_bin(bin_content:avb.bin.Bin) -> tuple[bool, list[avb.bin.SiftItem]]:
-	return bin_content.is_sifted, bin_content.sifted_settings
+	return bin_content.sifted, bin_content.sifted_settings
 	
 def sort_settings_from_bin(bin_content:avb.bin.Bin):
 	return bin_content.sort_columns
