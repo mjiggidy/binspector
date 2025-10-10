@@ -73,27 +73,25 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 	def setupSignals(self):
 		
+		# Window/File Actions
 		self._man_actions.fileBrowserAction().triggered.connect(self.browseForBin)
 		self._man_actions.newWindowAction().triggered.connect(self.sig_request_new_window)
 		self._man_actions.closeWindowAction().triggered.connect(self.close)
 		self._man_actions.quitApplicationAction().triggered.connect(self.sig_request_quit_application)
 
-		# NOTE: Actions have a toggleViewAction() but eh
-		self._man_actions.showBinDisplaySettings().toggled.connect(
-			lambda t: self._dock_bindisplay.show() if t else self._dock_bindisplay.close()
-		)
+		# Toolbox Toggle Actions
+		# NOTE: Dock widgets have a toggleViewAction() butuhhhhh
+		self._man_actions.showBinDisplaySettings().toggled.connect(self._dock_bindisplay.setVisible)
+		self._dock_bindisplay.visibilityChanged.connect(self._man_actions.showBinDisplaySettings().setChecked)
 
-		self._man_actions.showBinAppearanceSettings().toggled.connect(
-			lambda t: self._dock_appearance.show() if t else self._dock_appearance.close()
-		)
+		self._man_actions.showBinAppearanceSettings().toggled.connect(self._dock_appearance.setVisible)
+		self._dock_appearance.visibilityChanged.connect(self._man_actions.showBinAppearanceSettings().setChecked)
 
-		self._man_actions.showBinSiftSettings().toggled.connect(
-			lambda t: self._dock_sifting.show() if t else self._dock_sifting.close()
-		)
+		self._man_actions.showBinSiftSettings().toggled.connect(self._dock_sifting.setVisible)
+		self._dock_sifting.visibilityChanged.connect(self._man_actions.showBinSiftSettings().setChecked)
 
-		self._man_actions.showBinViewSettings().toggled.connect(
-			lambda t: self._dock_binview.show() if t else self._dock_binview.close()
-		)
+		self._man_actions.showBinViewSettings().toggled.connect(self._dock_binview.setVisible)
+		self._dock_binview.visibilityChanged.connect(self._man_actions.showBinViewSettings().setChecked)
 
 	def setActionsManager(self, actions:actions.ActionsManager):
 		self._man_actions = actions
