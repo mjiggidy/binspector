@@ -1,5 +1,3 @@
-import logging
-from PySide6 import QtWidgets
 from os import PathLike
 from .core import application
 
