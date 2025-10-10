@@ -11,7 +11,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 		sig_begin_loading = QtCore.Signal()
 		sig_got_display_mode = QtCore.Signal(object)
 		sig_got_bin_appearance_settings = QtCore.Signal(object, object, object, object, object, object, object)
-		sig_got_display_options = QtCore.Signal(object)
+		sig_got_bin_display_settings = QtCore.Signal(object)
 		sig_got_view_settings = QtCore.Signal(object)
 		sig_got_mob = QtCore.Signal(object)
 		sig_got_sort_settings = QtCore.Signal(object)
@@ -31,7 +31,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 		with avb.open(self._bin_path) as bin_handle:
 			
-			self._signals.sig_got_display_options.emit(binparser.bin_display_flags_from_bin(bin_handle.content))
+			self._signals.sig_got_bin_display_settings.emit(binparser.bin_display_flags_from_bin(bin_handle.content))
 			self._signals.sig_got_view_settings.emit(binparser.bin_view_setting_from_bin(bin_handle.content))
 			self._signals.sig_got_display_mode.emit(binparser.display_mode_from_bin(bin_handle.content))
 			self._signals.sig_got_sift_settings.emit(*binparser.sift_settings_from_bin(bin_handle.content))

@@ -1,10 +1,10 @@
 import avbutils
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore
 from .delegates import binitems
 from ..models import viewmodels
 from . import treeview
 
-class LBBinTreeView(treeview.LBTreeView):
+class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
 
 	ITEM_DELEGATES_PER_FIELD_ID = {
