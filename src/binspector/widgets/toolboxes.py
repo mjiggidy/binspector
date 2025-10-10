@@ -15,6 +15,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
+
 		self.setLayout(QtWidgets.QVBoxLayout())
 
 		self._spn_geo_x = QtWidgets.QSpinBox()

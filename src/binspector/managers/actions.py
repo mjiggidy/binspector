@@ -72,6 +72,10 @@ class ActionsManager(QtCore.QObject):
 		"""Toggle visibility of Fonts & Colors toolbox"""
 		self._act_toggle_appearance_options.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.Battery))
 
+		self._act_toggle_sift_settings = QtGui.QAction("Show Sift Settings", checkable=True, parent=self._parent)
+		"""Toggle visibility of Sift Settings toolbox"""
+		self._act_toggle_sift_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AudioVolumeHigh))
+
 
 		# Action Groups
 		self._actgrp_file = QtGui.QActionGroup(self._parent)
@@ -95,6 +99,7 @@ class ActionsManager(QtCore.QObject):
 		self._actgrp_bin_settings.addAction(self._act_toggle_binview_settings)
 		self._actgrp_bin_settings.addAction(self._act_toggle_bindisplay_settings)
 		self._actgrp_bin_settings.addAction(self._act_toggle_appearance_options)
+		self._actgrp_bin_settings.addAction(self._act_toggle_sift_settings)
 	
 	def applicationActionsGroup(self) -> QtGui.QActionGroup:
 		"""Application-wide actions"""
@@ -170,3 +175,8 @@ class ActionsManager(QtCore.QObject):
 		"""Show bin display settings"""
 
 		return self._act_toggle_appearance_options
+	
+	def showBinSiftSettings(self) -> QtGui.QAction:
+		"""Show bin sift settings"""
+
+		return self._act_toggle_sift_settings
