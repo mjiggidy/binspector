@@ -10,6 +10,10 @@ def main(bin_paths:list[PathLike]) -> int:
 	for bin_path in bin_paths:
 		wnd = app.createMainWindow()
 		wnd.loadBinFromPath(bin_path)
+	
+	if not bin_paths:
+		wnd = app.createMainWindow()
+		wnd.browseForBin()
 		
 	return app.exec()
 	
