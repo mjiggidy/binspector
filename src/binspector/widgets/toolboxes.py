@@ -6,7 +6,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from ..views import treeview, enumview
 import avbutils
 
-class LBBinAppearanceSettingsView(QtWidgets.QWidget):
+class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	"""Fonts, colors, and dimensions"""
 
 	sig_font_changed = QtCore.Signal(QtGui.QFont)
@@ -150,7 +150,6 @@ class LBBinAppearanceSettingsView(QtWidgets.QWidget):
 		self._btn_bg_color.setText(self._format_color_text(bg.color(QtGui.QPalette.ColorRole.Button)))
 
 		self.sig_palette_changed.emit(self.binPalette())
-
 	
 	@staticmethod
 	def _format_color_text(color:QtGui.QColor) -> str:
@@ -178,12 +177,12 @@ class LBBinAppearanceSettingsView(QtWidgets.QWidget):
 			self._btn_bg_color.palette().color(QtGui.QPalette.ColorRole.Button),
 		)
 	
-class LBBinDisplayItemTypesView(enumview.LBAbstractEnumFlagsView):
+class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 	"""Flags for setting Bin Item Display filter"""
 
-	def __init__(self, *args, **kwargs):
-
-		super().__init__(*args, **kwargs)
+	def __init__(self, bin_items_flags:avbutils.BinDisplayItemTypes|None=None, *args, **kwargs):
+		
+		super().__init__(bin_items_flags if bin_items_flags is not None else avbutils.BinDisplayItemTypes(0), *args, **kwargs)
 		
 		self.setLayout(QtWidgets.QVBoxLayout())
 		self.layout().setSpacing(0)
@@ -259,7 +258,7 @@ class LBBinDisplayItemTypesView(enumview.LBAbstractEnumFlagsView):
 
 		self.layout().addStretch()
 
-class LBBinSiftSettingsView(QtWidgets.QWidget):
+class BSBinSiftSettingsView(QtWidgets.QWidget):
 	"""Bin Sift Settings"""
 
 	def __init__(self, *args, **kwargs):
