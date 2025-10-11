@@ -105,7 +105,7 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 
 	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
 	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
-		#print(fg_color, bg_color)
+		
 		self.sig_palette_changed.emit(fg_color, bg_color)
 
 	@QtCore.Slot(object)
