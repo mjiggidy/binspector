@@ -145,6 +145,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		lay_tbs = QtWidgets.QHBoxLayout()
 		lay_tbs.setContentsMargins(0,0,0,0)
+		lay_tbs.setSpacing(0)
 		for btn in self._btngrp_toolboxes.buttons():
 			lay_tbs.addWidget(btn)
 		
