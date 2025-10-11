@@ -101,8 +101,8 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	@QtCore.Slot()
 	def bgColorPickerRequested(self):
 		
-		bg_color,_ = self.binPalette()
-		new_color = QtWidgets.QColorDialog.getColor(bg_color, self._btn_fg_color, "Choose a text color")
+		_,bg_color = self.binPalette()
+		new_color = QtWidgets.QColorDialog.getColor(bg_color, self._btn_bg_color, "Choose a text color")
 		
 		if new_color.isValid():
 			self.setBinBackgroundColor(new_color)
