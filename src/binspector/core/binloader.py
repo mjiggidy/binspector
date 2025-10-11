@@ -9,6 +9,9 @@ class BSBinViewLoader(QtCore.QRunnable):
 	class Signals(QtCore.QObject):
 
 		sig_begin_loading = QtCore.Signal()
+		sig_done_loading = QtCore.Signal()
+		sig_got_error = QtCore.Signal(object)
+
 		sig_got_display_mode = QtCore.Signal(object)
 		sig_got_bin_appearance_settings = QtCore.Signal(object, object, object, object, object, object, object)
 		sig_got_bin_display_settings = QtCore.Signal(object)
@@ -16,7 +19,6 @@ class BSBinViewLoader(QtCore.QRunnable):
 		sig_got_mob = QtCore.Signal(object)
 		sig_got_sort_settings = QtCore.Signal(object)
 		sig_got_sift_settings = QtCore.Signal(bool, object)
-		sig_done_loading = QtCore.Signal()
 
 	def __init__(self, bin_path:PathLike, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -42,9 +44,9 @@ class BSBinViewLoader(QtCore.QRunnable):
 				try:
 					self._signals.sig_got_mob.emit(binparser._loadCompositionMob(bin_item))
 				except Exception as e:
-					print(f"{e} {bin_item.mob}")
-		
-		self._signals.sig_done_loading.emit()
+					self._signals.sig_got_error.emit(e)
+
+			self._signals.sig_done_loading.emit()
 
 
 	

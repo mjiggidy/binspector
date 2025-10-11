@@ -56,6 +56,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._cmb_binviews    = QtWidgets.QComboBox()
 
 		self._txt_search      = QtWidgets.QLineEdit()
+
+		self._prg_loadingbar  = QtWidgets.QProgressBar()
 		
 		# The rest
 		
@@ -105,7 +107,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btngrp_viewmode.addButton(self._btn_viewmode_script)
 
 		self._cmb_binviews.setSizePolicy(self._cmb_binviews.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
-		self._cmb_binviews.setMinimumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 16)
+		self._cmb_binviews.setMinimumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 24)
 		self._cmb_binviews.setMaximumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 32)
 		topbar.addWidget(self._cmb_binviews)
 		topbar.addSeparator()
@@ -122,10 +124,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.addSeparator()
 
 		self._txt_search.setSizePolicy(self.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
-		self._txt_search.setMinimumWidth(self._txt_search.fontMetrics().averageCharWidth() * 16)
+		self._txt_search.setMinimumWidth(self._txt_search.fontMetrics().averageCharWidth() * 24)
 		self._txt_search.setMaximumWidth(self._txt_search.fontMetrics().averageCharWidth() * 32)
 		self._txt_search.setPlaceholderText("Find in bin")
 		self._txt_search.setClearButtonEnabled(True)
+		self._txt_search.textEdited.connect(self._bin_main.treeView().model().setSearchText)
 		topbar.addWidget(self._txt_search)
 
 		# Bottom Display
@@ -152,6 +155,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		wid_tbs = QtWidgets.QWidget()
 		wid_tbs.setLayout(lay_tbs)
 
+		self._prg_loadingbar.setRange(0,0)
+		#self._prg_loadingbar.setHidden(True)
+		#self._prg_loadingbar.hide()
+
+		bottom_bar.addWidget(self._prg_loadingbar)
 		bottom_bar.addWidget(wid_tbs)
 		
 
@@ -264,6 +272,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		from ..core import binloader
 
 		loader = binloader.BSBinViewLoader(bin_path)
+
+		loader.signals().sig_begin_loading.connect(lambda: self._prg_loadingbar.show)
 		
 		loader.signals().sig_got_view_settings.connect(self._man_binview.setBinView)
 		loader.signals().sig_got_view_settings.connect(self._man_binitems.setBinView)
@@ -274,6 +284,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		loader.signals().sig_got_mob.connect(self._man_binitems.addMob)
 
+		loader.signals().sig_got_error.connect(print)
+
+		loader.signals().sig_done_loading.connect(print)
+		loader.signals().sig_done_loading.connect(self._prg_loadingbar.hide)
 		loader.signals().sig_done_loading.connect(lambda: QtWidgets.QApplication.alert(self))
 
 		self._threadpool.start(loader)
