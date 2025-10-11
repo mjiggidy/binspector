@@ -182,6 +182,8 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	sig_mob_added = QtCore.Signal(object)
 	"""A mob was added to the bin items"""
 
+	sig_bin_view_changed = QtCore.Signal(object)
+
 	@QtCore.Slot(object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting):
 
@@ -198,8 +200,11 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 					field_id=column["type"],
 					format_id=column["format"],
 					display_name=column["title"],
+					is_hidden=column["hidden"]
 				)
 			)
+		
+		self.sig_bin_view_changed.emit(bin_view)
 	
 	@QtCore.Slot(object)
 	def addMob(self, mob_info:dict):

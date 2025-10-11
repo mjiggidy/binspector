@@ -230,6 +230,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
+		self._man_binitems.sig_bin_view_changed              .connect(lambda bv: self._cmb_binviews.insertItem(0, bv.name))
 
 	##
 	## Getters & Setters
