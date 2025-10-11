@@ -274,6 +274,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		loader.signals().sig_got_mob.connect(self._man_binitems.addMob)
 
+		loader.signals().sig_done_loading.connect(lambda: QtWidgets.QApplication.alert(self))
+
 		self._threadpool.start(loader)
 		
 		self.setWindowFilePath(bin_path)
