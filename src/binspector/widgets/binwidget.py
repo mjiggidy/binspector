@@ -61,15 +61,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		palette = self.palette()
 
-		palette.setColor(QtGui.QPalette.ColorRole.Text, fg_color)
-		palette.setColor(QtGui.QPalette.ColorRole.ButtonText, fg_color)
-		palette.setColor(QtGui.QPalette.ColorRole.Base, bg_color)
-		palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, bg_color.darker(VARIATION))
-		palette.setColor(QtGui.QPalette.ColorRole.Button, bg_color.darker(VARIATION))
+		palette.setColor(QtGui.QPalette.ColorRole.Text,            fg_color)
+		palette.setColor(QtGui.QPalette.ColorRole.ButtonText,      fg_color)
+		palette.setColor(QtGui.QPalette.ColorRole.Base,            bg_color)
+		palette.setColor(QtGui.QPalette.ColorRole.AlternateBase,   bg_color.darker(VARIATION))
+		palette.setColor(QtGui.QPalette.ColorRole.Button,          bg_color.darker(VARIATION))
 
-		palette.setColor(QtGui.QPalette.ColorRole.Window, bg_color.darker(VARIATION).darker(VARIATION))
-		palette.setColor(QtGui.QPalette.ColorRole.WindowText, fg_color)
+		palette.setColor(QtGui.QPalette.ColorRole.WindowText,      fg_color)
 		palette.setColor(QtGui.QPalette.ColorRole.PlaceholderText, bg_color.lighter(VARIATION).lighter(VARIATION).lighter(VARIATION))
+		palette.setColor(QtGui.QPalette.ColorRole.Window,          bg_color.darker(VARIATION).darker(VARIATION))
 
 
 		# Fusion scrollbar uses these colors per https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPalette.html
@@ -84,8 +84,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(QtGui.QFont)
 	def setBinFont(self, bin_font:QtGui.QFont):
 		self._tree_bin_contents.setFont(bin_font)
-		
-
 
 	@QtCore.Slot()
 	def _connectSourceModelSlots(self):
