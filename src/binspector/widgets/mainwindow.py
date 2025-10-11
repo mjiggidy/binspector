@@ -267,6 +267,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	@QtCore.Slot(str)
 	def binLoadStarted(self, bin_path:str):
 
+		self._man_actions.fileActionsGroup().setEnabled(False)
 		self._prg_loadingbar.show()
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
@@ -275,6 +276,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def binLoadFinished(self):
 
 		self._prg_loadingbar.hide()
+		self._man_actions.fileActionsGroup().setEnabled(True)
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
 
