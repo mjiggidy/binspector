@@ -1,8 +1,9 @@
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets, QtGui
 from os import PathLike
 from ..managers import actions, binproperties
 from ..widgets import binwidget, menus, toolboxes, buttons
 from ..views import treeview
+from ..core import binloader
 
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
@@ -13,19 +14,20 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
 
 		super().__init__()
-		
-		self._threadpool       = QtCore.QThreadPool()
 
 		self._settings         = QtCore.QSettings()
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
 
-		# Define Managers
+		# Define managers
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
 		self._man_appearance   = binproperties.BSBinAppearanceSettingsManager()
 		self._man_sorting      = binproperties.BSBinSortingPropertiesManager()
 		self._man_binitems     = binproperties.BSBinItemsManager()
 		self._man_bindisplay   = binproperties.BSBinDisplaySettingsManager()
+
+		# Define signals
+		self._sigs_binloader   = binloader.BSBinViewLoader.Signals()
 
 		# Define widgets
 		self._bin_main         = binwidget.BSBinContentsWidget()
@@ -51,10 +53,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btn_toolbox_sifting    = buttons.LBPushButtonAction(show_text=False)
 		self._btn_toolbox_binview    = buttons.LBPushButtonAction(show_text=False)
 
-		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
-
+		self._btngrp_viewmode = QtWidgets.QButtonGroup()
 		self._cmb_binviews    = QtWidgets.QComboBox()
-
 		self._txt_search      = QtWidgets.QLineEdit()
 
 		self._prg_loadingbar  = QtWidgets.QProgressBar()
@@ -62,7 +62,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# The rest
 		
 		self.setMenuBar(menus.BinWindowMenuBar(self._man_actions))
-
 		self.setupWidgets()
 		self.setupDock()
 		self.setupActions()
@@ -156,17 +155,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		wid_tbs.setLayout(lay_tbs)
 
 		self._prg_loadingbar.setRange(0,0)
-		#self._prg_loadingbar.setHidden(True)
+		self._prg_loadingbar.setHidden(True)
 		#self._prg_loadingbar.hide()
 
-		bottom_bar.addWidget(self._prg_loadingbar)
+		#bottom_bar.addWidget(self._prg_loadingbar)
 		bottom_bar.addWidget(wid_tbs)
 		
-
-
-
-		
-
 	def setupDock(self):
 		"""Add and prepare the dock"""
 		
@@ -190,39 +184,52 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		"""Connect signals and slots"""
 
 		# Window/File Actions
-		self._man_actions.fileBrowserAction().triggered.connect(self.showFileBrowser)
-		self._man_actions.newWindowAction().triggered.connect(self.sig_request_new_window)
-		self._man_actions.closeWindowAction().triggered.connect(self.close)
-		self._man_actions.quitApplicationAction().triggered.connect(self.sig_request_quit_application)
+		self._man_actions.fileBrowserAction().triggered      .connect(self.showFileBrowser)
+		self._man_actions.newWindowAction().triggered        .connect(self.sig_request_new_window)
+		self._man_actions.closeWindowAction().triggered      .connect(self.close)
+		self._man_actions.quitApplicationAction().triggered  .connect(self.sig_request_quit_application)
 
 		# Toolbox Toggle Actions
 		# NOTE: Dock widgets have a toggleViewAction() butuhhhhh
-		self._man_actions.showBinDisplaySettings().toggled.connect(self._dock_bindisplay.setVisible)
-		self._dock_bindisplay.visibilityChanged.connect(self._man_actions.showBinDisplaySettings().setChecked)
+		self._man_actions.showBinDisplaySettings().toggled   .connect(self._dock_bindisplay.setVisible)
+		self._dock_bindisplay.visibilityChanged              .connect(self._man_actions.showBinDisplaySettings().setChecked)
 
 		self._man_actions.showBinAppearanceSettings().toggled.connect(self._dock_appearance.setVisible)
-		self._dock_appearance.visibilityChanged.connect(self._man_actions.showBinAppearanceSettings().setChecked)
+		self._dock_appearance.visibilityChanged              .connect(self._man_actions.showBinAppearanceSettings().setChecked)
 
-		self._man_actions.showBinSiftSettings().toggled.connect(self._dock_sifting.setVisible)
-		self._dock_sifting.visibilityChanged.connect(self._man_actions.showBinSiftSettings().setChecked)
+		self._man_actions.showBinSiftSettings().toggled      .connect(self._dock_sifting.setVisible)
+		self._dock_sifting.visibilityChanged                 .connect(self._man_actions.showBinSiftSettings().setChecked)
 
-		self._man_actions.showBinViewSettings().toggled.connect(self._dock_binview.setVisible)
-		self._dock_binview.visibilityChanged.connect(self._man_actions.showBinViewSettings().setChecked)
+		self._man_actions.showBinViewSettings().toggled      .connect(self._dock_binview.setVisible)
+		self._dock_binview.visibilityChanged                 .connect(self._man_actions.showBinViewSettings().setChecked)
 
 		# Bin Settings Toolboxes
-		self._man_bindisplay.sig_bin_display_changed.connect(self._tool_bindisplay.setFlags)
-		self._man_bindisplay.sig_bin_display_changed.connect(self._bin_main.treeView().model().setBinDisplayItemTypes)
-		self._tool_bindisplay.sig_flags_changed.connect(self._man_bindisplay.setBinDisplayFlags)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_main.treeView().model().setBinDisplayItemTypes)
+		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
-		self._man_appearance.sig_font_changed.connect(self._tool_appearance.setBinFont)
-		self._man_appearance.sig_palette_changed.connect(self._tool_appearance.setBinPalette)
-		self._man_appearance.sig_window_rect_changed.connect(self._tool_appearance.setBinRect)
-		self._man_appearance.sig_was_iconic_changed.connect(self._tool_appearance.setWasIconic)
+		self._man_appearance.sig_font_changed                .connect(self._tool_appearance.setBinFont)
+		self._man_appearance.sig_palette_changed             .connect(self._tool_appearance.setBinPalette)
+		self._man_appearance.sig_window_rect_changed         .connect(self._tool_appearance.setBinRect)
+		self._man_appearance.sig_was_iconic_changed          .connect(self._tool_appearance.setWasIconic)
 
-		self._man_appearance.sig_palette_changed.connect(self._bin_main.setBinColors)
-		self._man_appearance.sig_font_changed.connect(self._bin_main.setBinFont)
-		self._tool_appearance.sig_font_changed.connect(self._man_appearance.sig_font_changed)
-		self._tool_appearance.sig_palette_changed.connect(self._bin_main.setBinColors)
+		self._man_appearance.sig_palette_changed             .connect(self._bin_main.setBinColors)
+		self._man_appearance.sig_font_changed                .connect(self._bin_main.setBinFont)
+		self._tool_appearance.sig_font_changed               .connect(self._man_appearance.sig_font_changed)
+		self._tool_appearance.sig_palette_changed            .connect(self._bin_main.setBinColors)
+
+		# Bin loader signals
+		self._sigs_binloader.sig_begin_loading               .connect(self.binLoadStarted)
+		self._sigs_binloader.sig_done_loading                .connect(self.binLoadFinished)
+		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
+ 
+		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
+		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
+		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
+		self._sigs_binloader.sig_got_mob                     .connect(self._man_binitems.addMob)
+
+		# Inter-manager relations
+		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
 
 	##
 	## Getters & Setters
@@ -255,6 +262,24 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 	## Slots
 	##
+
+	@QtCore.Slot(str)
+	def binLoadStarted(self, bin_path:str):
+
+		self._prg_loadingbar.show()
+		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
+		self.setWindowFilePath(bin_path)
+	
+	@QtCore.Slot()
+	def binLoadFinished(self):
+
+		self._prg_loadingbar.hide()
+		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
+		QtWidgets.QApplication.instance().alert(self)
+
+	@QtCore.Slot(object)
+	def binLoadException(self, exception:Exception):
+		print(f"Bin load error:", exception)
 	
 	@QtCore.Slot()
 	def showFileBrowser(self):
@@ -269,27 +294,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def loadBinFromPath(self, bin_path:PathLike):
 		"""Load a bin from the given path"""
 
-		from ..core import binloader
-
-		loader = binloader.BSBinViewLoader(bin_path)
-
-		loader.signals().sig_begin_loading.connect(lambda: self._prg_loadingbar.show)
-		
-		loader.signals().sig_got_view_settings.connect(self._man_binview.setBinView)
-		loader.signals().sig_got_view_settings.connect(self._man_binitems.setBinView)
-
-		loader.signals().sig_got_bin_appearance_settings.connect(self._man_appearance.setAppearanceSettings)
-		
-		loader.signals().sig_got_bin_display_settings.connect(self._man_bindisplay.setBinDisplayFlags)
-
-		loader.signals().sig_got_mob.connect(self._man_binitems.addMob)
-
-		loader.signals().sig_got_error.connect(print)
-
-		loader.signals().sig_done_loading.connect(print)
-		loader.signals().sig_done_loading.connect(self._prg_loadingbar.hide)
-		loader.signals().sig_done_loading.connect(lambda: QtWidgets.QApplication.alert(self))
-
-		self._threadpool.start(loader)
-		
-		self.setWindowFilePath(bin_path)
+		QtCore.QThreadPool.globalInstance().start(
+			binloader.BSBinViewLoader(bin_path, self._sigs_binloader)
+		)
