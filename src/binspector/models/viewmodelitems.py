@@ -8,12 +8,22 @@ from functools import singledispatch
 class LBAbstractViewHeaderItem:
 	"""An abstract header item for TRT views"""
 
-	def __init__(self, field_name:str, display_name:str, field_id:int=0, format_id:int=0, icon:QtGui.QIcon|None=None, item_factory:typing.Type["LBAbstractViewItem"]|None=None, delegate:QtWidgets.QStyledItemDelegate|None=None):
+	def __init__(self,
+			  field_name:str,
+			  display_name:str,
+			  field_id:int=0,
+			  format_id:int=0,
+			  is_hidden:bool=False,
+			  icon:QtGui.QIcon|None=None,
+			  item_factory:typing.Type["LBAbstractViewItem"]|None=None, 
+			  delegate:QtWidgets.QStyledItemDelegate|None=None,
+		):
 
-		self._field_name = field_name
-		self._field_id   = field_id # Think I wanna do this for bin headings
-		self._format_id  = format_id
+		self._field_name   = field_name
+		self._field_id     = field_id # Think I wanna do this for bin headings
+		self._format_id    = format_id
 		self._display_name = display_name
+		self._is_hidden    = is_hidden
 
 
 		self._item_factory = item_factory
@@ -33,6 +43,7 @@ class LBAbstractViewHeaderItem:
 			QtCore.Qt.ItemDataRole.UserRole:    self,
 			QtCore.Qt.ItemDataRole.UserRole+1:  self._field_id, # Think I wanna do this for bin headings
 			QtCore.Qt.ItemDataRole.UserRole+2:  self._format_id,
+			QtCore.Qt.ItemDataRole.UserRole+3:  self._is_hidden,
 		 })
 	
 	def data(self, role:QtCore.Qt.ItemDataRole) -> typing.Any:
@@ -55,6 +66,9 @@ class LBAbstractViewHeaderItem:
 	
 	def delegate(self) -> QtWidgets.QStyledItemDelegate:
 		return self._delgate
+	
+	def isHidden(self) -> bool:
+		return self._is_hidden
 
 class LBAbstractViewItem:
 	"""An abstract item for TRT views"""
