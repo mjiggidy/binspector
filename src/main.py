@@ -4,7 +4,7 @@ Binspector Bootstrap (bb4u)
 
 # Compilation configuration for Nuitka
 # ---
-# nuitka-project: --mode=standalone
+# nuitka-project: --mode=app
 # ;nuitka-project: --onefile-tempdir-spec="{CACHE_DIR}/{COMPANY}/{PRODUCT}/{VERSION}"
 # nuitka-project: --deployment
 # nuitka-project: --output-filename="binspector"
