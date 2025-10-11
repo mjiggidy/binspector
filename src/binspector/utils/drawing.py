@@ -4,7 +4,7 @@ def draw_clip_color_chip(
 		painter:QtGui.QPainter,
 		canvas:QtCore.QRect,
 		clip_color:QtGui.QColor,
-		/,
+		*,
 		border_color:QtGui.QColor,
 		border_width:int,
 		shadow_color:QtGui.QColor
@@ -34,6 +34,7 @@ def draw_clip_color_chip(
 	if not shadow_color.isValid() or border_width==0:
 		painter.restore()
 		return
+	shadow_color.setAlphaF(0.25)
 	
 	canvas.translate(border_width,border_width)
 	

@@ -23,7 +23,7 @@ class LBClipColorItemDelegate(QtWidgets.QStyledItemDelegate):
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
 		super().paint(painter, option, index)
-		
+
 		# "No clip color" should at least be an invalid `QtCore.QColor`
 		clip_color = index.data(QtCore.Qt.ItemDataRole.UserRole)
 		if not isinstance(clip_color, QtGui.QColor):
@@ -43,11 +43,14 @@ class LBClipColorItemDelegate(QtWidgets.QStyledItemDelegate):
 				painter=painter,
 				canvas=canvas,
 				clip_color=clip_color,
-				border_color=option.palette.color(QtGui.QPalette.ColorRole.WindowText),
+				#border_color=option.palette.color(QtGui.QPalette.ColorRole.WindowText),
+				border_color=QtGui.QColor("Black"),
 				border_width=1,
-				shadow_color=option.palette.color(QtGui.QPalette.ColorRole.Shadow)
+				#shadow_color=option.palette.color(QtGui.QPalette.ColorRole.Shadow),
+				shadow_color=QtGui.QColor("Black"),
 			)
 		except Exception as e:
+			print(e)
 			logging.getLogger(__name__).error("Error drawing clip color delegate: %s", e)
 
 		painter.restore()
