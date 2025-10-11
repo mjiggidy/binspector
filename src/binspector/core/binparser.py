@@ -1,3 +1,8 @@
+"""
+Functions for creating and returning data model items from a bin
+Also used by `.binloader`
+"""
+
 import avb, avbutils, timecode
 from ..models import viewmodelitems
 
@@ -50,17 +55,14 @@ def appearance_settings_from_bin(bin_content:avb.bin.Bin) -> tuple:
 		bin_content.was_iconic,
 	)
 
-def _loadCompositionMob(bin_item:avb.bin.BinItem) -> dict:
-		
-		#if not bin_item.user_placed:
-		#	return
+def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
+		"""Parse a mob and its bin item properties"""
 		
 		bin_item_role = avbutils.BinDisplayItemTypes.from_bin_item(bin_item)
-		#print(display_options)
-
 		comp = bin_item.mob
 
-
+		# Prep defaults
+		# TODO: Should be at least, like, some sort of struct
 		tape_name = None
 		source_file_name = None
 		timecode_range = None
@@ -72,8 +74,6 @@ def _loadCompositionMob(bin_item:avb.bin.BinItem) -> dict:
 			user_attributes = comp.attributes.get("_USER",{})
 
 		else:
-
-			#primary_track = avbutils.format_track_label(avbutils.sourcerefs.primary_track_for_composition(comp))
 
 			if avbutils.sourcerefs.composition_has_physical_source(comp):
 			
