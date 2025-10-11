@@ -1,7 +1,7 @@
 from PySide6 import QtCore, QtWidgets
 from os import PathLike
 from ..managers import actions, binproperties
-from ..widgets import binwidget, menus, toolboxes
+from ..widgets import binwidget, menus, toolboxes, buttons
 from ..views import treeview
 
 class BSMainWindow(QtWidgets.QMainWindow):
@@ -41,6 +41,21 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._tool_binview     = treeview.LBTreeView()
 		self._dock_binview     = QtWidgets.QDockWidget("Bin View Settings")
+
+		self._btn_viewmode_list   = buttons.LBPushButtonAction(show_text=False)
+		self._btn_viewmode_frame  = buttons.LBPushButtonAction(show_text=False)
+		self._btn_viewmode_script = buttons.LBPushButtonAction(show_text=False)
+
+		self._btn_toolbox_bindisplay = buttons.LBPushButtonAction(show_text=False)
+		self._btn_toolbox_appearance = buttons.LBPushButtonAction(show_text=False)
+		self._btn_toolbox_sifting    = buttons.LBPushButtonAction(show_text=False)
+		self._btn_toolbox_binview    = buttons.LBPushButtonAction(show_text=False)
+
+		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
+
+		self._cmb_binviews    = QtWidgets.QComboBox()
+
+		self._txt_search      = QtWidgets.QLineEdit()
 		
 		# The rest
 		
@@ -69,6 +84,78 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._bin_main.treeView().model().setSourceModel(self._man_binitems.viewModel())
 		self._tool_binview.setModel(self._man_binview.viewModel())
+
+		# Top binbarboy
+		topbar = self._bin_main.topSectionWidget()
+		
+		topbar.setIconSize(QtCore.QSize(16,16))
+		topbar.addWidget(buttons.LBPushButtonAction(action=self._man_actions.fileBrowserAction(), show_text=True))
+
+		self._btn_viewmode_list.setAction(self._man_actions.viewBinAsList())
+		self._btn_viewmode_frame.setAction(self._man_actions.viewBinAsFrame())
+		self._btn_viewmode_script.setAction(self._man_actions.viewBinAsScript())
+
+		wdg_separator = QtWidgets.QWidget()
+		wdg_separator.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding))
+		topbar.addWidget(wdg_separator)
+
+		self._btngrp_viewmode.setExclusive(True)
+		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
+		self._btngrp_viewmode.addButton(self._btn_viewmode_frame)
+		self._btngrp_viewmode.addButton(self._btn_viewmode_script)
+
+		self._cmb_binviews.setSizePolicy(self._cmb_binviews.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+		self._cmb_binviews.setMinimumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 16)
+		self._cmb_binviews.setMaximumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 32)
+		topbar.addWidget(self._cmb_binviews)
+		topbar.addSeparator()
+
+		lay_btngrp_viewmode = QtWidgets.QHBoxLayout()
+		lay_btngrp_viewmode.setSpacing(0)
+		lay_btngrp_viewmode.setContentsMargins(0,0,0,0)
+		for btn in self._btngrp_viewmode.buttons():
+			lay_btngrp_viewmode.addWidget(btn)
+
+		wid_btngrp = QtWidgets.QWidget()
+		wid_btngrp.setLayout(lay_btngrp_viewmode)
+		topbar.addWidget(wid_btngrp)
+		topbar.addSeparator()
+
+		self._txt_search.setSizePolicy(self.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+		self._txt_search.setMinimumWidth(self._txt_search.fontMetrics().averageCharWidth() * 16)
+		self._txt_search.setMaximumWidth(self._txt_search.fontMetrics().averageCharWidth() * 32)
+		self._txt_search.setPlaceholderText("Find in bin")
+		self._txt_search.setClearButtonEnabled(True)
+		topbar.addWidget(self._txt_search)
+
+		# Bottom Display
+		bottom_bar = self._bin_main.bottomSectionWidget()
+
+		self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
+		self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
+		self._btn_toolbox_appearance.setAction(self._man_actions.showBinAppearanceSettings())
+		self._btn_toolbox_sifting.setAction(self._man_actions.showBinSiftSettings())
+		
+		self._btngrp_toolboxes = QtWidgets.QButtonGroup()
+		self._btngrp_toolboxes.setExclusive(False)
+		self._btngrp_toolboxes.addButton(self._btn_toolbox_binview)
+		self._btngrp_toolboxes.addButton(self._btn_toolbox_bindisplay)
+		self._btngrp_toolboxes.addButton(self._btn_toolbox_appearance)
+		self._btngrp_toolboxes.addButton(self._btn_toolbox_sifting)
+
+		lay_tbs = QtWidgets.QHBoxLayout()
+		lay_tbs.setContentsMargins(0,0,0,0)
+		for btn in self._btngrp_toolboxes.buttons():
+			lay_tbs.addWidget(btn)
+		
+		wid_tbs = QtWidgets.QWidget()
+		wid_tbs.setLayout(lay_tbs)
+
+		bottom_bar.addWidget(wid_tbs)
+		
+
+
+
 		
 
 	def setupDock(self):

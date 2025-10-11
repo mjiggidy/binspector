@@ -1,4 +1,4 @@
-from PySide6 import QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 class LBPushButtonAction(QtWidgets.QPushButton):
 	"""A QPushButton bound to a QAction"""
