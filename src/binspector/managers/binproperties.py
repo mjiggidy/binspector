@@ -5,6 +5,9 @@ from . import base
 
 class BSBinViewManager(base.LBItemDefinitionView):
 
+	sig_bin_view_changed = QtCore.Signal(object)
+	"""Binview has been reset"""
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
@@ -26,6 +29,8 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		for idx, column in enumerate(bin_view.columns):
 			column.update({"order": idx})
 			self.addColumnDefinition(column)
+		
+		self.sig_bin_view_changed.emit(bin_view)
 
 	@QtCore.Slot(object)
 	def addColumnDefinition(self, column_definition:dict[str,object]):
@@ -158,7 +163,6 @@ class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 
 	@QtCore.Slot(bool, object)
 	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avb.bin.SiftItem]):
-		self.sig_sift_enabled.emit(sift_enabled)
 
 		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="string", display_name="String"))
 		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="method", display_name="Method"))
@@ -170,8 +174,13 @@ class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 				"string": setting.string,
 				"column": setting.column,
 			})
+		
+		self.sig_sift_enabled.emit(sift_enabled)
 
 class BSBinItemsManager(base.LBItemDefinitionView):
+	
+	sig_mob_added = QtCore.Signal(object)
+	"""A mob was added to the bin items"""
 
 	@QtCore.Slot(object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting):
@@ -194,5 +203,6 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	
 	@QtCore.Slot(object)
 	def addMob(self, mob_info:dict):
-#		print(mob_info)
+
 		self.addRow(mob_info)
+		self.sig_mob_added.emit(mob_info)
