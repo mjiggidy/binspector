@@ -1,7 +1,7 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from os import PathLike
 from ..managers import actions, binproperties
-from ..widgets import binwidget, menus, toolboxes, buttons
+from ..widgets import binwidget, menus, toolboxes, buttons, about
 from ..views import treeview
 from ..core import binloader
 
@@ -189,6 +189,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_newwindow.triggered           .connect(self.sig_request_new_window)
 		self._man_actions._act_closewindow.triggered         .connect(self.close)
 		self._man_actions._act_quitapplication.triggered     .connect(self.sig_request_quit_application)
+		self._man_actions._act_show_about.triggered          .connect(self.showAboutBox)
 
 		# Toolbox Toggle Actions
 		# NOTE: Dock widgets have a toggleViewAction() butuhhhhh
@@ -312,3 +313,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		QtCore.QThreadPool.globalInstance().start(
 			binloader.BSBinViewLoader(bin_path, self._sigs_binloader)
 		)
+
+	@QtCore.Slot()
+	def showAboutBox(self):
+		"""Show the About thing"""
+
+		dlg_about = about.BSAboutDialog()
+		dlg_about.exec()

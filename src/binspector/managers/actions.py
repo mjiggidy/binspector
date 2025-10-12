@@ -82,6 +82,16 @@ class ActionsManager(QtCore.QObject):
 		self._act_show_local_storage.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FolderOpen))
 
 
+
+
+		# Help menu stuff
+		self._act_show_about = QtGui.QAction(f"About {QtWidgets.QApplication.instance().applicationDisplayName()}...", parent=self._parent)
+		"""Show About Box"""
+		self._act_show_about.setMenuRole(QtGui.QAction.MenuRole.AboutRole)
+		self._act_show_about.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.HelpAbout))
+
+
+
 		# Action Groups
 		self._actgrp_file = QtGui.QActionGroup(self._parent)
 		self._actgrp_file.addAction(self._act_newwindow)
@@ -138,6 +148,11 @@ class ActionsManager(QtCore.QObject):
 		"""Debug-y user stuff"""
 
 		return self._actgrp_user_tools
+
+	def showAboutBoxAction(self) -> QtGui.QAction:
+		"""Show the About Box"""
+
+		return self._act_show_about
 
 	def fileBrowserAction(self) -> QtGui.QAction:
 		"""User requests file browser"""

@@ -12,10 +12,11 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 		
 		super().__init__(*args, **kwargs)
 
-		mnu_main = QtWidgets.QMenu("&File")
-		mnu_view = QtWidgets.QMenu("&View")
-		mnu_tools = QtWidgets.QMenu("&Tools")
+		mnu_main   = QtWidgets.QMenu("&File")
+		mnu_view   = QtWidgets.QMenu("&View")
+		mnu_tools  = QtWidgets.QMenu("&Tools")
 		mnu_window = QtWidgets.QMenu("&Window")
+		mnu_help   = QtWidgets.QMenu("&Help")
 		
 
 		mnu_main.addAction(action_manager.newWindowAction())
@@ -32,10 +33,13 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 
 		mnu_window.addAction(action_manager.closeWindowAction())
 
+		mnu_help.addAction(action_manager.showAboutBoxAction())
+
 		self.addMenu(mnu_main)
 		self.addMenu(mnu_view)
 		self.addMenu(mnu_tools)
 		self.addMenu(mnu_window)
+		self.addMenu(mnu_help)
 
 class DefaultMenuBar(QtWidgets.QMenuBar):
 	"""Default, minimal menu bar, specifically for macOS when no bin windows are open"""
