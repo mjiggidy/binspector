@@ -2,12 +2,12 @@
 Main app controller
 """
 import logging
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 from os import PathLike
 
-from ..managers import actions, windows
 from . import settings
-from ..widgets import mainwindow, menus
+from ..managers import actions, windows
+from ..widgets import mainwindow
 
 class BSMainApplication(QtWidgets.QApplication):
 	"""Main application"""
@@ -56,6 +56,13 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		return self._localStoragePath
 	
+	def showLocalStorage(self):
+		"""Open local user storage folder"""
+
+		QtGui.QDesktopServices.openUrl(
+			QtCore.QUrl.fromLocalFile(self.localStoragePath())
+		)
+	
 	def settingsManager(self) -> settings.BSSettingsManager:
 		return self._settingsManager
 	
@@ -63,6 +70,7 @@ class BSMainApplication(QtWidgets.QApplication):
 	@QtCore.Slot(bool)
 	def createMainWindow(self, show_file_browser:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
+		
 		window = self._binwindows_manager.createMainWindow()
 
 		window.setActionsManager(actions.ActionsManager(window))
@@ -71,6 +79,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		# Connect signals/slots
 		window.sig_request_new_window.connect(self.createMainWindow)
 		window.sig_request_quit_application.connect(self.exit)
+		window.sig_request_show_user_folder.connect(self.showLocalStorage)
 		
 		logging.getLogger(__name__).debug("Created %s", window)
 		window.show()

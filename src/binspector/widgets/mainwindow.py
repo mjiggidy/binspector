@@ -8,8 +8,9 @@ from ..core import binloader
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
 
-	sig_request_new_window = QtCore.Signal()
+	sig_request_new_window       = QtCore.Signal()
 	sig_request_quit_application = QtCore.Signal()
+	sig_request_show_user_folder = QtCore.Signal()
 
 	def __init__(self):
 
@@ -202,6 +203,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._man_actions.showBinViewSettings().toggled      .connect(self._dock_binview.setVisible)
 		self._dock_binview.visibilityChanged                 .connect(self._man_actions.showBinViewSettings().setChecked)
+
+		self._man_actions.showUserFolder().triggered         .connect(self.sig_request_show_user_folder)
+		#self._man_actions.showUserFolder().triggered         .connect(lambda: print(QtWidgets.QApplication.instance().localStoragePath()))
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)

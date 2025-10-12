@@ -14,6 +14,7 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 
 		mnu_main = QtWidgets.QMenu("&File")
 		mnu_view = QtWidgets.QMenu("&View")
+		mnu_tools = QtWidgets.QMenu("&Tools")
 		mnu_window = QtWidgets.QMenu("&Window")
 		
 
@@ -27,10 +28,13 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 		mnu_view.addActions(action_manager.showBinSettingsActionGroup().actions())
 		mnu_view.addSeparator()
 
+		mnu_tools.addActions(action_manager.userToolsActionsGroup().actions())
+
 		mnu_window.addAction(action_manager.closeWindowAction())
 
 		self.addMenu(mnu_main)
 		self.addMenu(mnu_view)
+		self.addMenu(mnu_tools)
 		self.addMenu(mnu_window)
 
 class DefaultMenuBar(QtWidgets.QMenuBar):
@@ -47,3 +51,8 @@ class DefaultMenuBar(QtWidgets.QMenuBar):
 		mnu_main.addAction(action_manager.quitApplicationAction())
 
 		self.addMenu(mnu_main)
+
+		mnu_tools = QtWidgets.QMenu("&Tools")
+		mnu_tools.addActions(action_manager.userToolsActionsGroup().actions())
+
+		self.addMenu(mnu_tools)

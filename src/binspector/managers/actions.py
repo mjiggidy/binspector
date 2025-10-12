@@ -76,6 +76,11 @@ class ActionsManager(QtCore.QObject):
 		"""Toggle visibility of Sift Settings toolbox"""
 		self._act_toggle_sift_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AudioVolumeHigh))
 
+		# Tools
+		self._act_show_local_storage = QtGui.QAction("Open User Data Folder", parent=self._parent)
+		"""Open local storage"""
+		self._act_show_local_storage.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FolderOpen))
+
 
 		# Action Groups
 		self._actgrp_file = QtGui.QActionGroup(self._parent)
@@ -100,6 +105,9 @@ class ActionsManager(QtCore.QObject):
 		self._actgrp_bin_settings.addAction(self._act_toggle_bindisplay_settings)
 		self._actgrp_bin_settings.addAction(self._act_toggle_appearance_options)
 		self._actgrp_bin_settings.addAction(self._act_toggle_sift_settings)
+
+		self._actgrp_user_tools = QtGui.QActionGroup(self._parent)
+		self._actgrp_user_tools.addAction(self._act_show_local_storage)
 	
 	def applicationActionsGroup(self) -> QtGui.QActionGroup:
 		"""Application-wide actions"""
@@ -125,6 +133,11 @@ class ActionsManager(QtCore.QObject):
 		"""Actions for toggling display of settings toolboxes"""
 
 		return self._actgrp_bin_settings
+	
+	def userToolsActionsGroup(self) -> QtGui.QActionGroup:
+		"""Debug-y user stuff"""
+
+		return self._actgrp_user_tools
 
 	def fileBrowserAction(self) -> QtGui.QAction:
 		"""User requests file browser"""
@@ -180,3 +193,8 @@ class ActionsManager(QtCore.QObject):
 		"""Show bin sift settings"""
 
 		return self._act_toggle_sift_settings
+	
+	def showUserFolder(self) -> QtGui.QAction:
+		"""Open the user data folder"""
+
+		return self._act_show_local_storage
