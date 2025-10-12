@@ -18,7 +18,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._section_top       = QtWidgets.QToolBar()
 		self._tree_bin_contents = bintreeview.BSBinTreeView()
-		self._section_bottom    = QtWidgets.QToolBar()
+		self._section_bottom    = QtWidgets.QWidget()
+		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
 
 		self.layout().addWidget(self._section_top)
 		self.layout().addWidget(self._tree_bin_contents)
@@ -28,6 +29,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		toolbar_font.setPointSizeF(toolbar_font.pointSizeF() * 0.8)
 		self._section_top.setFont(toolbar_font)
 		self._section_bottom.setFont(toolbar_font)
+		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
 
 	def treeView(self) -> bintreeview.BSBinTreeView:
