@@ -25,10 +25,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().addWidget(self._tree_bin_contents)
 		self.layout().addWidget(self._section_bottom)
 
-		toolbar_font = self._section_top.font()
-		toolbar_font.setPointSizeF(toolbar_font.pointSizeF() * 0.8)
-		self._section_top.setFont(toolbar_font)
-		self._section_bottom.setFont(toolbar_font)
+		#toolbar_font = self._section_top.font()
+		#toolbar_font.setPointSizeF(toolbar_font.pointSizeF() * 0.8)
+		#self._section_top.setFont(toolbar_font)
+		#self._section_bottom.setFont(toolbar_font)
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
 
