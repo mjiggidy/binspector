@@ -26,6 +26,12 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 			self.binDisplayFilter(source_row, source_parent),
 			self.searchTextFilter(source_row, source_parent),
 		))
+	
+	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
+		
+		if not source_parent.isValid():
+			return not self.sourceModel().headerData(source_column, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+3)
+		return super().filterAcceptsColumn(source_column, source_parent)
 
 		
 		#return super().filterAcceptsRow(source_row, source_parent)

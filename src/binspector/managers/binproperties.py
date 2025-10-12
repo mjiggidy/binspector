@@ -191,8 +191,8 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 
 		for column in bin_view.columns[::-1]:
 
-			if column["hidden"]:
-				continue
+#			if column["hidden"]:
+#				continue
 
 			self.addHeader(
 				viewmodelitems.LBAbstractViewHeaderItem(
