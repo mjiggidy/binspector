@@ -157,10 +157,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._prg_loadingbar.setRange(0,0)
 		self._prg_loadingbar.setHidden(True)
-		#self._prg_loadingbar.hide()
 
-		#bottom_bar.addWidget(self._prg_loadingbar)
-		bottom_bar.addWidget(wid_tbs)
+		bottom_bar.layout().addWidget(self._prg_loadingbar)
+		bottom_bar.layout().addStretch()
+		bottom_bar.layout().addWidget(wid_tbs)
 		
 	def setupDock(self):
 		"""Add and prepare the dock"""
@@ -185,10 +185,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		"""Connect signals and slots"""
 
 		# Window/File Actions
-		self._man_actions.fileBrowserAction().triggered      .connect(self.showFileBrowser)
-		self._man_actions.newWindowAction().triggered        .connect(self.sig_request_new_window)
-		self._man_actions.closeWindowAction().triggered      .connect(self.close)
-		self._man_actions.quitApplicationAction().triggered  .connect(self.sig_request_quit_application)
+		self._man_actions._act_filebrowser.triggered         .connect(self.showFileBrowser)
+		self._man_actions._act_newwindow.triggered           .connect(self.sig_request_new_window)
+		self._man_actions._act_closewindow.triggered         .connect(self.close)
+		self._man_actions._act_quitapplication.triggered     .connect(self.sig_request_quit_application)
 
 		# Toolbox Toggle Actions
 		# NOTE: Dock widgets have a toggleViewAction() butuhhhhh
@@ -241,12 +241,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 
 	def setActionsManager(self, actions:actions.ActionsManager):
+		raise DeprecationWarning("Let's not?")
 		self._man_actions = actions
 	
 	def actionsManager(self) -> actions.ActionsManager:
 		return self._man_actions
 	
 	def setSettings(self, settings:QtCore.QSettings):
+		raise DeprecationWarning("Let's not?")
 		self._settings = settings
 
 	def binViewManager(self) -> binproperties.BSBinViewManager:
@@ -270,17 +272,19 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 	@QtCore.Slot(str)
 	def binLoadStarted(self, bin_path:str):
+		"""Bin load is about to begin. Prepare."""
 
-		self._man_actions.fileActionsGroup().setEnabled(False)
+		self._man_actions._act_filebrowser.setEnabled(False)
 		self._prg_loadingbar.show()
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
 	
 	@QtCore.Slot()
 	def binLoadFinished(self):
+		"""A bin has finished loading"""
 
 		self._prg_loadingbar.hide()
-		self._man_actions.fileActionsGroup().setEnabled(True)
+		self._man_actions._act_filebrowser.setEnabled(True)
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
 

@@ -73,8 +73,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		
 		window = self._binwindows_manager.createMainWindow()
 
-		window.setActionsManager(actions.ActionsManager(window))
-		window.setSettings(self._settingsManager.settings("bs_main"))
+		#window.setActionsManager(actions.ActionsManager(window))
+		#window.setSettings(self._settingsManager.settings("bs_main"))
 		
 		# Connect signals/slots
 		window.sig_request_new_window.connect(self.createMainWindow)
