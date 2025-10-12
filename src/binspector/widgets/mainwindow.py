@@ -204,8 +204,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions.showBinViewSettings().toggled      .connect(self._dock_binview.setVisible)
 		self._dock_binview.visibilityChanged                 .connect(self._man_actions.showBinViewSettings().setChecked)
 
+		# User debuggy-type tools
 		self._man_actions.showUserFolder().triggered         .connect(self.sig_request_show_user_folder)
-		#self._man_actions.showUserFolder().triggered         .connect(lambda: print(QtWidgets.QApplication.instance().localStoragePath()))
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
@@ -292,7 +292,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def showFileBrowser(self):
 		"""Show the file browser to select a bin"""
 
-		file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Choose an Avid bin...", filter="Avid Bin (*.avb);;All Files (*)", dir=self.windowFilePath())
+		file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+			self, "Choose an Avid bin...",
+			filter="Avid Bin (*.avb);;All Files (*)",
+			dir=self.windowFilePath()
+		)
 		
 		if file_path:
 			self.loadBinFromPath(file_path)
