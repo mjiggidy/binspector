@@ -180,7 +180,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin loader signals
 		self._sigs_binloader.sig_begin_loading               .connect(self.binLoadStarted)
-		self._sigs_binloader.sig_begin_loading               .connect(self._man_binitems.viewModel().clear)
 		self._sigs_binloader.sig_done_loading                .connect(self.binLoadFinished)
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
  
@@ -235,6 +234,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		"""Bin load is about to begin. Prepare."""
 
 		self._man_actions._act_filebrowser.setEnabled(False)
+		self._man_binitems.viewModel().clear
 		self._prg_loadingbar.show()
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
