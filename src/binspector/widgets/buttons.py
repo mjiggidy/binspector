@@ -48,3 +48,21 @@ class LBPushButtonAction(QtWidgets.QPushButton):
 		self._action.toggled.connect(self.setChecked)
 
 		self.clicked.connect(self._action.trigger)
+
+class BSPushButtonActionBar(QtWidgets.QWidget):
+	"""Unified button bar for a given button group"""
+
+	def __init__(self, button_group:QtWidgets.QButtonGroup, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self.setLayout(
+			QtWidgets.QHBoxLayout() if orientation==QtCore.Qt.Orientation.Horizontal else QtWidgets.QVBoxLayout()
+		)
+		
+		self.layout().setContentsMargins(0,0,0,0)
+		self.layout().setSpacing(0)
+
+		for button in button_group.buttons():
+			self.layout().addWidget(button)
+
