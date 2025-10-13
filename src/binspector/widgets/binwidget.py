@@ -71,14 +71,14 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 		self._btngrp_viewmode.addButton(self._btn_viewmode_frame)
 		self._btngrp_viewmode.addButton(self._btn_viewmode_script)
 
-		self.addWidget(buttons.BSPushButtonActionBar(self._btngrp_viewmode))
-
 		self._cmb_binviews.setSizePolicy(self._cmb_binviews.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
 		self._cmb_binviews.setMinimumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 24)
 		self._cmb_binviews.setMaximumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 32)
 		self._cmb_binviews.addItem("")
 		self._cmb_binviews.insertSeparator(1)
 		self.addWidget(self._cmb_binviews)
+
+		self.addWidget(buttons.BSPushButtonActionBar(self._btngrp_viewmode))
 
 		self._txt_search.setSizePolicy(self.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
 		self._txt_search.setMinimumWidth(self._txt_search.fontMetrics().averageCharWidth() * 24)
