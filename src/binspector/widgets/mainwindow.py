@@ -31,7 +31,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader   = binloader.BSBinViewLoader.Signals()
 
 		# Define widgets
-		self._bin_main         = binwidget.BSBinContentsWidget()
+		self._main_bincontents         = binwidget.BSBinContentsWidget()
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView()
 		self._dock_bindisplay  = QtWidgets.QDockWidget("Bin Display Settings")
@@ -45,18 +45,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_binview     = treeview.LBTreeView()
 		self._dock_binview     = QtWidgets.QDockWidget("Bin View Settings")
 
-		self._btn_viewmode_list   = buttons.LBPushButtonAction(show_text=False)
-		self._btn_viewmode_frame  = buttons.LBPushButtonAction(show_text=False)
-		self._btn_viewmode_script = buttons.LBPushButtonAction(show_text=False)
-
 		self._btn_toolbox_bindisplay = buttons.LBPushButtonAction(show_text=False)
 		self._btn_toolbox_appearance = buttons.LBPushButtonAction(show_text=False)
 		self._btn_toolbox_sifting    = buttons.LBPushButtonAction(show_text=False)
 		self._btn_toolbox_binview    = buttons.LBPushButtonAction(show_text=False)
-
-		self._btngrp_viewmode = QtWidgets.QButtonGroup()
-		self._cmb_binviews    = QtWidgets.QComboBox()
-		self._txt_search      = QtWidgets.QLineEdit()
 
 		self._prg_loadingbar  = QtWidgets.QProgressBar()
 		
@@ -72,7 +64,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def setupWidgets(self):
 		"""Configure general widget placement and config"""
 		
-		self.setCentralWidget(self._bin_main)
+		self.setCentralWidget(self._main_bincontents)
 
 		self._dock_bindisplay.setWidget(self._tool_bindisplay)
 		self._dock_sifting.setWidget(self._tool_sifting)
@@ -84,55 +76,18 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_appearance.hide()
 		self._dock_binview.hide()
 
-		self._bin_main.treeView().model().setSourceModel(self._man_binitems.viewModel())
+		self._main_bincontents.treeView().model().setSourceModel(self._man_binitems.viewModel())
 		self._tool_binview.setModel(self._man_binview.viewModel())
 
 		# Top binbarboy
-		topbar = self._bin_main.topSectionWidget()
-		
-		topbar.setIconSize(QtCore.QSize(16,16))
-		topbar.addWidget(buttons.LBPushButtonAction(action=self._man_actions.fileBrowserAction(), show_text=True))
-
-		self._btn_viewmode_list.setAction(self._man_actions.viewBinAsList())
-		self._btn_viewmode_frame.setAction(self._man_actions.viewBinAsFrame())
-		self._btn_viewmode_script.setAction(self._man_actions.viewBinAsScript())
-
-		wdg_separator = QtWidgets.QWidget()
-		wdg_separator.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding))
-		topbar.addWidget(wdg_separator)
-
-		self._btngrp_viewmode.setExclusive(True)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_frame)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_script)
-
-		self._cmb_binviews.setSizePolicy(self._cmb_binviews.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
-		self._cmb_binviews.setMinimumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 24)
-		self._cmb_binviews.setMaximumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 32)
-		topbar.addWidget(self._cmb_binviews)
-		topbar.addSeparator()
-
-		lay_btngrp_viewmode = QtWidgets.QHBoxLayout()
-		lay_btngrp_viewmode.setSpacing(0)
-		lay_btngrp_viewmode.setContentsMargins(0,0,0,0)
-		for btn in self._btngrp_viewmode.buttons():
-			lay_btngrp_viewmode.addWidget(btn)
-
-		wid_btngrp = QtWidgets.QWidget()
-		wid_btngrp.setLayout(lay_btngrp_viewmode)
-		topbar.addWidget(wid_btngrp)
-		topbar.addSeparator()
-
-		self._txt_search.setSizePolicy(self.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
-		self._txt_search.setMinimumWidth(self._txt_search.fontMetrics().averageCharWidth() * 24)
-		self._txt_search.setMaximumWidth(self._txt_search.fontMetrics().averageCharWidth() * 32)
-		self._txt_search.setPlaceholderText("Find in bin")
-		self._txt_search.setClearButtonEnabled(True)
-		self._txt_search.textEdited.connect(self._bin_main.treeView().model().setSearchText)
-		topbar.addWidget(self._txt_search)
+		topbar = self._main_bincontents.topWidgetBar()
+		topbar.setOpenBinAction(self._man_actions.fileBrowserAction())
+		topbar.setViewModeListAction(self._man_actions.viewBinAsList())
+		topbar.setViewModeFrameAction(self._man_actions.viewBinAsFrame())
+		topbar.setViewModeScriptAction(self._man_actions.viewBinAsScript())
 
 		# Bottom Display
-		bottom_bar = self._bin_main.bottomSectionWidget()
+		bottom_bar = self._main_bincontents.bottomWidgetBar()
 
 		self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
 		self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
@@ -210,7 +165,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
-		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_main.treeView().model().setBinDisplayItemTypes)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._main_bincontents.treeView().model().setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		self._man_appearance.sig_font_changed                .connect(self._tool_appearance.setBinFont)
@@ -218,10 +173,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_appearance.sig_window_rect_changed         .connect(self._tool_appearance.setBinRect)
 		self._man_appearance.sig_was_iconic_changed          .connect(self._tool_appearance.setWasIconic)
 
-		self._man_appearance.sig_palette_changed             .connect(self._bin_main.setBinColors)
-		self._man_appearance.sig_font_changed                .connect(self._bin_main.setBinFont)
+		self._man_appearance.sig_palette_changed             .connect(self._main_bincontents.setBinColors)
+		self._man_appearance.sig_font_changed                .connect(self._main_bincontents.setBinFont)
 		self._tool_appearance.sig_font_changed               .connect(self._man_appearance.sig_font_changed)
-		self._tool_appearance.sig_palette_changed            .connect(self._bin_main.setBinColors)
+		self._tool_appearance.sig_palette_changed            .connect(self._main_bincontents.setBinColors)
 
 		# Bin loader signals
 		self._sigs_binloader.sig_begin_loading               .connect(self.binLoadStarted)
@@ -235,7 +190,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
-		self._man_binitems.sig_bin_view_changed              .connect(lambda bv: self._cmb_binviews.insertItem(0, bv.name))
+		self._man_binitems.sig_bin_view_changed              .connect(lambda bv: self._main_bincontents.setBinViewName(bv.name))
+
+		# Bin Contents Toolbars
+		self._main_bincontents.topWidgetBar().searchBox().textChanged.connect(self._main_bincontents.treeView().model().setSearchText)
 
 	##
 	## Getters & Setters
