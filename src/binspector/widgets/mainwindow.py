@@ -182,11 +182,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_begin_loading               .connect(self.binLoadStarted)
 		self._sigs_binloader.sig_done_loading                .connect(self.binLoadFinished)
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
+		self._sigs_binloader.sig_got_mob_count               .connect(self._prg_loadingbar.setMaximum)
+		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._prg_loadingbar.setFormat("Loading %v of %m mobs"))
  
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
 		self._sigs_binloader.sig_got_mob                     .connect(self._man_binitems.addMob)
+		self._sigs_binloader.sig_got_mob                     .connect(lambda: self._prg_loadingbar.setValue(self._prg_loadingbar.value() + 1))
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
@@ -243,8 +246,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def binLoadFinished(self):
 		"""A bin has finished loading"""
 
+		self._prg_loadingbar.setMaximum(0)
+		self._prg_loadingbar.setValue(0)
 		self._prg_loadingbar.hide()
+		
 		self._man_actions._act_filebrowser.setEnabled(True)
+		
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
 
