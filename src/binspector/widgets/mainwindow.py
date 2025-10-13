@@ -239,6 +239,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_filebrowser.setEnabled(False)
 		self._man_binitems.viewModel().clear
 		self._prg_loadingbar.show()
+		self._prg_loadingbar.setFormat("Loading bin properties...")
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
 	
