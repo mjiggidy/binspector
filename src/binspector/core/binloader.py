@@ -19,6 +19,8 @@ class BSBinViewLoader(QtCore.QRunnable):
 		sig_done_loading = QtCore.Signal()
 		sig_got_exception = QtCore.Signal(object)
 
+		sig_got_mob_count = QtCore.Signal(int)
+
 		sig_got_display_mode = QtCore.Signal(object)
 		sig_got_bin_appearance_settings = QtCore.Signal(object, object, object, object, object, object, object)
 		sig_got_bin_display_settings = QtCore.Signal(object)
@@ -57,9 +59,12 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 			except Exception as e:
 				self._signals.sig_got_exception.emit(e)
-				#self._signals.sig_done_loading.emit()
-				#return
 				
+			try:
+				self._signals.sig_got_mob_count.emit(len(bin_handle.content.items))
+			except Exception as e:
+				print(e)
+
 			# Load mobs
 			for bin_item in bin_handle.content.items:
 
