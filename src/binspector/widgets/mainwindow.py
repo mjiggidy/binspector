@@ -180,6 +180,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin loader signals
 		self._sigs_binloader.sig_begin_loading               .connect(self.binLoadStarted)
+		self._sigs_binloader.sig_begin_loading               .connect(self._man_binitems.viewModel().clear)
 		self._sigs_binloader.sig_done_loading                .connect(self.binLoadFinished)
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
  
