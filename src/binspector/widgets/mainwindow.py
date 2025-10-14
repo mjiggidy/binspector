@@ -113,9 +113,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._prg_loadingbar.setRange(0,0)
 		self._prg_loadingbar.setHidden(True)
 
-		bottom_bar.layout().addWidget(self._prg_loadingbar)
-		bottom_bar.layout().addStretch()
-		bottom_bar.layout().addWidget(wid_tbs)
+		bottom_bar.layout().addWidget(self._prg_loadingbar, 0,0)
+		bottom_bar.layout().setColumnStretch(1,2)
+		bottom_bar.layout().addWidget(buttons.BSPushButtonActionBar(self._btngrp_toolboxes), 0,2)
 		
 	def setupDock(self):
 		"""Add and prepare the dock"""
@@ -195,6 +195,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
 		self._man_binitems.sig_bin_view_changed              .connect(lambda bv: self._main_bincontents.setBinViewName(bv.name))
 
+		# Update display counts -- Not where where to put this
+		self._man_binitems.sig_mob_count_changed             .connect(self._main_bincontents.updateBinStats)
+
 		# Bin Contents Toolbars
 		self._main_bincontents.topWidgetBar().searchBox().textChanged.connect(self._main_bincontents.treeView().model().setSearchText)
 
@@ -250,6 +253,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._prg_loadingbar.setMaximum(0)
 		self._prg_loadingbar.setValue(0)
 		self._prg_loadingbar.hide()
+		
+		self._main_bincontents.treeView().resizeAllColumnsToContents()
 		
 		self._man_actions._act_filebrowser.setEnabled(True)
 		

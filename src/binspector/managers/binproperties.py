@@ -182,7 +182,18 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	sig_mob_added = QtCore.Signal(object)
 	"""A mob was added to the bin items"""
 
+	sig_mob_count_changed = QtCore.Signal(int)
+	"""Mobs were added or removed"""
+
 	sig_bin_view_changed = QtCore.Signal(object)
+
+	def __init__(self):
+
+		super().__init__()
+
+		self._view_model.rowsInserted .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
+		self._view_model.rowsRemoved  .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
+		self._view_model.modelReset   .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 
 	@QtCore.Slot(object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting):

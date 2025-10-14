@@ -16,10 +16,6 @@ class BSBinContentsWidgetBar(QtWidgets.QWidget):
 			self.sizePolicy().horizontalPolicy(),
 			QtWidgets.QSizePolicy.Policy.Maximum
 		)
-		
-		if not isinstance(self, QtWidgets.QToolBar):
-			self.setLayout(QtWidgets.QHBoxLayout())
-			self.layout().setContentsMargins(*[4]*4)
 
 	def addWidget(self, widget:QtWidgets.QWidget):
 		"""
@@ -31,6 +27,29 @@ class BSBinContentsWidgetBar(QtWidgets.QWidget):
 			super().addWidget(widget)
 		else:
 			self.layout().addWidget(widget)
+
+class BSBinContentsBottomWidgetBar(BSBinContentsWidgetBar):
+	"""Default bottom widget bar"""
+
+	def __init__(self, *args, **kwargs):
+
+
+		super().__init__(*args, **kwargs)
+		
+		if not isinstance(self, QtWidgets.QToolBar):
+			self.setLayout(QtWidgets.QGridLayout())
+			self.layout().setContentsMargins(*[4]*4)
+		
+		self._txt_info = QtWidgets.QLabel()
+		self._txt_info.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+		self.layout().addWidget(self._txt_info)
+		
+		
+	@QtCore.Slot(object)
+	def setInfoText(self, text:str):
+
+		self._txt_info.setText(text)
 		
 class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 	"""Default top widget bar"""
@@ -44,6 +63,10 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
+
+		if not isinstance(self, QtWidgets.QToolBar):
+			self.setLayout(QtWidgets.QHBoxLayout())
+			self.layout().setContentsMargins(*[4]*4)
 
 		self._btn_open            = buttons.LBPushButtonAction()
 
@@ -136,12 +159,16 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._section_top       = BSBinContentsTopWidgetBar()
 		self._tree_bin_contents = bintreeview.BSBinTreeView()
-		self._section_bottom    = QtWidgets.QWidget()
+		self._section_bottom    = BSBinContentsBottomWidgetBar()
 		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
 
 		self.layout().addWidget(self._section_top)
 		self.layout().addWidget(self._tree_bin_contents)
 		self.layout().addWidget(self._section_bottom)
+
+		self._tree_bin_contents.model().rowsInserted .connect(self.updateBinStats)
+		self._tree_bin_contents.model().rowsRemoved  .connect(self.updateBinStats)
+		self._tree_bin_contents.model().modelReset   .connect(self.updateBinStats)
 
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
@@ -159,10 +186,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setTopWidgetBar(self, toolbar:BSBinContentsTopWidgetBar):
 		self._section_top = toolbar
 	
-	def bottomWidgetBar(self) -> BSBinContentsWidgetBar:
+	def bottomWidgetBar(self) -> BSBinContentsBottomWidgetBar:
 		return self._section_bottom
 	
-	def setBottomWidgetBar(self, widget:BSBinContentsWidgetBar):
+	def setBottomWidgetBar(self, widget:BSBinContentsBottomWidgetBar):
 		self._section_bottom = widget
 	
 	@QtCore.Slot(object)
@@ -202,25 +229,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._tree_bin_contents.setFont(bin_font)
 
 	@QtCore.Slot()
-	def _connectSourceModelSlots(self):
-
-		source_model = self._tree_bin_contents.model().sourceModel()
-
-		if not source_model:
-			return
-		
-		source_model.rowsInserted.connect(self.updateBinStats)
-		source_model.rowsRemoved.connect(self.updateBinStats)
-		source_model.modelReset.connect(self.updateBinStats)
-
-	@QtCore.Slot()
 	def updateBinStats(self):
 
-		#print("HI")
-
 		count_visible = self._tree_bin_contents.model().rowCount()
-		count_all = self._tree_bin_contents.model().sourceModel().rowCount()
-		self._lbl_bin_item_count.setText(f"Showing {QtCore.QLocale.system().toString(count_visible)} of {QtCore.QLocale.system().toString(count_all)} items")
+		count_all     = self._tree_bin_contents.model().sourceModel().rowCount()
+		self._section_bottom.setInfoText(
+			f"Showing {QtCore.QLocale.system().toString(count_visible)} of {QtCore.QLocale.system().toString(count_all)} items"
+		)
 	
 	@QtCore.Slot(object)
 	def setBinViewName(self, bin_view_name:str):
