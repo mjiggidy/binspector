@@ -78,7 +78,7 @@ class BSMainApplication(QtWidgets.QApplication):
 	def createMainWindow(self, show_file_browser:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
 		
-		window = self._binwindows_manager.createMainWindow()
+		window = self._binwindows_manager.addWindow(mainwindow.BSMainWindow())
 
 		#window.setActionsManager(actions.ActionsManager(window))
 		#window.setSettings(self._settingsManager.settings("bs_main"))
