@@ -6,7 +6,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from os import PathLike
 
 from . import settings
-from ..managers import actions, windows
+from ..managers import windows, software_updates
 from ..widgets import mainwindow
 
 class BSMainApplication(QtWidgets.QApplication):
@@ -51,6 +51,10 @@ class BSMainApplication(QtWidgets.QApplication):
 		# Setup window manager
 		self._binwindows_manager = windows.BSWindowManager()
 
+		# Setup updates manager
+		self._updates_manager = software_updates.BSUpdatesManager()
+		self._updates_manager.sig_newReleaseAvailable.connect(self.showUpdatesWindow)
+
 	def localStoragePath(self) -> PathLike[str]:
 		"""Get the local user storage path"""
 
@@ -65,6 +69,9 @@ class BSMainApplication(QtWidgets.QApplication):
 	
 	def settingsManager(self) -> settings.BSSettingsManager:
 		return self._settingsManager
+	
+	def updatesManager(self) -> software_updates.BSUpdatesManager:
+		return self._updates_manager
 	
 	@QtCore.Slot()
 	@QtCore.Slot(bool)
@@ -81,7 +88,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_quit_application.connect(self.exit)
 		window.sig_request_show_user_folder.connect(self.showLocalStorage)
 		window.sig_request_visit_discussions.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
-		window.sig_request_check_updates.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/releases/"))
+		window.sig_request_check_updates.connect(self.showUpdatesWindow)
 		
 		logging.getLogger(__name__).debug("Created %s", window)
 		window.show()
@@ -90,3 +97,23 @@ class BSMainApplication(QtWidgets.QApplication):
 			window.showFileBrowser()
 
 		return window
+	
+	@QtCore.Slot()
+	def showUpdatesWindow(self):
+
+		from ..widgets import software_updates
+		
+		try:
+			self._wnd_update.show()
+			self._wnd_update.setFocus(QtCore.Qt.FocusReason.PopupFocusReason)
+		
+		except Exception as e:
+			#print(e)
+			self._wnd_update = software_updates.BSCheckForUpdatesWindow()
+			
+			self._wnd_update.setWindowFlag(QtCore.Qt.WindowType.Tool)
+			self._wnd_update.setUpdateManager(self.updatesManager())
+			self._wnd_update.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+			self._wnd_update.destroyed.connect(lambda: setattr(self, "_wnd_update", None))
+
+			self._wnd_update.show()
