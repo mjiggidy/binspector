@@ -1,0 +1,4 @@
+avbutils @ git+https://github.com/mjiggidy/avbutils.git@909d79dd79b8b9a8533f1ded8980b191cc80dc80
+pyavb==1.4.0
+PySide6==6.10.0
+timecode @ git+https://github.com/mjiggidy/timecode.git@270b873109bd177c0bdb131234d12d98adba5395
