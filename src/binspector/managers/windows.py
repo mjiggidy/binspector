@@ -8,41 +8,49 @@ from PySide6 import QtCore, QtGui, QtWidgets
 class BSWindowManager(QtCore.QObject):
 	"""Main window manager (for scoping etc)"""
 
+	# This is done by maintaining a set of weakrefs
+
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._windows:weakref.WeakSet[QtWidgets.QWidget] = weakref.WeakSet()
-		self._window_watcher = BSWindowGeometryWatcher()
+		self._window_refs:set[weakref.ReferenceType[QtWidgets.QWidget]] = set()
+		self._window_geometry_watcher = BSWindowGeometryWatcher()
 	
 	def addWindow(self, window:QtWidgets.QWidget) -> QtWidgets.QWidget:
 		"""Add an existing window (and returns it again, unchanged)"""
 		
-		if window in self._windows:
-			return window
-		
-		window.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-		window.installEventFilter(self._window_watcher)
-		window.destroyed.connect(self._removeWindow)
+		win_weakref = weakref.ref(window)
 
-		self._windows.add(window)
+		window.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+		window.installEventFilter(self._window_geometry_watcher)
+		window.destroyed.connect(lambda: self._removeWindowRef(win_weakref))
+
+		self._window_refs.add(win_weakref)
+
+		print(self.windows())
 
 		return window
 	
 	def windowGeometryWatcher(self) -> "BSWindowGeometryWatcher":
-		return self._window_watcher
+		return self._window_geometry_watcher
+	
+	def windows(self) -> list[QtWidgets.QWidget]:
+
+		return [w() for w in self._window_refs if w()]
 	
 	@QtCore.Slot(object)
-	def _removeWindow(self, window:QtWidgets.QWidget):
+	def _removeWindowRef(self, window_ref:weakref.ReferenceType[QtWidgets.QWidget]):
 
-		# NOTE: This is a total mess
-
-		print("Now:", self._windows)
 		try:
-			self._windows.remove(window)
-			print("Removed")
+			self._window_refs.discard(window_ref)
 		except Exception as e:
-			print(e, len(self._windows))
+			print(e, len(self._window_refs))
+
+
+
+
+
 
 class BSWindowGeometryWatcher(QtCore.QObject):
 	"""Watch windows for changes"""
@@ -62,8 +70,6 @@ class BSWindowGeometryWatcher(QtCore.QObject):
 		# Watch for window moves and resizes
 		if event.type() in (QtCore.QEvent.Type.Resize, QtCore.QEvent.Type.Move, QtCore.QEvent.Type.FocusIn):
 			self._timer_window_geometry.start()
-		#elif event.type() in (QtCore.QEvent.Type.Close,):
-		#	print("Closed:", watched)
 
 		return super().eventFilter(watched, event)
 
