@@ -12,7 +12,9 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		super().__init__(*args, **kwargs)
 
 	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None):
+		"""Set columns and their widths"""
+
 		self.viewModel().clear()
 
 		headers = [
@@ -20,6 +22,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 			viewmodelitems.LBAbstractViewHeaderItem("title", "Title"),
 			viewmodelitems.LBAbstractViewHeaderItem("format", "Format"),
 			viewmodelitems.LBAbstractViewHeaderItem("type", "Type"),
+			viewmodelitems.LBAbstractViewHeaderItem("width", "Width"),
 			viewmodelitems.LBAbstractViewHeaderItem("hidden", "Is Hidden"),
 		]
 		
@@ -27,7 +30,11 @@ class BSBinViewManager(base.LBItemDefinitionView):
 			super().addHeader(header)
 
 		for idx, column in enumerate(bin_view.columns):
-			column.update({"order": idx})
+			column.update({
+				"order": idx,
+				"width": column_widths.get(column["title"],None)
+			})
+				
 			self.addColumnDefinition(column)
 		
 		self.sig_bin_view_changed.emit(bin_view)

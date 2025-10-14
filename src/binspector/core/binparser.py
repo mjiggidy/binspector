@@ -15,6 +15,18 @@ def bin_view_setting_from_bin(bin_content:avb.bin.Bin) -> avb.bin.BinViewSetting
 	bin_view.property_data = avb.core.AVBPropertyData(bin_view.property_data) # Dereference before closing file
 	
 	return bin_view
+
+def bin_column_widths_from_bin(bin_content:avb.bin.Bin) -> dict[str, int]:
+	"""Decode bin column widths"""
+
+	try:
+		import json
+		bin_column_widths = json.loads(bin_content.attributes.get("BIN_COLUMNS_WIDTHS",{}).decode("utf-8"))
+	except Exception as e:
+		#print(e)
+		bin_column_widths = {}
+	
+	return bin_column_widths
 	
 def sift_settings_from_bin(bin_content:avb.bin.Bin) -> tuple[bool, list[avb.bin.SiftItem]]:
 	return bin_content.sifted, bin_content.sifted_settings
@@ -37,13 +49,8 @@ def appearance_settings_from_bin(bin_content:avb.bin.Bin) -> tuple:
 	else:
 		bin_font = bin_content.mac_font
 
-	# Try to load bin column widths from the "BIN_COLUMNS_WIDTHS" bytearray, which decodes to a JSON string
-	# I'm decoding it as UTF-8 but I almost doubt that's truly what it is.
-	try:
-		import json
-		bin_column_widths = json.loads(bin_content.attributes.get("BIN_COLUMNS_WIDTHS",{}).decode("utf-8"))
-	except:
-		bin_column_widths = {}
+	# SKIP: This is now handled via binview.  Need to update the signal here
+	bin_column_widths = {}
 
 	return (
 		bin_font,
