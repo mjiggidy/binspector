@@ -50,6 +50,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		
 		# Setup window manager
 		self._binwindows_manager = windows.BSWindowManager()
+		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self.settingsManager().settings("app").setValue("last_window_geometry",self.activeWindow().geometry()))
 
 		# Setup updates manager
 		self._updates_manager = software_updates.BSUpdatesManager()
@@ -79,6 +80,15 @@ class BSMainApplication(QtWidgets.QApplication):
 		"""Create a main window"""
 		
 		window = self._binwindows_manager.addWindow(mainwindow.BSMainWindow())
+		default_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(1024,480))
+		default_geo.moveCenter(QtCore.QPoint(800,800))
+
+		if self.activeWindow():
+			window.setGeometry(self.activeWindow().geometry().translated(QtCore.QPoint(10,10)))
+		else:
+			window.setGeometry(
+				self._settingsManager.settings("app").value("last_window_geometry", default_geo, type=QtCore.QRect)
+			)
 
 		#window.setActionsManager(actions.ActionsManager(window))
 		#window.setSettings(self._settingsManager.settings("bs_main"))

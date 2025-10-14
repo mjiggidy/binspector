@@ -2,8 +2,8 @@
 Window managers
 """
 
+import weakref
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..widgets import mainwindow
 
 class BSWindowManager(QtCore.QObject):
 	"""Main window manager (for scoping etc)"""
@@ -12,7 +12,8 @@ class BSWindowManager(QtCore.QObject):
 
 		super().__init__(*args, **kwargs)
 
-		self._windows:list[QtWidgets.QWidget] = list()
+		self._windows:weakref.WeakSet[QtWidgets.QWidget] = weakref.WeakSet()
+		self._window_watcher = BSWindowGeometryWatcher()
 	
 	def addWindow(self, window:QtWidgets.QWidget) -> QtWidgets.QWidget:
 		"""Add an existing window (and returns it again, unchanged)"""
@@ -21,22 +22,56 @@ class BSWindowManager(QtCore.QObject):
 			return window
 		
 		window.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+		window.installEventFilter(self._window_watcher)
 		window.destroyed.connect(self._removeWindow)
 
-		self._windows.append(window)
-		
+		self._windows.add(window)
+
 		return window
+	
+	def windowGeometryWatcher(self) -> "BSWindowGeometryWatcher":
+		return self._window_watcher
 	
 	@QtCore.Slot(object)
 	def _removeWindow(self, window:QtWidgets.QWidget):
 
 		# NOTE: This is a total mess
 
+		print("Now:", self._windows)
 		try:
 			self._windows.remove(window)
 			print("Removed")
 		except Exception as e:
 			print(e, len(self._windows))
+
+class BSWindowGeometryWatcher(QtCore.QObject):
+	"""Watch windows for changes"""
+
+	sig_window_geometry_changed = QtCore.Signal()
+
+	def __init__(self, timeout_ms:int=200, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._timer_window_geometry = QtCore.QTimer(singleShot=True, interval=timeout_ms)
+		self._timer_window_geometry.timeout.connect(self.sig_window_geometry_changed)
+	
+	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
+		"""Watch window events"""
+
+		# Watch for window moves and resizes
+		if event.type() in (QtCore.QEvent.Type.Resize, QtCore.QEvent.Type.Move, QtCore.QEvent.Type.FocusIn):
+			self._timer_window_geometry.start()
+		#elif event.type() in (QtCore.QEvent.Type.Close,):
+		#	print("Closed:", watched)
+
+		return super().eventFilter(watched, event)
+
+
+
+
+
+
 
 # Create new window: 
 # - From an active window? Offset diagonally from current with same size
