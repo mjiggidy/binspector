@@ -5,7 +5,7 @@ version_number=$2
 
 # Install dependencies
 echo "Installing dependencies..."
-brew install imagemagick
+#brew install imagemagick
 pip install "dmgbuild[badge_icons]"
 
 # Name the app
