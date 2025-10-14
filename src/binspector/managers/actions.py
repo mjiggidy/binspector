@@ -85,6 +85,12 @@ class ActionsManager(QtCore.QObject):
 
 
 		# Help menu stuff
+		self._act_open_discussions = QtGui.QAction("Visit Discussion Board...", parent=self._parent)
+		self._act_open_discussions.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DialogInformation))
+
+		self._act_check_updates = QtGui.QAction("Check For Updates...", parent=self._parent)
+		self._act_check_updates.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.SoftwareUpdateAvailable))
+
 		self._act_show_about = QtGui.QAction(f"About {QtWidgets.QApplication.instance().applicationDisplayName()}...", parent=self._parent)
 		"""Show About Box"""
 		self._act_show_about.setMenuRole(QtGui.QAction.MenuRole.AboutRole)
@@ -213,3 +219,13 @@ class ActionsManager(QtCore.QObject):
 		"""Open the user data folder"""
 
 		return self._act_show_local_storage
+	
+	def checkForUpdates(self) -> QtGui.QAction:
+		"""Check for updates"""
+
+		return self._act_check_updates
+	
+	def visitDiscussionBoard(self) -> QtGui.QAction:
+		"""Visit the discussion boards"""
+
+		return self._act_open_discussions

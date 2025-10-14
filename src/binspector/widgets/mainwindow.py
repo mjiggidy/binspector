@@ -8,9 +8,11 @@ from ..core import binloader
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
 
-	sig_request_new_window       = QtCore.Signal()
-	sig_request_quit_application = QtCore.Signal()
-	sig_request_show_user_folder = QtCore.Signal()
+	sig_request_new_window        = QtCore.Signal()
+	sig_request_quit_application  = QtCore.Signal()
+	sig_request_show_user_folder  = QtCore.Signal()
+	sig_request_check_updates     = QtCore.Signal()
+	sig_request_visit_discussions = QtCore.Signal()
 
 	def __init__(self):
 
@@ -145,6 +147,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_closewindow.triggered         .connect(self.close)
 		self._man_actions._act_quitapplication.triggered     .connect(self.sig_request_quit_application)
 		self._man_actions._act_show_about.triggered          .connect(self.showAboutBox)
+
+		self._man_actions._act_check_updates.triggered       .connect(self.sig_request_check_updates)
+		self._man_actions._act_open_discussions.triggered    .connect(self.sig_request_visit_discussions)
 
 		# Toolbox Toggle Actions
 		# NOTE: Dock widgets have a toggleViewAction() butuhhhhh

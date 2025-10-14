@@ -80,6 +80,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_new_window.connect(self.createMainWindow)
 		window.sig_request_quit_application.connect(self.exit)
 		window.sig_request_show_user_folder.connect(self.showLocalStorage)
+		window.sig_request_visit_discussions.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
+		window.sig_request_check_updates.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/releases/"))
 		
 		logging.getLogger(__name__).debug("Created %s", window)
 		window.show()
