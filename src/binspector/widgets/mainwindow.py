@@ -275,7 +275,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		"""Show the file browser to select a bin"""
 
 		file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-			self, "Choose an Avid bin...",
+			parent=self,
+			caption = "Choose an Avid bin...",
 			filter="Avid Bin (*.avb);;All Files (*)",
 			dir=self.windowFilePath()
 		)
