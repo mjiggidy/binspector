@@ -53,7 +53,7 @@ jobs:
           echo "Build Name:   ${{ steps.regex-match.outputs.group3 }}"
           echo "Full Version: ${{ steps.regex-match.outputs.match }}"
 
-
+  # Windows Server 2025 Last time I checked
   build-windows-x64:
     needs: version-info
     runs-on: "windows-latest"
