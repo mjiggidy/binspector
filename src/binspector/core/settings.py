@@ -8,12 +8,17 @@ import logging
 from os import PathLike
 from PySide6 import QtCore
 
+LATEST_CONFIG_VERSION = 1
+"""Latest config version"""
+
 class BSSettingsManager:
 
 	def __init__(self, format:QtCore.QSettings.Format=QtCore.QSettings.Format.IniFormat, basepath:PathLike|None=None):
 
 		self._format   = format
 		self._basepath = QtCore.QDir(basepath)
+
+		self._checkVersion()
 	
 	def basePath(self) -> PathLike:
 		"""The current path"""
@@ -35,3 +40,14 @@ class BSSettingsManager:
 	
 	def settingsPath(self, feature_name:str) -> PathLike[str]:
 		return self._basepath.filePath(feature_name + "_config.ini")
+	
+	def _checkVersion(self):
+		"""Check settings version and migrate if needed"""
+
+		user_settings_ver = self.settings("app").value("Config/config_version", None, int)
+
+		if not user_settings_ver:
+			self.settings("app").setValue("Config/config_version", LATEST_CONFIG_VERSION)
+		elif user_settings_ver != LATEST_CONFIG_VERSION:
+			# TODO
+			logging.debug("Migrate user config from %i to %i", user_settings_ver, LATEST_CONFIG_VERSION)

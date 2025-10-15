@@ -10,8 +10,7 @@ def main(bin_paths:list[PathLike]) -> int:
 		wnd.loadBinFromPath(bin_path)
 	
 	if not bin_paths:
-		wnd = app.createMainWindow()
-		wnd.showFileBrowser()
+		wnd = app.createMainWindow(True)
 		
 	return app.exec()
 	

@@ -31,7 +31,25 @@ class BSMainApplication(QtWidgets.QApplication):
 			sys.exit(f"Cannot set up local storage path at {self._localStoragePath}")
 		
 		# Setup logging
-		logging.basicConfig(filename=QtCore.QDir(self._localStoragePath).filePath("bs_main.log"), level=logging.DEBUG)
+		logging.basicConfig(level=logging.DEBUG)
+
+		file_formatter = logging.Formatter("\t".join([
+			"%(levelname)s",
+			"%(asctime)s",
+			"%(name)s",
+			"%(message)s"
+		]))
+
+		from logging import handlers
+		file_handler = handlers.RotatingFileHandler(
+			filename    = QtCore.QDir(self._localStoragePath).filePath("bs_main.log"),
+			maxBytes    = 1_000_000,
+			backupCount = 5,
+		)
+
+		file_handler.setFormatter(file_formatter)
+		file_handler.setLevel(logging.NOTSET)
+		logging.getLogger().addHandler(file_handler)
 
 		# Setup settings
 		self._settingsManager = settings.BSSettingsManager(
@@ -50,11 +68,14 @@ class BSMainApplication(QtWidgets.QApplication):
 		
 		# Setup window manager
 		self._binwindows_manager = windows.BSWindowManager()
-		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self.settingsManager().settings("app").setValue("last_window_geometry",self.activeWindow().geometry()))
+		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self.settingsManager().settings("app").setValue("LastSession/last_window_geometry",self.activeWindow().geometry()))
 
 		# Setup updates manager
 		self._updates_manager = software_updates.BSUpdatesManager()
+		self._updates_manager.setAutoCheckEnabled(self.settingsManager().settings("app").value("SoftwareUpdates/auto_check_for_updates", True, bool))
 		self._updates_manager.sig_newReleaseAvailable.connect(self.showUpdatesWindow)
+		self._updates_manager.sig_autoCheckChanged.connect(lambda is_enabled: self.settingsManager().settings("app").setValue("SoftwareUpdates/auto_check_for_updates",is_enabled))
+		self._wnd_update = None	# Window will be created in `self.showUpdatesWindow`
 
 	def localStoragePath(self) -> PathLike[str]:
 		"""Get the local user storage path"""
@@ -79,7 +100,7 @@ class BSMainApplication(QtWidgets.QApplication):
 	def createMainWindow(self, show_file_browser:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
 		
-		window = self._binwindows_manager.addWindow(mainwindow.BSMainWindow())
+		window:mainwindow.BSMainWindow = self._binwindows_manager.addWindow(mainwindow.BSMainWindow())
 		default_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(1024,480))
 		default_geo.moveCenter(QtCore.QPoint(800,800))
 
@@ -87,7 +108,7 @@ class BSMainApplication(QtWidgets.QApplication):
 			window.setGeometry(self.activeWindow().geometry().translated(QtCore.QPoint(10,10)))
 		else:
 			window.setGeometry(
-				self._settingsManager.settings("app").value("last_window_geometry", default_geo, type=QtCore.QRect)
+				self._settingsManager.settings("app").value("LastSession/last_window_geometry", default_geo, type=QtCore.QRect)
 			)
 
 		#window.setActionsManager(actions.ActionsManager(window))
@@ -99,12 +120,16 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_show_user_folder.connect(self.showLocalStorage)
 		window.sig_request_visit_discussions.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
 		window.sig_request_check_updates.connect(self.showUpdatesWindow)
+		window.sig_bin_changed.connect(lambda bin_path: self._settingsManager.settings("app").setValue("LastSession/last_bin",bin_path))
 		
 		logging.getLogger(__name__).debug("Created %s", window)
 		window.show()
 
 		if show_file_browser:
-			window.showFileBrowser()
+
+			initial_path = self._settingsManager.settings("app").value("LastSession/last_bin", QtCore.QDir.homePath())
+			print(initial_path)
+			window.showFileBrowser(initial_path)
 
 		return window
 	
@@ -113,17 +138,25 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		from ..widgets import software_updates
 		
-		try:
-			self._wnd_update.show()
-			self._wnd_update.setFocus(QtCore.Qt.FocusReason.PopupFocusReason)
-		
-		except Exception as e:
-			#print(e)
+		# Create window if it's not already open
+		if not self._wnd_update:
+
 			self._wnd_update = software_updates.BSCheckForUpdatesWindow()
 			
 			self._wnd_update.setWindowFlag(QtCore.Qt.WindowType.Tool)
 			self._wnd_update.setUpdateManager(self.updatesManager())
 			self._wnd_update.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+			
+			# Release dat ref
 			self._wnd_update.destroyed.connect(lambda: setattr(self, "_wnd_update", None))
 
-			self._wnd_update.show()
+		# Check for updates at window launch if an update hasn't already been found
+		if self._updates_manager.latestReleaseInfo() is None:
+			self._updates_manager.checkForUpdates()
+		else:
+			print(self._updates_manager.latestReleaseInfo())
+
+		self._wnd_update.show()
+		self._wnd_update.raise_()
+		self._wnd_update.activateWindow()
+		self._wnd_update.setFocus(QtCore.Qt.FocusReason.PopupFocusReason) # Not sure if want

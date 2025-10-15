@@ -37,8 +37,8 @@ class BSUpdatesManager(QtCore.QObject):
 	sig_networkCheckError    = QtCore.Signal(QtNetwork.QNetworkReply.NetworkError)
 	sig_cooldownExpired      = QtCore.Signal()
 
-	sig_newReleaseAvailable  = QtCore.Signal(ReleaseInfo)
-	sig_releaseIsCurrent     = QtCore.Signal(ReleaseInfo)
+	sig_newReleaseAvailable  = QtCore.Signal(object)
+	sig_releaseIsCurrent     = QtCore.Signal(object)
 
 	def __init__(self, url_releases:QtCore.QUrl=QtCore.QUrl(URL_RELEASES), *args, **kwargs):
 
@@ -66,6 +66,7 @@ class BSUpdatesManager(QtCore.QObject):
 	# ---
 	# Releases URL
 	# ---
+	
 	def releasesUrl(self) -> QtCore.QUrl:
 		"""URL for Release Info JSON"""
 		return self._url_releases
@@ -77,6 +78,7 @@ class BSUpdatesManager(QtCore.QObject):
 	# ---
 	# Cooldown timer for API rate limiting
 	# ---
+
 	def setCooldownInterval(self, milliseconds:int):
 		"""Set cooldown interval (in milliseconds) for API rate limiting"""
 		if milliseconds > self.autoCheckInterval():
@@ -94,6 +96,7 @@ class BSUpdatesManager(QtCore.QObject):
 	# ---
 	# Autocheck
 	# ---
+
 	@QtCore.Slot(bool)
 	def setAutoCheckEnabled(self, autocheck:bool):
 		"""Set automatically check for updates"""
@@ -132,6 +135,7 @@ class BSUpdatesManager(QtCore.QObject):
 	# ---
 	# Version/Release info
 	# ---
+
 	def currentVersion(self) -> str:
 		"""Get Lil' Bin Boy current version"""
 		from PySide6 import QtWidgets
