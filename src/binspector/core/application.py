@@ -82,7 +82,7 @@ class BSMainApplication(QtWidgets.QApplication):
 	def createMainWindow(self, show_file_browser:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
 		
-		window = self._binwindows_manager.addWindow(mainwindow.BSMainWindow())
+		window:mainwindow.BSMainWindow = self._binwindows_manager.addWindow(mainwindow.BSMainWindow())
 		default_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(1024,480))
 		default_geo.moveCenter(QtCore.QPoint(800,800))
 
@@ -90,7 +90,7 @@ class BSMainApplication(QtWidgets.QApplication):
 			window.setGeometry(self.activeWindow().geometry().translated(QtCore.QPoint(10,10)))
 		else:
 			window.setGeometry(
-				self._settingsManager.settings("app").value("last_window_geometry", default_geo, type=QtCore.QRect)
+				self._settingsManager.settings("app").value("LastSession/last_window_geometry", default_geo, type=QtCore.QRect)
 			)
 
 		#window.setActionsManager(actions.ActionsManager(window))
@@ -102,12 +102,16 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_show_user_folder.connect(self.showLocalStorage)
 		window.sig_request_visit_discussions.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
 		window.sig_request_check_updates.connect(self.showUpdatesWindow)
+		window.sig_bin_changed.connect(lambda bin_path: self._settingsManager.settings("app").setValue("LastSession/last_bin",bin_path))
 		
 		logging.getLogger(__name__).debug("Created %s", window)
 		window.show()
 
 		if show_file_browser:
-			window.showFileBrowser()
+
+			initial_path = self._settingsManager.settings("app").value("LastSession/last_bin", QtCore.QDir.homePath())
+			print(initial_path)
+			window.showFileBrowser(initial_path)
 
 		return window
 	

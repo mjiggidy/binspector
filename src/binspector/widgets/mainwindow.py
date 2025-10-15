@@ -14,6 +14,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	sig_request_check_updates     = QtCore.Signal()
 	sig_request_visit_discussions = QtCore.Signal()
 
+	sig_bin_changed               = QtCore.Signal(str)
+	"""Window is loading a new bin"""
+
 	def __init__(self):
 
 		super().__init__()
@@ -185,6 +188,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin loader signals
 		self._sigs_binloader.sig_begin_loading               .connect(self.binLoadStarted)
+		self._sigs_binloader.sig_begin_loading               .connect(self.sig_bin_changed)
 		self._sigs_binloader.sig_done_loading                .connect(self.binLoadFinished)
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
 		self._sigs_binloader.sig_got_mob_count               .connect(self._prg_loadingbar.setMaximum)
@@ -271,14 +275,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		print(f"Bin load error:", exception)
 	
 	@QtCore.Slot()
-	def showFileBrowser(self):
+	@QtCore.Slot(object)
+	def showFileBrowser(self, initial_path:PathLike|None=None):
 		"""Show the file browser to select a bin"""
 
 		file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
 			parent=self,
 			caption = "Choose an Avid bin...",
 			filter="Avid Bin (*.avb);;All Files (*)",
-			dir=self.windowFilePath()
+			dir=initial_path or self.windowFilePath()
 		)
 		
 		if file_path:
