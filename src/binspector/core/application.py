@@ -31,7 +31,25 @@ class BSMainApplication(QtWidgets.QApplication):
 			sys.exit(f"Cannot set up local storage path at {self._localStoragePath}")
 		
 		# Setup logging
-		logging.basicConfig(filename=QtCore.QDir(self._localStoragePath).filePath("bs_main.log"), level=logging.DEBUG)
+		logging.basicConfig(level=logging.DEBUG)
+
+		file_formatter = logging.Formatter("\t".join([
+			"%(levelname)s",
+			"%(asctime)s",
+			"%(name)s",
+			"%(message)s"
+		]))
+
+		from logging import handlers
+		file_handler = handlers.RotatingFileHandler(
+			filename    = QtCore.QDir(self._localStoragePath).filePath("bs_main.log"),
+			maxBytes    = 1_000_000,
+			backupCount = 5,
+		)
+
+		file_handler.setFormatter(file_formatter)
+		file_handler.setLevel(logging.NOTSET)
+		logging.getLogger().addHandler(file_handler)
 
 		# Setup settings
 		self._settingsManager = settings.BSSettingsManager(
