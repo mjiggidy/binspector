@@ -81,21 +81,23 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-#         choco install -y innosetup (comes pre-installed in windows-latest)
-
-      - name: Build Executable
-        uses: Nuitka/Nuitka-Action@main
-        with:
-          nuitka-version: main
-          product-version: ${{ needs.version-info.outputs.classic }}
-          file-version: ${{ needs.version-info.outputs.classic }}
-          output-dir: build
-          script-name: src/main.py
-          mode: standalone
-      
+          
+          - name: Build Executable
+          uses: Nuitka/Nuitka-Action@main
+          with:
+            nuitka-version: main
+            product-version: ${{ needs.version-info.outputs.classic }}
+            file-version: ${{ needs.version-info.outputs.classic }}
+            output-dir: build
+            script-name: src/main.py
+            mode: standalone
+            
+            
+        # ISCC used to come pre-isntalled..
       - name: Build Installer
         run: |
-          iscc /DMyAppVersion=${{ needs.version-info.outputs.classic }} build_tools\installer\lbb_windows.iss
+          choco install -y innosetup
+          iscc /DMyAppVersion=${{ needs.version-info.outputs.classic }} build_tools\win_create_installer.iss
 
 
       - name: GH Release
