@@ -94,7 +94,7 @@ jobs:
       
       - name: Build Installer
         run: |
-          iscc /DMyAppVersion=${{ needs.version-info.outputs.classic }} build_tools\installer\win_create_installer.iss
+          iscc /DMyAppVersion=${{ needs.version-info.outputs.classic }} build_tools\win_create_installer.iss
 
 
       - name: GH Release
