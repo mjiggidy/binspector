@@ -50,11 +50,14 @@ class BSMainApplication(QtWidgets.QApplication):
 		
 		# Setup window manager
 		self._binwindows_manager = windows.BSWindowManager()
-		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self.settingsManager().settings("app").setValue("last_window_geometry",self.activeWindow().geometry()))
+		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self.settingsManager().settings("app").setValue("LastSession/last_window_geometry",self.activeWindow().geometry()))
 
 		# Setup updates manager
 		self._updates_manager = software_updates.BSUpdatesManager()
+		self._updates_manager.setAutoCheckEnabled(self.settingsManager().settings("app").value("SoftwareUpdates/auto_check_for_updates", True, bool))
 		self._updates_manager.sig_newReleaseAvailable.connect(self.showUpdatesWindow)
+		self._updates_manager.sig_autoCheckChanged.connect(lambda is_enabled: self.settingsManager().settings("app").setValue("SoftwareUpdates/auto_check_for_updates",is_enabled))
+		self._wnd_update = None	# Window will be created in `self.showUpdatesWindow`
 
 	def localStoragePath(self) -> PathLike[str]:
 		"""Get the local user storage path"""
@@ -113,17 +116,25 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		from ..widgets import software_updates
 		
-		try:
-			self._wnd_update.show()
-			self._wnd_update.setFocus(QtCore.Qt.FocusReason.PopupFocusReason)
-		
-		except Exception as e:
-			#print(e)
+		# Create window if it's not already open
+		if not self._wnd_update:
+
 			self._wnd_update = software_updates.BSCheckForUpdatesWindow()
 			
 			self._wnd_update.setWindowFlag(QtCore.Qt.WindowType.Tool)
 			self._wnd_update.setUpdateManager(self.updatesManager())
 			self._wnd_update.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+			
+			# Release dat ref
 			self._wnd_update.destroyed.connect(lambda: setattr(self, "_wnd_update", None))
 
-			self._wnd_update.show()
+		# Check for updates at window launch if an update hasn't already been found
+		if self._updates_manager.latestReleaseInfo() is None:
+			self._updates_manager.checkForUpdates()
+		else:
+			print(self._updates_manager.latestReleaseInfo())
+
+		self._wnd_update.show()
+		self._wnd_update.raise_()
+		self._wnd_update.activateWindow()
+		self._wnd_update.setFocus(QtCore.Qt.FocusReason.PopupFocusReason) # Not sure if want
