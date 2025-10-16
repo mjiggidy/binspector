@@ -7,6 +7,9 @@ from . import treeview
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
 
+	COLUMN_PADDING_RIGHT:int = 24
+	"""Additional whitespace per column"""
+
 	ITEM_DELEGATES_PER_FIELD_ID = {
 		51: binitems.LBClipColorItemDelegate(),
 
@@ -24,10 +27,13 @@ class BSBinTreeView(treeview.LBTreeView):
 
 		self.setModel((viewmodels.LBSortFilterProxyModel()))
 
+		self.model().columnsInserted.connect(self.setColumnWidthsFromBinView)
+
 		self.model().columnsInserted.connect(
 			lambda parent_index, source_start, source_end:
 			self.assignItemDelegates(parent_index, source_start)
 		)
+
 		self.model().columnsMoved.connect(
 			lambda source_parent,
 				source_logical_start,
@@ -60,6 +66,27 @@ class BSBinTreeView(treeview.LBTreeView):
 				item_delegate = self.ITEM_DELEGATES_PER_FORMAT_ID[format_id]
 			
 			self.setItemDelegateForColumn(col, item_delegate)
+	
+	@QtCore.Slot(object, int)
+	@QtCore.Slot(object, int, int)
+	@QtCore.Slot(object, int, int, bool)
+	def setColumnWidthsFromBinView(self, parent_index:QtCore.QModelIndex, source_start:int, source_end:int|None=None, autosize_if_undefined:bool=True):
+
+		if parent_index.isValid():
+			return
+		
+		if source_end is None:
+			source_end = source_start
+
+		for column_logical in range(source_start, source_end+1):
+			
+			column_width = self.model().headerData(column_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+4)
+			
+			if column_width:
+				self.setColumnWidth(column_logical, column_width + self.COLUMN_PADDING_RIGHT)
+			
+			elif autosize_if_undefined:
+				self.resizeColumnToContents(column_logical)
 
 	def sizeHintForColumn(self, column):
-		return super().sizeHintForColumn(column) + 24
+		return super().sizeHintForColumn(column) + self.COLUMN_PADDING_RIGHT

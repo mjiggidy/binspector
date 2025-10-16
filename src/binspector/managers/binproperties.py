@@ -5,7 +5,7 @@ from . import base
 
 class BSBinViewManager(base.LBItemDefinitionView):
 
-	sig_bin_view_changed = QtCore.Signal(object)
+	sig_bin_view_changed = QtCore.Signal(object, object)
 	"""Binview has been reset"""
 
 	def __init__(self, *args, **kwargs):
@@ -37,7 +37,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 				
 			self.addColumnDefinition(column)
 		
-		self.sig_bin_view_changed.emit(bin_view)
+		self.sig_bin_view_changed.emit(bin_view, column_widths)
 
 	@QtCore.Slot(object)
 	def addColumnDefinition(self, column_definition:dict[str,object]):
@@ -192,7 +192,7 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	sig_mob_count_changed = QtCore.Signal(int)
 	"""Mobs were added or removed"""
 
-	sig_bin_view_changed = QtCore.Signal(object)
+	sig_bin_view_changed = QtCore.Signal(object, object)
 
 	def __init__(self):
 
@@ -202,8 +202,8 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		self._view_model.rowsRemoved  .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.modelReset   .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 
-	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
+	@QtCore.Slot(object, object)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int]):
 
 		self.viewModel().clear()
 
@@ -218,11 +218,12 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 					field_id=column["type"],
 					format_id=column["format"],
 					display_name=column["title"],
-					is_hidden=column["hidden"]
+					is_hidden=column["hidden"],
+					field_width=column_widths.get(column["title"])
 				)
 			)
 		
-		self.sig_bin_view_changed.emit(bin_view)
+		self.sig_bin_view_changed.emit(bin_view, column_widths)
 	
 	@QtCore.Slot(object)
 	def addMob(self, mob_info:dict):

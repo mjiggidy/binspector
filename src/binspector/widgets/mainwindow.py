@@ -202,7 +202,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
-		self._man_binitems.sig_bin_view_changed              .connect(lambda bv: self._main_bincontents.setBinViewName(bv.name))
+		self._man_binitems.sig_bin_view_changed              .connect(lambda bv, widths: self._main_bincontents.setBinViewName(bv.name))
 
 		# Update display counts -- Not where where to put this
 		self._man_binitems.sig_mob_count_changed             .connect(self._main_bincontents.updateBinStats)
@@ -263,7 +263,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._prg_loadingbar.setValue(0)
 		self._prg_loadingbar.hide()
 		
-		self._main_bincontents.treeView().resizeAllColumnsToContents()
+		#self._main_bincontents.treeView().resizeAllColumnsToContents()
 		
 		self._man_actions._act_filebrowser.setEnabled(True)
 		
