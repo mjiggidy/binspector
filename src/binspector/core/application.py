@@ -51,6 +51,10 @@ class BSMainApplication(QtWidgets.QApplication):
 		file_handler.setLevel(logging.NOTSET)
 		logging.getLogger().addHandler(file_handler)
 
+		import qtlogrelay
+		self._qt_log_handler = qtlogrelay.QtLogRelayHandler()
+		logging.getLogger().addHandler(self._qt_log_handler)
+
 		# Setup settings
 		self._settingsManager = settings.BSSettingsManager(
 			format   = QtCore.QSettings.Format.IniFormat,
