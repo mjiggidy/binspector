@@ -31,6 +31,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_sorting      = binproperties.BSBinSortingPropertiesManager()
 		self._man_binitems     = binproperties.BSBinItemsManager()
 		self._man_bindisplay   = binproperties.BSBinDisplaySettingsManager()
+		self._man_viewmode     = binproperties.BSBinViewModeManager()
 
 		# Define signals
 		self._sigs_binloader   = binloader.BSBinViewLoader.Signals()
@@ -81,7 +82,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_appearance.hide()
 		self._dock_binview.hide()
 
-		self._main_bincontents.treeView().model().setSourceModel(self._man_binitems.viewModel())
+		self._main_bincontents.listView().model().setSourceModel(self._man_binitems.viewModel())
 		self._tool_binview.setModel(self._man_binview.viewModel())
 
 		# Top binbarboy
@@ -173,7 +174,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
-		self._man_bindisplay.sig_bin_display_changed         .connect(self._main_bincontents.treeView().model().setBinDisplayItemTypes)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._main_bincontents.listView().model().setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		self._man_appearance.sig_font_changed                .connect(self._tool_appearance.setBinFont)
@@ -194,6 +195,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_mob_count               .connect(self._prg_loadingbar.setMaximum)
 		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._prg_loadingbar.setFormat("Loading %v of %m mobs"))
  
+		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
@@ -208,7 +210,16 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binitems.sig_mob_count_changed             .connect(self._main_bincontents.updateBinStats)
 
 		# Bin Contents Toolbars
-		self._main_bincontents.topWidgetBar().searchBox().textChanged.connect(self._main_bincontents.treeView().model().setSearchText)
+		self._main_bincontents.topWidgetBar().searchBox().textChanged.connect(self._main_bincontents.listView().model().setSearchText)
+
+		# Bin View Modes
+		self._man_viewmode.sig_view_mode_changed             .connect(self._main_bincontents.setViewMode)
+
+		self._man_viewmode.sig_view_mode_changed             .connect(lambda view_mode: self._man_actions.viewModesActionGroup().actions()[int(view_mode)].setChecked(True))
+
+		self._man_actions.viewBinAsList().triggered          .connect(lambda: self._man_viewmode.setViewMode(0))
+		self._man_actions.viewBinAsFrame().triggered         .connect(lambda: self._man_viewmode.setViewMode(1))
+		self._man_actions.viewBinAsScript().triggered        .connect(lambda: self._man_viewmode.setViewMode(2))
 
 	##
 	## Getters & Setters

@@ -3,6 +3,22 @@ from PySide6 import QtCore, QtGui
 from ..models import viewmodelitems
 from . import base
 
+class BSBinViewModeManager(QtCore.QObject):
+	"""Manage them viewmodes"""
+
+	sig_view_mode_changed = QtCore.Signal(object)
+	"""The view mode has been changed"""
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+	@QtCore.Slot(object)
+	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
+		"""Set the current bin view mode"""
+
+		self.sig_view_mode_changed.emit(view_mode)
+
 class BSBinViewManager(base.LBItemDefinitionView):
 
 	sig_bin_view_changed = QtCore.Signal(object, object)

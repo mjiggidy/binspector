@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 import avbutils
-from ..views import bintreeview
+from ..views import bintreeview, binframeview, binscriptview
 from . import buttons
 
 class BSBinContentsWidgetBar(QtWidgets.QWidget):
@@ -146,6 +146,8 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
+	sig_view_mode_changed = QtCore.Signal(object)
+
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -158,27 +160,59 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().setSpacing(0)
 
 		self._section_top       = BSBinContentsTopWidgetBar()
-		self._tree_bin_contents = bintreeview.BSBinTreeView()
+		self._section_main      = QtWidgets.QStackedWidget()
 		self._section_bottom    = BSBinContentsBottomWidgetBar()
-		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
+		
+		self._binitems_list     = bintreeview.BSBinTreeView()
+		self._binitems_frame    = binframeview.BSBinFrameView()
+		self._binitems_script   = binscriptview.BSBinScriptView()
 
 		self.layout().addWidget(self._section_top)
-		self.layout().addWidget(self._tree_bin_contents)
+		self.layout().addWidget(self._section_main)
 		self.layout().addWidget(self._section_bottom)
 
-		self._tree_bin_contents.model().rowsInserted .connect(self.updateBinStats)
-		self._tree_bin_contents.model().rowsRemoved  .connect(self.updateBinStats)
-		self._tree_bin_contents.model().modelReset   .connect(self.updateBinStats)
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._binitems_list)
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
 
+		self._binitems_list.model().rowsInserted .connect(self.updateBinStats)
+		self._binitems_list.model().rowsRemoved  .connect(self.updateBinStats)
+		self._binitems_list.model().modelReset   .connect(self.updateBinStats)
+
+		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
+	def _setViewModeWidget(self, mode:avbutils.BinDisplayModes, widget:QtWidgets.QWidget):
+		"""Set view mode widget delegate for the stacked widget"""
 
-	def treeView(self) -> bintreeview.BSBinTreeView:
+		self._section_main.removeWidget(self._section_main.widget(int(mode)))
+		self._section_main.insertWidget(int(mode), widget)
+
+	def listView(self) -> bintreeview.BSBinTreeView:
 		"""Get the main view"""
-		return self._tree_bin_contents
+
+		return self._binitems_list
 	
-	def setTreeView(self, treeview:bintreeview.BSBinTreeView):
-		self._tree_bin_contents = treeview
+	def setListView(self, treeview:bintreeview.BSBinTreeView):
+
+		self._binitems_list = treeview
+		self._setViewModeWidget(avbutils.BinDisplayModes.LIST, self._binitems_list)
+
+	def frameView(self) -> binframeview.BSBinFrameView:
+		return self._binitems_frame
+	
+	def setFrameView(self, frame_view:binframeview.BSBinFrameView):
+
+		self._binitems_frame = frame_view
+		self._setViewModeWidget(avbutils.BinDisplayModes.FRAME, self._binitems_frame)
+
+	def scriptView(self) -> binscriptview.BSBinScriptView:
+		return self._binitems_script
+	
+	def setScriptView(self, script_view:binscriptview.BSBinScriptView):
+
+		self._binitems_script = script_view
+		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
 	
 	def topWidgetBar(self) -> BSBinContentsTopWidgetBar:
 		return self._section_top
@@ -226,13 +260,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	
 	@QtCore.Slot(QtGui.QFont)
 	def setBinFont(self, bin_font:QtGui.QFont):
-		self._tree_bin_contents.setFont(bin_font)
+		self._binitems_list.setFont(bin_font)
 
 	@QtCore.Slot()
 	def updateBinStats(self):
 
-		count_visible = self._tree_bin_contents.model().rowCount()
-		count_all     = self._tree_bin_contents.model().sourceModel().rowCount()
+		count_visible = self._binitems_list.model().rowCount()
+		count_all     = self._binitems_list.model().sourceModel().rowCount()
 		self._section_bottom.setInfoText(
 			f"Showing {QtCore.QLocale.system().toString(count_visible)} of {QtCore.QLocale.system().toString(count_all)} items"
 		)
@@ -250,3 +284,17 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.topWidgetBar().binViewSelector().setItemText(0, bin_view_name)
 		self.topWidgetBar().binViewSelector().setCurrentIndex(0)
+	
+	@QtCore.Slot(object)
+	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
+		"""Set the current view mode"""
+
+		print("SETTING VIEW MODE TO ", view_mode)
+
+		self._section_main.setCurrentIndex(int(view_mode))
+		self.sig_view_mode_changed.emit(view_mode)
+
+	def viewMode(self) -> avbutils.BinDisplayModes:
+		"""Current view mode"""
+
+		return avbutils.BinDisplayModes(self._section_main.currentIndex())
