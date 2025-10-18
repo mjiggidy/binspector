@@ -1,6 +1,7 @@
 import avb, avbutils
-from PySide6 import QtCore, QtGui
+from PySide6 import QtCore, QtGui, QtWidgets
 from ..models import viewmodelitems
+from ..core import binparser
 from . import base
 
 class BSBinViewModeManager(QtCore.QObject):
@@ -221,14 +222,19 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 
 		super().__init__()
 
+		self._frame_scene = QtWidgets.QGraphicsScene()
+		
 		self._view_model.rowsInserted .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.rowsRemoved  .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.modelReset   .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
+
+
 
 	@QtCore.Slot(object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int]):
 
 		self.viewModel().clear()
+		self.frameScene().clear()
 
 		for column in bin_view.columns[::-1]:
 
@@ -249,7 +255,25 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		self.sig_bin_view_changed.emit(bin_view, column_widths)
 	
 	@QtCore.Slot(object)
-	def addMob(self, mob_info:dict):
+	def addMob(self, mob_info:binparser.BinItemInfo):
 
-		self.addRow(mob_info)
+		self.addRow(mob_info.column_data)
+		#print(mob_info.coordinates)
+		
+		frame_scale = 12
+
+		item_rect = QtWidgets.QGraphicsRectItem(
+			QtCore.QRect(0,0,16*frame_scale,9*frame_scale).translated(
+				QtCore.QPoint(*mob_info.coordinates)
+			)
+		)
+		
+		self._frame_scene.addItem(
+			item_rect
+		)
+
+
 		self.sig_mob_added.emit(mob_info)
+
+	def frameScene(self) -> QtWidgets.QGraphicsScene:
+		return self._frame_scene

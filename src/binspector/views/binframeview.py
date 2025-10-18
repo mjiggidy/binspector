@@ -1,4 +1,4 @@
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtWidgets
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
@@ -7,6 +7,3 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		super().__init__(*args, **kwargs)
 
-		self.setScene(QtWidgets.QGraphicsScene())
-
-		self.scene().addText("Look At This Frame View Haha Wow")
