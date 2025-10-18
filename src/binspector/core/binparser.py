@@ -62,6 +62,17 @@ def appearance_settings_from_bin(bin_content:avb.bin.Bin) -> tuple:
 		bin_content.was_iconic,
 	)
 
+import dataclasses
+
+@dataclasses.dataclass
+class BinItemInfo:
+	"""Bin item info for a given mob"""
+
+	column_data :dict
+	coordinates :tuple[int,int]
+	keyframe    :int
+
+
 def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		"""Parse a mob and its bin item properties"""
 		
@@ -161,4 +172,8 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		for key, val in user_attributes.items():
 			item.update({"40_"+key: val})
 		
-		return item
+		return BinItemInfo(
+			column_data = item,
+			coordinates = (bin_item.x, bin_item.y),
+			keyframe    = bin_item.keyframe
+		)
