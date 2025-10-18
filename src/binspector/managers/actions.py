@@ -26,7 +26,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_newwindow.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WindowNew))
 		self._act_newwindow.setToolTip("Open a new window")
 		self._act_newwindow.setShortcut(QtGui.QKeySequence.StandardKey.New)
-		self._act_newwindow.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
+		#self._act_newwindow.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
 
 		self._act_closewindow = QtGui.QAction("Close &Window")
 		"""Close active bin window"""
@@ -41,7 +41,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_quitapplication.setToolTip(f"Quit {QtWidgets.QApplication.instance().applicationName()}")
 		self._act_quitapplication.setShortcut(QtGui.QKeySequence.StandardKey.Quit)
 		self._act_quitapplication.setMenuRole(QtGui.QAction.MenuRole.QuitRole)
-		self._act_quitapplication.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
+		#self._act_quitapplication.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
 
 		# View modes
 		self._act_view_list   = QtGui.QAction("List View", checkable=True, checked=True, parent=self._parent)
