@@ -188,9 +188,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_appearance.sig_palette_changed            .connect(self._main_bincontents.setBinColors)
 
 		# Bin loader signals
-		self._sigs_binloader.sig_begin_loading               .connect(self.binLoadStarted)
-		self._sigs_binloader.sig_begin_loading               .connect(self.sig_bin_changed)
-		self._sigs_binloader.sig_done_loading                .connect(self.binLoadFinished)
+		self._sigs_binloader.sig_begin_loading               .connect(self.prepareForBinLoading)
+		self._sigs_binloader.sig_done_loading                .connect(self.cleanupAfterBinLoading)
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
 		self._sigs_binloader.sig_got_mob_count               .connect(self._prg_loadingbar.setMaximum)
 		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._prg_loadingbar.setFormat("Loading %v of %m mobs"))
@@ -213,13 +212,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._main_bincontents.topWidgetBar().searchBox().textChanged.connect(self._main_bincontents.listView().model().setSearchText)
 
 		# Bin View Modes
+		# TODO: Something about this feels circular compared to the other stuff I've been doing
 		self._man_viewmode.sig_view_mode_changed             .connect(self._main_bincontents.setViewMode)
-
-		self._man_viewmode.sig_view_mode_changed             .connect(lambda view_mode: self._man_actions.viewModesActionGroup().actions()[int(view_mode)].setChecked(True))
-
-		self._man_actions.viewBinAsList().triggered          .connect(lambda: self._man_viewmode.setViewMode(0))
-		self._man_actions.viewBinAsFrame().triggered         .connect(lambda: self._man_viewmode.setViewMode(1))
-		self._man_actions.viewBinAsScript().triggered        .connect(lambda: self._man_viewmode.setViewMode(2))
+		self._man_viewmode.sig_view_mode_changed             .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
+		self._man_actions._actgrp_view_mode.triggered       . connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
 
 	##
 	## Getters & Setters
@@ -256,8 +252,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 
 	@QtCore.Slot(str)
-	def binLoadStarted(self, bin_path:str):
-		"""Bin load is about to begin. Prepare."""
+	def prepareForBinLoading(self, bin_path:str):
+		"""Bin load is about to begin. Prepare UI elements."""
 
 		self._man_actions._act_filebrowser.setEnabled(False)
 		self._man_binitems.viewModel().clear
@@ -267,8 +263,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self.setWindowFilePath(bin_path)
 	
 	@QtCore.Slot()
-	def binLoadFinished(self):
-		"""A bin has finished loading"""
+	def cleanupAfterBinLoading(self):
+		"""A bin has finished loading.  Reset UI elements."""
 
 		self._prg_loadingbar.setMaximum(0)
 		self._prg_loadingbar.setValue(0)
@@ -277,6 +273,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		#self._main_bincontents.treeView().resizeAllColumnsToContents()
 		
 		self._man_actions._act_filebrowser.setEnabled(True)
+
+		self.sig_bin_changed.emit(self.windowFilePath())
 		
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)

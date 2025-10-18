@@ -9,15 +9,22 @@ class BSBinViewModeManager(QtCore.QObject):
 	sig_view_mode_changed = QtCore.Signal(object)
 	"""The view mode has been changed"""
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, initial_mode:avbutils.BinDisplayModes=avbutils.BinDisplayModes.LIST, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
+
+		self._current_mode = initial_mode
 
 	@QtCore.Slot(object)
 	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
 		"""Set the current bin view mode"""
 
-		self.sig_view_mode_changed.emit(view_mode)
+		if view_mode != self._current_mode:
+			self._current_mode = view_mode
+			self.sig_view_mode_changed.emit(self._current_mode)
+	
+	def viewMode(self) -> avbutils.BinDisplayModes:
+		return self._current_mode
 
 class BSBinViewManager(base.LBItemDefinitionView):
 
