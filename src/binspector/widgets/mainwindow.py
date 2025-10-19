@@ -87,7 +87,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Top binbarboy
 		topbar = self._main_bincontents.topWidgetBar()
+		
 		topbar.setOpenBinAction(self._man_actions.fileBrowserAction())
+		topbar.setReloadBinAction(self._man_actions._act_reloadcurrent)
+		topbar.setStopLoadAction(self._man_actions._act_stopcurrent)
+		
 		topbar.setViewModeListAction(self._man_actions.viewBinAsList())
 		topbar.setViewModeFrameAction(self._man_actions.viewBinAsFrame())
 		topbar.setViewModeScriptAction(self._man_actions.viewBinAsScript())
@@ -146,6 +150,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self.addActions(self._man_actions.showBinSettingsActionGroup().actions())
 		self.addActions(self._man_actions.viewModesActionGroup().actions())
 
+		self._man_actions._act_reloadcurrent.setVisible(False)
+		self._man_actions._act_reloadcurrent.setEnabled(False)
+		self._man_actions._act_stopcurrent.setVisible(False)
+		self._man_actions._act_stopcurrent.setEnabled(False)
+
 		
 	def setupSignals(self):
 		"""Connect signals and slots"""
@@ -156,6 +165,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_closewindow.triggered         .connect(self.close)
 		self._man_actions._act_quitapplication.triggered     .connect(self.sig_request_quit_application)
 		self._man_actions._act_show_about.triggered          .connect(self.showAboutBox)
+
+		self._man_actions._act_reloadcurrent.triggered       .connect(lambda: self.loadBinFromPath(self.windowFilePath()))
 
 		self._man_actions._act_check_updates.triggered       .connect(self.sig_request_check_updates)
 		self._man_actions._act_open_discussions.triggered    .connect(self.sig_request_visit_discussions)
@@ -261,9 +272,19 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		"""Bin load is about to begin. Prepare UI elements."""
 
 		self._man_actions._act_filebrowser.setEnabled(False)
+		
+		self._man_actions._act_reloadcurrent.setEnabled(False)
+		self._man_actions._act_reloadcurrent.setVisible(False)
+
+		self._man_actions._act_stopcurrent.setEnabled(True)
+		self._man_actions._act_stopcurrent.setVisible(True)
+		
+		
 		self._man_binitems.viewModel().clear
+		
 		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
 		self._main_bincontents.topWidgetBar().progressBar().show()
+		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
 	
@@ -277,6 +298,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		#self._main_bincontents.treeView().resizeAllColumnsToContents()
 		
+		self._man_actions._act_reloadcurrent.setEnabled(True)
+		self._man_actions._act_reloadcurrent.setVisible(True)
+
+		self._man_actions._act_stopcurrent.setEnabled(False)
+		self._man_actions._act_stopcurrent.setVisible(False)
+
 		self._man_actions._act_filebrowser.setEnabled(True)
 
 		self.sig_bin_changed.emit(self.windowFilePath())

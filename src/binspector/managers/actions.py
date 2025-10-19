@@ -20,6 +20,16 @@ class ActionsManager(QtCore.QObject):
 		self._act_filebrowser.setToolTip("Choose a bin to open")
 		self._act_filebrowser.setShortcut(QtGui.QKeySequence.StandardKey.Open)
 
+		self._act_reloadcurrent = QtGui.QAction("&Reload Current Bin")
+		self._act_reloadcurrent.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewRefresh))
+		self._act_reloadcurrent.setToolTip("Reload the current bin")
+		self._act_reloadcurrent.setShortcut(QtGui.QKeySequence.StandardKey.Refresh)
+
+		self._act_stopcurrent = QtGui.QAction("Stop Loading")
+		self._act_stopcurrent.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ProcessStop))
+		self._act_stopcurrent.setToolTip("Stop loading the current bin")
+		self._act_stopcurrent.setShortcut(QtGui.QKeySequence.StandardKey.Cancel)
+
 		# Window actions
 		self._act_newwindow = QtGui.QAction("&New Window...")
 		"""Request new bin window"""
@@ -93,6 +103,7 @@ class ActionsManager(QtCore.QObject):
 
 		self._act_check_updates = QtGui.QAction("Check For Updates...", parent=self._parent)
 		self._act_check_updates.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.SoftwareUpdateAvailable))
+		self._act_check_updates.setMenuRole(QtGui.QAction.MenuRole.ApplicationSpecificRole)
 
 		self._act_show_about = QtGui.QAction(f"About {QtWidgets.QApplication.instance().applicationDisplayName()}...", parent=self._parent)
 		"""Show About Box"""
@@ -103,10 +114,12 @@ class ActionsManager(QtCore.QObject):
 
 		# Action Groups
 		self._actgrp_file = QtGui.QActionGroup(self._parent)
-		self._actgrp_file.addAction(self._act_newwindow)
 		self._actgrp_file.addAction(self._act_filebrowser)
+		self._actgrp_file.addAction(self._act_reloadcurrent)
+		self._actgrp_file.addAction(self._act_stopcurrent)
 		
 		self._actgrp_window = QtGui.QActionGroup(self._parent)
+		self._actgrp_window.addAction(self._act_newwindow)
 		self._actgrp_window.addAction(self._act_closewindow)
 
 		self._actgrp_app = QtGui.QActionGroup(self._parent)

@@ -68,7 +68,11 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 			self.setLayout(QtWidgets.QHBoxLayout())
 			self.layout().setContentsMargins(*[4]*4)
 
+		self._btngrp_file         = QtWidgets.QButtonGroup()
 		self._btn_open            = buttons.LBPushButtonAction()
+		self._btn_reload          = buttons.LBPushButtonAction(show_text=False)
+		self._btn_stop            = buttons.LBPushButtonAction(show_text=False)
+
 		self._prg_loading         = QtWidgets.QProgressBar()
 
 		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
@@ -83,21 +87,13 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 
 	def _setupWidgets(self):
 
-		self.addWidget(self._btn_open)
+		self._btngrp_file.addButton(self._btn_open)
+		self._btngrp_file.addButton(self._btn_reload)
+		self._btngrp_file.addButton(self._btn_stop)
+		self.addWidget(buttons.BSPushButtonActionBar(self._btngrp_file))
 
 		self.addWidget(self._prg_loading)
-
-#		
-#		if isinstance(self, QtWidgets.QToolBar):
-#			self.addSeparator()
-#		else:
-#			self.layout().addStretch()
 		
-		
-		self._btngrp_viewmode.setExclusive(True)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_frame)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_script)
 
 		self._cmb_binviews.setSizePolicy(self._cmb_binviews.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
 		self._cmb_binviews.setMinimumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 24)
@@ -106,6 +102,10 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 		self._cmb_binviews.insertSeparator(1)
 		self.addWidget(self._cmb_binviews)
 
+		self._btngrp_viewmode.setExclusive(True)
+		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
+		self._btngrp_viewmode.addButton(self._btn_viewmode_frame)
+		self._btngrp_viewmode.addButton(self._btn_viewmode_script)
 		self.addWidget(buttons.BSPushButtonActionBar(self._btngrp_viewmode))
 
 		self._txt_search.setSizePolicy(self.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
@@ -123,6 +123,16 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 		"""Set the action for Open Bin"""
 
 		self._btn_open.setAction(action)
+
+	def setReloadBinAction(self, action:QtGui.QAction):
+		"""Set the action for Reload Bin"""
+
+		self._btn_reload.setAction(action)
+
+	def setStopLoadAction(self, action:QtGui.QAction):
+		"""Set the action for Stop Load"""
+
+		self._btn_stop.setAction(action)
 
 	def setViewModeListAction(self, action:QtGui.QAction):
 		"""Set the action for view mode: list"""
