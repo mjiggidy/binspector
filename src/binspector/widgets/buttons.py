@@ -43,7 +43,7 @@ class LBPushButtonAction(QtWidgets.QPushButton):
 
 		# Sync future state changes
 		self._action.enabledChanged.connect(self.setEnabled)
-		self._action.visibleChanged.connect(self.setVisible)
+		self._action.visibleChanged.connect(lambda: self.setVisible(self._action.isVisible()))
 		self._action.checkableChanged.connect(self.setCheckable)
 		self._action.toggled.connect(self.setChecked)
 

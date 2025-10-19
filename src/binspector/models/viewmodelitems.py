@@ -17,10 +17,12 @@ class LBAbstractViewHeaderItem:
 			  icon:QtGui.QIcon|None=None,
 			  item_factory:typing.Type["LBAbstractViewItem"]|None=None, 
 			  delegate:QtWidgets.QStyledItemDelegate|None=None,
+			  field_width:int|None=None,
 		):
 
 		self._field_name   = field_name
 		self._field_id     = field_id # Think I wanna do this for bin headings
+		self._field_width  = field_width
 		self._format_id    = format_id
 		self._display_name = display_name
 		self._is_hidden    = is_hidden
@@ -44,6 +46,7 @@ class LBAbstractViewHeaderItem:
 			QtCore.Qt.ItemDataRole.UserRole+1:  self._field_id, # Think I wanna do this for bin headings
 			QtCore.Qt.ItemDataRole.UserRole+2:  self._format_id,
 			QtCore.Qt.ItemDataRole.UserRole+3:  self._is_hidden,
+			QtCore.Qt.ItemDataRole.UserRole+4:  self._field_width,
 		 })
 	
 	def data(self, role:QtCore.Qt.ItemDataRole) -> typing.Any:
@@ -60,6 +63,9 @@ class LBAbstractViewHeaderItem:
 	
 	def format_id(self) -> avbutils.BinColumnFormat:
 		return avbutils.BinColumnFormat(self._format_id)
+	
+	def field_width(self) -> int|None:
+		return self._field_width
 	
 	def display_name(self) -> str:
 		return self._display_name

@@ -1,11 +1,35 @@
 import avb, avbutils
-from PySide6 import QtCore, QtGui
+from PySide6 import QtCore, QtGui, QtWidgets
 from ..models import viewmodelitems
+from ..core import binparser
 from . import base
+
+class BSBinViewModeManager(QtCore.QObject):
+	"""Manage them viewmodes"""
+
+	sig_view_mode_changed = QtCore.Signal(object)
+	"""The view mode has been changed"""
+
+	def __init__(self, initial_mode:avbutils.BinDisplayModes=avbutils.BinDisplayModes.LIST, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._current_mode = initial_mode
+
+	@QtCore.Slot(object)
+	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
+		"""Set the current bin view mode"""
+
+		if view_mode != self._current_mode:
+			self._current_mode = view_mode
+			self.sig_view_mode_changed.emit(self._current_mode)
+	
+	def viewMode(self) -> avbutils.BinDisplayModes:
+		return self._current_mode
 
 class BSBinViewManager(base.LBItemDefinitionView):
 
-	sig_bin_view_changed = QtCore.Signal(object)
+	sig_bin_view_changed = QtCore.Signal(object, object)
 	"""Binview has been reset"""
 
 	def __init__(self, *args, **kwargs):
@@ -37,7 +61,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 				
 			self.addColumnDefinition(column)
 		
-		self.sig_bin_view_changed.emit(bin_view)
+		self.sig_bin_view_changed.emit(bin_view, column_widths)
 
 	@QtCore.Slot(object)
 	def addColumnDefinition(self, column_definition:dict[str,object]):
@@ -192,20 +216,25 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	sig_mob_count_changed = QtCore.Signal(int)
 	"""Mobs were added or removed"""
 
-	sig_bin_view_changed = QtCore.Signal(object)
+	sig_bin_view_changed = QtCore.Signal(object, object)
 
 	def __init__(self):
 
 		super().__init__()
 
+		self._frame_scene = QtWidgets.QGraphicsScene()
+		
 		self._view_model.rowsInserted .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.rowsRemoved  .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.modelReset   .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 
-	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
+
+
+	@QtCore.Slot(object, object)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int]):
 
 		self.viewModel().clear()
+		self.frameScene().clear()
 
 		for column in bin_view.columns[::-1]:
 
@@ -218,14 +247,121 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 					field_id=column["type"],
 					format_id=column["format"],
 					display_name=column["title"],
-					is_hidden=column["hidden"]
+					is_hidden=column["hidden"],
+					field_width=column_widths.get(column["title"])
 				)
 			)
 		
-		self.sig_bin_view_changed.emit(bin_view)
+		self.sig_bin_view_changed.emit(bin_view, column_widths)
 	
 	@QtCore.Slot(object)
-	def addMob(self, mob_info:dict):
+	def addMob(self, mob_info:binparser.BinItemInfo):
 
-		self.addRow(mob_info)
+		self.addRow(mob_info.column_data)
+		#print(mob_info.coordinates)
+		
+		self._frame_scale = 11
+
+		item_rect = BSFrameModeItem()
+		item_rect.setPos(*mob_info.coordinates)
+		item_rect.setScale(self._frame_scale)
+		item_rect.setName(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Name")))
+		item_rect.setClipColor(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Color")).raw_data())
+		item_rect.setSelected(True)
+		item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
+	
+		print(item_rect.flags())
+		
+		
+		self._frame_scene.addItem(
+			item_rect
+		)
+
+
 		self.sig_mob_added.emit(mob_info)
+
+	def frameScene(self) -> QtWidgets.QGraphicsScene:
+		return self._frame_scene
+	
+class BSFrameModeItem(QtWidgets.QGraphicsItem):
+
+	def boundingRect(self) -> QtCore.QRectF:
+		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(16,10))
+	
+	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, /,	 widget:QtWidgets.QWidget = ...):
+
+		painter.save()
+
+		pen = QtGui.QPen()
+		pen.setWidth(4)
+		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
+		pen.setJoinStyle(QtCore.Qt.PenJoinStyle.RoundJoin)
+		pen.setCosmetic(True)
+
+		brush = QtGui.QBrush()
+		brush.setColor(option.palette.color(QtGui.QPalette.ColorRole.Dark))
+		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+
+		painter.setPen(pen)
+		painter.setBrush(brush)
+		painter.drawRect(self.boundingRect())
+
+		brush = QtGui.QBrush()
+		brush.setColor(option.palette.color(QtGui.QPalette.ColorRole.Button))
+		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+		pen = QtGui.QPen()
+		pen.setStyle(QtCore.Qt.PenStyle.NoPen)
+		
+
+		painter.setBrush(brush)
+		painter.setPen(pen)
+
+		clip_preview_rect = self.boundingRect().adjusted(0, 0, 0, -1).adjusted(.5,.5,-.5,-.5)
+
+		painter.drawRect(clip_preview_rect)
+
+		if self._clip_color.isValid():
+			pass
+
+			pen = QtGui.QPen()
+			pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
+			pen.setWidthF(4/self.scale())
+			pen.setColor(self._clip_color)
+			
+			brush = QtGui.QBrush()
+			brush.setStyle(QtCore.Qt.BrushStyle.NoBrush)
+
+			painter.setPen(pen)
+			painter.setBrush(brush)
+			painter.drawRect(self.boundingRect().adjusted(.25,.25,-.25,-.25))
+
+		font = QtGui.QFont()
+		font.setPixelSize(16/self.scale())
+		
+		painter.setFont(font)
+		pen = QtGui.QPen()
+		painter.setPen(pen)
+		painter.drawText(self.boundingRect().adjusted(0.25,0.25,-0.25,-0.25), QtCore.Qt.AlignmentFlag.AlignCenter|QtCore.Qt.AlignmentFlag.AlignBottom, self._name)
+
+		if self.isSelected():
+			brush = QtGui.QBrush()
+			brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+			color_highlight:QtGui.QColor = option.palette.color(QtGui.QPalette.ColorRole.Highlight)
+			color_highlight.setAlphaF(0.5)
+			brush.setColor(color_highlight)
+
+			pen = QtGui.QPen()
+			pen.setStyle(QtCore.Qt.PenStyle.NoPen)
+
+			painter.setBrush(brush)
+			painter.setPen(pen)
+			painter.drawRect(self.boundingRect())
+		
+		painter.restore()
+
+	def setName(self, name:str):
+		self._name = name
+	
+	def setClipColor(self, color:QtGui.QColor):
+
+		self._clip_color = color

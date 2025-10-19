@@ -20,13 +20,23 @@ class ActionsManager(QtCore.QObject):
 		self._act_filebrowser.setToolTip("Choose a bin to open")
 		self._act_filebrowser.setShortcut(QtGui.QKeySequence.StandardKey.Open)
 
+		self._act_reloadcurrent = QtGui.QAction("&Reload Current Bin")
+		self._act_reloadcurrent.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewRefresh))
+		self._act_reloadcurrent.setToolTip("Reload the current bin")
+		self._act_reloadcurrent.setShortcut(QtGui.QKeySequence.StandardKey.Refresh)
+
+		self._act_stopcurrent = QtGui.QAction("Stop Loading")
+		self._act_stopcurrent.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ProcessStop))
+		self._act_stopcurrent.setToolTip("Stop loading the current bin")
+		self._act_stopcurrent.setShortcut(QtGui.QKeySequence.StandardKey.Cancel)
+
 		# Window actions
 		self._act_newwindow = QtGui.QAction("&New Window...")
 		"""Request new bin window"""
 		self._act_newwindow.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WindowNew))
 		self._act_newwindow.setToolTip("Open a new window")
 		self._act_newwindow.setShortcut(QtGui.QKeySequence.StandardKey.New)
-		self._act_newwindow.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
+		#self._act_newwindow.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
 
 		self._act_closewindow = QtGui.QAction("Close &Window")
 		"""Close active bin window"""
@@ -41,22 +51,25 @@ class ActionsManager(QtCore.QObject):
 		self._act_quitapplication.setToolTip(f"Quit {QtWidgets.QApplication.instance().applicationName()}")
 		self._act_quitapplication.setShortcut(QtGui.QKeySequence.StandardKey.Quit)
 		self._act_quitapplication.setMenuRole(QtGui.QAction.MenuRole.QuitRole)
-		self._act_quitapplication.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
+		#self._act_quitapplication.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
 
 		# View modes
 		self._act_view_list   = QtGui.QAction("List View", checkable=True, checked=True, parent=self._parent)
 		"""Toggle Bin View Mode: List"""
 		self._act_view_list.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FormatJustifyFill))
+		self._act_view_list.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_1))
 		self._act_view_list.setToolTip("Show items in list view mode")
 
 		self._act_view_frame  = QtGui.QAction("Frame View", checkable=True, parent=self._parent)
 		"""Toggle Bin View Mode: Frame"""
 		self._act_view_frame.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AudioCard))
+		self._act_view_frame.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_2))
 		self._act_view_frame.setToolTip("Show items in frame view mode")
 
 		self._act_view_script = QtGui.QAction("Script View", checkable=True, parent=self._parent)
 		"""Toggle Bin View Mode: Script"""
 		self._act_view_script.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
+		self._act_view_script.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_3))
 		self._act_view_script.setToolTip("Show items in script view mode")
 
 		# Bin settings
@@ -90,6 +103,7 @@ class ActionsManager(QtCore.QObject):
 
 		self._act_check_updates = QtGui.QAction("Check For Updates...", parent=self._parent)
 		self._act_check_updates.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.SoftwareUpdateAvailable))
+		self._act_check_updates.setMenuRole(QtGui.QAction.MenuRole.ApplicationSpecificRole)
 
 		self._act_show_about = QtGui.QAction(f"About {QtWidgets.QApplication.instance().applicationDisplayName()}...", parent=self._parent)
 		"""Show About Box"""
@@ -100,10 +114,12 @@ class ActionsManager(QtCore.QObject):
 
 		# Action Groups
 		self._actgrp_file = QtGui.QActionGroup(self._parent)
-		self._actgrp_file.addAction(self._act_newwindow)
 		self._actgrp_file.addAction(self._act_filebrowser)
+		self._actgrp_file.addAction(self._act_reloadcurrent)
+		self._actgrp_file.addAction(self._act_stopcurrent)
 		
 		self._actgrp_window = QtGui.QActionGroup(self._parent)
+		self._actgrp_window.addAction(self._act_newwindow)
 		self._actgrp_window.addAction(self._act_closewindow)
 
 		self._actgrp_app = QtGui.QActionGroup(self._parent)

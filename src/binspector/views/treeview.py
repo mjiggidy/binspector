@@ -37,6 +37,8 @@ class LBTreeView(QtWidgets.QTreeView):
 	@QtCore.Slot(object)
 	def setColumnWidths(self, column_widths:dict[str,int]):
 
+		raise DeprecationWarning("Nah, use bintreeview")
+
 		if not column_widths:
 
 			self.resizeAllColumnsToContents()
