@@ -55,8 +55,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btn_toolbox_appearance = buttons.LBPushButtonAction(show_text=False)
 		self._btn_toolbox_sifting    = buttons.LBPushButtonAction(show_text=False)
 		self._btn_toolbox_binview    = buttons.LBPushButtonAction(show_text=False)
-
-		self._prg_loadingbar  = QtWidgets.QProgressBar()
 		
 		# The rest
 		
@@ -93,6 +91,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.setViewModeListAction(self._man_actions.viewBinAsList())
 		topbar.setViewModeFrameAction(self._man_actions.viewBinAsFrame())
 		topbar.setViewModeScriptAction(self._man_actions.viewBinAsScript())
+		
+		pol = topbar.progressBar().sizePolicy()
+		pol.setRetainSizeWhenHidden(True)
+		topbar.progressBar().setSizePolicy(pol)
+		topbar.progressBar().setRange(0,0)
+		topbar.progressBar().setHidden(True)
+		
+
 
 		# Bottom Display
 		bottom_bar = self._main_bincontents.bottomWidgetBar()
@@ -101,6 +107,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
 		self._btn_toolbox_appearance.setAction(self._man_actions.showBinAppearanceSettings())
 		self._btn_toolbox_sifting.setAction(self._man_actions.showBinSiftSettings())
+		
 		
 		self._btngrp_toolboxes = QtWidgets.QButtonGroup()
 		self._btngrp_toolboxes.setExclusive(False)
@@ -118,10 +125,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		wid_tbs = QtWidgets.QWidget()
 		wid_tbs.setLayout(lay_tbs)
 
-		self._prg_loadingbar.setRange(0,0)
-		self._prg_loadingbar.setHidden(True)
-
-		bottom_bar.layout().addWidget(self._prg_loadingbar, 0,0)
 		bottom_bar.layout().setColumnStretch(1,2)
 		bottom_bar.layout().addWidget(buttons.BSPushButtonActionBar(self._btngrp_toolboxes), 0,2)
 		
@@ -193,15 +196,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_begin_loading               .connect(self.prepareForBinLoading)
 		self._sigs_binloader.sig_done_loading                .connect(self.cleanupAfterBinLoading)
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
-		self._sigs_binloader.sig_got_mob_count               .connect(self._prg_loadingbar.setMaximum)
-		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._prg_loadingbar.setFormat("Loading %v of %m mobs"))
+		self._sigs_binloader.sig_got_mob_count               .connect(self._main_bincontents.topWidgetBar().progressBar().setMaximum)
+		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading %v of %m mobs"))
  
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
 		self._sigs_binloader.sig_got_mob                     .connect(self._man_binitems.addMob)
-		self._sigs_binloader.sig_got_mob                     .connect(lambda: self._prg_loadingbar.setValue(self._prg_loadingbar.value() + 1))
+		self._sigs_binloader.sig_got_mob                     .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
@@ -259,8 +262,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._man_actions._act_filebrowser.setEnabled(False)
 		self._man_binitems.viewModel().clear
-		self._prg_loadingbar.show()
-		self._prg_loadingbar.setFormat("Loading bin properties...")
+		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
+		self._main_bincontents.topWidgetBar().progressBar().show()
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
 	
@@ -268,9 +271,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def cleanupAfterBinLoading(self):
 		"""A bin has finished loading.  Reset UI elements."""
 
-		self._prg_loadingbar.setMaximum(0)
-		self._prg_loadingbar.setValue(0)
-		self._prg_loadingbar.hide()
+		self._main_bincontents.topWidgetBar().progressBar().setMaximum(0)
+		self._main_bincontents.topWidgetBar().progressBar().setValue(0)
+		self._main_bincontents.topWidgetBar().progressBar().hide()
 		
 		#self._main_bincontents.treeView().resizeAllColumnsToContents()
 		

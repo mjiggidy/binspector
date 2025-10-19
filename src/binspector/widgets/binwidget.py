@@ -69,6 +69,7 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 			self.layout().setContentsMargins(*[4]*4)
 
 		self._btn_open            = buttons.LBPushButtonAction()
+		self._prg_loading         = QtWidgets.QProgressBar()
 
 		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
 		self._btn_viewmode_list   = buttons.LBPushButtonAction(show_text=False)
@@ -83,11 +84,15 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 	def _setupWidgets(self):
 
 		self.addWidget(self._btn_open)
+
+		self.addWidget(self._prg_loading)
+
+#		
+#		if isinstance(self, QtWidgets.QToolBar):
+#			self.addSeparator()
+#		else:
+#			self.layout().addStretch()
 		
-		if isinstance(self, QtWidgets.QToolBar):
-			self.addSeparator()
-		else:
-			self.layout().addStretch()
 		
 		self._btngrp_viewmode.setExclusive(True)
 		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
@@ -142,6 +147,10 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 	def binViewSelector(self) -> QtWidgets.QComboBox:
 
 		return self._cmb_binviews
+	
+	def progressBar(self) -> QtWidgets.QProgressBar:
+
+		return self._prg_loading
 
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
