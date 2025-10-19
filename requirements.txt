@@ -1,2 +1,3 @@
 avbutils @ git+https://github.com/mjiggidy/avbutils.git#egg=avbutils
+qtlogrelay @ git+https://github.com/mjiggidy/qtlogrelay.git
 PySide6==6.10.0
