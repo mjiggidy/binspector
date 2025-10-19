@@ -17,6 +17,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 		# Status signals
 		sig_begin_loading = QtCore.Signal(str)
 		sig_done_loading = QtCore.Signal()
+		sig_aborted_loading = QtCore.Signal()
 		sig_got_exception = QtCore.Signal(object)
 
 		sig_got_mob_count = QtCore.Signal(int)
