@@ -167,6 +167,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_show_about.triggered          .connect(self.showAboutBox)
 
 		self._man_actions._act_reloadcurrent.triggered       .connect(lambda: self.loadBinFromPath(self.windowFilePath()))
+		self._man_actions._act_stopcurrent.triggered         .connect(self._sigs_binloader.requestStop)
 
 		self._man_actions._act_check_updates.triggered       .connect(self.sig_request_check_updates)
 		self._man_actions._act_open_discussions.triggered    .connect(self.sig_request_visit_discussions)
@@ -207,6 +208,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_begin_loading               .connect(self.prepareForBinLoading)
 		self._sigs_binloader.sig_done_loading                .connect(self.cleanupAfterBinLoading)
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
+		self._sigs_binloader.sig_aborted_loading             .connect(self.cleanupPartialBin)
 		self._sigs_binloader.sig_got_mob_count               .connect(self._main_bincontents.topWidgetBar().progressBar().setMaximum)
 		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading %v of %m mobs"))
  
@@ -279,7 +281,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setEnabled(True)
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
-		
 		self._man_binitems.viewModel().clear
 		
 		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
@@ -310,6 +311,13 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
+
+	@QtCore.Slot()
+	def cleanupPartialBin(self):
+		"""Do any cleanup for a cancelled bin load"""
+
+		import logging
+		logging.getLogger(__name__).info("User cancelled loading bin")
 
 	@QtCore.Slot(object)
 	def binLoadException(self, exception:Exception):

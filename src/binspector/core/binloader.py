@@ -15,20 +15,27 @@ class BSBinViewLoader(QtCore.QRunnable):
 		"""Signals emitted by `BSBinViewLoader`"""
 
 		# Status signals
-		sig_begin_loading = QtCore.Signal(str)
-		sig_done_loading = QtCore.Signal()
-		sig_aborted_loading = QtCore.Signal()
-		sig_got_exception = QtCore.Signal(object)
+		sig_begin_loading     = QtCore.Signal(str)
+		sig_done_loading      = QtCore.Signal()
+		sig_aborted_loading   = QtCore.Signal()
+		sig_got_exception     = QtCore.Signal(object)
 
-		sig_got_mob_count = QtCore.Signal(int)
+		sig_got_mob_count     = QtCore.Signal(int)
 
-		sig_got_display_mode = QtCore.Signal(object)
-		sig_got_bin_appearance_settings = QtCore.Signal(object, object, object, object, object, object, object)
-		sig_got_bin_display_settings = QtCore.Signal(object)
+		sig_got_display_mode  = QtCore.Signal(object)
 		sig_got_view_settings = QtCore.Signal(object, object)
-		sig_got_mob = QtCore.Signal(object)
+		sig_got_mob           = QtCore.Signal(object)
 		sig_got_sort_settings = QtCore.Signal(object)
 		sig_got_sift_settings = QtCore.Signal(bool, object)
+		sig_got_bin_display_settings    = QtCore.Signal(object)
+		sig_got_bin_appearance_settings = QtCore.Signal(object, object, object, object, object, object, object)
+
+		# Runnable control
+		_sig_user_request_stop = QtCore.Signal()
+
+		@QtCore.Slot()
+		def requestStop(self):
+			self._sig_user_request_stop.emit()
 
 	def __init__(self, bin_path:PathLike, signals:Signals, *args, **kwargs):
 		
@@ -37,10 +44,18 @@ class BSBinViewLoader(QtCore.QRunnable):
 		self._bin_path = bin_path
 		self._signals  = signals
 
+		self._stop_requested = False
+		self._signals._sig_user_request_stop.connect(self.requestStop)
+
 	def signals(self) -> Signals:
 		"""Return the signals instance"""
 
 		return self._signals
+	
+	def requestStop(self):
+		"""Request graceful stop"""
+
+		self._stop_requested = True
 	
 	def run(self):
 		"""Run the thing"""
@@ -70,6 +85,10 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 			# Load mobs
 			for bin_item in bin_handle.content.items:
+
+				if self._stop_requested:
+					self._signals.sig_aborted_loading.emit()
+					break
 
 				try:
 					self._signals.sig_got_mob.emit(binparser.load_item_from_bin(bin_item))
