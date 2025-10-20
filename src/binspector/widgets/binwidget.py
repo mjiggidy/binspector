@@ -1,7 +1,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 import avbutils
 from ..views import bintreeview, binframeview, binscriptview
-from . import buttons
+from . import buttons, sliders
 
 class BSBinContentsWidgetBar(QtWidgets.QWidget):
 	"""Widget bar to display above/below"""
@@ -59,6 +59,12 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 
 	sig_binview_selected = QtCore.Signal(object)
 	"""User changed the binview"""
+
+	sig_frame_scale_changed  = QtCore.Signal(int)
+	"""User changed frame thumb scale slider"""
+
+	sig_script_scale_changed = QtCore.Signal(int)
+	"""User changed script thumb scale slider"""
 	
 	def __init__(self, *args, **kwargs):
 
@@ -80,10 +86,15 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 		self._btn_viewmode_frame  = buttons.LBPushButtonAction(show_text=False)
 		self._btn_viewmode_script = buttons.LBPushButtonAction(show_text=False)
 
-		self._cmb_binviews    = QtWidgets.QComboBox()
-		self._txt_search      = QtWidgets.QLineEdit()
+		self._mode_controls       = QtWidgets.QStackedWidget()
+		self._cmb_binviews        = QtWidgets.QComboBox()
+		self._sld_frame_scale     = sliders.ViewModeSlider()
+		self._sld_script_scale    = sliders.ViewModeSlider()
+		
+		self._txt_search          = QtWidgets.QLineEdit()
 
 		self._setupWidgets()
+		self._setupSignals()
 
 	def _setupWidgets(self):
 
@@ -93,14 +104,29 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 		self.addWidget(buttons.BSPushButtonActionBar(self._btngrp_file))
 
 		self.addWidget(self._prg_loading)
-		
 
 		self._cmb_binviews.setSizePolicy(self._cmb_binviews.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
 		self._cmb_binviews.setMinimumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 24)
 		self._cmb_binviews.setMaximumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 32)
 		self._cmb_binviews.addItem("")
 		self._cmb_binviews.insertSeparator(1)
-		self.addWidget(self._cmb_binviews)
+
+		self._sld_frame_scale.setRange(
+			avbutils.bins.THUMB_FRAME_MODE_RANGE.start,
+			avbutils.bins.THUMB_FRAME_MODE_RANGE.stop,
+		)
+
+		self._sld_script_scale.setRange(
+			avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start,
+			avbutils.bins.THUMB_SCRIPT_MODE_RANGE.stop,
+		)
+		
+		self._mode_controls.addWidget(self._cmb_binviews)
+		self._mode_controls.addWidget(self._sld_frame_scale)
+		self._mode_controls.addWidget(self._sld_script_scale)
+		self._mode_controls.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+		#self._mode_controls.setCurrentIndex(1)
+		self.addWidget(self._mode_controls)
 
 		self._btngrp_viewmode.setExclusive(True)
 		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
@@ -117,7 +143,11 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 
 	def _setupSignals(self):
 
-		self._txt_search.textEdited.connect(self.sig_search_text_changed)
+		self._sld_frame_scale.valueChanged.connect(self.sig_frame_scale_changed)
+		#self._sld_frame_scale.valueChanged.connect(print)
+		self._sld_script_scale.valueChanged.connect(self.sig_script_scale_changed)
+
+		#self._txt_search.textEdited.connect(self.sig_search_text_changed)
 	
 	def setOpenBinAction(self, action:QtGui.QAction):
 		"""Set the action for Open Bin"""
@@ -161,6 +191,13 @@ class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
 	def progressBar(self) -> QtWidgets.QProgressBar:
 
 		return self._prg_loading
+	
+	@QtCore.Slot(object)
+	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
+
+		self._mode_controls.setCurrentIndex(int(view_mode))
+
+
 
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
@@ -198,6 +235,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.model().rowsRemoved  .connect(self.updateBinStats)
 		self._binitems_list.model().modelReset   .connect(self.updateBinStats)
 
+		self._section_top.sig_frame_scale_changed.connect(print)
+		
 		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
@@ -308,9 +347,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
 		"""Set the current view mode"""
 
-		print("SETTING VIEW MODE TO ", view_mode)
+		#print("SETTING VIEW MODE TO ", view_mode)
 
 		self._section_main.setCurrentIndex(int(view_mode))
+		self._section_top.setViewMode(view_mode)
 		self.sig_view_mode_changed.emit(view_mode)
 
 	def viewMode(self) -> avbutils.BinDisplayModes:
