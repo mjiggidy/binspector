@@ -127,7 +127,10 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_bin_changed.connect(lambda bin_path: self._settingsManager.settings("app").setValue("LastSession/last_bin",bin_path))
 		
 		logging.getLogger(__name__).debug("Created %s", window)
+		
 		window.show()
+		window.raise_()
+		window.activateWindow()
 
 		if show_file_browser:
 
