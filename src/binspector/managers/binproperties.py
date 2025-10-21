@@ -29,14 +29,14 @@ class BSBinViewModeManager(QtCore.QObject):
 
 class BSBinViewManager(base.LBItemDefinitionView):
 
-	sig_bin_view_changed = QtCore.Signal(object, object)
+	sig_bin_view_changed = QtCore.Signal(object, object, int)
 	"""Binview has been reset"""
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None):
+	@QtCore.Slot(object, object, object)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
 		"""Set columns and their widths"""
 
 		self.viewModel().clear()
@@ -61,7 +61,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 				
 			self.addColumnDefinition(column)
 		
-		self.sig_bin_view_changed.emit(bin_view, column_widths)
+		self.sig_bin_view_changed.emit(bin_view, column_widths, frame_view_scale)
 
 	@QtCore.Slot(object)
 	def addColumnDefinition(self, column_definition:dict[str,object]):

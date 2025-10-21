@@ -221,6 +221,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
+		self._man_binview.sig_bin_view_changed               .connect(lambda v,c,s: self._main_bincontents.frameView().setZoom(s))
 		self._man_binitems.sig_bin_view_changed              .connect(lambda bv, widths: self._main_bincontents.setBinViewName(bv.name))
 
 		# Update display counts -- Not where where to put this
