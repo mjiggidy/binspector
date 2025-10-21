@@ -23,7 +23,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 		sig_got_mob_count     = QtCore.Signal(int)
 
 		sig_got_display_mode  = QtCore.Signal(object)
-		sig_got_view_settings = QtCore.Signal(object, object)
+		sig_got_view_settings = QtCore.Signal(object, object, object)
 		sig_got_mob           = QtCore.Signal(object)
 		sig_got_sort_settings = QtCore.Signal(object)
 		sig_got_sift_settings = QtCore.Signal(bool, object)
@@ -67,8 +67,10 @@ class BSBinViewLoader(QtCore.QRunnable):
 			# Load bin properties
 			try:
 				self._signals.sig_got_bin_display_settings.emit(binparser.bin_display_flags_from_bin(bin_handle.content))
-				self._signals.sig_got_view_settings.emit(binparser.bin_view_setting_from_bin(
-					bin_handle.content), binparser.bin_column_widths_from_bin(bin_handle.content)
+				self._signals.sig_got_view_settings.emit(
+					binparser.bin_view_setting_from_bin(bin_handle.content),
+					binparser.bin_column_widths_from_bin(bin_handle.content),
+					binparser.bin_frame_view_scale_from_bin(bin_handle.content)
 				)
 				self._signals.sig_got_display_mode.emit(binparser.display_mode_from_bin(bin_handle.content))
 				self._signals.sig_got_sift_settings.emit(*binparser.sift_settings_from_bin(bin_handle.content))

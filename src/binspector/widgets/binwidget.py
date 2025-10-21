@@ -240,6 +240,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
+		self._binitems_frame.sig_scale_changed.connect(self._section_top._sld_frame_scale.setValue)
+
 	def _setViewModeWidget(self, mode:avbutils.BinDisplayModes, widget:QtWidgets.QWidget):
 		"""Set view mode widget delegate for the stacked widget"""
 
