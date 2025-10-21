@@ -235,7 +235,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.model().rowsRemoved  .connect(self.updateBinStats)
 		self._binitems_list.model().modelReset   .connect(self.updateBinStats)
 
-		self._section_top.sig_frame_scale_changed.connect(print)
+		self._section_top.sig_frame_scale_changed.connect(self.frameView().setZoom)
 		
 		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
