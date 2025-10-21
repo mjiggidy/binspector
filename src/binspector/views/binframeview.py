@@ -10,6 +10,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 
+		self.setZoom(4)
+
 	@QtCore.Slot(int)
 	def setZoom(self, zoom_level:int):
 
@@ -41,8 +43,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		super().drawBackground(painter, rect)
 
 		painter.save()
-
-		print(rect)
 
 		for x in range(round(rect.left()), round(rect.right())+1):
 

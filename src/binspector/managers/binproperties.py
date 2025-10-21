@@ -273,7 +273,7 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		item_rect.setSelected(True)
 		item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
 	
-		print(item_rect.flags())
+		#print(item_rect.flags())
 		
 		
 		self._frame_scene.addItem(
