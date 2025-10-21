@@ -260,10 +260,13 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		self.addRow(mob_info.column_data)
 		#print(mob_info.coordinates)
 		
-		self._frame_scale = 11
+		#self._frame_scale = 11
+		self._frame_scale = 1
+		
+		TEMP_POSITION_OFFSET_THING = 10
 
 		item_rect = BSFrameModeItem()
-		item_rect.setPos(*mob_info.coordinates)
+		item_rect.setPos(mob_info.coordinates[0]/TEMP_POSITION_OFFSET_THING, mob_info.coordinates[1]/TEMP_POSITION_OFFSET_THING)
 		item_rect.setScale(self._frame_scale)
 		item_rect.setName(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Name")))
 		item_rect.setClipColor(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Color")).raw_data())
@@ -286,7 +289,7 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 	def boundingRect(self) -> QtCore.QRectF:
-		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(16,10))
+		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(18,12))
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, /,	 widget:QtWidgets.QWidget = ...):
 
@@ -325,7 +328,8 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 			pen = QtGui.QPen()
 			pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-			pen.setWidthF(4/self.scale())
+			pen.setWidthF(0.25/self.scale())
+			pen.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
 			pen.setColor(self._clip_color)
 			
 			brush = QtGui.QBrush()
@@ -336,7 +340,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 			painter.drawRect(self.boundingRect().adjusted(.25,.25,-.25,-.25))
 
 		font = QtGui.QFont()
-		font.setPixelSize(16/self.scale())
+		font.setPixelSize(1/self.scale())
 		
 		painter.setFont(font)
 		pen = QtGui.QPen()
