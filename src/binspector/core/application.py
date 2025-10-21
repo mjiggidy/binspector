@@ -129,13 +129,13 @@ class BSMainApplication(QtWidgets.QApplication):
 		logging.getLogger(__name__).debug("Created %s", window)
 		
 		window.show()
-		window.raise_()
+		#window.raise_()
 		window.activateWindow()
 
 		if show_file_browser:
 
 			initial_path = self._settingsManager.settings("app").value("LastSession/last_bin", QtCore.QDir.homePath())
-			print(initial_path)
+			#print(initial_path)
 			window.showFileBrowser(initial_path)
 
 		return window
