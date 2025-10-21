@@ -334,6 +334,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			filter="Avid Bin (*.avb);;All Files (*)",
 			dir=initial_path or self.windowFilePath()
 		)
+
+		self.activateWindow()
 		
 		if file_path:
 			self.loadBinFromPath(file_path)
