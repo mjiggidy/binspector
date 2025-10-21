@@ -9,6 +9,41 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
+	
+	def drawBackground(self, painter:QtGui.QPainter, rect:QtCore.QRectF):
+		
+		TEMP_SCALE = 12
+		
+		GRID_WIDTH = 16 * TEMP_SCALE
+		GRID_HEIGHT = 9 * TEMP_SCALE
+		
+
+		DIVISIONS = 3
+
+		super().drawBackground(painter, rect)
+
+		painter.save()
+
+		for x in range(int(rect.left()), int(rect.right())+1):
+
+			if x%GRID_WIDTH == 0:
+
+				painter.drawLine(QtCore.QLine(
+					QtCore.QPoint(x, rect.top()),
+					QtCore.QPoint(x, rect.bottom())
+				))
+
+
+		for y in range(int(rect.top()), int(rect.bottom())+1):
+
+			if y%GRID_HEIGHT == 0:
+
+				painter.drawLine(QtCore.QLine(
+					QtCore.QPoint(rect.left(),  y),
+					QtCore.QPoint(rect.right(), y)
+				))
+
+		painter.restore()
 
 	@QtCore.Slot(int)
 	def setZoom(self, zoom_level:int):
