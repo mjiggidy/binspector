@@ -1,10 +1,7 @@
-import avbutils
 from PySide6 import QtCore, QtWidgets
-from .delegates import binitems
-from ..models import viewmodels
 
 class LBTreeView(QtWidgets.QTreeView):
-	"""QTreeView but nicer"""
+	"""QTreeView with muh defaults"""
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -30,6 +27,8 @@ class LBTreeView(QtWidgets.QTreeView):
 	
 	@QtCore.Slot()
 	def resizeAllColumnsToContents(self):
+		"""Generic resize-to-fit"""
+
 		for idx in range(self.header().count()):
 			self.resizeColumnToContents(idx)
 	
@@ -37,12 +36,11 @@ class LBTreeView(QtWidgets.QTreeView):
 	def sortByColumnName(self, column_name:str, sort_order:QtCore.Qt.SortOrder) -> bool:
 		"""Sort by a column's display name"""
 
-		column_names = self.columnDisplayNames()
-
 		try:
-			header_index = column_names.index(column_name)
+			header_index = self.columnDisplayNames().index(column_name)
 		except ValueError:
 			return False
 
 		self.sortByColumn(header_index, sort_order)
+		
 		return True
