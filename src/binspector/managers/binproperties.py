@@ -63,6 +63,17 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		
 		self.sig_bin_view_changed.emit(bin_view, column_widths, frame_view_scale)
 
+		self._default_sort_columns:list[list[int,str]] = []
+
+	@QtCore.Slot(object)
+	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
+
+		self._default_sort_columns = sort_settings
+
+	def defaultSortColumns(self) -> list[list[int,str]]:
+
+		return self._default_sort_columns
+
 	@QtCore.Slot(object)
 	def addColumnDefinition(self, column_definition:dict[str,object]):
 

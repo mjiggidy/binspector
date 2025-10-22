@@ -215,6 +215,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
+		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
 		self._sigs_binloader.sig_got_mob                     .connect(self._man_binitems.addMob)
 		self._sigs_binloader.sig_got_mob                     .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
@@ -305,6 +306,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# TODO: Set as stored sort column if available from the bin
 		self._main_bincontents.listView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
 		self._main_bincontents.listView().setSortingEnabled(True)
+		
+		if self._man_binview.defaultSortColumns():
+			last_col = self._man_binview.defaultSortColumns()[-1]
+			direction, column_name = QtCore.Qt.SortOrder(last_col[0]), last_col[1]
+			if column_name in self._main_bincontents.listView().columnDisplayNames():
+				self._main_bincontents.listView().header().setSortIndicator(
+					self._main_bincontents.listView().columnDisplayNames().index(column_name),
+					direction
+				)
 		
 		#self._main_bincontents.treeView().resizeAllColumnsToContents()
 		

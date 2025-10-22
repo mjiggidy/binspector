@@ -7,6 +7,9 @@ from ..models import viewmodels
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
 
+	sig_default_sort_columns_changed = QtCore.Slot(object)
+	"""TODO: HMMMMMM"""
+
 	COLUMN_PADDING_RIGHT:int = 24
 	"""Additional whitespace per column"""
 
@@ -104,3 +107,9 @@ class BSBinTreeView(treeview.LBTreeView):
 
 	def sizeHintForColumn(self, column):
 		return super().sizeHintForColumn(column) + self.COLUMN_PADDING_RIGHT
+	
+	@QtCore.Slot(object)
+	def setDefaultSortColumns(self, sort_columns:list[list[int,str]]):
+
+		self._default_sort = sort_columns
+		self.sig_default_sort_columns_changed.emit(self._default_sort)
