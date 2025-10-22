@@ -286,6 +286,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
 		self._main_bincontents.topWidgetBar().progressBar().show()
+
+		self._main_bincontents.listView().setSortingEnabled(False)
 		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
@@ -297,6 +299,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._main_bincontents.topWidgetBar().progressBar().setMaximum(0)
 		self._main_bincontents.topWidgetBar().progressBar().setValue(0)
 		self._main_bincontents.topWidgetBar().progressBar().hide()
+
+		# Enabling sorting also performs a sort... sooo
+		# Set invalid sort column first, per the docs
+		# TODO: Set as stored sort column if available from the bin
+		self._main_bincontents.listView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
+		self._main_bincontents.listView().setSortingEnabled(True)
 		
 		#self._main_bincontents.treeView().resizeAllColumnsToContents()
 		
