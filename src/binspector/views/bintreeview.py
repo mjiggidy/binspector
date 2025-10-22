@@ -1,11 +1,14 @@
-import avbutils
 from PySide6 import QtCore
+import avbutils
+from . import treeview
 from .delegates import binitems
 from ..models import viewmodels
-from . import treeview
 
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
+
+	sig_default_sort_columns_changed = QtCore.Slot(object)
+	"""TODO: HMMMMMM"""
 
 	COLUMN_PADDING_RIGHT:int = 24
 	"""Additional whitespace per column"""
@@ -78,15 +81,35 @@ class BSBinTreeView(treeview.LBTreeView):
 		if source_end is None:
 			source_end = source_start
 
-		for column_logical in range(source_start, source_end+1):
+		for col_index_logical in range(source_start, source_end+1):
 			
-			column_width = self.model().headerData(column_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+4)
-			
-			if column_width:
-				self.setColumnWidth(column_logical, column_width + self.COLUMN_PADDING_RIGHT)
-			
-			elif autosize_if_undefined:
-				self.resizeColumnToContents(column_logical)
+			self.setColumnWidthFromBinView(
+				col_index_logical,
+				autosize_if_undefined
+			)
+	
+	@QtCore.Slot(int)
+	@QtCore.Slot(int, bool)
+	def setColumnWidthFromBinView(self, col_index_logical:int, autosize_if_undefined:bool=True):
+		"""Set column width from stored bin view, or resize to contents"""
+
+		column_width = self.model().headerData(
+			col_index_logical,
+			QtCore.Qt.Orientation.Horizontal,
+			QtCore.Qt.ItemDataRole.UserRole+4	# Column width, if specified by bin view
+		)
+		
+		if column_width:
+			self.setColumnWidth(col_index_logical, column_width + self.COLUMN_PADDING_RIGHT)
+		
+		elif autosize_if_undefined:
+			self.resizeColumnToContents(col_index_logical)
 
 	def sizeHintForColumn(self, column):
 		return super().sizeHintForColumn(column) + self.COLUMN_PADDING_RIGHT
+	
+	@QtCore.Slot(object)
+	def setDefaultSortColumns(self, sort_columns:list[list[int,str]]):
+
+		self._default_sort = sort_columns
+		self.sig_default_sort_columns_changed.emit(self._default_sort)

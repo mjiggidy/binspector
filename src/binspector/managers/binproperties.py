@@ -29,14 +29,14 @@ class BSBinViewModeManager(QtCore.QObject):
 
 class BSBinViewManager(base.LBItemDefinitionView):
 
-	sig_bin_view_changed = QtCore.Signal(object, object)
+	sig_bin_view_changed = QtCore.Signal(object, object, int)
 	"""Binview has been reset"""
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None):
+	@QtCore.Slot(object, object, object)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
 		"""Set columns and their widths"""
 
 		self.viewModel().clear()
@@ -50,7 +50,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 			viewmodelitems.LBAbstractViewHeaderItem("hidden", "Is Hidden"),
 		]
 		
-		for header in headers[::-1]:
+		for header in headers:
 			super().addHeader(header)
 
 		for idx, column in enumerate(bin_view.columns):
@@ -61,7 +61,18 @@ class BSBinViewManager(base.LBItemDefinitionView):
 				
 			self.addColumnDefinition(column)
 		
-		self.sig_bin_view_changed.emit(bin_view, column_widths)
+		self.sig_bin_view_changed.emit(bin_view, column_widths, frame_view_scale)
+
+		self._default_sort_columns:list[list[int,str]] = []
+
+	@QtCore.Slot(object)
+	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
+
+		self._default_sort_columns = sort_settings
+
+	def defaultSortColumns(self) -> list[list[int,str]]:
+
+		return self._default_sort_columns
 
 	@QtCore.Slot(object)
 	def addColumnDefinition(self, column_definition:dict[str,object]):
@@ -87,7 +98,7 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 			viewmodelitems.LBAbstractViewHeaderItem("value", "Value"),
 		]
 		
-		for header in headers[::-1]:
+		for header in headers:
 			self.addHeader(header)
 		
 		for f in bin_display:
@@ -176,7 +187,7 @@ class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 			viewmodelitems.LBAbstractViewHeaderItem("column", "Column")
 		]
 
-		for header in headers[::-1]:
+		for header in headers:
 			self.addHeader(header)
 		
 		for order, (direction, column_name) in enumerate(sorting):
@@ -236,10 +247,7 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		self.viewModel().clear()
 		self.frameScene().clear()
 
-		for column in bin_view.columns[::-1]:
-
-#			if column["hidden"]:
-#				continue
+		for column in bin_view.columns:
 
 			self.addHeader(
 				viewmodelitems.LBAbstractViewHeaderItem(
@@ -260,23 +268,23 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		self.addRow(mob_info.column_data)
 		#print(mob_info.coordinates)
 		
-		self._frame_scale = 11
+		#self._frame_scale = 11
+		self._frame_scale = 1
+		
+		TEMP_POSITION_OFFSET_THING = 10
 
 		item_rect = BSFrameModeItem()
-		item_rect.setPos(*mob_info.coordinates)
+		item_rect.setPos(mob_info.coordinates[0]/TEMP_POSITION_OFFSET_THING, mob_info.coordinates[1]/TEMP_POSITION_OFFSET_THING)
 		item_rect.setScale(self._frame_scale)
 		item_rect.setName(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Name")))
 		item_rect.setClipColor(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Color")).raw_data())
 		item_rect.setSelected(True)
 		item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
-	
-		print(item_rect.flags())
-		
+
 		
 		self._frame_scene.addItem(
 			item_rect
 		)
-
 
 		self.sig_mob_added.emit(mob_info)
 
@@ -286,7 +294,7 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 	def boundingRect(self) -> QtCore.QRectF:
-		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(16,10))
+		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(18,12))
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, /,	 widget:QtWidgets.QWidget = ...):
 
@@ -325,7 +333,8 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 			pen = QtGui.QPen()
 			pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-			pen.setWidthF(4/self.scale())
+			pen.setWidthF(0.25/self.scale())
+			pen.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
 			pen.setColor(self._clip_color)
 			
 			brush = QtGui.QBrush()
@@ -336,7 +345,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 			painter.drawRect(self.boundingRect().adjusted(.25,.25,-.25,-.25))
 
 		font = QtGui.QFont()
-		font.setPixelSize(16/self.scale())
+		font.setPixelSize(1/self.scale())
 		
 		painter.setFont(font)
 		pen = QtGui.QPen()

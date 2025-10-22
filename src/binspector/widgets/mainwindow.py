@@ -215,12 +215,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
+		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
 		self._sigs_binloader.sig_got_mob                     .connect(self._man_binitems.addMob)
 		self._sigs_binloader.sig_got_mob                     .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
+		self._man_binview.sig_bin_view_changed               .connect(lambda v,c,s: self._main_bincontents.frameView().setZoom(s))
 		self._man_binitems.sig_bin_view_changed              .connect(lambda bv, widths: self._main_bincontents.setBinViewName(bv.name))
 
 		# Update display counts -- Not where where to put this
@@ -285,6 +287,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
 		self._main_bincontents.topWidgetBar().progressBar().show()
+
+		self._main_bincontents.listView().setSortingEnabled(False)
 		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
@@ -296,6 +300,21 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._main_bincontents.topWidgetBar().progressBar().setMaximum(0)
 		self._main_bincontents.topWidgetBar().progressBar().setValue(0)
 		self._main_bincontents.topWidgetBar().progressBar().hide()
+
+		# Enabling sorting also performs a sort... sooo
+		# Set invalid sort column first, per the docs
+		# TODO: Set as stored sort column if available from the bin
+		self._main_bincontents.listView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
+		self._main_bincontents.listView().setSortingEnabled(True)
+		
+		if self._man_binview.defaultSortColumns():
+			last_col = self._man_binview.defaultSortColumns()[-1]
+			direction, column_name = QtCore.Qt.SortOrder(last_col[0]), last_col[1]
+			if column_name in self._main_bincontents.listView().columnDisplayNames():
+				self._main_bincontents.listView().header().setSortIndicator(
+					self._main_bincontents.listView().columnDisplayNames().index(column_name),
+					direction
+				)
 		
 		#self._main_bincontents.treeView().resizeAllColumnsToContents()
 		
@@ -334,6 +353,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			filter="Avid Bin (*.avb);;All Files (*)",
 			dir=initial_path or self.windowFilePath()
 		)
+
+		self.activateWindow()
 		
 		if file_path:
 			self.loadBinFromPath(file_path)

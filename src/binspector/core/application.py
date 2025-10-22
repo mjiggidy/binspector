@@ -17,7 +17,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		super().__init__(*args, **kwargs)
 
 		self.setApplicationName("Binspector")
-		self.setApplicationVersion("0.0.2")
+		self.setApplicationVersion("0.0.3")
 		self.setStyle("Fusion")
 
 		self.setOrganizationName("GlowingPixel")
@@ -127,12 +127,15 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_bin_changed.connect(lambda bin_path: self._settingsManager.settings("app").setValue("LastSession/last_bin",bin_path))
 		
 		logging.getLogger(__name__).debug("Created %s", window)
+		
 		window.show()
+		#window.raise_()
+		window.activateWindow()
 
 		if show_file_browser:
 
 			initial_path = self._settingsManager.settings("app").value("LastSession/last_bin", QtCore.QDir.homePath())
-			print(initial_path)
+			#print(initial_path)
 			window.showFileBrowser(initial_path)
 
 		return window
