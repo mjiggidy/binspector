@@ -50,7 +50,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 			viewmodelitems.LBAbstractViewHeaderItem("hidden", "Is Hidden"),
 		]
 		
-		for header in headers[::-1]:
+		for header in headers:
 			super().addHeader(header)
 
 		for idx, column in enumerate(bin_view.columns):
@@ -87,7 +87,7 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 			viewmodelitems.LBAbstractViewHeaderItem("value", "Value"),
 		]
 		
-		for header in headers[::-1]:
+		for header in headers:
 			self.addHeader(header)
 		
 		for f in bin_display:
@@ -176,7 +176,7 @@ class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 			viewmodelitems.LBAbstractViewHeaderItem("column", "Column")
 		]
 
-		for header in headers[::-1]:
+		for header in headers:
 			self.addHeader(header)
 		
 		for order, (direction, column_name) in enumerate(sorting):
@@ -236,10 +236,7 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		self.viewModel().clear()
 		self.frameScene().clear()
 
-		for column in bin_view.columns[::-1]:
-
-#			if column["hidden"]:
-#				continue
+		for column in bin_view.columns:
 
 			self.addHeader(
 				viewmodelitems.LBAbstractViewHeaderItem(
@@ -272,14 +269,11 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		item_rect.setClipColor(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Color")).raw_data())
 		item_rect.setSelected(True)
 		item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
-	
-		#print(item_rect.flags())
-		
+
 		
 		self._frame_scene.addItem(
 			item_rect
 		)
-
 
 		self.sig_mob_added.emit(mob_info)
 

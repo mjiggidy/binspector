@@ -118,35 +118,54 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 
 		super().__init__()
 
-		self._timelines:list[dict[str, viewmodelitems.LBAbstractViewItem]] = []
+		self._bin_items:list[dict[str, viewmodelitems.LBAbstractViewItem]] = []
 		"""List of view items by key"""
 
 		self._headers:list[viewmodelitems.LBAbstractViewHeaderItem] = []
 		"""List of view headers"""
-
-	def parent(self, /, child:QtCore.QModelIndex) -> QtCore.QModelIndex:
-		return QtCore.QModelIndex()
 	
 	def rowCount(self, /, parent:QtCore.QModelIndex=QtCore.QModelIndex()) -> int:
+		"""Number of bin items"""
+
 		if parent.isValid():
 			return 0
-		return len(self._timelines)
+		
+		return len(self._bin_items)
 	
 	def columnCount(self, /, parent:QtCore.QModelIndex=QtCore.QModelIndex()) -> int:
+		"""Number of available columns"""
+
 		if parent.isValid():
 			return 0
+		
 		return len(self._headers)
+
+	def parent(self, /, child:QtCore.QModelIndex) -> QtCore.QModelIndex:
+		"""Get the parent of the given bin item (invalid for now -- flat model)"""
+
+		return QtCore.QModelIndex()
 	
 	def index(self, row:int, column:int, /, parent:QtCore.QModelIndex) -> QtCore.QModelIndex:
+		"""Get a handle to an item field"""
+
 		if parent.isValid():
 			return QtCore.QModelIndex()
+
 		return self.createIndex(row, column)
 	
+	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
+		"""Get the data for the given role of a specified column index"""
+
+		if orientation == QtCore.Qt.Orientation.Horizontal:
+			return self._headers[section].data(role)
+		
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
+		"""Get the data for the given role of a specified item index"""
+
 		if not index.isValid():
 			return None
 		
-		timeline   = self._timelines[index.row()]
+		timeline   = self._bin_items[index.row()]
 		field_name = self._headers[index.column()].field_name()
 
 		if field_name not in timeline:
@@ -154,29 +173,39 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 
 		return timeline.get(field_name).data(role)
 	
-	def clear(self):
-		self.beginResetModel()
-		self._timelines = []
-		self._headers = []
-		self.endResetModel()
-	
-	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
-		if orientation == QtCore.Qt.Orientation.Horizontal:
-			return self._headers[section].data(role)
-	
 	def fields(self) -> list[str]:
-		"""Field names for mapping headers and columns, in order"""
+		"""Binspecific: Field names for mapping headers and columns, in order"""
+
 		return [x.field_name() for x in self._headers]
 	
+	def clear(self):
+		"""Clear and reset the model"""
+
+		self.beginResetModel()
+		
+		self._bin_items = []
+		self._headers = []
+		
+		self.endResetModel()
+	
 	def addHeader(self, header:viewmodelitems.LBAbstractViewHeaderItem) -> bool:
-		self.beginInsertColumns(QtCore.QModelIndex(), 0, 0)
-		self._headers.insert(0, header)
+		"""Binspecific: Add a column header"""
+		
+		new_idx = len(self._headers)
+		
+		self.beginInsertColumns(QtCore.QModelIndex(), new_idx, new_idx)
+		self._headers.append(header)
 		self.endInsertColumns()
+		
 		return True
 
-	def addTimeline(self, timeline:dict[str,viewmodelitems.LBAbstractViewItem]) -> bool:
+	def addBinItem(self, bin_item:dict[str,viewmodelitems.LBAbstractViewItem]) -> bool:
+		"""Binspecific: Add a bin item"""
 
-		self.beginInsertRows(QtCore.QModelIndex(), 0, 0)
-		self._timelines.insert(0, timeline)
+		new_idx = len(self._bin_items)
+		
+		self.beginInsertRows(QtCore.QModelIndex(), new_idx, new_idx)
+		self._bin_items.append(bin_item)
 		self.endInsertRows()
+		
 		return True

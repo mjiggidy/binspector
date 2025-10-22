@@ -3,6 +3,7 @@ from PySide6 import QtCore
 from ..models import viewmodels, viewmodelitems
 
 class LBAbstractPresenter(QtCore.QObject):
+	"""A general manager thing that also maintains a viewmodel of its data"""
 
 	def __init__(self, *args, **kwargs):
 
@@ -14,13 +15,14 @@ class LBAbstractPresenter(QtCore.QObject):
 		return self._view_model
 	
 	def addRow(self, row_data:dict[str,viewmodelitems.LBAbstractViewItem]):
-		self._view_model.addTimeline(row_data)
+		self._view_model.addBinItem(row_data)
 	
 	def addHeader(self, header_data:viewmodelitems.LBAbstractViewHeaderItem):
 		self._view_model.addHeader(header_data)
 	
 
 class LBItemDefinitionView(LBAbstractPresenter):
+	"""A general data manager that maintains a key/val viewmodel of its data"""
 
 	@QtCore.Slot(object)
 	def addRow(self, row_data:dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any], add_new_headers:bool=False):
