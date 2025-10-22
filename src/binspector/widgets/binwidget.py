@@ -3,7 +3,7 @@ import avbutils
 from ..views import bintreeview, binframeview, binscriptview
 from . import buttons, sliders
 
-class BSBinContentsWidgetBar(QtWidgets.QWidget):
+class BSAbstractBinContentsWidgetBar(QtWidgets.QWidget):
 	"""Widget bar to display above/below"""
 
 	# TODO: I don't know lol might want this later
@@ -28,7 +28,7 @@ class BSBinContentsWidgetBar(QtWidgets.QWidget):
 		else:
 			self.layout().addWidget(widget)
 
-class BSBinContentsBottomWidgetBar(BSBinContentsWidgetBar):
+class BSBinContentsBottomWidgetBar(BSAbstractBinContentsWidgetBar):
 	"""Default bottom widget bar"""
 
 	def __init__(self, *args, **kwargs):
@@ -51,7 +51,7 @@ class BSBinContentsBottomWidgetBar(BSBinContentsWidgetBar):
 
 		self._txt_info.setText(text)
 		
-class BSBinContentsTopWidgetBar(BSBinContentsWidgetBar):
+class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 	"""Default top widget bar"""
 
 	sig_search_text_changed = QtCore.Signal(object)
@@ -241,6 +241,22 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
 		self._binitems_frame.sig_scale_changed.connect(self._section_top._sld_frame_scale.setValue)
+
+		# Shortcuts/Actions
+		# TODO: Not here lol but i dunno
+		self._act_set_view_width_for_columns = QtGui.QAction(self._binitems_list)
+		self._act_set_view_width_for_columns.setText("Fit bin list columns to contents")
+		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
+		self._act_set_view_width_for_columns.triggered.connect(lambda: self._binitems_list.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._binitems_list.header().count()-1))
+
+		self._act_autofit_columns = QtGui.QAction(self._binitems_list)
+		self._act_autofit_columns.setText("Auto-fit bin list columns to contents")
+		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
+		self._act_autofit_columns.triggered.connect(self._binitems_list.resizeAllColumnsToContents)
+		self._act_autofit_columns.triggered.connect(lambda: print)
+		
+		self._binitems_list.addAction(self._act_set_view_width_for_columns)
+		self._binitems_list.addAction(self._act_autofit_columns)
 
 	def _setViewModeWidget(self, mode:avbutils.BinDisplayModes, widget:QtWidgets.QWidget):
 		"""Set view mode widget delegate for the stacked widget"""
