@@ -99,7 +99,7 @@ class BSLogDataModel(QtCore.QAbstractItemModel):
 			if header == "Module":
 				return record.module
 			elif header == "Timestamp":
-				return str(datetime.fromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S"))
+				return str(datetime.datetime.fromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S"))
 			elif header == "Message":
 				return record.getMessage()
 			elif header == "Level":

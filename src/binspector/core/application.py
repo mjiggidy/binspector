@@ -8,6 +8,8 @@ from os import PathLike
 from . import settings
 from ..managers import windows, software_updates
 from ..widgets import mainwindow
+from ..models import logmodels
+from ..views import logtreeview
 
 class BSMainApplication(QtWidgets.QApplication):
 	"""Main application"""
@@ -54,6 +56,14 @@ class BSMainApplication(QtWidgets.QApplication):
 		import qtlogrelay
 		self._qt_log_handler = qtlogrelay.QtLogRelayHandler()
 		logging.getLogger().addHandler(self._qt_log_handler)
+
+		self._qt_log_model = logmodels.BSLogDataModel()
+		self._qt_log_handler.logEventReceived.connect(self._qt_log_model.addLogRecord, QtCore.Qt.ConnectionType.QueuedConnection)
+
+		self._wnd_log_viewer = logtreeview.BSLogTreeView(log_model=self._qt_log_model)
+		self._wnd_log_viewer.setWindowFlag(QtCore.Qt.WindowType.Tool)
+		self._wnd_log_viewer.setWindowTitle("Log Viewer")
+		self._wnd_log_viewer.show()
 
 		# Setup settings
 		self._settingsManager = settings.BSSettingsManager(
@@ -126,7 +136,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_check_updates.connect(self.showUpdatesWindow)
 		window.sig_bin_changed.connect(lambda bin_path: self._settingsManager.settings("app").setValue("LastSession/last_bin",bin_path))
 		
-		logging.getLogger(__name__).debug("Created %s", window)
+		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
 		window.show()
 		#window.raise_()
