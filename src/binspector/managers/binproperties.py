@@ -239,8 +239,6 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		self._view_model.rowsRemoved  .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.modelReset   .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 
-
-
 	@QtCore.Slot(object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int]):
 
