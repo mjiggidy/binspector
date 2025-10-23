@@ -94,6 +94,13 @@ class ActionsManager(QtCore.QObject):
 		"""Open local storage"""
 		self._act_show_local_storage.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FolderOpen))
 
+		self._act_show_log_viewer = QtGui.QAction("Show Log Viewer", parent=self._parent)
+		"""Show the log viewer window"""
+		self._act_show_log_viewer.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DocumentOpen))
+		self._act_show_log_viewer.setToolTip("Show the log viewer window")
+		self._act_show_log_viewer.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_L))
+
+
 
 
 
@@ -140,6 +147,7 @@ class ActionsManager(QtCore.QObject):
 
 		self._actgrp_user_tools = QtGui.QActionGroup(self._parent)
 		self._actgrp_user_tools.addAction(self._act_show_local_storage)
+		self._actgrp_user_tools.addAction(self._act_show_log_viewer)
 	
 	def applicationActionsGroup(self) -> QtGui.QActionGroup:
 		"""Application-wide actions"""
@@ -235,6 +243,11 @@ class ActionsManager(QtCore.QObject):
 		"""Open the user data folder"""
 
 		return self._act_show_local_storage
+	
+	def showLogViewer(self) -> QtGui.QAction:
+		"""Show the log viewer window"""
+
+		return self._act_show_log_viewer
 	
 	def checkForUpdates(self) -> QtGui.QAction:
 		"""Check for updates"""

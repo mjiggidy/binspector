@@ -4,7 +4,7 @@ from ..models import logmodels
 class BSLogTreeView(QtWidgets.QTreeView):
 	"""A TreeView for viewin' trees. And logs.  Logs from trees."""
 
-	def __init__(self, log_model:logmodels.BSLogDataModel, *args, **kwargs):
+	def __init__(self, log_model:logmodels.BSLogDataModel|None=None, *args, **kwargs):
 		
 		super().__init__(*args, **kwargs)
 
@@ -13,4 +13,5 @@ class BSLogTreeView(QtWidgets.QTreeView):
 		self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
 		self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
 		
-		self.setModel(log_model)
+		if log_model:
+			self.setModel(log_model)

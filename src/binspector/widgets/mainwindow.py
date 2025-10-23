@@ -11,6 +11,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	sig_request_new_window        = QtCore.Signal()
 	sig_request_quit_application  = QtCore.Signal()
 	sig_request_show_user_folder  = QtCore.Signal()
+	sig_request_show_log_viewer   = QtCore.Signal()
 	sig_request_check_updates     = QtCore.Signal()
 	sig_request_visit_discussions = QtCore.Signal()
 
@@ -188,6 +189,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# User debuggy-type tools
 		self._man_actions.showUserFolder().triggered         .connect(self.sig_request_show_user_folder)
+		self._man_actions.showLogViewer().triggered          .connect(self.sig_request_show_log_viewer)
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
