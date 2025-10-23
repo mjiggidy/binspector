@@ -242,10 +242,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 	## Getters & Setters
 	##
-
-	def setActionsManager(self, actions:actions.ActionsManager):
-		raise DeprecationWarning("Let's not?")
-		self._man_actions = actions
 	
 	def actionsManager(self) -> actions.ActionsManager:
 		return self._man_actions
@@ -276,6 +272,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	@QtCore.Slot(str)
 	def prepareForBinLoading(self, bin_path:str):
 		"""Bin load is about to begin. Prepare UI elements."""
+
+		import logging
+		logging.getLogger(__name__).info("Begin loading %s", bin_path)
 
 		self._man_actions._act_filebrowser.setEnabled(False)
 		
@@ -318,8 +317,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 					direction
 				)
 		
-		#self._main_bincontents.treeView().resizeAllColumnsToContents()
-		
 		self._man_actions._act_reloadcurrent.setEnabled(True)
 		self._man_actions._act_reloadcurrent.setVisible(True)
 
@@ -333,16 +330,19 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
 
+		import logging
+		logging.getLogger(__name__).info("Finished loading %s", self.windowFilePath())
+
 	@QtCore.Slot()
 	@QtCore.Slot(str)
 	def cleanupPartialBin(self, message:str|None=None):
 		"""Do any cleanup for a cancelled bin load"""
 
 		import logging
-		logging.getLogger(__name__).error("Aborted loading bin")
+		logging.getLogger(__name__).warning("Aborted loading bin")
 		
 		if message:
-			QtWidgets.QMessageBox.warning(self, "Bin Not Loaded", message)
+			QtWidgets.QMessageBox.error(self, "Bin Not Loaded", message)
 
 
 
