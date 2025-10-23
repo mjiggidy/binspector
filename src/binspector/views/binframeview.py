@@ -3,7 +3,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
 
-	sig_scale_changed = QtCore.Signal(int)
+	sig_zoom_changed = QtCore.Signal(int)
 
 	def __init__(self, *args, **kwargs):
 
@@ -51,7 +51,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 	@QtCore.Slot(int)
 	def setZoom(self, zoom_level:int):
-		print("I SET ZOOM", zoom_level)
 
 		zoom_level = float(zoom_level) #/ float(4)
 		
