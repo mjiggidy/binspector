@@ -51,7 +51,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 	@QtCore.Slot(int)
 	def setZoom(self, zoom_level:int):
-		print("I SET ZOOM", zoom_level)
 
 		zoom_level = float(zoom_level) #/ float(4)
 		
