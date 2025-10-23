@@ -332,15 +332,23 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		QtWidgets.QApplication.instance().alert(self)
 
 	@QtCore.Slot()
-	def cleanupPartialBin(self):
+	@QtCore.Slot(str)
+	def cleanupPartialBin(self, message:str|None=None):
 		"""Do any cleanup for a cancelled bin load"""
 
 		import logging
-		logging.getLogger(__name__).info("User cancelled loading bin")
+		logging.getLogger(__name__).error("Aborted loading bin")
+		
+		if message:
+			QtWidgets.QMessageBox.warning(self, "Bin Not Loaded", message)
+
+
 
 	@QtCore.Slot(object)
 	def binLoadException(self, exception:Exception):
-		print(f"Bin load error:", exception)
+
+		import logging
+		logging.getLogger(__name__).error(exception)
 	
 	@QtCore.Slot()
 	@QtCore.Slot(object)

@@ -35,6 +35,8 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
+		self._default_sort_columns:list[list[int,str]] = []
+
 	@QtCore.Slot(object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
 		"""Set columns and their widths"""
@@ -62,8 +64,6 @@ class BSBinViewManager(base.LBItemDefinitionView):
 			self.addColumnDefinition(column)
 		
 		self.sig_bin_view_changed.emit(bin_view, column_widths, frame_view_scale)
-
-		self._default_sort_columns:list[list[int,str]] = []
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
