@@ -281,6 +281,8 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		item_rect.setSelected(True)
 		item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
 
+		# To be toggled via proxy viewmodel
+		item_rect.setVisible(False)
 		
 		self._frame_scene.addItem(
 			item_rect
