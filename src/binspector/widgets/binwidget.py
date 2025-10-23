@@ -232,6 +232,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
 
 		self._binitems_list.model().rowsInserted .connect(self.updateBinStats)
+		#Q#########
 		self._binitems_list.model().rowsRemoved  .connect(self.updateBinStats)
 		self._binitems_list.model().modelReset   .connect(self.updateBinStats)
 
@@ -346,6 +347,19 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_bottom.setInfoText(
 			f"Showing {QtCore.QLocale.system().toString(count_visible)} of {QtCore.QLocale.system().toString(count_all)} items"
 		)
+
+	@QtCore.Slot()
+	def updateFrameModeVisiblity(self, parent_index:QtCore.QModelIndex, first_row:int, last_row:int):
+
+		for proxy_row in range(first_row, last_row+1):
+			
+			parent_row = self._binitems_list.model().mapToSource(
+				self._binitems_list.model().index(
+					proxy_row, 0, parent_index
+				)
+			)
+			
+			print(f"Insert: {proxy_row} (Parent: {parent_row})")
 	
 	@QtCore.Slot(object)
 	def setBinViewName(self, bin_view_name:str):
