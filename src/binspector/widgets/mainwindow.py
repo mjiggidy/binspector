@@ -237,7 +237,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
 		self._man_viewmode.sig_view_mode_changed             .connect(self._main_bincontents.setViewMode)
 		self._man_viewmode.sig_view_mode_changed             .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
-		self._man_actions._actgrp_view_mode.triggered       . connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
+		self._man_actions._actgrp_view_mode.triggered        .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
 
 	##
 	## Getters & Setters
