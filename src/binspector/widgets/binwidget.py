@@ -38,7 +38,7 @@ class BSBinContentsBottomWidgetBar(BSAbstractBinContentsWidgetBar):
 		
 		if not isinstance(self, QtWidgets.QToolBar):
 			self.setLayout(QtWidgets.QGridLayout())
-			self.layout().setContentsMargins(*[4]*4)
+			#self.layout().setContentsMargins(*[4]*4)
 		
 		self._txt_info = QtWidgets.QLabel()
 		self._txt_info.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)

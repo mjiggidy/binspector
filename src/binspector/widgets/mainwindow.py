@@ -130,8 +130,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		wid_tbs = QtWidgets.QWidget()
 		wid_tbs.setLayout(lay_tbs)
 
-		bottom_bar.layout().setColumnStretch(1,2)
-		bottom_bar.layout().addWidget(buttons.BSPushButtonActionBar(self._btngrp_toolboxes), 0,2)
+		#bottom_bar.layout().setColumnStretch(1,2)
+		#bottom_bar.layout().addWidget(buttons.BSPushButtonActionBar(self._btngrp_toolboxes), 0,2)
 		
 	def setupDock(self):
 		"""Add and prepare the dock"""
