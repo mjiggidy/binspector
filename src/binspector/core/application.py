@@ -78,13 +78,14 @@ class BSMainApplication(QtWidgets.QApplication):
 		
 		# Setup window manager
 		self._binwindows_manager = windows.BSWindowManager()
-		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self.settingsManager().settings("app").setValue("LastSession/last_window_geometry",self.activeWindow().geometry()))
+		# TODO: This is bad lol
+		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self._settingsManager.setLastWindowGeometry(self.activeWindow().geometry()))
 
 		# Setup updates manager
 		self._updates_manager = software_updates.BSUpdatesManager()
-		self._updates_manager.setAutoCheckEnabled(self.settingsManager().settings("app").value("SoftwareUpdates/auto_check_for_updates", True, bool))
+		self._updates_manager.setAutoCheckEnabled(self._settingsManager.softwareUpdateAutocheckEnabled())
 		self._updates_manager.sig_newReleaseAvailable.connect(self.showUpdatesWindow)
-		self._updates_manager.sig_autoCheckChanged.connect(lambda is_enabled: self.settingsManager().settings("app").setValue("SoftwareUpdates/auto_check_for_updates",is_enabled))
+		self._updates_manager.sig_autoCheckChanged.connect(self._settingsManager.setSoftwareUpdateAutocheckEnabled)
 		self._wnd_update = None	# Window will be created in `self.showUpdatesWindow`
 
 	def localStoragePath(self) -> PathLike[str]:
@@ -109,17 +110,17 @@ class BSMainApplication(QtWidgets.QApplication):
 	@QtCore.Slot(bool)
 	def createMainWindow(self, show_file_browser:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
+
+		if current_window := self.activeWindow():
+			start_geo = current_window.geometry().translated(QtCore.QPoint(10,10))
+		elif saved_geo := self._settingsManager.lastWindowGeometry():
+			start_geo = saved_geo
+		else:
+			start_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(1024,480)).translated(QtCore.QPoint(800,800))
 		
 		window:mainwindow.BSMainWindow = self._binwindows_manager.addWindow(mainwindow.BSMainWindow())
-		default_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(1024,480))
-		default_geo.moveCenter(QtCore.QPoint(800,800))
 
-		if self.activeWindow():
-			window.setGeometry(self.activeWindow().geometry().translated(QtCore.QPoint(10,10)))
-		else:
-			window.setGeometry(
-				self._settingsManager.settings("app").value("LastSession/last_window_geometry", default_geo, type=QtCore.QRect)
-			)
+		window.setGeometry(start_geo)
 
 		#window.setActionsManager(actions.ActionsManager(window))
 		#window.setSettings(self._settingsManager.settings("bs_main"))
@@ -131,7 +132,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_show_user_folder.connect(self.showLocalStorage)
 		window.sig_request_visit_discussions.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
 		window.sig_request_check_updates.connect(self.showUpdatesWindow)
-		window.sig_bin_changed.connect(lambda bin_path: self._settingsManager.settings("app").setValue("LastSession/last_bin",bin_path))
+		window.sig_bin_changed.connect(self._settingsManager.setLastBinPath)
 		
 		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
@@ -141,7 +142,7 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		if show_file_browser:
 
-			initial_path = self._settingsManager.settings("app").value("LastSession/last_bin", QtCore.QDir.homePath())
+			initial_path = self._settingsManager.lastBinPath() or QtCore.QDir.homePath()
 			#print(initial_path)
 			window.showFileBrowser(initial_path)
 
@@ -155,6 +156,10 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_log_viewer = logwidget.BSLogViewerWidget()
 			self._wnd_log_viewer.setWindowTitle("Log Viewer")
 			self._wnd_log_viewer.setWindowFlag(QtCore.Qt.WindowType.Tool)
+
+			start_geo = self.activeWindow().geometry().translated(QtCore.QPoint(100,100)) if self.activeWindow() else self._wnd_log_viewer.geometry()
+			start_geo.setSize(QtCore.QSize(900,200))
+			self._wnd_log_viewer.setGeometry(start_geo)
 			
 			self._wnd_log_viewer.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 			self._wnd_log_viewer.destroyed.connect(lambda: setattr(self, "_wnd_log_viewer", None))
