@@ -128,6 +128,10 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		#self._mode_controls.setCurrentIndex(1)
 		self.addWidget(self._mode_controls)
 
+		self._btn_viewmode_list  .setIconSize(QtCore.QSize(16,16))
+		self._btn_viewmode_frame .setIconSize(QtCore.QSize(16,16))
+		self._btn_viewmode_script.setIconSize(QtCore.QSize(16,16))
+
 		self._btngrp_viewmode.setExclusive(True)
 		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
 		self._btngrp_viewmode.addButton(self._btn_viewmode_frame)
@@ -140,6 +144,8 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		self._txt_search.setPlaceholderText("Find in bin")
 		self._txt_search.setClearButtonEnabled(True)
 		self.addWidget(self._txt_search)
+
+
 
 	def _setupSignals(self):
 
