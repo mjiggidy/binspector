@@ -18,6 +18,8 @@ class BSSettingsManager:
 		self._format   = format
 		self._basepath = QtCore.QDir(basepath)
 
+		logging.getLogger(__name__).debug("Initialized settings manager at %s", self._basepath.absolutePath())
+
 		self._checkVersion()
 	
 	def basePath(self) -> PathLike:
@@ -33,7 +35,7 @@ class BSSettingsManager:
 
 		if self.format() == QtCore.QSettings.Format.IniFormat:
 			settings = QtCore.QSettings(self.settingsPath(feature_name), QtCore.QSettings.Format.IniFormat)
-			logging.debug("Initialized settings for %s at %s", feature_name, self.settingsPath(feature_name))
+			#logging.getLogger(__name__).debug("Initialized settings for %s at %s", feature_name, self.settingsPath(feature_name))
 			return settings
 		else:
 			return QtCore.QSettings(self.format())
@@ -44,10 +46,52 @@ class BSSettingsManager:
 	def _checkVersion(self):
 		"""Check settings version and migrate if needed"""
 
-		user_settings_ver = self.settings("app").value("Config/config_version", None, int)
+		user_settings_ver = self.settings("bs").value("Config/config_version", None, int)
 
 		if not user_settings_ver:
-			self.settings("app").setValue("Config/config_version", LATEST_CONFIG_VERSION)
+			self.settings("bs").setValue("Config/config_version", LATEST_CONFIG_VERSION)
 		elif user_settings_ver != LATEST_CONFIG_VERSION:
 			# TODO
-			logging.debug("Migrate user config from %i to %i", user_settings_ver, LATEST_CONFIG_VERSION)
+			logging.getLogger(__name__).debug("Migrate user config from %i to %i", user_settings_ver, LATEST_CONFIG_VERSION)
+	
+	def currentSettingsVersion(self) -> int|None:
+
+		current_settings_version = self.settings("bs").value("Config/config_version", None, int)
+		logging.getLogger(__name__).debug("Returning config_version: %s", current_settings_version)
+		return current_settings_version
+
+	@QtCore.Slot(object)
+	def setLastBinPath(self, bin_path:PathLike):
+
+		self.settings("bs").setValue("LastSession/last_bin", str(bin_path))
+		logging.getLogger(__name__).debug("Set last_bin: %s", bin_path)
+
+	def lastBinPath(self) -> PathLike[str]:
+
+		bin_path = self.settings("bs").value("LastSession/last_bin", None, str)
+		logging.getLogger(__name__).debug("Returning last_bin: %s", bin_path)
+		return bin_path
+	
+	@QtCore.Slot(QtCore.QRect)
+	def setLastWindowGeometry(self, rect:QtCore.QRect):
+
+		self.settings("bs").setValue("LastSession/last_window_geometry", QtCore.QRect(rect))
+		logging.getLogger(__name__).debug("Set last_window_geometry: %s", rect)
+	
+	def lastWindowGeometry(self) -> QtCore.QRect:
+
+		last_rect = self.settings("bs").value("LastSession/last_window_geometry", None, QtCore.QRect)
+		logging.getLogger(__name__).debug("Returning last_window_geomoetry: %s", last_rect)
+		return last_rect
+	
+	@QtCore.Slot(bool)
+	def setSoftwareUpdateAutocheckEnabled(self, is_enabled:bool):
+
+		self.settings("bs").setValue("SoftwareUpdates/auto_check_for_updates", bool(is_enabled))
+		logging.getLogger(__name__).debug("Set auto_check_for_updates: %s", is_enabled)
+	
+	def softwareUpdateAutocheckEnabled(self) -> bool:
+
+		is_enabled = self.settings("bs").value("SoftwareUpdates/auto_check_for_updates", True, bool)
+		logging.getLogger(__name__).debug("Returning auto_check_for_updates: %s", is_enabled)
+		return is_enabled

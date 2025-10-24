@@ -38,7 +38,7 @@ class BSBinContentsBottomWidgetBar(BSAbstractBinContentsWidgetBar):
 		
 		if not isinstance(self, QtWidgets.QToolBar):
 			self.setLayout(QtWidgets.QGridLayout())
-			self.layout().setContentsMargins(*[4]*4)
+			#self.layout().setContentsMargins(*[4]*4)
 		
 		self._txt_info = QtWidgets.QLabel()
 		self._txt_info.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -128,6 +128,10 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		#self._mode_controls.setCurrentIndex(1)
 		self.addWidget(self._mode_controls)
 
+		self._btn_viewmode_list  .setIconSize(QtCore.QSize(16,16))
+		self._btn_viewmode_frame .setIconSize(QtCore.QSize(16,16))
+		self._btn_viewmode_script.setIconSize(QtCore.QSize(16,16))
+
 		self._btngrp_viewmode.setExclusive(True)
 		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
 		self._btngrp_viewmode.addButton(self._btn_viewmode_frame)
@@ -140,6 +144,8 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		self._txt_search.setPlaceholderText("Find in bin")
 		self._txt_search.setClearButtonEnabled(True)
 		self.addWidget(self._txt_search)
+
+
 
 	def _setupSignals(self):
 
@@ -223,6 +229,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_frame    = binframeview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
 
+		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
 		self.layout().addWidget(self._section_top)
 		self.layout().addWidget(self._section_main)
 		self.layout().addWidget(self._section_bottom)
@@ -301,6 +309,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	
 	def setBottomWidgetBar(self, widget:BSBinContentsBottomWidgetBar):
 		self._section_bottom = widget
+
+	def listViewToggles(self) -> QtWidgets.QWidget:
+		"""Toggles displayed to the left of the horizontal scrollbar in List view mode"""
+
+		return self._binitems_list_toggles
 	
 	@QtCore.Slot(object)
 	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
