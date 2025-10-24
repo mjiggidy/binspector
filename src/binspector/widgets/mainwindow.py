@@ -103,11 +103,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.progressBar().setRange(0,0)
 		topbar.progressBar().setHidden(True)
 		
-
-
-		# Bottom Display
-		bottom_bar = self._main_bincontents.bottomWidgetBar()
-
+		# List View Toggles
 		self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
 		self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
 		self._btn_toolbox_appearance.setAction(self._man_actions.showBinAppearanceSettings())
@@ -120,18 +116,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btngrp_toolboxes.addButton(self._btn_toolbox_bindisplay)
 		self._btngrp_toolboxes.addButton(self._btn_toolbox_appearance)
 		self._btngrp_toolboxes.addButton(self._btn_toolbox_sifting)
-
-		lay_tbs = QtWidgets.QHBoxLayout()
-		lay_tbs.setContentsMargins(0,0,0,0)
-		lay_tbs.setSpacing(0)
-		for btn in self._btngrp_toolboxes.buttons():
-			lay_tbs.addWidget(btn)
 		
-		wid_tbs = QtWidgets.QWidget()
-		wid_tbs.setLayout(lay_tbs)
+		for btn in self._btngrp_toolboxes.buttons():
+			btn.setIconSize(QtCore.QSize(8,8))
 
-		#bottom_bar.layout().setColumnStretch(1,2)
-		#bottom_bar.layout().addWidget(buttons.BSPushButtonActionBar(self._btngrp_toolboxes), 0,2)
+		btn_toggles = buttons.BSPushButtonActionBar(self._btngrp_toolboxes)
+		btn_toggles.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, btn_toggles.sizePolicy().verticalPolicy())
+		btn_toggles.setFixedWidth(64)
+		self._main_bincontents.listView().addScrollBarWidget(btn_toggles, QtCore.Qt.AlignmentFlag.AlignLeft)
 		
 	def setupDock(self):
 		"""Add and prepare the dock"""

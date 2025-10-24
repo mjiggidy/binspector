@@ -229,6 +229,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_frame    = binframeview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
 
+		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
 		self.layout().addWidget(self._section_top)
 		self.layout().addWidget(self._section_main)
 		self.layout().addWidget(self._section_bottom)
@@ -307,6 +309,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	
 	def setBottomWidgetBar(self, widget:BSBinContentsBottomWidgetBar):
 		self._section_bottom = widget
+
+	def listViewToggles(self) -> QtWidgets.QWidget:
+		"""Toggles displayed to the left of the horizontal scrollbar in List view mode"""
+
+		return self._binitems_list_toggles
 	
 	@QtCore.Slot(object)
 	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
