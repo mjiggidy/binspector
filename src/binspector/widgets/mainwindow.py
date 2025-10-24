@@ -11,6 +11,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	sig_request_new_window        = QtCore.Signal()
 	sig_request_quit_application  = QtCore.Signal()
 	sig_request_show_user_folder  = QtCore.Signal()
+	sig_request_show_log_viewer   = QtCore.Signal()
 	sig_request_check_updates     = QtCore.Signal()
 	sig_request_visit_discussions = QtCore.Signal()
 
@@ -188,6 +189,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# User debuggy-type tools
 		self._man_actions.showUserFolder().triggered         .connect(self.sig_request_show_user_folder)
+		self._man_actions.showLogViewer().triggered          .connect(self.sig_request_show_log_viewer)
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
@@ -235,15 +237,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
 		self._man_viewmode.sig_view_mode_changed             .connect(self._main_bincontents.setViewMode)
 		self._man_viewmode.sig_view_mode_changed             .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
-		self._man_actions._actgrp_view_mode.triggered       . connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
+		self._man_actions._actgrp_view_mode.triggered        .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
 
 	##
 	## Getters & Setters
 	##
-
-	def setActionsManager(self, actions:actions.ActionsManager):
-		raise DeprecationWarning("Let's not?")
-		self._man_actions = actions
 	
 	def actionsManager(self) -> actions.ActionsManager:
 		return self._man_actions
@@ -274,6 +272,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	@QtCore.Slot(str)
 	def prepareForBinLoading(self, bin_path:str):
 		"""Bin load is about to begin. Prepare UI elements."""
+
+		import logging
+		logging.getLogger(__name__).info("Begin loading %s", bin_path)
 
 		self._man_actions._act_filebrowser.setEnabled(False)
 		
@@ -316,8 +317,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 					direction
 				)
 		
-		#self._main_bincontents.treeView().resizeAllColumnsToContents()
-		
 		self._man_actions._act_reloadcurrent.setEnabled(True)
 		self._man_actions._act_reloadcurrent.setVisible(True)
 
@@ -331,16 +330,27 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
 
+		import logging
+		logging.getLogger(__name__).info("Finished loading %s", self.windowFilePath())
+
 	@QtCore.Slot()
-	def cleanupPartialBin(self):
+	@QtCore.Slot(str)
+	def cleanupPartialBin(self, message:str|None=None):
 		"""Do any cleanup for a cancelled bin load"""
 
 		import logging
-		logging.getLogger(__name__).info("User cancelled loading bin")
+		logging.getLogger(__name__).warning("Aborted loading bin")
+		
+		if message:
+			QtWidgets.QMessageBox.error(self, "Bin Not Loaded", message)
+
+
 
 	@QtCore.Slot(object)
 	def binLoadException(self, exception:Exception):
-		print(f"Bin load error:", exception)
+
+		import logging
+		logging.getLogger(__name__).error(exception)
 	
 	@QtCore.Slot()
 	@QtCore.Slot(object)

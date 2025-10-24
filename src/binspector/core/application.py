@@ -7,7 +7,8 @@ from os import PathLike
 
 from . import settings
 from ..managers import windows, software_updates
-from ..widgets import mainwindow
+from ..widgets import mainwindow, logwidget
+from ..models import logmodels
 
 class BSMainApplication(QtWidgets.QApplication):
 	"""Main application"""
@@ -17,7 +18,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		super().__init__(*args, **kwargs)
 
 		self.setApplicationName("Binspector")
-		self.setApplicationVersion("0.0.3")
+		self.setApplicationVersion("0.0.4")
 		self.setStyle("Fusion")
 
 		self.setOrganizationName("GlowingPixel")
@@ -54,6 +55,11 @@ class BSMainApplication(QtWidgets.QApplication):
 		import qtlogrelay
 		self._qt_log_handler = qtlogrelay.QtLogRelayHandler()
 		logging.getLogger().addHandler(self._qt_log_handler)
+
+		self._qt_log_model = logmodels.BSLogDataModel()
+		self._qt_log_handler.logEventReceived.connect(self._qt_log_model.addLogRecord, QtCore.Qt.ConnectionType.QueuedConnection)
+
+		self._wnd_log_viewer = None
 
 		# Setup settings
 		self._settingsManager = settings.BSSettingsManager(
@@ -121,12 +127,13 @@ class BSMainApplication(QtWidgets.QApplication):
 		# Connect signals/slots
 		window.sig_request_new_window.connect(self.createMainWindow)
 		window.sig_request_quit_application.connect(self.exit)
+		window.sig_request_show_log_viewer.connect(self.showLogWindow)
 		window.sig_request_show_user_folder.connect(self.showLocalStorage)
 		window.sig_request_visit_discussions.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
 		window.sig_request_check_updates.connect(self.showUpdatesWindow)
 		window.sig_bin_changed.connect(lambda bin_path: self._settingsManager.settings("app").setValue("LastSession/last_bin",bin_path))
 		
-		logging.getLogger(__name__).debug("Created %s", window)
+		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
 		window.show()
 		#window.raise_()
@@ -139,6 +146,24 @@ class BSMainApplication(QtWidgets.QApplication):
 			window.showFileBrowser(initial_path)
 
 		return window
+	
+	@QtCore.Slot()
+	def showLogWindow(self):
+
+		if not self._wnd_log_viewer:
+
+			self._wnd_log_viewer = logwidget.BSLogViewerWidget()
+			self._wnd_log_viewer.setWindowTitle("Log Viewer")
+			self._wnd_log_viewer.setWindowFlag(QtCore.Qt.WindowType.Tool)
+			
+			self._wnd_log_viewer.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+			self._wnd_log_viewer.destroyed.connect(lambda: setattr(self, "_wnd_log_viewer", None))
+			
+			self._wnd_log_viewer.treeView().setModel(self._qt_log_model)
+		
+		self._wnd_log_viewer.show()
+		self._wnd_log_viewer.activateWindow()
+
 	
 	@QtCore.Slot()
 	def showUpdatesWindow(self):
