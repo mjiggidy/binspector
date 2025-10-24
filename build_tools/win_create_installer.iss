@@ -19,7 +19,6 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-
 DefaultDirName={autopf}\{#MyAppName}
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
 ; on anything but x64 and Windows 11 on Arm.
@@ -39,7 +38,6 @@ OutputDir=..\installer
 OutputBaseFilename=binspector_windows_v{#MyAppVersion}_x86-64
 Compression=lzma
 SolidCompression=yes
-
 WizardStyle=classic
 ;WizardSmallImageFile=lbb_logo_58.bmp,lbb_logo_71.bmp
 

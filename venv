@@ -1,6 +1,0 @@
-#!/bin/bash
-PATH_DEV="${HOME}/dev"
-
-cd "${PATH_DEV}/binspector"
-source "${HOME}/dev/.venv_binspector_313/bin/activate"
-code .
