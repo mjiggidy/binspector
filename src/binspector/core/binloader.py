@@ -67,6 +67,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 		# Load bin properties (view, sorting, etc)
 		try:
+
 			self._signals.sig_got_bin_display_settings.emit(binparser.bin_display_flags_from_bin(bin_handle.content))
 			self._signals.sig_got_view_settings.emit(
 				binparser.bin_view_setting_from_bin(bin_handle.content),
@@ -91,6 +92,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 		for bin_item in bin_handle.content.items:
 
 			if self._stop_requested:
+
 				self._signals.sig_aborted_loading.emit(None)
 				break
 
@@ -99,18 +101,18 @@ class BSBinViewLoader(QtCore.QRunnable):
 			except Exception as e:
 				self._signals.sig_got_exception.emit(e)
 
-
-
-	
 	def run(self):
-		"""Run the thing"""
+		"""Who will run the runnable?"""
 
 		self._signals.sig_begin_loading.emit(self._bin_path)
 
 		try:
+
 			with avb.open(self._bin_path) as bin_handle:
 				self.loadDataFromBin(bin_handle)
+
 		except Exception as e:
+
 			self._signals.sig_got_exception.emit(e)
 			self._signals.sig_aborted_loading.emit(str(e))
 
