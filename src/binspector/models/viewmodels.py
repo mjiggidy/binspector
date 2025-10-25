@@ -17,7 +17,7 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		self._filter_bin_display_items = avbutils.BinDisplayItemTypes(0)
 		self._filter_search_text       = ""
 
-		self._use_binview = True
+		self._use_binview = False
 
 		self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
 

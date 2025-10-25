@@ -40,7 +40,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 
 		self._default_sort_columns:list[list[int,str]] = []
 
-		self._is_enabled = True
+		self._is_enabled = False
 
 	@QtCore.Slot(object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
@@ -120,11 +120,12 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 		
 class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 
-	sig_font_changed          = QtCore.Signal(QtGui.QFont)
-	sig_palette_changed       = QtCore.Signal(QtGui.QColor, QtGui.QColor)
-	sig_column_widths_changed = QtCore.Signal(object)
-	sig_window_rect_changed   = QtCore.Signal(object)
-	sig_was_iconic_changed    = QtCore.Signal(bool)
+	sig_font_changed           = QtCore.Signal(QtGui.QFont)
+	sig_palette_changed        = QtCore.Signal(QtGui.QColor, QtGui.QColor)
+	sig_column_widths_changed  = QtCore.Signal(object)
+	sig_window_rect_changed    = QtCore.Signal(object)
+	sig_was_iconic_changed     = QtCore.Signal(object)
+	sig_bin_appearance_toggled = QtCore.Signal(object)
 
 	@QtCore.Slot(object, object, object, object, object, object, object)
 	def setAppearanceSettings(self,
@@ -182,6 +183,13 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 				"Width":  width,
 				"Column": col,
 			}, add_new_headers=True)
+	
+	@QtCore.Slot(object)
+	def setEnableBinAppearance(self, is_enabled:bool):
+
+		self.sig_bin_appearance_toggled.emit(is_enabled)
+		
+
 
 class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 	"""Bin sorting"""

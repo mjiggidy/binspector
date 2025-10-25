@@ -221,6 +221,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
 
+		# Save initial palette for later togglin'
+		self._default_palette   = self.palette()
+		self._bin_palette       = self.palette()
+		self._default_font      = self.font()
+		self._bin_font          = self.font()
+		self._use_bin_appearance= False
+
 		self._section_top       = BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
 		self._section_bottom    = BSBinContentsBottomWidgetBar()
@@ -322,6 +329,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.model().setBinViewEnabled(is_enabled)
 
 	@QtCore.Slot(object)
+	def setBinAppearanceEnabled(self, is_enabled:bool):
+		
+		self._use_bin_appearance = is_enabled
+		self.setPalette(self._bin_palette if is_enabled else self._default_palette)
+		self._binitems_list.setFont(self._bin_font if is_enabled else self._default_font)
+
+	@QtCore.Slot(object)
 	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
 		pass
 
@@ -351,11 +365,20 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		palette.setColor(QtGui.QPalette.ColorRole.Mid,      palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION_MID))   # Between Button and Dark
 		palette.setColor(QtGui.QPalette.ColorRole.Dark,     palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION))       # Darker than Button
 
-		self.setPalette(palette)
+		self._bin_palette = palette
+
+		if self._use_bin_appearance:
+			self.setPalette(self._bin_palette)
+		#else:
+		#	self.setPalette(self._default_palette)
 	
 	@QtCore.Slot(QtGui.QFont)
 	def setBinFont(self, bin_font:QtGui.QFont):
-		self._binitems_list.setFont(bin_font)
+		
+		self._bin_font = bin_font
+		
+		if self._use_bin_appearance:
+			self._binitems_list.setFont(bin_font)
 
 	@QtCore.Slot()
 	def updateBinStats(self):

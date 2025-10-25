@@ -136,8 +136,12 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_check_updates.connect(self.showUpdatesWindow)
 		window.sig_bin_changed.connect(self._settingsManager.setLastBinPath)
 
-		window.actionsManager()._act_toggle_use_binview.setChecked(self._settingsManager.binViewIsEnabled())
+		# Restore Toggle Settings
+		window.binViewManager().setBinViewEnabled(self._settingsManager.binViewIsEnabled())
 		window.binViewManager().sig_view_mode_toggled.connect(self._settingsManager.setBinViewEnabled)
+
+		window.appearanceManager().setEnableBinAppearance(self._settingsManager.binAppearanceIsEnabled())
+		window.appearanceManager().sig_bin_appearance_toggled.connect(self._settingsManager.setBinAppearanceEnabled)
 		
 		
 		logging.getLogger(__name__).debug("Created %s", window.winId())
