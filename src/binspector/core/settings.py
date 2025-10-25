@@ -109,6 +109,18 @@ class BSSettingsManager:
 		return is_enabled
 	
 	@QtCore.Slot(bool)
+	def setBinFiltersEnabled(self, is_enabled:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/use_bin_filters", is_enabled)
+		logging.getLogger(__name__).debug("Set use_bin_filters: %s", is_enabled)
+	
+	def binFiltersEnabled(self) -> bool:
+		
+		is_enabled = self.settings("bs").value("BinSettingsToggles/use_bin_filters", True, bool)
+		logging.getLogger(__name__).debug("Returning use_bin_filters: %s", is_enabled)
+		return is_enabled
+	
+	@QtCore.Slot(bool)
 	def setBinAppearanceEnabled(self, is_enabled:bool):
 
 		self.settings("bs").setValue("BinSettingsToggles/use_bin_appearance", is_enabled)

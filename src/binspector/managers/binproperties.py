@@ -35,12 +35,16 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	sig_view_mode_toggled = QtCore.Signal(object)
 	"""Binview has been toggled on/off"""
 
+	sig_bin_filters_toggled = QtCore.Signal(object)
+	"""Filters have been toggled on/off"""
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		self._default_sort_columns:list[list[int,str]] = []
 
-		self._is_enabled = False
+		self._binview_is_enabled = False
+		self._filters_enabled    = False
 
 	@QtCore.Slot(object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
@@ -88,9 +92,17 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
 
-		if is_enabled != self._is_enabled:
-			self._is_enabled = is_enabled
+		if is_enabled != self._binview_is_enabled:
+			self._binview_is_enabled = is_enabled
 			self.sig_view_mode_toggled.emit(is_enabled)
+
+	@QtCore.Slot(object)
+	def setBinFiltersEnabled(self, is_enabled:bool):
+
+		if is_enabled != self._filters_enabled:
+			self._filters_enabled = is_enabled
+			self.sig_bin_filters_toggled.emit(is_enabled)
+
 
 class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 

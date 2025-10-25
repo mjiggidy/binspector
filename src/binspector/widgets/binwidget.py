@@ -203,8 +203,6 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 		self._mode_controls.setCurrentIndex(int(view_mode))
 
-
-
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
@@ -334,6 +332,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._use_bin_appearance = is_enabled
 		self.setPalette(self._bin_palette if is_enabled else self._default_palette)
 		self._binitems_list.setFont(self._bin_font if is_enabled else self._default_font)
+
+	@QtCore.Slot(object)
+	def setBinFiltersEnabled(self, is_enabled:bool):
+
+		self._binitems_list.model().setBinFiltersEnabled(is_enabled)
 
 	@QtCore.Slot(object)
 	def setDisplayMode(self, mode:avbutils.BinDisplayModes):

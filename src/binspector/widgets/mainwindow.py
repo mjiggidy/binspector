@@ -252,8 +252,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_toggle_use_binappearance.toggled .connect(self._man_appearance.setEnableBinAppearance)
 		self._man_appearance.sig_bin_appearance_toggled         .connect(self._man_actions._act_toggle_use_binappearance.setChecked)
 		self._man_appearance.sig_bin_appearance_toggled         .connect(self._main_bincontents.setBinAppearanceEnabled)
-		#self._man_actions._act_toggle_use_binfilters.toggled    .connect()
-		#self._man_actions._act_toggle_use_binappearance.toggled .connect()
+		
+		self._man_actions._act_toggle_use_binfilters.toggled    .connect(self._man_binview.setBinFiltersEnabled)
+		self._man_binview.sig_bin_filters_toggled               .connect(self._man_actions._act_toggle_use_binfilters.setChecked)
+		self._man_binview.sig_bin_filters_toggled               .connect(self._main_bincontents.setBinFiltersEnabled)
 
 	##
 	## Getters & Setters

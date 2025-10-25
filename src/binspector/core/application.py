@@ -139,11 +139,13 @@ class BSMainApplication(QtWidgets.QApplication):
 		# Restore Toggle Settings
 		window.binViewManager().setBinViewEnabled(self._settingsManager.binViewIsEnabled())
 		window.binViewManager().sig_view_mode_toggled.connect(self._settingsManager.setBinViewEnabled)
+		
+		window.binViewManager().setBinFiltersEnabled(self._settingsManager.binFiltersEnabled())
+		window.binViewManager().sig_bin_filters_toggled.connect(self._settingsManager.setBinFiltersEnabled)
 
 		window.appearanceManager().setEnableBinAppearance(self._settingsManager.binAppearanceIsEnabled())
 		window.appearanceManager().sig_bin_appearance_toggled.connect(self._settingsManager.setBinAppearanceEnabled)
-		
-		
+
 		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
 		window.show()
