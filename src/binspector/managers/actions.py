@@ -31,19 +31,21 @@ class ActionsManager(QtCore.QObject):
 		self._act_stopcurrent.setToolTip("Stop loading the current bin")
 		self._act_stopcurrent.setShortcut(QtGui.QKeySequence.StandardKey.Cancel)
 
+
 		# Window actions
 		self._act_newwindow = QtGui.QAction("&New Window...")
 		"""Request new bin window"""
 		self._act_newwindow.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WindowNew))
 		self._act_newwindow.setToolTip("Open a new window")
 		self._act_newwindow.setShortcut(QtGui.QKeySequence.StandardKey.New)
-		#self._act_newwindow.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
+
 
 		self._act_closewindow = QtGui.QAction("Close &Window")
 		"""Close active bin window"""
 		self._act_closewindow.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WindowClose))
 		self._act_closewindow.setToolTip("Close this window")
 		self._act_closewindow.setShortcut(QtGui.QKeySequence.StandardKey.Close)
+
 
 		# Application actions
 		self._act_quitapplication = QtGui.QAction("&Quit")
@@ -52,7 +54,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_quitapplication.setToolTip(f"Quit {QtWidgets.QApplication.instance().applicationName()}")
 		self._act_quitapplication.setShortcut(QtGui.QKeySequence.StandardKey.Quit)
 		self._act_quitapplication.setMenuRole(QtGui.QAction.MenuRole.QuitRole)
-		#self._act_quitapplication.setShortcutContext(QtGui.Qt.ShortcutContext.ApplicationShortcut)
+
 
 		# View modes
 		self._act_view_list   = QtGui.QAction("List View", checkable=True, checked=True, parent=self._parent)
@@ -73,6 +75,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_view_script.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_3))
 		self._act_view_script.setToolTip("Show items in script view mode")
 
+
 		# Bin settings
 		self._act_toggle_bindisplay_settings  = QtGui.QAction("Show Bin Display Settings", checkable=True, parent=self._parent)
 		"""Toggle visibility of Bin Display Settings toolbox"""
@@ -90,6 +93,27 @@ class ActionsManager(QtCore.QObject):
 		"""Toggle visibility of Sift Settings toolbox"""
 		self._act_toggle_sift_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AudioVolumeHigh))
 
+
+		# Bin Visibility Toggles
+		self._act_toggle_use_binview = QtGui.QAction("Toggle Bin View")
+		self._act_toggle_use_binview.setCheckable(True)
+		self._act_toggle_use_binview.setToolTip("Toggle between columns shown in the bin view, and all columns available")
+		self._act_toggle_use_binview.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_1))
+		self._act_toggle_use_binview.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewRestore))
+
+		self._act_toggle_use_binfilters = QtGui.QAction("Toggle Bin Item Filters")
+		self._act_toggle_use_binfilters.setCheckable(True)
+		self._act_toggle_use_binfilters.setToolTip("Toggle between filtering bin items, and showing all items in the bin")
+		self._act_toggle_use_binfilters.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_2))
+		self._act_toggle_use_binfilters.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditFind))
+
+		self._act_toggle_use_binappearance = QtGui.QAction("Toggle Bin Appearance Settings")
+		self._act_toggle_use_binappearance.setCheckable(True)
+		self._act_toggle_use_binappearance.setToolTip("Toggle between saved fonts and colors, and default system appearance")
+		self._act_toggle_use_binappearance.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_3))
+		self._act_toggle_use_binappearance.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FormatTextBold))
+
+
 		# Tools
 		self._act_show_local_storage = QtGui.QAction("Open User Data Folder", parent=self._parent)
 		"""Open local storage"""
@@ -100,10 +124,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_show_log_viewer.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DocumentOpen))
 		self._act_show_log_viewer.setToolTip("Show the log viewer window")
 		self._act_show_log_viewer.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_L))
-
-
-
-
+	
 
 		# Help menu stuff
 		self._act_open_discussions = QtGui.QAction("Visit Discussion Board...", parent=self._parent)
@@ -117,7 +138,6 @@ class ActionsManager(QtCore.QObject):
 		"""Show About Box"""
 		self._act_show_about.setMenuRole(QtGui.QAction.MenuRole.AboutRole)
 		self._act_show_about.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.HelpAbout))
-
 
 
 		# Action Groups
@@ -149,6 +169,12 @@ class ActionsManager(QtCore.QObject):
 		self._actgrp_user_tools = QtGui.QActionGroup(self._parent)
 		self._actgrp_user_tools.addAction(self._act_show_local_storage)
 		self._actgrp_user_tools.addAction(self._act_show_log_viewer)
+
+		self._actgrp_toggle_binsettings = QtGui.QActionGroup(self._parent)
+		self._actgrp_toggle_binsettings.setExclusive(False)
+		self._actgrp_toggle_binsettings.addAction(self._act_toggle_use_binview)
+		self._actgrp_toggle_binsettings.addAction(self._act_toggle_use_binfilters)
+		self._actgrp_toggle_binsettings.addAction(self._act_toggle_use_binappearance)
 	
 	def applicationActionsGroup(self) -> QtGui.QActionGroup:
 		"""Application-wide actions"""
@@ -259,3 +285,23 @@ class ActionsManager(QtCore.QObject):
 		"""Visit the discussion boards"""
 
 		return self._act_open_discussions
+	
+	def toggleBinView(self) -> QtGui.QAction:
+		"""Toggle filtering columns through the bin view"""
+
+		return self._act_toggle_use_binview
+	
+	def toggleBinItemFilters(self) -> QtGui.QAction:
+		"""Toggle filtering of bin items"""
+
+		return self._act_toggle_use_binfilters
+	
+	def toggleBinAppearance(self) -> QtGui.QAction:
+		"""Toggle saved fonts and colors"""
+
+		return self._act_toggle_use_binappearance
+	
+	def toggleBinSettingsActionGroup(self) -> QtGui.QActionGroup:
+		"""Toggles for saved bin settings"""
+
+		return self._actgrp_toggle_binsettings

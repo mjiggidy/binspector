@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 
-class LBPushButtonAction(QtWidgets.QPushButton):
+class BSPushButtonAction(QtWidgets.QPushButton):
 	"""A QPushButton bound to a QAction"""
 
 	def __init__(self, action:QtGui.QAction|None=None, show_text:bool=True, show_icon:bool=True, show_tooltip:bool=True, *args, **kwargs):

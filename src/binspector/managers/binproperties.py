@@ -32,10 +32,15 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	sig_bin_view_changed = QtCore.Signal(object, object, int)
 	"""Binview has been reset"""
 
+	sig_view_mode_toggled = QtCore.Signal(object)
+	"""Binview has been toggled on/off"""
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		self._default_sort_columns:list[list[int,str]] = []
+
+		self._is_enabled = True
 
 	@QtCore.Slot(object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
@@ -79,6 +84,13 @@ class BSBinViewManager(base.LBItemDefinitionView):
 
 		column_definition["format"] = avbutils.BinColumnFormat(column_definition["format"])
 		self.addRow(column_definition)
+	
+	@QtCore.Slot(object)
+	def setBinViewEnabled(self, is_enabled:bool):
+
+		if is_enabled != self._is_enabled:
+			self._is_enabled = is_enabled
+			self.sig_view_mode_toggled.emit(is_enabled)
 
 class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 

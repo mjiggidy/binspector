@@ -75,16 +75,16 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 			self.layout().setContentsMargins(*[4]*4)
 
 		self._btngrp_file         = QtWidgets.QButtonGroup()
-		self._btn_open            = buttons.LBPushButtonAction()
-		self._btn_reload          = buttons.LBPushButtonAction(show_text=False)
-		self._btn_stop            = buttons.LBPushButtonAction(show_text=False)
+		self._btn_open            = buttons.BSPushButtonAction()
+		self._btn_reload          = buttons.BSPushButtonAction(show_text=False)
+		self._btn_stop            = buttons.BSPushButtonAction(show_text=False)
 
 		self._prg_loading         = QtWidgets.QProgressBar()
 
 		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
-		self._btn_viewmode_list   = buttons.LBPushButtonAction(show_text=False)
-		self._btn_viewmode_frame  = buttons.LBPushButtonAction(show_text=False)
-		self._btn_viewmode_script = buttons.LBPushButtonAction(show_text=False)
+		self._btn_viewmode_list   = buttons.BSPushButtonAction(show_text=False)
+		self._btn_viewmode_frame  = buttons.BSPushButtonAction(show_text=False)
+		self._btn_viewmode_script = buttons.BSPushButtonAction(show_text=False)
 
 		self._mode_controls       = QtWidgets.QStackedWidget()
 		self._cmb_binviews        = QtWidgets.QComboBox()
@@ -315,6 +315,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		return self._binitems_list_toggles
 	
+	@QtCore.Slot(object)
+	def setBinViewEnabled(self, is_enabled:bool):
+
+		# TODO: Do I need to emit a confirmation signal here?
+		self._binitems_list.model().setBinViewEnabled(is_enabled)
+
 	@QtCore.Slot(object)
 	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
 		pass
