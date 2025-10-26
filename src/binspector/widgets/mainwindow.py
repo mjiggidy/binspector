@@ -104,11 +104,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.progressBar().setHidden(True)
 		
 		# Toolbox Visibility Toggles (TODO: GONE FOR NOW?)
-		self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
-		self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
-		self._btn_toolbox_appearance.setAction(self._man_actions.showBinAppearanceSettings())
-		self._btn_toolbox_sifting.setAction(self._man_actions.showBinSiftSettings())
-
+		#self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
+		#self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
+		#self._btn_toolbox_appearance.setAction(self._man_actions.showBinAppearanceSettings())
+		#self._btn_toolbox_sifting.setAction(self._man_actions.showBinSiftSettings())
+#
 		# Apply Bin Settings Toggles
 		scrollbar_height = self._main_bincontents.listView().horizontalScrollBar().style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent)
 		scrollbar_icon_size = round(scrollbar_height * 0.58)
@@ -230,6 +230,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(lambda v,c,s: self._main_bincontents.frameView().setZoom(s))
+		self._man_binview.sig_bin_view_changed               .connect(lambda: self._main_bincontents.frameView().centerOn(QtCore.QPointF(0,0)))
 		self._man_binitems.sig_bin_view_changed              .connect(lambda bv, widths: self._main_bincontents.setBinViewName(bv.name))
 
 		# Update display counts -- Not where where to put this

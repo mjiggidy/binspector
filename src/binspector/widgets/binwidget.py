@@ -254,6 +254,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
 		self._binitems_frame.sig_scale_changed.connect(self._section_top._sld_frame_scale.setValue)
+		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
 
 		# Shortcuts/Actions
 		# TODO: Not here lol but i dunno
@@ -314,11 +315,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	
 	def setBottomWidgetBar(self, widget:BSBinContentsBottomWidgetBar):
 		self._section_bottom = widget
-
-	def listViewToggles(self) -> QtWidgets.QWidget:
-		"""Toggles displayed to the left of the horizontal scrollbar in List view mode"""
-
-		return self._binitems_list_toggles
 	
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
