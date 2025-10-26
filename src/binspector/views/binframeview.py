@@ -11,6 +11,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
+		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+		#print("***", self.viewportUpdateMode())
 	
 	def drawBackground(self, painter:QtGui.QPainter, rect:QtCore.QRectF):
 		
