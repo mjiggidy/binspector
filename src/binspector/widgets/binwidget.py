@@ -75,16 +75,16 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 			self.layout().setContentsMargins(*[4]*4)
 
 		self._btngrp_file         = QtWidgets.QButtonGroup()
-		self._btn_open            = buttons.LBPushButtonAction()
-		self._btn_reload          = buttons.LBPushButtonAction(show_text=False)
-		self._btn_stop            = buttons.LBPushButtonAction(show_text=False)
+		self._btn_open            = buttons.BSPushButtonAction()
+		self._btn_reload          = buttons.BSPushButtonAction(show_text=False)
+		self._btn_stop            = buttons.BSPushButtonAction(show_text=False)
 
 		self._prg_loading         = QtWidgets.QProgressBar()
 
 		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
-		self._btn_viewmode_list   = buttons.LBPushButtonAction(show_text=False)
-		self._btn_viewmode_frame  = buttons.LBPushButtonAction(show_text=False)
-		self._btn_viewmode_script = buttons.LBPushButtonAction(show_text=False)
+		self._btn_viewmode_list   = buttons.BSPushButtonAction(show_text=False)
+		self._btn_viewmode_frame  = buttons.BSPushButtonAction(show_text=False)
+		self._btn_viewmode_script = buttons.BSPushButtonAction(show_text=False)
 
 		self._mode_controls       = QtWidgets.QStackedWidget()
 		self._cmb_binviews        = QtWidgets.QComboBox()
@@ -203,8 +203,6 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 		self._mode_controls.setCurrentIndex(int(view_mode))
 
-
-
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
@@ -220,6 +218,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
+
+		# Save initial palette for later togglin'
+		self._default_palette   = self.palette()
+		self._bin_palette       = self.palette()
+		self._default_font      = self.font()
+		self._bin_font          = self.font()
+		self._use_bin_appearance= False
 
 		self._section_top       = BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
@@ -249,6 +254,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
 		self._binitems_frame.sig_scale_changed.connect(self._section_top._sld_frame_scale.setValue)
+		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
 
 		# Shortcuts/Actions
 		# TODO: Not here lol but i dunno
@@ -309,12 +315,25 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	
 	def setBottomWidgetBar(self, widget:BSBinContentsBottomWidgetBar):
 		self._section_bottom = widget
-
-	def listViewToggles(self) -> QtWidgets.QWidget:
-		"""Toggles displayed to the left of the horizontal scrollbar in List view mode"""
-
-		return self._binitems_list_toggles
 	
+	@QtCore.Slot(object)
+	def setBinViewEnabled(self, is_enabled:bool):
+
+		# TODO: Do I need to emit a confirmation signal here?
+		self._binitems_list.model().setBinViewEnabled(is_enabled)
+
+	@QtCore.Slot(object)
+	def setBinAppearanceEnabled(self, is_enabled:bool):
+		
+		self._use_bin_appearance = is_enabled
+		self.setPalette(self._bin_palette if is_enabled else self._default_palette)
+		self._binitems_list.setFont(self._bin_font if is_enabled else self._default_font)
+
+	@QtCore.Slot(object)
+	def setBinFiltersEnabled(self, is_enabled:bool):
+
+		self._binitems_list.model().setBinFiltersEnabled(is_enabled)
+
 	@QtCore.Slot(object)
 	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
 		pass
@@ -345,11 +364,20 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		palette.setColor(QtGui.QPalette.ColorRole.Mid,      palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION_MID))   # Between Button and Dark
 		palette.setColor(QtGui.QPalette.ColorRole.Dark,     palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION))       # Darker than Button
 
-		self.setPalette(palette)
+		self._bin_palette = palette
+
+		if self._use_bin_appearance:
+			self.setPalette(self._bin_palette)
+		#else:
+		#	self.setPalette(self._default_palette)
 	
 	@QtCore.Slot(QtGui.QFont)
 	def setBinFont(self, bin_font:QtGui.QFont):
-		self._binitems_list.setFont(bin_font)
+		
+		self._bin_font = bin_font
+		
+		if self._use_bin_appearance:
+			self._binitems_list.setFont(bin_font)
 
 	@QtCore.Slot()
 	def updateBinStats(self):

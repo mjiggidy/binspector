@@ -32,10 +32,19 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	sig_bin_view_changed = QtCore.Signal(object, object, int)
 	"""Binview has been reset"""
 
+	sig_view_mode_toggled = QtCore.Signal(object)
+	"""Binview has been toggled on/off"""
+
+	sig_bin_filters_toggled = QtCore.Signal(object)
+	"""Filters have been toggled on/off"""
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		self._default_sort_columns:list[list[int,str]] = []
+
+		self._binview_is_enabled = False
+		self._filters_enabled    = False
 
 	@QtCore.Slot(object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
@@ -79,6 +88,21 @@ class BSBinViewManager(base.LBItemDefinitionView):
 
 		column_definition["format"] = avbutils.BinColumnFormat(column_definition["format"])
 		self.addRow(column_definition)
+	
+	@QtCore.Slot(object)
+	def setBinViewEnabled(self, is_enabled:bool):
+
+		if is_enabled != self._binview_is_enabled:
+			self._binview_is_enabled = is_enabled
+			self.sig_view_mode_toggled.emit(is_enabled)
+
+	@QtCore.Slot(object)
+	def setBinFiltersEnabled(self, is_enabled:bool):
+
+		if is_enabled != self._filters_enabled:
+			self._filters_enabled = is_enabled
+			self.sig_bin_filters_toggled.emit(is_enabled)
+
 
 class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 
@@ -108,11 +132,12 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 		
 class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 
-	sig_font_changed          = QtCore.Signal(QtGui.QFont)
-	sig_palette_changed       = QtCore.Signal(QtGui.QColor, QtGui.QColor)
-	sig_column_widths_changed = QtCore.Signal(object)
-	sig_window_rect_changed   = QtCore.Signal(object)
-	sig_was_iconic_changed    = QtCore.Signal(bool)
+	sig_font_changed           = QtCore.Signal(QtGui.QFont)
+	sig_palette_changed        = QtCore.Signal(QtGui.QColor, QtGui.QColor)
+	sig_column_widths_changed  = QtCore.Signal(object)
+	sig_window_rect_changed    = QtCore.Signal(object)
+	sig_was_iconic_changed     = QtCore.Signal(object)
+	sig_bin_appearance_toggled = QtCore.Signal(object)
 
 	@QtCore.Slot(object, object, object, object, object, object, object)
 	def setAppearanceSettings(self,
@@ -170,6 +195,13 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 				"Width":  width,
 				"Column": col,
 			}, add_new_headers=True)
+	
+	@QtCore.Slot(object)
+	def setEnableBinAppearance(self, is_enabled:bool):
+
+		self.sig_bin_appearance_toggled.emit(is_enabled)
+		
+
 
 class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 	"""Bin sorting"""

@@ -38,7 +38,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader   = binloader.BSBinViewLoader.Signals()
 
 		# Define widgets
-		self._main_bincontents         = binwidget.BSBinContentsWidget()
+		self._main_bincontents = binwidget.BSBinContentsWidget()
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView()
 		self._dock_bindisplay  = QtWidgets.QDockWidget("Bin Display Settings")
@@ -52,10 +52,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_binview     = treeview.LBTreeView()
 		self._dock_binview     = QtWidgets.QDockWidget("Bin View Settings")
 
-		self._btn_toolbox_bindisplay = buttons.LBPushButtonAction(show_text=False)
-		self._btn_toolbox_appearance = buttons.LBPushButtonAction(show_text=False)
-		self._btn_toolbox_sifting    = buttons.LBPushButtonAction(show_text=False)
-		self._btn_toolbox_binview    = buttons.LBPushButtonAction(show_text=False)
+		self._btn_toolbox_bindisplay = buttons.BSPushButtonAction(show_text=False)
+		self._btn_toolbox_appearance = buttons.BSPushButtonAction(show_text=False)
+		self._btn_toolbox_sifting    = buttons.BSPushButtonAction(show_text=False)
+		self._btn_toolbox_binview    = buttons.BSPushButtonAction(show_text=False)
 		
 		# The rest
 		
@@ -103,27 +103,38 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.progressBar().setRange(0,0)
 		topbar.progressBar().setHidden(True)
 		
-		# List View Toggles
-		self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
-		self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
-		self._btn_toolbox_appearance.setAction(self._man_actions.showBinAppearanceSettings())
-		self._btn_toolbox_sifting.setAction(self._man_actions.showBinSiftSettings())
+		# Toolbox Visibility Toggles (TODO: GONE FOR NOW?)
+		#self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
+		#self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
+		#self._btn_toolbox_appearance.setAction(self._man_actions.showBinAppearanceSettings())
+		#self._btn_toolbox_sifting.setAction(self._man_actions.showBinSiftSettings())
+#
+		# Apply Bin Settings Toggles
+		scrollbar_height = self._main_bincontents.listView().horizontalScrollBar().style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent)
+		scrollbar_icon_size = round(scrollbar_height * 0.58)
+		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
+			
+			btn = buttons.BSPushButtonAction(act_toggle, show_text=False)
+			btn.setIconSize(QtCore.QSize(scrollbar_icon_size,scrollbar_icon_size))
+			btn.setFixedWidth(scrollbar_height)
+			
+			self._main_bincontents.listView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
 		
 		
-		self._btngrp_toolboxes = QtWidgets.QButtonGroup()
-		self._btngrp_toolboxes.setExclusive(False)
-		self._btngrp_toolboxes.addButton(self._btn_toolbox_binview)
-		self._btngrp_toolboxes.addButton(self._btn_toolbox_bindisplay)
-		self._btngrp_toolboxes.addButton(self._btn_toolbox_appearance)
-		self._btngrp_toolboxes.addButton(self._btn_toolbox_sifting)
-		
-		for btn in self._btngrp_toolboxes.buttons():
-			btn.setIconSize(QtCore.QSize(8,8))
+		#self._btngrp_toolboxes = QtWidgets.QButtonGroup()
+		#self._btngrp_toolboxes.setExclusive(False)
+		#self._btngrp_toolboxes.addButton(self._btn_toolbox_binview)
+		#self._btngrp_toolboxes.addButton(self._btn_toolbox_bindisplay)
+		#self._btngrp_toolboxes.addButton(self._btn_toolbox_appearance)
+		#self._btngrp_toolboxes.addButton(self._btn_toolbox_sifting)
+		#
+		#for btn in self._btngrp_toolboxes.buttons():
+		#	btn.setIconSize(QtCore.QSize(8,8))
 
-		btn_toggles = buttons.BSPushButtonActionBar(self._btngrp_toolboxes)
-		btn_toggles.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, btn_toggles.sizePolicy().verticalPolicy())
-		btn_toggles.setFixedWidth(64)
-		self._main_bincontents.listView().addScrollBarWidget(btn_toggles, QtCore.Qt.AlignmentFlag.AlignLeft)
+		#btn_toggles = buttons.BSPushButtonActionBar(self._btngrp_toolboxes)
+		#btn_toggles.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, btn_toggles.sizePolicy().verticalPolicy())
+		#btn_toggles.setFixedWidth(64)
+		#self._main_bincontents.listView().addScrollBarWidget(btn_toggles, QtCore.Qt.AlignmentFlag.AlignLeft)
 		
 	def setupDock(self):
 		"""Add and prepare the dock"""
@@ -142,6 +153,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		self.addActions(self._man_actions.showBinSettingsActionGroup().actions())
 		self.addActions(self._man_actions.viewModesActionGroup().actions())
+
+		self.addActions(self._man_actions.toggleBinSettingsActionGroup().actions())
 
 		self._man_actions._act_reloadcurrent.setVisible(False)
 		self._man_actions._act_reloadcurrent.setEnabled(False)
@@ -217,6 +230,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(lambda v,c,s: self._main_bincontents.frameView().setZoom(s))
+		self._man_binview.sig_bin_view_changed               .connect(lambda: self._main_bincontents.frameView().centerOn(QtCore.QPointF(0,0)))
 		self._man_binitems.sig_bin_view_changed              .connect(lambda bv, widths: self._main_bincontents.setBinViewName(bv.name))
 
 		# Update display counts -- Not where where to put this
@@ -230,6 +244,19 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_viewmode.sig_view_mode_changed             .connect(self._main_bincontents.setViewMode)
 		self._man_viewmode.sig_view_mode_changed             .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
 		self._man_actions._actgrp_view_mode.triggered        .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
+
+		# Bin Settings Toggles
+		self._man_actions._act_toggle_use_binview.toggled       .connect(self._man_binview.setBinViewEnabled)
+		self._man_binview.sig_view_mode_toggled                 .connect(self._man_actions._act_toggle_use_binview.setChecked)
+		self._man_binview.sig_view_mode_toggled                 .connect(self._main_bincontents.setBinViewEnabled)
+
+		self._man_actions._act_toggle_use_binappearance.toggled .connect(self._man_appearance.setEnableBinAppearance)
+		self._man_appearance.sig_bin_appearance_toggled         .connect(self._man_actions._act_toggle_use_binappearance.setChecked)
+		self._man_appearance.sig_bin_appearance_toggled         .connect(self._main_bincontents.setBinAppearanceEnabled)
+		
+		self._man_actions._act_toggle_use_binfilters.toggled    .connect(self._man_binview.setBinFiltersEnabled)
+		self._man_binview.sig_bin_filters_toggled               .connect(self._man_actions._act_toggle_use_binfilters.setChecked)
+		self._man_binview.sig_bin_filters_toggled               .connect(self._main_bincontents.setBinFiltersEnabled)
 
 	##
 	## Getters & Setters

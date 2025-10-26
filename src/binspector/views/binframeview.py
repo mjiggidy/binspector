@@ -11,6 +11,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
+		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
 	
 	def drawBackground(self, painter:QtGui.QPainter, rect:QtCore.QRectF):
 		
@@ -51,7 +52,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 	@QtCore.Slot(int)
 	def setZoom(self, zoom_level:int):
-		print("I SET ZOOM", zoom_level)
+		#print("I SET ZOOM", zoom_level)
 
 		zoom_level = float(zoom_level) #/ float(4)
 		

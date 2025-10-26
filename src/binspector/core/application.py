@@ -18,7 +18,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		super().__init__(*args, **kwargs)
 
 		self.setApplicationName("Binspector")
-		self.setApplicationVersion("0.0.5")
+		self.setApplicationVersion("0.0.6")
 		self.setStyle("Fusion")
 
 		self.setOrganizationName("GlowingPixel")
@@ -126,6 +126,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		#window.setSettings(self._settingsManager.settings("bs_main"))
 		
 		# Connect signals/slots
+		# TODO: Probably connect this directly to managers, like binViewManager below
+		# The window shouldn't have to care much about emitting all these signals, I don't think
 		window.sig_request_new_window.connect(self.createMainWindow)
 		window.sig_request_quit_application.connect(self.exit)
 		window.sig_request_show_log_viewer.connect(self.showLogWindow)
@@ -133,7 +135,17 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_visit_discussions.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
 		window.sig_request_check_updates.connect(self.showUpdatesWindow)
 		window.sig_bin_changed.connect(self._settingsManager.setLastBinPath)
+
+		# Restore Toggle Settings
+		window.binViewManager().setBinViewEnabled(self._settingsManager.binViewIsEnabled())
+		window.binViewManager().sig_view_mode_toggled.connect(self._settingsManager.setBinViewEnabled)
 		
+		window.binViewManager().setBinFiltersEnabled(self._settingsManager.binFiltersEnabled())
+		window.binViewManager().sig_bin_filters_toggled.connect(self._settingsManager.setBinFiltersEnabled)
+
+		window.appearanceManager().setEnableBinAppearance(self._settingsManager.binAppearanceIsEnabled())
+		window.appearanceManager().sig_bin_appearance_toggled.connect(self._settingsManager.setBinAppearanceEnabled)
+
 		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
 		window.show()

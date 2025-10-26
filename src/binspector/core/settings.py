@@ -95,3 +95,39 @@ class BSSettingsManager:
 		is_enabled = self.settings("bs").value("SoftwareUpdates/auto_check_for_updates", True, bool)
 		logging.getLogger(__name__).debug("Returning auto_check_for_updates: %s", is_enabled)
 		return is_enabled
+	
+	@QtCore.Slot(bool)
+	def setBinViewEnabled(self, is_enabled:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/use_bin_view", is_enabled)
+		logging.getLogger(__name__).debug("Set use_bin_view: %s", is_enabled)
+	
+	def binViewIsEnabled(self) -> bool:
+		
+		is_enabled = self.settings("bs").value("BinSettingsToggles/use_bin_view", True, bool)
+		logging.getLogger(__name__).debug("Returning use_bin_view: %s", is_enabled)
+		return is_enabled
+	
+	@QtCore.Slot(bool)
+	def setBinFiltersEnabled(self, is_enabled:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/use_bin_filters", is_enabled)
+		logging.getLogger(__name__).debug("Set use_bin_filters: %s", is_enabled)
+	
+	def binFiltersEnabled(self) -> bool:
+		
+		is_enabled = self.settings("bs").value("BinSettingsToggles/use_bin_filters", True, bool)
+		logging.getLogger(__name__).debug("Returning use_bin_filters: %s", is_enabled)
+		return is_enabled
+	
+	@QtCore.Slot(bool)
+	def setBinAppearanceEnabled(self, is_enabled:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/use_bin_appearance", is_enabled)
+		logging.getLogger(__name__).debug("Set use_bin_appearance: %s", is_enabled)
+	
+	def binAppearanceIsEnabled(self) -> bool:
+		
+		is_enabled = self.settings("bs").value("BinSettingsToggles/use_bin_appearance", True, bool)
+		logging.getLogger(__name__).debug("Returning use_bin_appearance: %s", is_enabled)
+		return is_enabled

@@ -17,10 +17,16 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		self._filter_bin_display_items = avbutils.BinDisplayItemTypes(0)
 		self._filter_search_text       = ""
 
+		self._use_binview = False
+		self._use_filters = False
+
 		self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
 
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 		"""Filter rows based on all the applicable sift/bin display/search stuff"""
+
+		if not self._use_filters:
+			return super().filterAcceptsRow(source_row, source_parent)
 
 		return all((
 			self.binDisplayFilter(source_row, source_parent),
@@ -29,9 +35,11 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 	
 	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
 		
-		if not source_parent.isValid():
-			return not self.sourceModel().headerData(source_column, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+3)
-		return super().filterAcceptsColumn(source_column, source_parent)
+		# Pass through if BinView is disabled, or looking up a child element (makes no sense)
+		if not self._use_binview or source_parent.isValid():
+			return super().filterAcceptsColumn(source_column, source_parent)
+			
+		return not self.sourceModel().headerData(source_column, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+3)
 
 		
 		#return super().filterAcceptsRow(source_row, source_parent)
@@ -110,6 +118,23 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 	def searchFilterText(self) -> str:
 		return self._filter_search_text
+	
+	@QtCore.Slot(object)
+	def setBinViewEnabled(self, is_enabled:bool):
+
+		if is_enabled != self._use_binview:
+
+			self._use_binview = is_enabled
+			self.invalidateColumnsFilter()
+
+	@QtCore.Slot(object)
+	def setBinFiltersEnabled(self, is_enabled:bool):
+		
+		if is_enabled != self._use_filters:
+
+			self._use_filters = is_enabled
+			self.invalidateRowsFilter()
+			
 		
 class LBTimelineViewModel(QtCore.QAbstractItemModel):
 	"""A view model for timelines"""
