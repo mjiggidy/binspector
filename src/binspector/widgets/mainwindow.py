@@ -102,6 +102,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.progressBar().setSizePolicy(pol)
 		topbar.progressBar().setRange(0,0)
 		topbar.progressBar().setHidden(True)
+
+		grp = QtWidgets.QSizeGrip(self._main_bincontents.listView())
+		self._main_bincontents.listView().setCornerWidget(grp)
 		
 		# Toolbox Visibility Toggles (TODO: GONE FOR NOW?)
 		#self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
