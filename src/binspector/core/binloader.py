@@ -24,7 +24,8 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 		sig_got_display_mode  = QtCore.Signal(object)
 		sig_got_view_settings = QtCore.Signal(object, object, object)
-		sig_got_mob           = QtCore.Signal(object)
+		#sig_got_mob           = QtCore.Signal(object)
+		sig_got_mobs          = QtCore.Signal(object)
 		sig_got_sort_settings = QtCore.Signal(object)
 		sig_got_sift_settings = QtCore.Signal(bool, object)
 		sig_got_bin_display_settings    = QtCore.Signal(object)
@@ -88,6 +89,10 @@ class BSBinViewLoader(QtCore.QRunnable):
 		except Exception as e:
 			self._signals.sig_got_exception.emit(e)
 
+		QUEUE_SIZE = 600
+
+		mob_queue = list()
+		
 		# Load each mob
 		for bin_item in bin_handle.content.items:
 
@@ -97,9 +102,18 @@ class BSBinViewLoader(QtCore.QRunnable):
 				break
 
 			try:
-				self._signals.sig_got_mob.emit(binparser.load_item_from_bin(bin_item))
+				mob_queue.append(binparser.load_item_from_bin(bin_item))
 			except Exception as e:
 				self._signals.sig_got_exception.emit(e)
+			
+			if len(mob_queue) == QUEUE_SIZE:
+				self._signals.sig_got_mobs.emit(mob_queue)
+				mob_queue = list()
+		
+		if len(mob_queue):
+			import logging
+			logging.getLogger(__name__).debug("Flushing the final %s mobs", len(mob_queue))
+			self._signals.sig_got_mobs.emit(mob_queue)
 
 	def run(self):
 		"""Who will run the runnable?"""

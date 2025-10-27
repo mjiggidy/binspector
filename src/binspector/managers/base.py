@@ -15,28 +15,41 @@ class LBAbstractPresenter(QtCore.QObject):
 		return self._view_model
 	
 	def addRow(self, row_data:dict[str,viewmodelitems.LBAbstractViewItem]):
-		self._view_model.addBinItem(row_data)
+		self.addRows([row_data])
+
+	def addRows(self, row_data_list:list[dict[str,viewmodelitems.LBAbstractViewItem]]):
+		self._view_model.addBinItems(row_data_list)
 	
 	def addHeader(self, header_data:viewmodelitems.LBAbstractViewHeaderItem):
 		self._view_model.addHeader(header_data)
 	
-
 class LBItemDefinitionView(LBAbstractPresenter):
 	"""A general data manager that maintains a key/val viewmodel of its data"""
 
 	@QtCore.Slot(object)
 	def addRow(self, row_data:dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any], add_new_headers:bool=False):
-		processed_row = dict()
+		
+		return self.addRows([row_data], add_new_headers)
+	
+	@QtCore.Slot(object)
+	def addRows(self, row_data_list:list[dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any]], add_new_headers:bool=False):
+		#print("I HAVE HERE:", row_data_list)
+		processed_row_list = []
+		for row_data in row_data_list:
 
-		for term, definition in row_data.items():
-			term = self._buildViewHeader(term)
-			if add_new_headers and term.field_name() not in self.viewModel().fields():
-				self.addHeader(term)
-			
-			definition = self._buildViewItem(definition)
-			processed_row[term.field_name()] = definition
+			processed_row = dict()
 
-		return super().addRow(processed_row)
+			for term, definition in row_data.items():
+				term = self._buildViewHeader(term)
+				if add_new_headers and term.field_name() not in self.viewModel().fields():
+					self.addHeader(term)
+				
+				definition = self._buildViewItem(definition)
+				processed_row[term.field_name()] = definition
+
+			processed_row_list.append(processed_row)
+		
+		self._view_model.addBinItems(processed_row_list)
 	
 	def _buildViewHeader(self, term:typing.Any) -> viewmodelitems.LBAbstractViewHeaderItem:
 		if isinstance(term, viewmodelitems.LBAbstractViewHeaderItem):

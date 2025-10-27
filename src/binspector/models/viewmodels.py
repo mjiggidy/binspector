@@ -227,10 +227,20 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 	def addBinItem(self, bin_item:dict[str,viewmodelitems.LBAbstractViewItem]) -> bool:
 		"""Binspecific: Add a bin item"""
 
-		new_idx = len(self._bin_items)
+		return self.addBinItems([bin_item])
+	
+	def addBinItems(self, bin_items:list[dict[str,viewmodelitems.LBAbstractViewItem]]) -> bool:
+		"""Binspecific: Add a bin items"""
+
+		# Ignore empty lists
+		if not len(bin_items):
+			return False
 		
-		self.beginInsertRows(QtCore.QModelIndex(), new_idx, new_idx)
-		self._bin_items.append(bin_item)
+		row_start = len(self._bin_items)
+		row_end   = row_start + len(bin_items) - 1 # Row end is inclusive
+
+		self.beginInsertRows(QtCore.QModelIndex(), row_start, row_end)
+		self._bin_items.extend(bin_items)
 		self.endInsertRows()
-		
+
 		return True
