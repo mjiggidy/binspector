@@ -24,7 +24,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 		sig_got_display_mode  = QtCore.Signal(object)
 		sig_got_view_settings = QtCore.Signal(object, object, object)
-		#sig_got_mob           = QtCore.Signal(object)
+		sig_got_mob           = QtCore.Signal() # For progress bar
 		sig_got_mobs          = QtCore.Signal(object)
 		sig_got_sort_settings = QtCore.Signal(object)
 		sig_got_sift_settings = QtCore.Signal(bool, object)
@@ -89,7 +89,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 		except Exception as e:
 			self._signals.sig_got_exception.emit(e)
 
-		QUEUE_SIZE = 600
+		QUEUE_SIZE = 500
 
 		mob_queue = list()
 		
@@ -103,6 +103,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 			try:
 				mob_queue.append(binparser.load_item_from_bin(bin_item))
+				#self._signals.sig_got_mob.emit()
 			except Exception as e:
 				self._signals.sig_got_exception.emit(e)
 			
