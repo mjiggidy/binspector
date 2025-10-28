@@ -370,7 +370,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		logging.getLogger(__name__).warning("Aborted loading bin")
 		
 		if message:
-			QtWidgets.QMessageBox.error(self, "Bin Not Loaded", message)
+			QtWidgets.QMessageBox.critical(self, "Bin Not Loaded", message)
 
 
 
