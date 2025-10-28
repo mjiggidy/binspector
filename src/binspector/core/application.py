@@ -154,13 +154,13 @@ class BSMainApplication(QtWidgets.QApplication):
 		
 		window.show()
 		#window.raise_()
-		window.activateWindow()
+		#window.activateWindow()
+		self.setActiveWindow(window)
 
 		if show_file_browser:
-
-			initial_path = self._settingsManager.lastBinPath() or QtCore.QDir.homePath()
-			#print(initial_path)
-			window.showFileBrowser(initial_path)
+			window.showFileBrowser(
+				self._settingsManager.lastBinPath() or QtCore.QDir.homePath()
+			)
 
 		return window
 	
