@@ -24,7 +24,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._settings         = QtCore.QSettings()
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
-
 		# Define managers
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
@@ -35,7 +34,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_viewmode     = binproperties.BSBinViewModeManager()
 
 		# Define signals
+		self._queue_size       = 500 # Mobs to batch-load
 		self._sigs_binloader   = binloader.BSBinViewLoader.Signals()
+
+		# Define animators
+		self._anim_progress    = QtCore.QPropertyAnimation(parent=self)
+		self._time_last_chunk  = QtCore.QElapsedTimer()
 
 		# Define widgets
 		self._main_bincontents = binwidget.BSBinContentsWidget()
@@ -102,6 +106,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.progressBar().setSizePolicy(pol)
 		topbar.progressBar().setRange(0,0)
 		topbar.progressBar().setHidden(True)
+
+		self._anim_progress.setTargetObject(topbar.progressBar())
+		self._anim_progress.setPropertyName(QtCore.QByteArray.fromStdString("value"))
+		self._anim_progress.setEasingCurve(QtCore.QEasingCurve.Type.Linear)
+		#self._anim_progress.setDuration(2_000)
 
 		grp = QtWidgets.QSizeGrip(self._main_bincontents.listView())
 		self._main_bincontents.listView().setCornerWidget(grp)
@@ -227,8 +236,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
 		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
-		self._sigs_binloader.sig_got_mob                     .connect(self._man_binitems.addMob)
-		self._sigs_binloader.sig_got_mob                     .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
+		self._sigs_binloader.sig_got_mobs                    .connect(self._man_binitems.addMobs)
+		#self._sigs_binloader.sig_got_mobs.connect(print)
+		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar)
+		#self._sigs_binloader.sig_got_mob                    .connect(self._man_binitems.addMob)
+		#self._sigs_binloader.sig_got_mob                     .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
@@ -287,6 +299,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def binItemsManager(self) -> binproperties.BSBinItemsManager:
 		return self._man_binitems
 	
+	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
+		return self._sigs_binloader
+	
+	def setMobQueueSize(self, queue_size:int):
+		self._queue_size = queue_size
+
+	def mobQueueSize(self) -> int:
+		return self._queue_size
+	
 	##
 	## Slots
 	##
@@ -306,7 +327,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setEnabled(True)
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
-		self._man_binitems.viewModel().clear
+		self._man_binitems.viewModel().clear()
 		
 		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
 		self._main_bincontents.topWidgetBar().progressBar().show()
@@ -315,10 +336,48 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
+
+	@QtCore.Slot(object)
+	def updateLoadingBar(self, mobs_list:list):
+		"""Update/animate the progress"""
+
+		USE_ANIM = True
+
+
+		if USE_ANIM:
+
+			last_duration     = self._time_last_chunk.restart() if self._time_last_chunk.isValid() else 500
+			adjusted_duration = round(last_duration * (len(mobs_list)/self._queue_size))
+
+			self._anim_progress.stop()
+			self._anim_progress.setStartValue(self._anim_progress.targetObject().value())
+			self._anim_progress.setEndValue((self._anim_progress.endValue() or 0) + len(mobs_list))
+			self._anim_progress.setDuration(adjusted_duration)
+			
+			if not self._time_last_chunk.isValid():
+				self._time_last_chunk.start()
+			
+			#print(adjusted_duration)
+			#import logging
+			#logging.getLogger(__name__).debug("Restart animation: start=%s, end=%s, duration=%s", self._anim_progress.startValue(), self._anim_progress.endValue(), self._anim_progress.duration())
+			self._anim_progress.start()
+		else:
+			self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + len(mobs_list))
 	
 	@QtCore.Slot()
 	def cleanupAfterBinLoading(self):
 		"""A bin has finished loading.  Reset UI elements."""
+
+		# NOTE: If I really wanna tween the last of the progress,
+		# I could do something like below. But is it necessary?
+		# PROBABLY NOT.
+		#self._anim_progress.finished.connect(self.cleanupProgressBar)
+
+		# NOTE: Otherwise, I'm just resetting everything immediately which I think is the way to go
+		self._anim_progress.stop()
+		self._anim_progress.setEndValue(0)
+		self._time_last_chunk.invalidate()
+
 
 		self._main_bincontents.topWidgetBar().progressBar().setMaximum(0)
 		self._main_bincontents.topWidgetBar().progressBar().setValue(0)
@@ -364,7 +423,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		logging.getLogger(__name__).warning("Aborted loading bin")
 		
 		if message:
-			QtWidgets.QMessageBox.error(self, "Bin Not Loaded", message)
+			QtWidgets.QMessageBox.critical(self, "Bin Not Loaded", message)
 
 
 
@@ -396,7 +455,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		"""Load a bin from the given path"""
 
 		QtCore.QThreadPool.globalInstance().start(
-			binloader.BSBinViewLoader(bin_path, self._sigs_binloader)
+			binloader.BSBinViewLoader(bin_path, self._sigs_binloader, self._queue_size)
 		)
 
 	@QtCore.Slot()

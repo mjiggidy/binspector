@@ -316,7 +316,18 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 			item_rect
 		)
 
-		self.sig_mob_added.emit(mob_info)
+		#self.sig_mob_added.emit(mob_info)
+	
+	@QtCore.Slot(object)
+	def addMobs(self, mob_info_list:list[binparser.BinItemInfo]):
+
+		self.addRows([m.column_data for m in mob_info_list])
+
+
+
+		#self.sig_mob_added.emit(mob_info_list)
+
+		# ALSO Add Frame Items
 
 	def frameScene(self) -> QtWidgets.QGraphicsScene:
 		return self._frame_scene
