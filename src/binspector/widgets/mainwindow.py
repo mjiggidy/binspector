@@ -290,6 +290,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def binItemsManager(self) -> binproperties.BSBinItemsManager:
 		return self._man_binitems
 	
+	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
+		return self._sigs_binloader
+	
 	##
 	## Slots
 	##
