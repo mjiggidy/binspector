@@ -34,7 +34,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_viewmode     = binproperties.BSBinViewModeManager()
 
 		# Define signals
-		self._queue_size       = 500 # Mobs to batch-load
+		self._queue_size       = 500  # Mobs to batch-load
+		self._use_animation    = True # Use animated progress bar
 		self._sigs_binloader   = binloader.BSBinViewLoader.Signals()
 
 		# Define animators
@@ -308,6 +309,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def mobQueueSize(self) -> int:
 		return self._queue_size
 	
+	def setUseAnimation(self, use_animation:bool):
+		self._use_animation = use_animation
+	
+	def useAnimation(self) -> bool:
+		"""Use fancy animated progress bar"""
+
+		return self._use_animation
+	
 	##
 	## Slots
 	##
@@ -341,10 +350,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def updateLoadingBar(self, mobs_list:list):
 		"""Update/animate the progress"""
 
-		USE_ANIM = True
+		self._use_animation = False
 
 
-		if USE_ANIM:
+		if self._use_animation:
 
 			last_duration     = self._time_last_chunk.restart() if self._time_last_chunk.isValid() else 500
 			adjusted_duration = round(last_duration * (len(mobs_list)/self._queue_size))
@@ -356,6 +365,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			
 			if not self._time_last_chunk.isValid():
 				self._time_last_chunk.start()
+			
+			#print(adjusted_duration)
 			
 			#print(adjusted_duration)
 			#import logging

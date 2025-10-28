@@ -148,6 +148,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.appearanceManager().sig_bin_appearance_toggled.connect(self._settingsManager.setBinAppearanceEnabled)
 
 		window.setMobQueueSize(self._settingsManager.mobQueueSize())
+		window.setUseAnimation(self._settingsManager.useFancyProgressBar())
 
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
