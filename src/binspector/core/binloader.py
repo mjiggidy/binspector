@@ -38,12 +38,13 @@ class BSBinViewLoader(QtCore.QRunnable):
 		def requestStop(self):
 			self._sig_user_request_stop.emit()
 
-	def __init__(self, bin_path:PathLike, signals:Signals, *args, **kwargs):
+	def __init__(self, bin_path:PathLike, signals:Signals, queue_size:int=500, *args, **kwargs):
 		
 		super().__init__(*args, **kwargs)
 		
 		self._bin_path = bin_path
 		self._signals  = signals
+		self._mob_queue_size = queue_size
 
 		self._stop_requested = False
 		self._signals._sig_user_request_stop.connect(self.requestStop)
@@ -110,11 +111,9 @@ class BSBinViewLoader(QtCore.QRunnable):
 		except Exception as e:
 			self._signals.sig_got_exception.emit(e)
 
-		QUEUE_SIZE = 500
-
 		mob_queue = list()
 		
-		logging.getLogger(__name__).debug("Begin bin item loading")
+		logging.getLogger(__name__).debug("Begin bin item loading with queue size=%s", self._mob_queue_size)
 		# Load each mob
 		for bin_item in bin_handle.content.items:
 
@@ -129,7 +128,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 			except Exception as e:
 				self._signals.sig_got_exception.emit(e)
 			
-			if len(mob_queue) == QUEUE_SIZE:
+			if len(mob_queue) == self._mob_queue_size:
 				self._signals.sig_got_mobs.emit(mob_queue)
 				mob_queue = list()
 		
