@@ -61,6 +61,8 @@ class BSBinViewLoader(QtCore.QRunnable):
 	def loadDataFromBin(self, bin_handle:avb.file.AVBFile):
 		"""Load and emit the data"""
 
+		import logging
+
 		# NOTE to self:
 		# I think I'm going for "very passive" error handling -- ideally so people can see something
 		# out of even a corrupt bin.  So, lots of `try`s here but not bailing unless the file can't be
@@ -69,23 +71,42 @@ class BSBinViewLoader(QtCore.QRunnable):
 		# Load bin properties (view, sorting, etc)
 		try:
 
+			logging.getLogger(__name__).debug("Begin display flags")
 			self._signals.sig_got_bin_display_settings.emit(binparser.bin_display_flags_from_bin(bin_handle.content))
+			logging.getLogger(__name__).debug("End display flags")
+			
+			logging.getLogger(__name__).debug("Begin view settings")
 			self._signals.sig_got_view_settings.emit(
 				binparser.bin_view_setting_from_bin(bin_handle.content),
 				binparser.bin_column_widths_from_bin(bin_handle.content),
 				binparser.bin_frame_view_scale_from_bin(bin_handle.content)
 			)
+			logging.getLogger(__name__).debug("End view settings")
+
+			logging.getLogger(__name__).debug("Begin display mode")
 			self._signals.sig_got_display_mode.emit(binparser.display_mode_from_bin(bin_handle.content))
+			logging.getLogger(__name__).debug("End display mode")
+
+			logging.getLogger(__name__).debug("Begin sift settings")
 			self._signals.sig_got_sift_settings.emit(*binparser.sift_settings_from_bin(bin_handle.content))
+			logging.getLogger(__name__).debug("End sift settings")
+
+			logging.getLogger(__name__).debug("Begin sort settings")
 			self._signals.sig_got_sort_settings.emit(binparser.sort_settings_from_bin(bin_handle.content))
+			logging.getLogger(__name__).debug("End sort settings")
+
+			logging.getLogger(__name__).debug("Begin appearance settings")
 			self._signals.sig_got_bin_appearance_settings.emit(*binparser.appearance_settings_from_bin(bin_handle.content))
+			logging.getLogger(__name__).debug("End appearance settings")
 
 		except Exception as e:
 			self._signals.sig_got_exception.emit(e)
 			
 		# Get mob count for progress
 		try:
+			logging.getLogger(__name__).debug("Begin bin item count")
 			self._signals.sig_got_mob_count.emit(len(bin_handle.content.items))
+			logging.getLogger(__name__).debug("End bin item count")
 		except Exception as e:
 			self._signals.sig_got_exception.emit(e)
 
@@ -93,6 +114,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 		mob_queue = list()
 		
+		logging.getLogger(__name__).debug("Begin bin item loading")
 		# Load each mob
 		for bin_item in bin_handle.content.items:
 
@@ -115,6 +137,8 @@ class BSBinViewLoader(QtCore.QRunnable):
 			import logging
 			logging.getLogger(__name__).debug("Flushing the final %s mobs", len(mob_queue))
 			self._signals.sig_got_mobs.emit(mob_queue)
+		
+		logging.getLogger(__name__).debug("End bin item loading")
 
 	def run(self):
 		"""Who will run the runnable?"""
