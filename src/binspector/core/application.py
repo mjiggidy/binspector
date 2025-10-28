@@ -7,7 +7,7 @@ from os import PathLike
 
 from . import settings
 from ..managers import windows, software_updates
-from ..widgets import mainwindow, logwidget
+from ..widgets import mainwindow, logwidget, settingswindow
 from ..models import logmodels
 
 class BSMainApplication(QtWidgets.QApplication):
@@ -88,6 +88,18 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._updates_manager.sig_newReleaseAvailable.connect(self.showUpdatesWindow)
 		self._updates_manager.sig_autoCheckChanged.connect(self._settingsManager.setSoftwareUpdateAutocheckEnabled)
 		self._wnd_update = None	# Window will be created in `self.showUpdatesWindow`
+
+		# Settings Temp
+		self._wnd_settings = settingswindow.BSSettingsPanel()
+		self._wnd_settings.setUseAnimations(self._settingsManager.useFancyProgressBar())
+		self._wnd_settings.setMobQueueSize(self._settingsManager.mobQueueSize())
+		self._wnd_settings.sig_use_animations_changed.connect(self._settingsManager.setUseFancyProgressBar)
+		self._wnd_settings.sig_use_animations_changed.connect(lambda use_animation: [w.setUseAnimation(use_animation) for w in self._binwindows_manager.windows()])
+		self._wnd_settings.sig_mob_queue_size_changed.connect(self._settingsManager.setMobQueueSize)
+		self._wnd_settings.sig_mob_queue_size_changed.connect(lambda queue_size: [w.setMobQueueSize(queue_size) for w in self._binwindows_manager.windows()])
+		self._wnd_settings.setWindowTitle("Temp Settings")
+		self._wnd_settings.setWindowFlag(QtCore.Qt.WindowType.Tool)
+		self._wnd_settings.show()
 
 	def localStoragePath(self) -> PathLike[str]:
 		"""Get the local user storage path"""
