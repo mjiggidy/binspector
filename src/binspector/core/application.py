@@ -82,6 +82,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self._settingsManager.setLastWindowGeometry(self.activeWindow().geometry()))
 
 		# Setup updates manager
+		self._disable_updates_counter = 0
 		self._updates_manager = software_updates.BSUpdatesManager()
 		self._updates_manager.setAutoCheckEnabled(self._settingsManager.softwareUpdateAutocheckEnabled())
 		self._updates_manager.sig_newReleaseAvailable.connect(self.showUpdatesWindow)
@@ -146,6 +147,9 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.appearanceManager().setEnableBinAppearance(self._settingsManager.binAppearanceIsEnabled())
 		window.appearanceManager().sig_bin_appearance_toggled.connect(self._settingsManager.setBinAppearanceEnabled)
 
+		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
+		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
+
 		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
 		window.show()
@@ -159,6 +163,28 @@ class BSMainApplication(QtWidgets.QApplication):
 			window.showFileBrowser(initial_path)
 
 		return window
+	
+	@QtCore.Slot()
+	@QtCore.Slot(bool)
+	def setUpdateCheckEnabled(self, is_enabled:bool=True):
+
+		self._updates_manager.setEnabled(bool(is_enabled))
+
+		self._disable_updates_counter = max(self._disable_updates_counter + (-1 if is_enabled else 1), 0)
+
+		logging.getLogger(__name__).debug("_disable_updates_counter = %s", self._disable_updates_counter)
+
+		if self._disable_updates_counter:
+			self._updates_manager.setDisabled()
+		else:
+			self._updates_manager.setEnabled()
+
+	
+	@QtCore.Slot()
+	@QtCore.Slot(bool)
+	def setUpdateCheckDisabled(self, is_disabled:bool=True):
+
+		self.setUpdateCheckEnabled(not bool(is_disabled))
 	
 	@QtCore.Slot()
 	def showLogWindow(self):
