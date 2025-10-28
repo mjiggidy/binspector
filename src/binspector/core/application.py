@@ -147,6 +147,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.appearanceManager().setEnableBinAppearance(self._settingsManager.binAppearanceIsEnabled())
 		window.appearanceManager().sig_bin_appearance_toggled.connect(self._settingsManager.setBinAppearanceEnabled)
 
+		window.setMobQueueSize(self._settingsManager.mobQueueSize())
+
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
 

@@ -302,6 +302,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
 		return self._sigs_binloader
 	
+	def setMobQueueSize(self, queue_size:int):
+		self._queue_size = queue_size
+
+	def mobQueueSize(self) -> int:
+		return self._queue_size
+	
 	##
 	## Slots
 	##
@@ -365,13 +371,13 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# NOTE: If I really wanna tween the last of the progress,
 		# I could do something like below. But is it necessary?
 		# PROBABLY NOT.
-
-		#self._anim_progress.stop()
-		#self._anim_progress.setEndValue(0)
-		#self._time_last_chunk.invalidate()
 		#self._anim_progress.finished.connect(self.cleanupProgressBar)
 
 		# NOTE: Otherwise, I'm just resetting everything immediately which I think is the way to go
+		self._anim_progress.stop()
+		self._anim_progress.setEndValue(0)
+		self._time_last_chunk.invalidate()
+
 
 		self._main_bincontents.topWidgetBar().progressBar().setMaximum(0)
 		self._main_bincontents.topWidgetBar().progressBar().setValue(0)
