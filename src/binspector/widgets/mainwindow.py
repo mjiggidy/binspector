@@ -312,7 +312,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setEnabled(True)
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
-		self._man_binitems.viewModel().clear
+		self._man_binitems.viewModel().clear()
 		
 		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
 		self._main_bincontents.topWidgetBar().progressBar().show()
