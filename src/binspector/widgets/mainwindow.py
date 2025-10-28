@@ -34,12 +34,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_viewmode     = binproperties.BSBinViewModeManager()
 
 		# Define signals
-		self._queue_size       = 500 # Mobs to batch-load
+		self._queue_size       = 500  # Mobs to batch-load
+		self._use_animation    = True # Use animated progress bar
 		self._sigs_binloader   = binloader.BSBinViewLoader.Signals()
 
 		# Define animators
 		self._anim_progress    = QtCore.QPropertyAnimation(parent=self)
 		self._time_last_chunk  = QtCore.QElapsedTimer()
+		self._time_last_load   = QtCore.QElapsedTimer()
 
 		# Define widgets
 		self._main_bincontents = binwidget.BSBinContentsWidget()
@@ -230,6 +232,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_aborted_loading             .connect(self.cleanupPartialBin)
 		self._sigs_binloader.sig_got_mob_count               .connect(self._main_bincontents.topWidgetBar().progressBar().setMaximum)
 		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading %v of %m mobs"))
+		#self._sigs_binloader.sig_got_mob_count               .connect(lambda: self.updateLoadingBar([]))
  
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
@@ -308,6 +311,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def mobQueueSize(self) -> int:
 		return self._queue_size
 	
+	def setUseAnimation(self, use_animation:bool):
+		self._use_animation = use_animation
+	
+	def useAnimation(self) -> bool:
+		"""Use fancy animated progress bar"""
+
+		return self._use_animation
+	
 	##
 	## Slots
 	##
@@ -318,6 +329,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		import logging
 		logging.getLogger(__name__).info("Begin loading %s", bin_path)
+		
+		self._time_last_load.start()
 
 		self._man_actions._act_filebrowser.setEnabled(False)
 		
@@ -341,21 +354,21 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def updateLoadingBar(self, mobs_list:list):
 		"""Update/animate the progress"""
 
-		USE_ANIM = True
+		if self._use_animation:
 
-
-		if USE_ANIM:
-
-			last_duration     = self._time_last_chunk.restart() if self._time_last_chunk.isValid() else 500
+			last_duration     = self._time_last_chunk.restart() if self._time_last_chunk.isValid() else 5_000
 			adjusted_duration = round(last_duration * (len(mobs_list)/self._queue_size))
 
 			self._anim_progress.stop()
 			self._anim_progress.setStartValue(self._anim_progress.targetObject().value())
+			#self._anim_progress.setEndValue(min(self._anim_progress.targetObject().value() + self._queue_size, self._anim_progress.targetObject().maximum()))
 			self._anim_progress.setEndValue((self._anim_progress.endValue() or 0) + len(mobs_list))
 			self._anim_progress.setDuration(adjusted_duration)
 			
 			if not self._time_last_chunk.isValid():
 				self._time_last_chunk.start()
+			
+			#print(adjusted_duration)
 			
 			#print(adjusted_duration)
 			#import logging
@@ -411,8 +424,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
 
+		total_load_time = self._time_last_load.elapsed()
+		self._time_last_load.invalidate()
 		import logging
-		logging.getLogger(__name__).info("Finished loading %s", self.windowFilePath())
+		logging.getLogger(__name__).info("Finished loading %s in %s seconds (queuesize=%s, fancy=%s)", self.windowFilePath(), round(total_load_time/1000,2), self._queue_size, self._use_animation)
 
 	@QtCore.Slot()
 	@QtCore.Slot(str)
