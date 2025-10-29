@@ -7,7 +7,7 @@ from os import PathLike
 
 from . import settings
 from ..managers import windows, software_updates
-from ..widgets import mainwindow, logwidget
+from ..widgets import mainwindow, logwidget, settingswindow
 from ..models import logmodels
 
 class BSMainApplication(QtWidgets.QApplication):
@@ -18,7 +18,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		super().__init__(*args, **kwargs)
 
 		self.setApplicationName("Binspector")
-		self.setApplicationVersion("0.0.6")
+		self.setApplicationVersion("0.0.7")
 		self.setStyle("Fusion")
 
 		self.setOrganizationName("GlowingPixel")
@@ -82,11 +82,24 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self._settingsManager.setLastWindowGeometry(self.activeWindow().geometry()))
 
 		# Setup updates manager
+		self._disable_updates_counter = 0
 		self._updates_manager = software_updates.BSUpdatesManager()
 		self._updates_manager.setAutoCheckEnabled(self._settingsManager.softwareUpdateAutocheckEnabled())
 		self._updates_manager.sig_newReleaseAvailable.connect(self.showUpdatesWindow)
 		self._updates_manager.sig_autoCheckChanged.connect(self._settingsManager.setSoftwareUpdateAutocheckEnabled)
 		self._wnd_update = None	# Window will be created in `self.showUpdatesWindow`
+
+		# Settings Temp
+		self._wnd_settings = settingswindow.BSSettingsPanel()
+		self._wnd_settings.setUseAnimations(self._settingsManager.useFancyProgressBar())
+		self._wnd_settings.setMobQueueSize(self._settingsManager.mobQueueSize())
+		self._wnd_settings.sig_use_animations_changed.connect(self._settingsManager.setUseFancyProgressBar)
+		self._wnd_settings.sig_use_animations_changed.connect(lambda use_animation: [w.setUseAnimation(use_animation) for w in self._binwindows_manager.windows()])
+		self._wnd_settings.sig_mob_queue_size_changed.connect(self._settingsManager.setMobQueueSize)
+		self._wnd_settings.sig_mob_queue_size_changed.connect(lambda queue_size: [w.setMobQueueSize(queue_size) for w in self._binwindows_manager.windows()])
+		self._wnd_settings.setWindowTitle("Temp Settings")
+		self._wnd_settings.setWindowFlag(QtCore.Qt.WindowType.Tool)
+		self._wnd_settings.show()
 
 	def localStoragePath(self) -> PathLike[str]:
 		"""Get the local user storage path"""
@@ -146,19 +159,47 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.appearanceManager().setEnableBinAppearance(self._settingsManager.binAppearanceIsEnabled())
 		window.appearanceManager().sig_bin_appearance_toggled.connect(self._settingsManager.setBinAppearanceEnabled)
 
+		window.setMobQueueSize(self._settingsManager.mobQueueSize())
+		window.setUseAnimation(self._settingsManager.useFancyProgressBar())
+
+		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
+		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
+
 		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
 		window.show()
 		#window.raise_()
-		window.activateWindow()
+		#window.activateWindow()
+		self.setActiveWindow(window)
 
 		if show_file_browser:
-
-			initial_path = self._settingsManager.lastBinPath() or QtCore.QDir.homePath()
-			#print(initial_path)
-			window.showFileBrowser(initial_path)
+			window.showFileBrowser(
+				self._settingsManager.lastBinPath() or QtCore.QDir.homePath()
+			)
 
 		return window
+	
+	@QtCore.Slot()
+	@QtCore.Slot(bool)
+	def setUpdateCheckEnabled(self, is_enabled:bool=True):
+
+		self._updates_manager.setEnabled(bool(is_enabled))
+
+		self._disable_updates_counter = max(self._disable_updates_counter + (-1 if is_enabled else 1), 0)
+
+		logging.getLogger(__name__).debug("_disable_updates_counter = %s", self._disable_updates_counter)
+
+		if self._disable_updates_counter:
+			self._updates_manager.setDisabled()
+		else:
+			self._updates_manager.setEnabled()
+
+	
+	@QtCore.Slot()
+	@QtCore.Slot(bool)
+	def setUpdateCheckDisabled(self, is_disabled:bool=True):
+
+		self.setUpdateCheckEnabled(not bool(is_disabled))
 	
 	@QtCore.Slot()
 	def showLogWindow(self):

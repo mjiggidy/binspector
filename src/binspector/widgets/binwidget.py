@@ -234,11 +234,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_frame    = binframeview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
 
+		self._txt_binstats      = QtWidgets.QLabel()
+
 		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
 		self.layout().addWidget(self._section_top)
 		self.layout().addWidget(self._section_main)
-		self.layout().addWidget(self._section_bottom)
+		#self.layout().addWidget(self._section_bottom)
 
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._binitems_list)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
@@ -271,6 +273,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._binitems_list.addAction(self._act_set_view_width_for_columns)
 		self._binitems_list.addAction(self._act_autofit_columns)
+
+		f = self._txt_binstats.font()
+		f.setPointSizeF(f.pointSizeF() * 0.8)
+		self._txt_binstats.setFont(f)
+		
+		self._txt_binstats.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
+		
+		self._txt_binstats.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
+		self._binitems_list.addScrollBarWidget(self._txt_binstats, QtCore.Qt.AlignmentFlag.AlignLeft)
 
 	def _setViewModeWidget(self, mode:avbutils.BinDisplayModes, widget:QtWidgets.QWidget):
 		"""Set view mode widget delegate for the stacked widget"""
@@ -384,9 +395,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		count_visible = self._binitems_list.model().rowCount()
 		count_all     = self._binitems_list.model().sourceModel().rowCount()
-		self._section_bottom.setInfoText(
-			f"Showing {QtCore.QLocale.system().toString(count_visible)} of {QtCore.QLocale.system().toString(count_all)} items"
-		)
+
+		info_text = f"Showing {QtCore.QLocale.system().toString(count_visible)} of {QtCore.QLocale.system().toString(count_all)} items"
+
+		#self._section_bottom.setInfoText(info_text)
+
+		self._txt_binstats.setText(info_text)
 	
 	@QtCore.Slot(object)
 	def setBinViewName(self, bin_view_name:str):

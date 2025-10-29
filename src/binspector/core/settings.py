@@ -131,3 +131,27 @@ class BSSettingsManager:
 		is_enabled = self.settings("bs").value("BinSettingsToggles/use_bin_appearance", True, bool)
 		logging.getLogger(__name__).debug("Returning use_bin_appearance: %s", is_enabled)
 		return is_enabled
+	
+	@QtCore.Slot(int)
+	def setMobQueueSize(self, queue_size:int):
+
+		self.settings("bs").setValue("BinLoading/mob_queue_size", queue_size)
+		logging.getLogger(__name__).debug("Set mob_queue_size: %s", queue_size)
+
+	def mobQueueSize(self) -> int:
+		
+		queue_size = self.settings("bs").value("BinLoading/mob_queue_size", 500, int)
+		logging.getLogger(__name__).debug("Returning mob_queue_size: %s", queue_size)
+		return queue_size
+	
+	@QtCore.Slot(int)
+	def setUseFancyProgressBar(self, use_animation:bool):
+
+		self.settings("bs").setValue("BinLoading/fancy_progress_bar", use_animation)
+		logging.getLogger(__name__).debug("Set fancy_progress_bar: %s", use_animation)
+
+	def useFancyProgressBar(self) -> int:
+		
+		use_animation = self.settings("bs").value("BinLoading/fancy_progress_bar", True, bool)
+		logging.getLogger(__name__).debug("Returning fancy_progress_bar: %s", use_animation)
+		return use_animation
