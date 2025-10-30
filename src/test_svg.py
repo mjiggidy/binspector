@@ -23,8 +23,6 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 		return self.__class__(self._svg_path)
 	
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
-
-		print("New render")
 		
 		self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
 		self._renderer.render(painter)
@@ -33,15 +31,13 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 
 	def addPixmap(self, pixmap:QtGui.QPixmap, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State, palette:QtGui.QPalette):
 
-		h = hash((pixmap.size(), mode, state, palette))
+		h = self._makeHash(pixmap.size(), mode, state, palette)
 		self._cache[h] = pixmap
-		print("added as ", h)
 	
 	def pixmap(self, size, mode, state):
 
-		h = hash((size, mode, state, str(self._palette_dict)))
+		h = self._makeHash(size, mode, state, str(self._palette_dict))
 		if h in self._cache:
-			print("Return cache")
 			return self._cache[h]
 		
 		pixmap = QtGui.QPixmap(size)
@@ -53,12 +49,18 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
 
+
 		self._palette      = palette
 		self._palette_dict = self._paletteToDict(palette)
 
 	@staticmethod
 	def _paletteToDict(palette:QtGui.QPalette) -> dict[str,str]:
 		return {role.name: palette.color(role).name() for role in QtGui.QPalette.ColorRole}
+	
+	@staticmethod
+	def _makeHash(size:QtCore.QSize, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State, palette_dict:dict[str,str]):
+
+		return hash((size, mode, state, palette_dict))
 	
 
 
