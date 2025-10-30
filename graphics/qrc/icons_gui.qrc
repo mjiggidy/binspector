@@ -1,7 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icons/gui">
-	<file alias="view_list.svg">../icons/view_list_v06.svg</file>
-	<file alias="view_frame.svg">../icons/view_frame_v03.svg</file>
-	<file alias="view_script.svg">../icons/view_script_v04.svg</file>
+	<file alias="view_list.svg">../icons/view_list_v06_themed.svg</file>
+	<file alias="view_frame.svg">../icons/view_frame_v03_themed.svg</file>
+	<file alias="view_script.svg">../icons/view_script_v04_themed.svg</file>
 </qresource>
 </RCC>
