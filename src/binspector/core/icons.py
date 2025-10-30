@@ -1,13 +1,49 @@
+import weakref, logging
 from os import PathLike
 from PySide6 import QtCore, QtGui, QtSvg
 
+class BSPaletteWatcherForSomeReason(QtCore.QObject):
+	"""Watch for palette changes ugh"""
+
+	sig_palette_changed = QtCore.Signal(QtGui.QPalette)
+	"""Oh look the palette changed"""
+
+	def __init__(self, *args, **kwargs):
+		
+		super().__init__(*args, **kwargs)
+
+		self._icon_engines:set[weakref.ReferenceType["BSPalettedSvgIconEngine"]] = set()
+
+	def addIconEngine(self, paletted_engine:"BSPalettedSvgIconEngine"):
+		ref = weakref.ref(paletted_engine)
+		logging.getLogger(__name__).debug("Adding weakref: %s", ref)
+		self._icon_engines.add(ref)
+	
+	@QtCore.Slot(QtGui.QPalette)
+	def setPalette(self, palette:QtGui.QPalette):
+
+		for icon_engine in self._icon_engines:
+
+			if not icon_engine():
+				logging.getLogger(__name__).debug("Discarding stale weakref: %s", icon_engine)
+				self._icon_engines.discard(icon_engine)
+
+			icon_engine().setPalette(palette)
+		
+		logging.getLogger(__name__).debug("Changed palette for %s", icon_engine)
+		self.sig_palette_changed.emit(palette)
+
+
+
 class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 	
-	def __init__(self, svg_path:PathLike, *args, **kwargs):
+	def __init__(self, svg_path:PathLike, palette_watcher:BSPaletteWatcherForSomeReason, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		self._svg_path     = svg_path
+		self._palette_watcher = palette_watcher
+
 		self._renderer     = QtSvg.QSvgRenderer()
 		self._palette      = QtGui.QPalette()
 		self._cache:dict[int,QtGui.QPixmap] = dict()
@@ -17,9 +53,11 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 			bytes(QtCore.QResource(svg_path).data())
 		).toStdString()
 
+		self._palette_watcher.addIconEngine(self)
+
 	
 	def clone(self) -> "BSPalettedSvgIconEngine":
-		return self.__class__(self._svg_path)
+		return self.__class__(self._svg_path, self._palette_watcher)
 	
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
 		
@@ -48,7 +86,6 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 
 		return pixmap
 	
-	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
 
 		self._palette      = palette
@@ -65,21 +102,3 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 	def _makeHash(size:QtCore.QSize, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State, palette_dict:dict[str,str]):
 
 		return hash((size, mode, state, palette_dict))
-
-class BSPalettedIcon(QtGui.QIcon):
-	"""A QIcon with support for paletted SVG icons via `BSPaletttedSvgIconEngine`"""
-
-	def __init__(self, icon_engine:BSPalettedSvgIconEngine, *args, **kwargs):
-
-		super().__init__(icon_engine, *args, **kwargs)
-		self._engine = icon_engine
-
-	def engine(self) -> QtGui.QIconEngine:
-		return self._engine
-	
-	# NOTE: Tried a `setPalette() self._engine.setPalette(palette)` here.
-	# Didn't... quite work? It was weird.  So, connect to icon.engine().setPalette instead
-	# Bruh I dunno
-
-	def palette(self) -> QtGui.QPalette:
-		return self._engine.palette()

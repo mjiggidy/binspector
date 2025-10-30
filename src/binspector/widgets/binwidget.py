@@ -206,7 +206,8 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
-	sig_view_mode_changed = QtCore.Signal(object)
+	sig_view_mode_changed   = QtCore.Signal(object)
+	sig_bin_palette_changed = QtCore.Signal(QtGui.QPalette)
 
 	def __init__(self, *args, **kwargs):
 
@@ -314,6 +315,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._binitems_script = script_view
 		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
+
+	@QtCore.Slot(QtGui.QPalette)
+	def setPalette(self, palette:QtGui.QPalette):
+		
+		val = super().setPalette(palette)
+		self.sig_bin_palette_changed.emit(palette)
+		return val
 	
 	def topWidgetBar(self) -> BSBinContentsTopWidgetBar:
 		return self._section_top
@@ -379,6 +387,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		if self._use_bin_appearance:
 			self.setPalette(self._bin_palette)
+		
 		#else:
 		#	self.setPalette(self._default_palette)
 	
