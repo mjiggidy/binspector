@@ -2,7 +2,7 @@ import sys
 from os import PathLike
 from PySide6 import QtCore, QtSvg, QtGui, QtWidgets
 from binspector.res import icons_gui
-from binspector.core.icons import BSPalettedIcon, BSPalettedSvgIconEngine
+from binspector.core.icons import BSPalettedSvgIconEngine
 	
 
 
@@ -18,13 +18,13 @@ window.layout().setSpacing(0)
 for mode in ICON_RESOURCES:
 
 	icon_engine = BSPalettedSvgIconEngine(f":/icons/gui/view_{mode}.svg")
-	icon = BSPalettedIcon(icon_engine)
+	icon = QtGui.QIcon(icon_engine)
 
 	button = QtWidgets.QPushButton()
 	button.setIconSize(QtCore.QSize(16,16))
 	button.setIcon(icon)
 
-	app.paletteChanged.connect(icon.engine().setPalette)
+	app.paletteChanged.connect(lambda pal: icon_engine.setPalette(pal))
 
 	window.layout().addWidget(button)
 
