@@ -12,12 +12,13 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 		self._svg_path     = svg_path
 		self._renderer     = QtSvg.QSvgRenderer()
 		self._palette      = QtGui.QPalette()
+		self._cache:dict[int,QtGui.QPixmap] = dict()
 		self._palette_dict = self._paletteToDict(self._palette)
+		
 		self._svg_template = QtCore.QByteArray(
 			bytes(QtCore.QResource(svg_path).data())
 		).toStdString()
 
-		self._cache:dict[int,QtGui.QPixmap] = dict()
 	
 	def clone(self) -> "BSPalettedSvgIconEngine":
 		return self.__class__(self._svg_path)
@@ -36,10 +37,12 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 	
 	def pixmap(self, size, mode, state):
 
+		# Pull from cache?
 		h = self._makeHash(size, mode, state, str(self._palette_dict))
 		if h in self._cache:
 			return self._cache[h]
 		
+		# Or draw new one
 		pixmap = QtGui.QPixmap(size)
 		pixmap.fill(QtCore.Qt.GlobalColor.transparent)
 		self.paint(QtGui.QPainter(pixmap), pixmap.rect(), mode, state)
@@ -49,9 +52,11 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
 
-
 		self._palette      = palette
 		self._palette_dict = self._paletteToDict(palette)
+	
+	def palette(self) -> QtGui.QPalette:
+		return self._palette
 
 	@staticmethod
 	def _paletteToDict(palette:QtGui.QPalette) -> dict[str,str]:
@@ -61,6 +66,24 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 	def _makeHash(size:QtCore.QSize, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State, palette_dict:dict[str,str]):
 
 		return hash((size, mode, state, palette_dict))
+
+class BSPalettedIcon(QtGui.QIcon):
+	"""A QIcon with support for paletted SVG icons via `BSPaletttedSvgIconEngine`"""
+
+	def __init__(self, icon_engine:BSPalettedSvgIconEngine, *args, **kwargs):
+
+		super().__init__(icon_engine, *args, **kwargs)
+		self._engine = icon_engine
+
+	def engine(self) -> QtGui.QIconEngine:
+		return self._engine
+	
+	# NOTE: Tried a `setPalette() self._engine.setPalette(palette)` here.
+	# Didn't... quite work? It was weird.  So, connect to icon.engine().setPalette instead
+	# Bruh I dunno
+
+	def palette(self) -> QtGui.QPalette:
+		return self._engine.palette()
 	
 
 
@@ -76,13 +99,13 @@ window.layout().setSpacing(0)
 for mode in ICON_RESOURCES:
 
 	icon_engine = BSPalettedSvgIconEngine(f":/icons/gui/view_{mode}.svg")
-	icon = QtGui.QIcon(icon_engine)
+	icon = BSPalettedIcon(icon_engine)
 
 	button = QtWidgets.QPushButton()
 	button.setIconSize(QtCore.QSize(16,16))
 	button.setIcon(icon)
 
-	app.paletteChanged.connect(icon_engine.setPalette)
+	app.paletteChanged.connect(icon.engine().setPalette)
 
 	window.layout().addWidget(button)
 
