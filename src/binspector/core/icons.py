@@ -15,9 +15,7 @@ class BSPaletteWatcherForSomeReason(QtCore.QObject):
 		self._icon_engines:set[weakref.ReferenceType["BSPalettedSvgIconEngine"]] = set()
 
 	def addIconEngine(self, paletted_engine:"BSPalettedSvgIconEngine"):
-		ref = weakref.ref(paletted_engine)
-		logging.getLogger(__name__).debug("Adding weakref: %s", ref)
-		self._icon_engines.add(ref)
+		self._icon_engines.add( weakref.ref(paletted_engine))
 	
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
@@ -25,15 +23,14 @@ class BSPaletteWatcherForSomeReason(QtCore.QObject):
 		for icon_engine in self._icon_engines:
 
 			if not icon_engine():
+
 				logging.getLogger(__name__).debug("Discarding stale weakref: %s", icon_engine)
 				self._icon_engines.discard(icon_engine)
 
-			icon_engine().setPalette(palette)
-		
-		logging.getLogger(__name__).debug("Changed palette for %s", icon_engine)
+			else:
+				icon_engine().setPalette(palette)
+
 		self.sig_palette_changed.emit(palette)
-
-
 
 class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 	
@@ -48,15 +45,13 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 		self._palette      = QtGui.QPalette()
 		self._cache:dict[int,QtGui.QPixmap] = dict()
 		self._palette_dict = self._paletteToDict(self._palette)
-		
-		self._svg_template = QtCore.QByteArray(
-			bytes(QtCore.QResource(svg_path).data())
-		).toStdString()
+		self._svg_template = bytes(QtCore.QResource(svg_path).uncompressedData().data()).decode("utf-8")
 
 		self._palette_watcher.addIconEngine(self)
 
 	
 	def clone(self) -> "BSPalettedSvgIconEngine":
+		logging.getLogger(__name__).debug("I do be clonin haha look")
 		return self.__class__(self._svg_path, self._palette_watcher)
 	
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
@@ -96,7 +91,10 @@ class BSPalettedSvgIconEngine(QtGui.QIconEngine):
 
 	@staticmethod
 	def _paletteToDict(palette:QtGui.QPalette) -> dict[str,str]:
-		return {role.name: palette.color(role).name() for role in QtGui.QPalette.ColorRole}
+
+		# NOTE: NColorRoles causes a periodic segfault that was JUST RUINING MY LIFE for a long time there
+		# Paraphrasing QPalette docs: "color role int should be less than NColorRoles" so I guess it's more of a sentinel
+		return {role.name: palette.color(role).name() for role in QtGui.QPalette.ColorRole if role.name != "NColorRoles"}
 	
 	@staticmethod
 	def _makeHash(size:QtCore.QSize, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State, palette_dict:dict[str,str]):
