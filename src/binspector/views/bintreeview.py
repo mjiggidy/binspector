@@ -3,6 +3,7 @@ import avbutils
 from . import treeview
 from .delegates import binitems
 from ..models import viewmodels
+from ..views.delegates import binitems
 
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
@@ -10,17 +11,19 @@ class BSBinTreeView(treeview.LBTreeView):
 	sig_default_sort_columns_changed = QtCore.Slot(object)
 	"""TODO: HMMMMMM"""
 
+	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(0,4,0,4)
+
 	COLUMN_PADDING_RIGHT:int = 24
 	"""Additional whitespace per column"""
 
 	ITEM_DELEGATES_PER_FIELD_ID = {
-		51: binitems.LBClipColorItemDelegate(),
+		51: binitems.LBClipColorItemDelegate(padding=DEFAULT_ITEM_PADDING),
 
 	}
 	"""Specialized one-off fields"""
 
 	ITEM_DELEGATES_PER_FORMAT_ID = {
-		avbutils.BinColumnFormat.TIMECODE: binitems.LBTimecodeItemDelegate(),
+		avbutils.BinColumnFormat.TIMECODE: binitems.LBTimecodeItemDelegate(padding=DEFAULT_ITEM_PADDING),
 	}
 	"""Delegate for generic field formats"""
 
@@ -45,6 +48,8 @@ class BSBinTreeView(treeview.LBTreeView):
 				destination_logical_start:	# NOTE: Won't work for heirarchical models
 			self.assignItemDelegates(destination_parent, min(source_logical_start, destination_logical_start))
 		)
+
+		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=self.DEFAULT_ITEM_PADDING))
 
 	@QtCore.Slot(object, int, int)
 	def assignItemDelegates(self, parent_index:QtCore.QModelIndex, logical_start_column:int):
