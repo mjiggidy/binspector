@@ -12,6 +12,9 @@ class BSLogTreeView(QtWidgets.QTreeView):
 		self.setIndentation(0)
 		self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
 		self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
+		self.setAutoScroll(False)
+		
 		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+		
 		if log_model:
 			self.setModel(log_model)
