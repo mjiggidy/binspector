@@ -278,6 +278,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		f = self._txt_binstats.font()
 		f.setPointSizeF(f.pointSizeF() * 0.8)
 		self._txt_binstats.setFont(f)
+		self._txt_binstats.setMinimumWidth(self._txt_binstats.fontMetrics().averageCharWidth() * 32)	# Showing 999,999 of 999,999 items
+		self._txt_binstats.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		
 		self._txt_binstats.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
 		
