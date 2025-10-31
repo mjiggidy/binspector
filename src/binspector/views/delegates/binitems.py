@@ -1,9 +1,35 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 from ...utils import drawing
+
+class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
+
+	sig_padding_changed = QtCore.Signal(QtCore.QMargins)
+
+	def __init__(self, padding:QtCore.QMargins|None=None, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._padding = padding or QtCore.QMargins()
+
+	def sizeHint(self, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> QtCore.QSize:
+		
+		hint_og = super().sizeHint(option, index)
+		
+		return QtCore.QSize(
+			hint_og.width()  + self._padding.left() + self._padding.right(),
+			hint_og.height() + self._padding.top()  + self._padding.bottom()
+		)
+	
+	def setPadding(self, padding:QtCore.QMargins):
+
+		if self._padding != padding:
+		
+			self._padding = padding
+			self.sig_padding_changed.emit(padding)
 	
 
-class LBClipColorItemDelegate(QtWidgets.QStyledItemDelegate):
+class LBClipColorItemDelegate(BSGenericItemDelegate):
 	"""Draw a clip color chip(?) to a give painter"""
 
 	def __init__(self, *args, **kwargs):
@@ -32,16 +58,20 @@ class LBClipColorItemDelegate(QtWidgets.QStyledItemDelegate):
 		
 		# Center, size and shape the canvas QRect
 		canvas = QtCore.QRect(option.rect)
-		canvas.setWidth(canvas.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()))
-		canvas = canvas.marginsRemoved(self._margins)
-		canvas.moveCenter(option.rect.center())
+
+		# Correct for padding
+		canvas_active = canvas.marginsRemoved(self._padding)
+
+		canvas_active.setWidth(canvas_active.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()))
+		canvas_active = canvas_active.marginsRemoved(self._margins)
+		canvas_active.moveCenter(option.rect.center())
 		
 		painter.save()
 
 		try:
 			drawing.draw_clip_color_chip(
 				painter=painter,
-				canvas=canvas,
+				canvas=canvas_active,
 				clip_color=clip_color,
 				#border_color=option.palette.color(QtGui.QPalette.ColorRole.WindowText),
 				border_color=QtGui.QColor("Black"),
@@ -55,7 +85,7 @@ class LBClipColorItemDelegate(QtWidgets.QStyledItemDelegate):
 
 		painter.restore()
 
-class LBTimecodeItemDelegate(QtWidgets.QStyledItemDelegate):
+class LBTimecodeItemDelegate(BSGenericItemDelegate):
 	"""Eventually imma want to"""
 
 	def __init__(self, *args, **kwargs):
