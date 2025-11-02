@@ -51,16 +51,24 @@ class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 	def palette(self) -> QtGui.QPalette:
 		return self._palette
 	
-	def _makeHash(self, size:QtCore.QSize, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
-		return hash((size, mode, state, self._palette.cacheKey()))
+	def _makeHash(self, size:QtCore.QSize, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State) -> int:
+		""""""
+
+		return hash((
+			size,
+			mode,
+			state,
+			self._palette.cacheKey()
+		))
 	
 class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 
-	def __init__(self, clip_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, **kwargs):
+	def __init__(self, clip_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, border_width:int=2, **kwargs):
 
 		super().__init__(palette_watcher, *args, **kwargs)
 
-		self._clip_color      = clip_color
+		self._clip_color   = clip_color
+		self._border_width = border_width
 
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
 
@@ -68,11 +76,10 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 			painter      = painter,
 			canvas       = rect,
 			clip_color   = self._clip_color,
-			border_color = self._palette.window().color(),
+			border_width = self._border_width,
+			border_color = self._palette.windowText().color(),
 			shadow_color = self._palette.shadow().color(),
 		)
-
-		return super().paint(painter, rect, mode, state)
 
 	def clone(self) -> "BSPalettedClipColorIconEngine":
 		
@@ -94,11 +101,10 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 		# Or draw new one
 		pixmap = QtGui.QPixmap(size)
 		pixmap.fill(QtCore.Qt.GlobalColor.transparent)
+		
 		self.paint(QtGui.QPainter(pixmap), pixmap.rect(), mode, state)
 
-	def _makeHash(self, size:QtCore.QSize, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
-
-		return super()._makeHash((size, mode, state, self._palette.cacheKey()), self._clip_color)
+		return pixmap
 
 class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	

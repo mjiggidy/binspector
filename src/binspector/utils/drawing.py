@@ -52,9 +52,11 @@ def draw_clip_color_chip(
 
 	# Draw main clip color chip
 	pen.setColor(border_color)
-
 	brush.setColor(clip_color)
-	brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern if clip_color.isValid() else QtCore.Qt.BrushStyle.NoBrush)
+	brush.setStyle(
+		QtCore.Qt.BrushStyle.SolidPattern if clip_color.isValid()
+		else QtCore.Qt.BrushStyle.NoBrush
+	)
 
 	painter.setPen(pen)
 	painter.setBrush(brush)
