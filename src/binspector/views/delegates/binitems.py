@@ -30,12 +30,12 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 class LBClipColorItemDelegate(BSGenericItemDelegate):
 	"""Draw a clip color chip(?) to a give painter"""
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, aspect_ratio:QtCore.QSize|None=None, border_width:int=1, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._margins      = QtCore.QMargins(*[4]*4)
-		self._aspect_ratio = QtCore.QSize(4,3)
+		self._aspect_ratio = aspect_ratio or QtCore.QSize(4,3)
+		self._border_width = border_width
 
 	def sizeHint(self, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex) -> QtCore.QSize:
 
@@ -58,8 +58,8 @@ class LBClipColorItemDelegate(BSGenericItemDelegate):
 		canvas_active = option.rect.marginsRemoved(self._padding)
 		canvas_active.setWidth(
 			min(
-				canvas_active.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()),
-				canvas_active.width() - self._padding.left() - self._padding.right()
+				canvas_active.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()),        # Full aspect ratio, or...
+				max(canvas_active.height(), canvas_active.width() - self._padding.left() - self._padding.right() + self._border_width) # ...clamp to smaller width
 			)
 		)
 		canvas_active.moveCenter(option.rect.center())
@@ -73,10 +73,8 @@ class LBClipColorItemDelegate(BSGenericItemDelegate):
 				painter=painter,
 				canvas=canvas_active,
 				clip_color=clip_color,
-				#border_color=option.palette.color(QtGui.QPalette.ColorRole.WindowText),
 				border_color=option.palette.color(QtGui.QPalette.ColorRole.WindowText),
-				border_width=1,
-				#shadow_color=option.palette.color(QtGui.QPalette.ColorRole.Shadow),
+				border_width=self._border_width,
 				shadow_color=option.palette.color(QtGui.QPalette.ColorRole.Shadow),
 			)
 		except Exception as e:
