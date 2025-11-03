@@ -4,8 +4,6 @@ from ...utils import drawing
 
 class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
-	sig_padding_changed = QtCore.Signal(QtCore.QMargins)
-
 	def __init__(self, padding:QtCore.QMargins|None=None, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -26,7 +24,7 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		if self._padding != padding:
 		
 			self._padding = padding
-			self.sig_padding_changed.emit(padding)
+			self.sizeHintChanged.emit(padding)
 	
 
 class LBClipColorItemDelegate(BSGenericItemDelegate):
@@ -41,10 +39,10 @@ class LBClipColorItemDelegate(BSGenericItemDelegate):
 
 	def sizeHint(self, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex) -> QtCore.QSize:
 
-		# Width is height * aspect ratio
 		orig = super().sizeHint(option, index)
+
+		# Return aspect ratio-corrected width x original height
 		return QtCore.QSize(orig.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()), orig.height())
-		#return QtCore.QSize(orig.height(), orig.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()))
 
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
@@ -53,20 +51,22 @@ class LBClipColorItemDelegate(BSGenericItemDelegate):
 		# "No clip color" should at least be an invalid `QtCore.QColor`
 		clip_color = index.data(QtCore.Qt.ItemDataRole.UserRole)
 		if not isinstance(clip_color, QtGui.QColor):
-			logging.getLogger(__name__).debug("Skipping clip color delegate because UserRole was not QColor (got %s)", type(clip_color).__name__)
+			logging.getLogger(__name__).error("Skipping clip color delegate because UserRole was not QColor (got %s)", type(clip_color).__name__)
 			return
 		
 		# Center, size and shape the canvas QRect
-		canvas = QtCore.QRect(option.rect)
-
-		# Correct for padding
-		canvas_active = canvas.marginsRemoved(self._padding)
-
-		canvas_active.setWidth(canvas_active.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()))
-		canvas_active = canvas_active.marginsRemoved(self._margins)
+		canvas_active = option.rect.marginsRemoved(self._padding)
+		canvas_active.setWidth(
+			min(
+				canvas_active.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()),
+				canvas_active.width() - self._padding.left() - self._padding.right()
+			)
+		)
 		canvas_active.moveCenter(option.rect.center())
 		
 		painter.save()
+
+		#painter.fillRect(canvas_active, QtGui.QColor("Black"))
 
 		try:
 			drawing.draw_clip_color_chip(
@@ -74,10 +74,10 @@ class LBClipColorItemDelegate(BSGenericItemDelegate):
 				canvas=canvas_active,
 				clip_color=clip_color,
 				#border_color=option.palette.color(QtGui.QPalette.ColorRole.WindowText),
-				border_color=QtGui.QColor("Black"),
+				border_color=option.palette.color(QtGui.QPalette.ColorRole.WindowText),
 				border_width=1,
 				#shadow_color=option.palette.color(QtGui.QPalette.ColorRole.Shadow),
-				shadow_color=QtGui.QColor("Black"),
+				shadow_color=option.palette.color(QtGui.QPalette.ColorRole.Shadow),
 			)
 		except Exception as e:
 			print(e)
