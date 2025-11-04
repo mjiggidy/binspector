@@ -127,6 +127,34 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 		
 		logging.getLogger(__name__).debug("I do be clonin haha look")
 		return self.__class__(self._clip_color, self._palette_watcher)
+	
+class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
+
+	def __init__(self, marker_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, border_width:int=2, **kwargs):
+
+		super().__init__(palette_watcher, *args, **kwargs)
+
+		self._marker_color   = marker_color
+		self._border_width = border_width
+
+	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
+
+		active_rect = rect.adjusted(10,3,-10,-3)
+		
+		drawing.draw_marker_tick(
+			painter      = painter,
+			canvas       = active_rect,
+			marker_color = self._marker_color,
+			border_color = self._palette.buttonText().color(),
+			border_width = self._border_width,
+			#border_color = self._palette.windowText().color(),
+			#shadow_color = self._palette.shadow().color(),
+		)
+
+	def clone(self) -> "BSPalettedClipColorIconEngine":
+		
+		logging.getLogger(__name__).debug("I do be clonin haha look")
+		return self.__class__(self._marker_color, self._palette_watcher)
 
 class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	
