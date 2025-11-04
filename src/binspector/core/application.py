@@ -18,7 +18,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		super().__init__(*args, **kwargs)
 
 		self.setApplicationName("Binspector")
-		self.setApplicationVersion("0.0.7")
+		self.setApplicationVersion("0.0.8")
 		self.setStyle("Fusion")
 
 		self.setOrganizationName("GlowingPixel")
