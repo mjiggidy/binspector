@@ -25,7 +25,7 @@ def draw_clip_color_chip(
 	# Pen and brush initial values
 	pen = painter.pen()
 	pen.setWidth(border_width)
-	pen.setJoinStyle(QtCore.Qt.PenJoinStyle.RoundJoin)
+	pen.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
 	pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
 	
 	brush = painter.brush()
