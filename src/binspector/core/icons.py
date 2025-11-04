@@ -1,4 +1,4 @@
-import weakref, logging
+import weakref, logging, typing
 from os import PathLike
 from PySide6 import QtCore, QtGui, QtSvg
 from ..utils import drawing
@@ -33,6 +33,27 @@ class BSPaletteWatcherForSomeReason(QtCore.QObject):
 
 		self.sig_palette_changed.emit(palette)
 
+class BSIconProvider:
+	"""Provide icons based on lookup"""
+
+	def __init__(self):
+
+		self._icons:dict[typing.Hashable, QtGui.QIcon] = dict()
+	
+	def icons(self) -> list[QtGui.QIcon]:
+		return self._icons
+	
+	def addIcon(self, key:typing.Hashable, icon:QtGui.QIcon):
+		self._icons[key] = icon
+
+	def getIcon(self, key:typing.Hashable) -> QtGui.QIcon:
+
+		if key not in self._icons:
+			# TODO: Generate and add icon
+			return QtGui.QIcon()
+		
+		return self._icons[key]
+	
 class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 
 	def __init__(self, palette_watcher:BSPaletteWatcherForSomeReason, *args, **kwargs):
@@ -96,14 +117,16 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 		# Pull from cache?
 		h = self._makeHash(size, mode, state)
 		if h in self._cache:
+			print("I cache")
 			return self._cache[h]
 		
 		# Or draw new one
+		print("I paint", h)
 		pixmap = QtGui.QPixmap(size)
 		pixmap.fill(QtCore.Qt.GlobalColor.transparent)
 		
 		self.paint(QtGui.QPainter(pixmap), pixmap.rect(), mode, state)
-
+		self._cache[h] = pixmap
 		return pixmap
 
 class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):

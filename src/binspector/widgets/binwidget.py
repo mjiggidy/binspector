@@ -323,6 +323,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		val = super().setPalette(palette)
 		self.sig_bin_palette_changed.emit(palette)
+		self._binitems_list._palette_watcher.setPalette(palette)
 		return val
 	
 	def topWidgetBar(self) -> BSBinContentsTopWidgetBar:

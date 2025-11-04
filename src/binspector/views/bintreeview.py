@@ -1,9 +1,13 @@
-from PySide6 import QtCore
+from PySide6 import QtCore, QtGui
 import avbutils
 from . import treeview
 from .delegates import binitems
 from ..models import viewmodels
 from ..views.delegates import binitems
+from ..core import icons
+
+
+
 
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
@@ -17,7 +21,7 @@ class BSBinTreeView(treeview.LBTreeView):
 	"""Additional whitespace per column"""
 
 	ITEM_DELEGATES_PER_FIELD_ID = {
-		51: binitems.LBClipColorItemDelegate(padding=DEFAULT_ITEM_PADDING),
+		51: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING),
 
 	}
 	"""Specialized one-off fields"""
@@ -48,6 +52,19 @@ class BSBinTreeView(treeview.LBTreeView):
 				destination_logical_start:	# NOTE: Won't work for heirarchical models
 			self.assignItemDelegates(destination_parent, min(source_logical_start, destination_logical_start))
 		)
+
+		# TODO/TEMP: Prep clip color icons
+		self._palette_watcher = icons.BSPaletteWatcherForSomeReason()
+		clip_color_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[51]
+		clip_color_delegate.iconProvider().addIcon(str(QtGui.QColor()), QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
+		for color in avbutils.get_default_clip_colors():
+
+			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
+			icon = QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=icon_color, palette_watcher=self._palette_watcher))
+			clip_color_delegate.iconProvider().addIcon(str(icon_color), icon)
+			print(str(icon_color), icon)
+
+
 
 		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=self.DEFAULT_ITEM_PADDING))
 

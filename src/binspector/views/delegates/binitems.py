@@ -1,6 +1,7 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 from ...utils import drawing
+from ...core  import icons
 
 class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
@@ -25,12 +26,75 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		
 			self._padding = padding
 			self.sizeHintChanged.emit(padding)
+
+	def activeRectFromRect(self, rect:QtCore.QRect) -> QtCore.QRect:
+		"""The active area without padding and such"""
+
+		return rect.marginsRemoved(self._padding)
+
+class BSIconLookupItemDelegate(BSGenericItemDelegate):
+
+	def __init__(self, *args, aspect_ratio:QtCore.QSize|None=None, icon_provider:icons.BSIconProvider|None=None, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._aspect_ratio  = aspect_ratio or QtCore.QSize(4,3)
+		self._icon_provider = icon_provider or icons.BSIconProvider()
+
+	def iconProvider(self) -> icons.BSIconProvider:
+		return self._icon_provider
+
+	def sizeWithAspectRatio(self, rect:QtCore.QSize) -> QtCore.QSize:
+		"""Over-engineering?  Probably.  Return a size corrected for aspect ratio with priority given to height."""
+
+		return QtCore.QSize(rect.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()), rect.height())
+
+	def sizeHint(self, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex) -> QtCore.QSize:
+		"""Return aspect ratio-corrected width x original height"""
+
+		orig = super().sizeHint(option, index)
+		return self.sizeWithAspectRatio(orig)
 	
+	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+
+		opt = QtWidgets.QStyleOptionViewItem(option)
+		self.initStyleOption(opt, index)
+		style = opt.widget.style() if opt.widget else QtWidgets.QApplication.style()
+		
+		user_data = index.data(QtCore.Qt.ItemDataRole.UserRole)
+		icon      = self._icon_provider.getIcon(str(user_data))
+
+		# Center, size and shape the canvas QRect
+		canvas_active = self.activeRectFromRect(opt.rect)
+		canvas_active.setWidth(
+			min(
+				canvas_active.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()),                # Full aspect ratio, or...
+				max(canvas_active.height(), canvas_active.width() - self._padding.left() - self._padding.right()) # ...clamp to smaller width
+			)
+		)
+		canvas_active.moveCenter(opt.rect.center())
+		
+		painter.save()
+		
+		try:
+			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, opt, painter, opt.widget)
+		
+			painter.drawPixmap(
+				canvas_active,
+				icon.pixmap(canvas_active.size())
+			)
+		
+		except Exception as e:
+			logging.getLogger(__name__).error("Error drawing icon: %s", e)
+		
+		painter.restore()
 
 class LBClipColorItemDelegate(BSGenericItemDelegate):
 	"""Draw a clip color chip(?) to a give painter"""
 
 	def __init__(self, *args, aspect_ratio:QtCore.QSize|None=None, border_width:int=1, **kwargs):
+
+		raise DeprecationWarning("Use BSIconLookupItemDelegate instead there, hoss")
 
 		super().__init__(*args, **kwargs)
 
@@ -55,7 +119,7 @@ class LBClipColorItemDelegate(BSGenericItemDelegate):
 			return
 		
 		# Center, size and shape the canvas QRect
-		canvas_active = option.rect.marginsRemoved(self._padding)
+		canvas_active = self.activeRectFromRect(option.rect)
 		canvas_active.setWidth(
 			min(
 				canvas_active.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()),        # Full aspect ratio, or...
