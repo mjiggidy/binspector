@@ -2,7 +2,7 @@
 Window managers
 """
 
-import weakref
+import weakref, logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
 class BSWindowManager(QtCore.QObject):
@@ -28,7 +28,7 @@ class BSWindowManager(QtCore.QObject):
 
 		self._window_refs.add(win_weakref)
 
-		print(self.windows())
+		logging.getLogger(__name__).debug("Created new window (windows_list=%s)", self.windows())
 
 		return window
 	
@@ -45,7 +45,7 @@ class BSWindowManager(QtCore.QObject):
 		try:
 			self._window_refs.discard(window_ref)
 		except Exception as e:
-			print(e, len(self._window_refs))
+			logging.getLogger(__name__).warning("Strange thing while closing window: %s (window list length=%s)", e, len(self._window_refs))
 
 
 
@@ -182,7 +182,6 @@ class BSWindowSettingsManager(QtCore.QObject):
 
 		# Watch for window moves and resizes
 		if watched == self._window and event.type() in (QtCore.QEvent.Type.Resize, QtCore.QEvent.Type.Move, QtCore.QEvent.Type.FocusIn):
-			print("YAS")
 			self._timer_window_geometry.start()
 
 		return super().eventFilter(watched, event)

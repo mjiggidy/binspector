@@ -117,11 +117,10 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 		# Pull from cache?
 		h = self._makeHash(size, mode, state)
 		if h in self._cache:
-			print("I cache")
 			return self._cache[h]
 		
 		# Or draw new one
-		print("I paint", h)
+		logging.getLogger(__name__).debug("Drawing new icon for size=%s, mode=%s, state=%s (hash=%s)", size, mode, state, h)
 		pixmap = QtGui.QPixmap(size)
 		pixmap.fill(QtCore.Qt.GlobalColor.transparent)
 		

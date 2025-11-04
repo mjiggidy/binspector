@@ -244,7 +244,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		if self._updates_manager.latestReleaseInfo() is None:
 			self._updates_manager.checkForUpdates()
 		else:
-			print(self._updates_manager.latestReleaseInfo())
+			logging.getLogger(__name__).debug("Latest release info = %s", self._updates_manager.latestReleaseInfo())
 
 		self._wnd_update.show()
 		self._wnd_update.raise_()

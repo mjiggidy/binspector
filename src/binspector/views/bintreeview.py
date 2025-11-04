@@ -62,7 +62,6 @@ class BSBinTreeView(treeview.LBTreeView):
 			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
 			icon = QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=icon_color, palette_watcher=self._palette_watcher))
 			clip_color_delegate.iconProvider().addIcon(str(icon_color), icon)
-			print(str(icon_color), icon)
 
 
 

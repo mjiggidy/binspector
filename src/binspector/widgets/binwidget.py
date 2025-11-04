@@ -270,7 +270,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._act_autofit_columns.setText("Auto-fit bin list columns to contents")
 		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
 		self._act_autofit_columns.triggered.connect(self._binitems_list.resizeAllColumnsToContents)
-		self._act_autofit_columns.triggered.connect(lambda: print)
+		#self._act_autofit_columns.triggered.connect(lambda: print)
 		
 		self._binitems_list.addAction(self._act_set_view_width_for_columns)
 		self._binitems_list.addAction(self._act_autofit_columns)
