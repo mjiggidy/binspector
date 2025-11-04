@@ -351,7 +351,7 @@ class TRTMarkerViewItem(LBAbstractViewItem):
 		super()._prepare_data()
 		self._data_roles.update({
 			QtCore.Qt.ItemDataRole.DisplayRole: None,
-			QtCore.Qt.ItemDataRole.BackgroundRole: QtGui.QColor(self._data.color.name),
+			QtCore.Qt.ItemDataRole.UserRole: QtGui.QColor(self._data.color.name),
 		})
 
 class TRTBinLockViewItem(LBAbstractViewItem):

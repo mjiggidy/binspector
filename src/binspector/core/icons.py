@@ -140,6 +140,7 @@ class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
 
 		active_rect = rect.adjusted(10,3,-10,-3)
+
 		
 		drawing.draw_marker_tick(
 			painter      = painter,
@@ -150,6 +151,9 @@ class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
 			#border_color = self._palette.windowText().color(),
 			#shadow_color = self._palette.shadow().color(),
 		)
+	
+	def pixmap(self, size, mode, state):
+		return super().pixmap(size, mode, state)
 
 	def clone(self) -> "BSPalettedClipColorIconEngine":
 		

@@ -21,7 +21,8 @@ class BSBinTreeView(treeview.LBTreeView):
 	"""Additional whitespace per column"""
 
 	ITEM_DELEGATES_PER_FIELD_ID = {
-		51: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING),
+		51 : binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING),
+		132: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING),
 
 	}
 	"""Specialized one-off fields"""
@@ -62,6 +63,14 @@ class BSBinTreeView(treeview.LBTreeView):
 			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
 			icon = QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=icon_color, palette_watcher=self._palette_watcher))
 			clip_color_delegate.iconProvider().addIcon(str(icon_color), icon)
+
+		marker_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[132]
+		marker_delegate.iconProvider().addIcon(str(QtGui.QColor()), QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
+		for marker_color in avbutils.MarkerColors:
+
+			marker_color = QtGui.QColor(marker_color.value)
+			icon = QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=marker_color, palette_watcher=self._palette_watcher))
+			marker_delegate.iconProvider().addIcon(str(marker_color), icon)
 
 
 
