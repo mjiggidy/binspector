@@ -72,6 +72,27 @@ class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 	def palette(self) -> QtGui.QPalette:
 		return self._palette
 	
+	def addPixmap(self, pixmap:QtGui.QPixmap, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
+
+		h = self._makeHash(pixmap.size(), mode, state)
+		self._cache[h] = pixmap
+
+	def pixmap(self, size, mode, state):
+
+		# Pull from cache
+		h = self._makeHash(size, mode, state)
+		if h in self._cache:
+			return self._cache[h]
+		
+		# Or draw new one
+		logging.getLogger(__name__).debug("Drawing new icon for size=%s, mode=%s, state=%s (hash=%s)", size, mode, state, h)
+		pixmap = QtGui.QPixmap(size)
+		pixmap.fill(QtCore.Qt.GlobalColor.transparent)
+		
+		self.paint(QtGui.QPainter(pixmap), pixmap.rect(), mode, state)
+		self.addPixmap(pixmap, mode, state)
+		return pixmap
+	
 	def _makeHash(self, size:QtCore.QSize, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State) -> int:
 		""""""
 
@@ -106,27 +127,6 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 		
 		logging.getLogger(__name__).debug("I do be clonin haha look")
 		return self.__class__(self._clip_color, self._palette_watcher)
-	
-	def addPixmap(self, pixmap:QtGui.QPixmap, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
-
-		h = self._makeHash(pixmap.size(), mode, state)
-		self._cache[h] = pixmap
-	
-	def pixmap(self, size, mode, state):
-
-		# Pull from cache?
-		h = self._makeHash(size, mode, state)
-		if h in self._cache:
-			return self._cache[h]
-		
-		# Or draw new one
-		logging.getLogger(__name__).debug("Drawing new icon for size=%s, mode=%s, state=%s (hash=%s)", size, mode, state, h)
-		pixmap = QtGui.QPixmap(size)
-		pixmap.fill(QtCore.Qt.GlobalColor.transparent)
-		
-		self.paint(QtGui.QPainter(pixmap), pixmap.rect(), mode, state)
-		self._cache[h] = pixmap
-		return pixmap
 
 class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	
@@ -149,22 +149,6 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 		# Replace SVG color strings with QPalette color roll names, then render
 		self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
 		self._renderer.render(painter)
-
-		self.addPixmap(painter.device(), mode, state)
-	
-	def pixmap(self, size, mode, state):
-
-		# Pull from cache?
-		h = self._makeHash(size, mode, state)
-		if h in self._cache:
-			return self._cache[h]
-		
-		# Or draw new one
-		pixmap = QtGui.QPixmap(size)
-		pixmap.fill(QtCore.Qt.GlobalColor.transparent)
-		self.paint(QtGui.QPainter(pixmap), pixmap.rect(), mode, state)
-
-		return pixmap
 	
 	def setPalette(self, palette:QtGui.QPalette):
 
