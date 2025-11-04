@@ -16,6 +16,7 @@ class BSSettingsPanel(QtWidgets.QWidget):
 		
 		self._sld_mob_queue      = QtWidgets.QSlider()
 		self._sld_mob_queue.valueChanged.connect(self.sig_mob_queue_size_changed)
+		self._sld_mob_queue.valueChanged.connect(lambda val: self._sld_mob_queue.setToolTip(str(val)))
 
 		self._sld_mob_queue.setRange(1, 5_000)
 		self._sld_mob_queue.setOrientation(QtCore.Qt.Orientation.Horizontal)

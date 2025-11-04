@@ -3,16 +3,22 @@ Actions
 """
 
 from PySide6 import QtCore, QtGui, QtWidgets
+from ..core import icons
 from ..res import icons_gui
 
 class ActionsManager(QtCore.QObject):
 	"""General actions"""
 
-	def __init__(self, parent:QtWidgets.QWidget|None=None):
+	def __init__(self, parent:QtWidgets.QWidget|None=None, palette_watcher:icons.BSPaletteWatcherForSomeReason|None=None):
 
 
 		self._parent = parent or self
 		super().__init__(parent=parent)
+
+		# Palette watcher for icons
+		# Which totally belongs in QActions totally yeah
+
+		self._palette_watcher = palette_watcher or icons.BSPaletteWatcherForSomeReason()
 
 		# File actions
 		self._act_filebrowser = QtGui.QAction("&Open Bin...")
@@ -59,19 +65,22 @@ class ActionsManager(QtCore.QObject):
 		# View modes
 		self._act_view_list   = QtGui.QAction("List View", checkable=True, checked=True, parent=self._parent)
 		"""Toggle Bin View Mode: List"""
-		self._act_view_list.setIcon(QtGui.QIcon(":/icons/gui/view_list.svg"))
+		icon_engine = icons.BSPalettedSvgIconEngine(":/icons/gui/view_list.svg", self._palette_watcher)
+		self._act_view_list.setIcon(QtGui.QIcon(icon_engine))
 		self._act_view_list.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_1))
 		self._act_view_list.setToolTip("Show items in list view mode")
 
 		self._act_view_frame  = QtGui.QAction("Frame View", checkable=True, parent=self._parent)
 		"""Toggle Bin View Mode: Frame"""
-		self._act_view_frame.setIcon(QtGui.QIcon(":/icons/gui/view_frame.svg"))
+		icon_engine = icons.BSPalettedSvgIconEngine(":/icons/gui/view_frame.svg", self._palette_watcher)
+		self._act_view_frame.setIcon(QtGui.QIcon(icon_engine))
 		self._act_view_frame.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_2))
 		self._act_view_frame.setToolTip("Show items in frame view mode")
 
 		self._act_view_script = QtGui.QAction("Script View", checkable=True, parent=self._parent)
 		"""Toggle Bin View Mode: Script"""
-		self._act_view_script.setIcon(QtGui.QIcon(":/icons/gui/view_script.svg"))
+		icon_engine = icons.BSPalettedSvgIconEngine(":/icons/gui/view_script.svg", self._palette_watcher)
+		self._act_view_script.setIcon(QtGui.QIcon(icon_engine))
 		self._act_view_script.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_3))
 		self._act_view_script.setToolTip("Show items in script view mode")
 

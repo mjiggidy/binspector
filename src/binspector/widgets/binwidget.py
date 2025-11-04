@@ -206,7 +206,8 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
-	sig_view_mode_changed = QtCore.Signal(object)
+	sig_view_mode_changed   = QtCore.Signal(object)
+	sig_bin_palette_changed = QtCore.Signal(QtGui.QPalette)
 
 	def __init__(self, *args, **kwargs):
 
@@ -269,7 +270,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._act_autofit_columns.setText("Auto-fit bin list columns to contents")
 		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
 		self._act_autofit_columns.triggered.connect(self._binitems_list.resizeAllColumnsToContents)
-		self._act_autofit_columns.triggered.connect(lambda: print)
+		#self._act_autofit_columns.triggered.connect(lambda: print)
 		
 		self._binitems_list.addAction(self._act_set_view_width_for_columns)
 		self._binitems_list.addAction(self._act_autofit_columns)
@@ -277,6 +278,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		f = self._txt_binstats.font()
 		f.setPointSizeF(f.pointSizeF() * 0.8)
 		self._txt_binstats.setFont(f)
+		self._txt_binstats.setMinimumWidth(self._txt_binstats.fontMetrics().averageCharWidth() * 32)	# Showing 999,999 of 999,999 items
+		self._txt_binstats.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		
 		self._txt_binstats.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
 		
@@ -314,6 +317,14 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._binitems_script = script_view
 		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
+
+	@QtCore.Slot(QtGui.QPalette)
+	def setPalette(self, palette:QtGui.QPalette):
+		
+		val = super().setPalette(palette)
+		self.sig_bin_palette_changed.emit(palette)
+		self._binitems_list._palette_watcher.setPalette(palette)
+		return val
 	
 	def topWidgetBar(self) -> BSBinContentsTopWidgetBar:
 		return self._section_top
@@ -379,6 +390,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		if self._use_bin_appearance:
 			self.setPalette(self._bin_palette)
+		
 		#else:
 		#	self.setPalette(self._default_palette)
 	

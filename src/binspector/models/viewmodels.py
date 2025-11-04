@@ -106,7 +106,7 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 	def setBinDisplayItemTypes(self, types:avbutils.BinDisplayItemTypes):
 
 		self._filter_bin_display_items = types
-		print(self.binDisplayItemTypes().__repr__())
+		#(self.binDisplayItemTypes().__repr__())
 		self.invalidateRowsFilter()
 	
 	def binDisplayItemTypes(self) -> avbutils.BinDisplayItemTypes:
