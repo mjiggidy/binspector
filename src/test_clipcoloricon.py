@@ -55,4 +55,27 @@ window_markers.layout().addWidget(
 
 window_markers.show()
 
+
+BIN_ITEM_ICONS = {
+	avbutils.BinDisplayItemTypes.MASTER_CLIP: "/home/mjordan/dev/binspector/graphics/binitems/item_masterclip_v01_themed.svg",
+	avbutils.BinDisplayItemTypes.SEQUENCE:    "/home/mjordan/dev/binspector/graphics/binitems/item_sequence_v01_themed.svg",
+	avbutils.BinDisplayItemTypes.GROUP:    "/home/mjordan/dev/binspector/graphics/binitems/item_groupclip_v01_themed.svg",
+}
+
+window_binitems = QtWidgets.QWidget()
+window_binitems.setLayout(QtWidgets.QVBoxLayout())
+window_binitems.setWindowTitle("Bin Items")
+
+for bin_item in avbutils.BinDisplayItemTypes:
+
+	btn = QtWidgets.QPushButton()
+	btn.setToolTip(bin_item.name)
+	btn.setIconSize(QtCore.QSize(16,9) * 2)
+	if bin_item in BIN_ITEM_ICONS:
+		btn.setIcon(QtGui.QIcon(BIN_ITEM_ICONS[bin_item]))
+
+	window_binitems.layout().addWidget(btn)
+
+window_binitems.show()
+
 sys.exit(app.exec())

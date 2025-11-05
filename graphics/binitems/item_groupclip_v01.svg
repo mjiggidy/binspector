@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="9"
+   viewBox="0 0 16 9"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="item_groupclip_v01.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#505050"
+     showgrid="true"
+     inkscape:zoom="38.00699"
+     inkscape:cx="7.4196879"
+     inkscape:cy="5.538455"
+     inkscape:window-width="3840"
+     inkscape:window-height="2136"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1-2">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="2"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     id="layer1-2"
+     transform="translate(1.5,1)"
+     style="fill:#606060;fill-opacity:1">
+    <path
+       d="M 13,1 V 2 H 12.5 V 3 H 13 V 4 H 12.5 V 5 H 13 v 1 h -0.5 c 0,0.554 -0.446,1 -1,1 V 6 h -1 V 7 H 4 v 1 h 8 V 7 h 1 v 1 c 0.554,0 1,-0.446 1,-1 V 2 C 14,1.446 13.554,1 13,1 Z m -2.5,1 v 1 h 1 V 2 Z m 0,2 v 1 h 1 V 4 Z M 2,6 V 7 C 2,7.554 2.446,8 3,8 V 7 H 2.5 V 6 Z"
+       style="fill-opacity:0.77;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="path3" />
+    <path
+       d="m 11.5,0 v 1 h -1 v 1 h 1 v 1 h -1 v 1 h 1 v 1 h -1 c 0,0.554 -0.446,1 -1,1 V 5 h -1 v 1 h -6 v 1 h 8 V 6 h 1 v 1 c 0.554,0 1,-0.446 1,-1 V 1 c 0,-0.554 -0.446,-1 -1,-1 z m -3,1 v 1 h 1 V 1 Z m 0,2 v 1 h 1 V 3 Z m -8,3 c 0,0.554 0.446,1 1,1 V 6 Z"
+       style="fill:#000000;fill-opacity:0.66;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="path2" />
+    <path
+       d="m -0.5,-1 c -0.554,0 -1,0.446 -1,1 v 5 c 0,0.554 0.446,1 1,1 V 5 h 1 v 1 h 8 V 5 h 1 v 1 c 0.554,0 1,-0.446 1,-1 V 0 c 0,-0.554 -0.446,-1 -1,-1 v 1 h -1 v -1 h -8 v 1 h -1 z m 0,2 h 1 v 1 h -1 z m 9,0 h 1 v 1 h -1 z m -9,2 h 1 v 1 h -1 z m 9,0 h 1 v 1 h -1 z"
+       style="fill:#000000;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="path1" />
+  </g>
+</svg>

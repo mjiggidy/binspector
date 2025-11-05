@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="9"
+   viewBox="0 0 16 9"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1-2"
+     transform="translate(1.5,1)"
+     style="fill:#606060;fill-opacity:1">
+    <path
+       d="m 3.5,1 c -0.554,0 -1,0.446 -1,1 v 5 c 0,0.554 0.446,1 1,1 V 7 h 1 v 1 h 8 V 7 h 1 v 1 c 0.554,0 1,-0.446 1,-1 V 2 c 0,-0.554 -0.446,-1 -1,-1 v 1 h -1 V 1 h -8 v 1 h -1 z m 0,2 h 1 v 1 h -1 z m 9,0 h 1 v 1 h -1 z m -9,2 h 1 v 1 h -1 z m 9,0 h 1 v 1 h -1 z"
+       style="fill:#000000;fill-opacity:0.5;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="path41-5" />
+    <path
+       d="M 3,1 C 2.446,1 2,1.446 2,2 V 7 C 2,7.554 2.446,8 3,8 V 7 h 1 v 1 h 8 V 7 h 1 v 1 c 0.554,0 1,-0.446 1,-1 V 2 C 14,1.446 13.554,1 13,1 V 2 H 12 V 1 H 4 V 2 H 3 Z M 3,3 H 4 V 4 H 3 Z m 9,0 h 1 V 4 H 12 Z M 3,5 H 4 V 6 H 3 Z m 9,0 h 1 v 1 h -1 z"
+       style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill:#000000;fill-opacity:0.75"
+       id="path41"
+       transform="translate(-1.5,-1)" />
+    <path
+       d="m -0.5,-1 c -0.554,0 -1,0.446 -1,1 v 5 c 0,0.554 0.446,1 1,1 V 5 h 1 v 1 h 8 V 5 h 1 v 1 c 0.554,0 1,-0.446 1,-1 V 0 c 0,-0.554 -0.446,-1 -1,-1 v 1 h -1 v -1 h -8 v 1 h -1 z m 0,2 h 1 v 1 h -1 z m 9,0 h 1 v 1 h -1 z m -9,2 h 1 v 1 h -1 z m 9,0 h 1 v 1 h -1 z"
+       style="fill:#000000;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="path41-3" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect3"
+       width="1"
+       height="1"
+       x="8.5"
+       y="1" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect4"
+       width="1"
+       height="1"
+       x="8.5"
+       y="3" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect5"
+       width="1"
+       height="1"
+       x="8.5"
+       y="5" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect6"
+       width="1"
+       height="1"
+       x="10.5"
+       y="2" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect7"
+       width="1"
+       height="1"
+       x="10.5"
+       y="4" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect8"
+       width="1"
+       height="1"
+       x="10.5"
+       y="6" />
+  </g>
+</svg>
