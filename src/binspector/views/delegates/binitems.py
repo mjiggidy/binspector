@@ -62,7 +62,7 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		style = opt.widget.style() if opt.widget else QtWidgets.QApplication.style()
 		
 		user_data = index.data(QtCore.Qt.ItemDataRole.UserRole)
-		icon      = self._icon_provider.getIcon(str(user_data))
+		icon      = self._icon_provider.getIcon(user_data)
 
 		# Center, size and shape the canvas QRect
 		canvas_active = self.activeRectFromRect(opt.rect)

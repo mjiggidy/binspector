@@ -20,12 +20,7 @@ class BSBinTreeView(treeview.LBTreeView):
 	COLUMN_PADDING_RIGHT:int = 24
 	"""Additional whitespace per column"""
 
-	ITEM_DELEGATES_PER_FIELD_ID = {
-		51 : binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING),
-		132: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING),
 
-	}
-	"""Specialized one-off fields"""
 
 	ITEM_DELEGATES_PER_FORMAT_ID = {
 		avbutils.BinColumnFormat.TIMECODE: binitems.LBTimecodeItemDelegate(padding=DEFAULT_ITEM_PADDING),
@@ -33,6 +28,14 @@ class BSBinTreeView(treeview.LBTreeView):
 	"""Delegate for generic field formats"""
 
 	def __init__(self, *args, **kwargs):
+
+		self._palette_watcher = icons.BSPaletteWatcherForSomeReason()
+		self.ITEM_DELEGATES_PER_FIELD_ID = {
+			51 : binitems.BSIconLookupItemDelegate(padding=self.DEFAULT_ITEM_PADDING),
+			132: binitems.BSIconLookupItemDelegate(padding=self.DEFAULT_ITEM_PADDING),
+			200: binitems.BSIconLookupItemDelegate(padding=self.DEFAULT_ITEM_PADDING),
+		}
+		"""Specialized one-off fields"""
 		
 		super().__init__(*args, **kwargs)		
 
@@ -55,7 +58,6 @@ class BSBinTreeView(treeview.LBTreeView):
 		)
 
 		# TODO/TEMP: Prep clip color icons
-		self._palette_watcher = icons.BSPaletteWatcherForSomeReason()
 		clip_color_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[51]
 		clip_color_delegate.iconProvider().addIcon(str(QtGui.QColor()), QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
 		for color in avbutils.get_default_clip_colors():
@@ -71,6 +73,10 @@ class BSBinTreeView(treeview.LBTreeView):
 			marker_color = QtGui.QColor(marker_color.value)
 			icon = QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=marker_color, palette_watcher=self._palette_watcher))
 			marker_delegate.iconProvider().addIcon(str(marker_color), icon)
+
+		icon_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[200]
+		icon_delegate.iconProvider().addIcon(avbutils.BinDisplayItemTypes.SOURCE|avbutils.BinDisplayItemTypes.REFERENCE_CLIP, QtGui.QIcon(icons.BSPalettedSvgIconEngine("/home/mjordan/dev/binspector/graphics/binitems/item_masterclip_v01_themed.svg", self._palette_watcher)))
+
 
 
 

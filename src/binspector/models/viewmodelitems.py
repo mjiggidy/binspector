@@ -95,7 +95,8 @@ class LBAbstractViewItem:
 			QtCore.Qt.ItemDataRole.ToolTipRole:          self._tooltip if self._tooltip is not None else repr(self._data),
 			QtCore.Qt.ItemDataRole.DecorationRole:       self._icon,
 			QtCore.Qt.ItemDataRole.InitialSortOrderRole: self.to_string(self._data),	# QCollator just compares strings
-			QtCore.Qt.ItemDataRole.UserRole:             self,
+#			QtCore.Qt.ItemDataRole.UserRole:             self,
+			QtCore.Qt.ItemDataRole.UserRole:             self._data,
 		})
 	def raw_data(self) -> typing.Any:
 		"""Get the original data for this item in its original format"""

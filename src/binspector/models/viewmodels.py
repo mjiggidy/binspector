@@ -61,7 +61,7 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		
 		# Get the item type from the source moddel
 		src_index = self.sourceModel().index(source_row, item_type_header_index, source_parent)
-		item_types = src_index.data(QtCore.Qt.ItemDataRole.UserRole).raw_data()
+		item_types = src_index.data(QtCore.Qt.ItemDataRole.UserRole)
 
 		if isinstance(item_types, avbutils.BinDisplayItemTypes):
 			return bool(item_types in self._filter_bin_display_items)
