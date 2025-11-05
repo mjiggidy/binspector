@@ -67,12 +67,12 @@ class BSBinTreeView(treeview.LBTreeView):
 
 		# TODO/TEMP: Prep marker icons
 		marker_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[132]
-		marker_delegate.iconProvider().addIcon(str(QtGui.QColor()), QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
+		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
 		for marker_color in avbutils.MarkerColors:
 
 			marker_color = QtGui.QColor(marker_color.value)
 			icon = QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=marker_color, palette_watcher=self._palette_watcher))
-			marker_delegate.iconProvider().addIcon(str(marker_color), icon)
+			marker_delegate.iconProvider().addIcon(marker_color.toTuple(), icon)
 
 		# TODO/TEMP: Prep bin display item type icons
 		item_type_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[200]
