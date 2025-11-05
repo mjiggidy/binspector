@@ -21,8 +21,9 @@ class BSBinTreeView(treeview.LBTreeView):
 	"""Additional whitespace per column"""
 
 	ITEM_DELEGATES_PER_FIELD_ID = {
-		51 : binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING),
-		132: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING),
+		51 : binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING), # Clip color
+		132: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING), # Marker
+		200: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING), # Bin Display Item Type
 
 	}
 	"""Specialized one-off fields"""
@@ -57,13 +58,14 @@ class BSBinTreeView(treeview.LBTreeView):
 		# TODO/TEMP: Prep clip color icons
 		self._palette_watcher = icons.BSPaletteWatcherForSomeReason()
 		clip_color_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[51]
-		clip_color_delegate.iconProvider().addIcon(str(QtGui.QColor()), QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
+		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
 		for color in avbutils.get_default_clip_colors():
 
 			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
 			icon = QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=icon_color, palette_watcher=self._palette_watcher))
-			clip_color_delegate.iconProvider().addIcon(str(icon_color), icon)
+			clip_color_delegate.iconProvider().addIcon(icon_color.toTuple(), icon)
 
+		# TODO/TEMP: Prep marker icons
 		marker_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[132]
 		marker_delegate.iconProvider().addIcon(str(QtGui.QColor()), QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
 		for marker_color in avbutils.MarkerColors:
@@ -71,6 +73,20 @@ class BSBinTreeView(treeview.LBTreeView):
 			marker_color = QtGui.QColor(marker_color.value)
 			icon = QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=marker_color, palette_watcher=self._palette_watcher))
 			marker_delegate.iconProvider().addIcon(str(marker_color), icon)
+
+		# TODO/TEMP: Prep bin display item type icons
+		item_type_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[200]
+		for item_type in avbutils.bins.BinDisplayItemTypes:
+			item_type_delegate.iconProvider().addIcon(
+				item_type|avbutils.bins.BinDisplayItemTypes.USER_CLIP,
+				QtGui.QIcon(
+					icons.BSPalettedSvgIconEngine(
+					"/Users/mjordan/dev/binspector/graphics/binitems/item_masterclip_v01_themed.svg",
+					palette_watcher=self._palette_watcher
+					)
+				)
+			)
+		print(item_type_delegate.iconProvider().icons())
 
 
 
