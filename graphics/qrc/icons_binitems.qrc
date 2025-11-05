@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icons/binitems">
+	<file alias="item_masterclip.svg">../binitems/item_masterclip_v02_themed.svg</file>
+</qresource>
+</RCC>

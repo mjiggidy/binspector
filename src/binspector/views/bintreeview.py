@@ -5,6 +5,7 @@ from .delegates import binitems
 from ..models import viewmodels
 from ..views.delegates import binitems
 from ..core import icons
+from ..res import icons_binitems
 
 
 
@@ -21,9 +22,9 @@ class BSBinTreeView(treeview.LBTreeView):
 	"""Additional whitespace per column"""
 
 	ITEM_DELEGATES_PER_FIELD_ID = {
-		51 : binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING), # Clip color
-		132: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING), # Marker
-		200: binitems.BSIconLookupItemDelegate(padding=DEFAULT_ITEM_PADDING), # Bin Display Item Type
+		51 : binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3),  padding=DEFAULT_ITEM_PADDING), # Clip color
+		132: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=DEFAULT_ITEM_PADDING), # Marker
+		200: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(16,11), padding=DEFAULT_ITEM_PADDING), # Bin Display Item Type
 
 	}
 	"""Specialized one-off fields"""
@@ -76,18 +77,18 @@ class BSBinTreeView(treeview.LBTreeView):
 
 		# TODO/TEMP: Prep bin display item type icons
 		item_type_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[200]
+		
+
 		for item_type in avbutils.bins.BinDisplayItemTypes:
 			item_type_delegate.iconProvider().addIcon(
 				item_type|avbutils.bins.BinDisplayItemTypes.USER_CLIP,
 				QtGui.QIcon(
 					icons.BSPalettedSvgIconEngine(
-					"/Users/mjordan/dev/binspector/graphics/binitems/item_masterclip_v01_themed.svg",
+					":/icons/binitems/item_masterclip.svg",
 					palette_watcher=self._palette_watcher
 					)
 				)
 			)
-		print(item_type_delegate.iconProvider().icons())
-
 
 
 		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=self.DEFAULT_ITEM_PADDING))

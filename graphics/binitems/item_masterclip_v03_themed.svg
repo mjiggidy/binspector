@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="14"
+   height="11"
+   viewBox="0 0 14 11"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient21">
+      <stop
+         style="stop-color:#635240;stop-opacity:1;"
+         offset="0"
+         id="stop21" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="1"
+         id="stop22" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient21"
+       id="linearGradient22"
+       x1="7"
+       y1="-0.5"
+       x2="7"
+       y2="11.5"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <rect
+     style="fill:#ffffff;fill-opacity:0.5;paint-order:markers fill stroke"
+     id="rect21"
+     width="13"
+     height="10"
+     x="0.5"
+     y="0.5"
+     rx="1.5"
+     ry="1.5" />
+  <path
+     d="M 2,1 C 1.446,1 1,1.446 1,2 v 7 c 0,0.554 0.446,1 1,1 h 10 c 0.554,0 1,-0.446 1,-1 V 2 C 13,1.446 12.554,1 12,1 Z M 2,2 H 3 V 3 H 2 Z m 9,0 h 1 V 3 H 11 Z M 2,4 H 3 V 5 H 2 Z m 9,0 h 1 V 5 H 11 Z M 2,6 H 3 V 7 H 2 Z m 9,0 h 1 V 7 H 11 Z M 2,8 H 3 V 9 H 2 Z m 9,0 h 1 v 1 h -1 z"
+     style="paint-order:markers fill stroke;fill:url(#linearGradient22)"
+     id="path20" />
+</svg>

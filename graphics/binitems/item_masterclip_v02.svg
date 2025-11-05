@@ -7,7 +7,7 @@
    viewBox="0 0 14 11"
    version="1.1"
    id="svg1"
-   sodipodi:docname="item_masterclip_v01_themed.svg"
+   sodipodi:docname="item_masterclip_v02.svg"
    inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -51,69 +51,8 @@
      id="defs1" />
   <g
      id="layer1" />
-  <rect
-     style="fill:#000000;stroke-width:1;paint-order:markers fill stroke"
-     id="rect1"
-     width="12"
-     height="9"
-     x="1"
-     y="1"
-     ry="1"
-     rx="1" />
-  <rect
-     style="fill:#ffffff;paint-order:markers fill stroke"
-     id="rect2"
-     width="1"
-     height="1"
-     x="11"
-     y="8" />
-  <rect
-     style="fill:#ffffff;paint-order:markers fill stroke"
-     id="rect3"
-     width="1"
-     height="1"
-     x="11"
-     y="6" />
-  <rect
-     style="fill:#ffffff;paint-order:markers fill stroke"
-     id="rect2-0"
-     width="1"
-     height="1"
-     x="11"
-     y="4" />
-  <rect
-     style="fill:#ffffff;paint-order:markers fill stroke"
-     id="rect3-5"
-     width="1"
-     height="1"
-     x="11"
-     y="2" />
-  <rect
-     style="fill:#ffffff;paint-order:markers fill stroke"
-     id="rect2-3"
-     width="1"
-     height="1"
-     x="2"
-     y="8" />
-  <rect
-     style="fill:#ffffff;paint-order:markers fill stroke"
-     id="rect3-7"
-     width="1"
-     height="1"
-     x="2"
-     y="6" />
-  <rect
-     style="fill:#ffffff;paint-order:markers fill stroke"
-     id="rect2-0-9"
-     width="1"
-     height="1"
-     x="2"
-     y="4" />
-  <rect
-     style="fill:#ffffff;paint-order:markers fill stroke"
-     id="rect3-5-0"
-     width="1"
-     height="1"
-     x="2"
-     y="2" />
+  <path
+     d="M 2,1 C 1.446,1 1,1.446 1,2 v 7 c 0,0.554 0.446,1 1,1 h 10 c 0.554,0 1,-0.446 1,-1 V 2 C 13,1.446 12.554,1 12,1 Z M 2,2 H 3 V 3 H 2 Z m 9,0 h 1 V 3 H 11 Z M 2,4 H 3 V 5 H 2 Z m 9,0 h 1 V 5 H 11 Z M 2,6 H 3 V 7 H 2 Z m 9,0 h 1 V 7 H 11 Z M 2,8 H 3 V 9 H 2 Z m 9,0 h 1 v 1 h -1 z"
+     style="paint-order:markers fill stroke"
+     id="path11" />
 </svg>
