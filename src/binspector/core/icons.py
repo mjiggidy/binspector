@@ -49,9 +49,10 @@ class BSIconProvider:
 	def getIcon(self, key:typing.Hashable) -> QtGui.QIcon:
 
 		if key not in self._icons:
+			#print("******", key, type(key), "not in")
 			# TODO: Generate and add icon
 			return QtGui.QIcon()
-		
+		#print("******", key, type(key), "IS in. Is null =", self._icons[key].isNull())
 		return self._icons[key]
 	
 class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
@@ -105,7 +106,7 @@ class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 	
 class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 
-	def __init__(self, clip_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, border_width:int=2, **kwargs):
+	def __init__(self, clip_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, border_width:int=1, **kwargs):
 
 		super().__init__(palette_watcher, *args, **kwargs)
 
@@ -130,7 +131,7 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 	
 class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
 
-	def __init__(self, marker_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, border_width:int=2, **kwargs):
+	def __init__(self, marker_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, border_width:int=1, **kwargs):
 
 		super().__init__(palette_watcher, *args, **kwargs)
 
@@ -167,10 +168,13 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 		super().__init__(palette_watcher, *args, **kwargs)
 
 		self._svg_path     = svg_path
+		self._svg_template = self._svgStringFromPath(svg_path)
 
 		self._renderer     = QtSvg.QSvgRenderer()
 		self._palette_dict = self._paletteToDict(self._palette)
-		self._svg_template = bytes(QtCore.QResource(svg_path).uncompressedData().data()).decode("utf-8")
+
+		self._renderer.setAspectRatioMode(QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding)
+		#self._svg_template = bytes(QtCore.QResource(svg_path).uncompressedData().data()).decode("utf-8")
 	
 	def clone(self) -> "BSPalettedSvgIconEngine":
 		logging.getLogger(__name__).debug("I do be clonin haha look")
@@ -180,7 +184,7 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 		
 		# Replace SVG color strings with QPalette color roll names, then render
 		self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
-		self._renderer.render(painter)
+		self._renderer.render(painter, rect)
 	
 	def setPalette(self, palette:QtGui.QPalette):
 
@@ -193,3 +197,18 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 		# NOTE: NColorRoles causes a periodic segfault that was JUST RUINING MY LIFE for a long time there
 		# Paraphrasing QPalette docs: "color role int should be less than NColorRoles" so I guess it's more of a sentinel
 		return {role.name: palette.color(role).name() for role in QtGui.QPalette.ColorRole if role.name != "NColorRoles"}
+	
+	@staticmethod
+	def _svgStringFromPath(svg_path:PathLike) -> str:
+
+		f = QtCore.QFile(svg_path)
+		
+		if not f.open(QtCore.QFile.OpenModeFlag.ReadOnly):
+			raise IOError(f"Cannot open {svg_path}: {f.errorString()}")
+		
+		try:
+			svg_string = f.readAll().toStdString()
+		finally:
+			f.close()
+		
+		return svg_string
