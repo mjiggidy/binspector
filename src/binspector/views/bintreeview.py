@@ -24,7 +24,7 @@ class BSBinTreeView(treeview.LBTreeView):
 	ITEM_DELEGATES_PER_FIELD_ID = {
 		51 : binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3),  padding=DEFAULT_ITEM_PADDING), # Clip color
 		132: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=DEFAULT_ITEM_PADDING), # Marker
-		200: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(16,11), padding=DEFAULT_ITEM_PADDING), # Bin Display Item Type
+		200: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=DEFAULT_ITEM_PADDING), # Bin Display Item Type
 
 	}
 	"""Specialized one-off fields"""
