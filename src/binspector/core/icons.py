@@ -49,10 +49,9 @@ class BSIconProvider:
 	def getIcon(self, key:typing.Hashable) -> QtGui.QIcon:
 
 		if key not in self._icons:
-			#print("******", key, type(key), "not in")
 			# TODO: Generate and add icon
 			return QtGui.QIcon()
-		#print("******", key, type(key), "IS in. Is null =", self._icons[key].isNull())
+		
 		return self._icons[key]
 	
 class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
