@@ -38,7 +38,7 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 
 		super().__init__(*args, **kwargs)
 
-		self._aspect_ratio  = aspect_ratio or QtCore.QSize(4,3)
+		self._aspect_ratio  = aspect_ratio or QtCore.QSize(1,1)
 		self._icon_provider = icon_provider or icons.BSIconProvider()
 
 	def iconProvider(self) -> icons.BSIconProvider:
@@ -61,8 +61,8 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		self.initStyleOption(opt, index)
 		style = opt.widget.style() if opt.widget else QtWidgets.QApplication.style()
 		
-		user_data = index.data(QtCore.Qt.ItemDataRole.UserRole)
-		icon      = self._icon_provider.getIcon(str(user_data))
+		user_data = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
+		icon      = self._icon_provider.getIcon(user_data)
 
 		# Center, size and shape the canvas QRect
 		canvas_active = self.activeRectFromRect(opt.rect)
@@ -78,10 +78,9 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		
 		try:
 			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, opt, painter, opt.widget)
-		
-			painter.drawPixmap(
-				canvas_active,
-				icon.pixmap(canvas_active.size())
+			icon.paint(
+				painter,
+				canvas_active
 			)
 		
 		except Exception as e:

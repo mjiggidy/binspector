@@ -141,6 +141,7 @@ class TRTEnumViewItem(LBAbstractViewItem):
 		super()._prepare_data()
 
 		self._data_roles.update({
+			QtCore.Qt.ItemDataRole.DecorationRole:       self._data,
 			QtCore.Qt.ItemDataRole.DisplayRole:          self._data.name.replace("_", " ").title(),
 			QtCore.Qt.ItemDataRole.InitialSortOrderRole: self.to_string(self._data.value),
 		})
@@ -314,18 +315,17 @@ class TRTClipColorViewItem(LBAbstractViewItem):
 	def _prepare_data(self):
 		# Not calling super, would be weird
 
-		color = QtGui.QColor(self._data)
-
 		self._data_roles.update({
-			QtCore.Qt.ItemDataRole.UserRole: self._data,
+			#QtCore.Qt.ItemDataRole.UserRole: self._data,
 			#QtCore.Qt.ItemDataRole.BackgroundRole: self._data,
-			QtCore.Qt.ItemDataRole.ToolTipRole: f"R: {color.red()} G: {color.green()} B: {color.blue()}" if color.isValid() else "No Color",
+			QtCore.Qt.ItemDataRole.DecorationRole: self._data.toTuple() if self._data.isValid() else -1,
+			QtCore.Qt.ItemDataRole.ToolTipRole: f"R: {self._data.red()} G: {self._data.green()} B: {self._data.blue()}" if self._data.isValid() else "No Color",
 			QtCore.Qt.ItemDataRole.InitialSortOrderRole: self.to_string(self._data.getRgb())
 		})
 	
 	def to_json(self) -> dict|None:
 
-		color = self.data(QtCore.Qt.ItemDataRole.UserRole)
+		color = self.raw_data()
 		
 		if not color.isValid():
 			return None
@@ -351,7 +351,8 @@ class TRTMarkerViewItem(LBAbstractViewItem):
 		super()._prepare_data()
 		self._data_roles.update({
 			QtCore.Qt.ItemDataRole.DisplayRole: None,
-			QtCore.Qt.ItemDataRole.UserRole: QtGui.QColor(self._data.color.name),
+			QtCore.Qt.ItemDataRole.DecorationRole: QtGui.QColor(self._data.color.name).toTuple() if self._data.color else -1,
+			#QtCore.Qt.ItemDataRole.UserRole: QtGui.QColor(self._data.color.name),
 		})
 
 class TRTBinLockViewItem(LBAbstractViewItem):
