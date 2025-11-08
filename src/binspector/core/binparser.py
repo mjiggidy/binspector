@@ -172,6 +172,15 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 			avbutils.BIN_COLUMN_ROLES["Source File"]: source_file_name or "",
 			avbutils.BIN_COLUMN_ROLES["Scene"]: user_attributes.get("Scene") or "",
 			avbutils.BIN_COLUMN_ROLES["Take"]: user_attributes.get("Take") or "",
+			avbutils.BIN_COLUMN_ROLES["Labroll"]: user_attributes.get("Labroll") or "",
+			avbutils.BIN_COLUMN_ROLES["Soundroll"]: user_attributes.get("Soundroll") or "",
+			avbutils.BIN_COLUMN_ROLES["Camroll"]: user_attributes.get("Camroll") or "",
+			avbutils.BIN_COLUMN_ROLES["FPS"]: user_attributes.get("FPS") or "",
+			avbutils.BIN_COLUMN_ROLES["Sound TC"]: user_attributes.get("Sound TC") or "",
+			avbutils.BIN_COLUMN_ROLES["Shoot Date"]: user_attributes.get("Shoot Date") or "",
+			avbutils.BIN_COLUMN_ROLES["Audio SR"]: user_attributes.get("Audio SR") or "",
+			
+			
 		}
 
 		for key, val in user_attributes.items():
