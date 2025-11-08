@@ -54,6 +54,13 @@ class ActionsManager(QtCore.QObject):
 
 
 		# Application actions
+		self._act_show_settings = QtGui.QAction("Settings...")
+		"""Open Settings window"""
+		self._act_show_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.InsertImage))
+		self._act_show_settings.setToolTip(f"Open {QtWidgets.QApplication.instance().applicationName()} settings")
+		self._act_show_settings.setShortcut(QtGui.QKeySequence.StandardKey.Preferences)
+		self._act_show_settings.setMenuRole(QtGui.QAction.MenuRole.PreferencesRole)
+
 		self._act_quitapplication = QtGui.QAction("&Quit")
 		"""Quit application"""
 		self._act_quitapplication.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ApplicationExit))
@@ -161,6 +168,8 @@ class ActionsManager(QtCore.QObject):
 
 		self._actgrp_app = QtGui.QActionGroup(self._parent)
 		self._actgrp_app.addAction(self._act_quitapplication)
+		self._actgrp_app.addAction(self._act_show_about)
+		self._actgrp_app.addAction(self._act_show_settings)
 
 		self._actgrp_view_mode = QtGui.QActionGroup(self._parent)
 		self._actgrp_view_mode.setExclusive(True)
@@ -219,6 +228,11 @@ class ActionsManager(QtCore.QObject):
 		"""Show the About Box"""
 
 		return self._act_show_about
+	
+	def showSettingsWindow(self) -> QtGui.QAction:
+		"""Show the Settings window"""
+
+		return self._act_show_settings
 
 	def fileBrowserAction(self) -> QtGui.QAction:
 		"""User requests file browser"""

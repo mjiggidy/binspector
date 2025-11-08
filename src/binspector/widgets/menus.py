@@ -30,6 +30,7 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 		mnu_view.addSeparator()
 
 		mnu_tools.addActions(action_manager.userToolsActionsGroup().actions())
+		mnu_tools.addAction(action_manager.showSettingsWindow())
 
 		mnu_window.addAction(action_manager.closeWindowAction())
 
@@ -61,6 +62,7 @@ class DefaultMenuBar(QtWidgets.QMenuBar):
 
 		mnu_tools = QtWidgets.QMenu("&Tools")
 		mnu_tools.addActions(action_manager.userToolsActionsGroup().actions())
+		mnu_tools.addAction(action_manager.showSettingsWindow())
 
 		self.addMenu(mnu_tools)
 
