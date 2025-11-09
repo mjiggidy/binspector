@@ -9,6 +9,7 @@ from . import settings
 from ..managers import windows, software_updates
 from ..widgets import mainwindow, logwidget, settingswindow
 from ..models import logmodels
+from ..res import translations
 
 class BSMainApplication(QtWidgets.QApplication):
 	"""Main application"""
@@ -67,6 +68,14 @@ class BSMainApplication(QtWidgets.QApplication):
 			format   = QtCore.QSettings.Format.IniFormat,
 			basepath = self.localStoragePath()
 		)
+
+		# Install local translator
+		translator_userlang = QtCore.QTranslator()
+		if translator_userlang.load(QtCore.QLocale(), "bs", ".", ":/translations"):
+			self.installTranslator(translator_userlang)
+			logging.getLogger(__name__).debug("Installed translation for user lang %s", QtCore.QLocale().name())
+		else:
+			logging.getLogger(__name__).debug("Falling back to default translation for user lang %s", QtCore.QLocale().name())
 		
 		# Setup default menu bar/actions (for macOS when no bin windows are open)
 		# NOTE: This is currently clumsy and weird.  I'll uh, come back to this
