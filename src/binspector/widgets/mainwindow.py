@@ -486,3 +486,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		dlg_about = about.BSAboutDialog()
 		dlg_about.exec()
+
+	def closeEvent(self, event):
+
+		self._sigs_binloader.requestStop()
+		
+		#self._sigs_binloader.sig_
+		return super().closeEvent(event)
