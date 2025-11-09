@@ -5,10 +5,10 @@ class BSLogDataModel(QtCore.QAbstractItemModel):
 	"""Qt Data model for Lil' Gui' Loggin Boy"""
 
 	HEADERS:list[str] = [
-		"Timestamp",
-		"Module",
-		"Level",
-		"Message"
+		QtCore.QObject.tr("Timestamp"),
+		QtCore.QObject.tr("Module"),
+		QtCore.QObject.tr("Level"),
+		QtCore.QObject.tr("Message"),
 	]
 	"""Headers available for display"""
 
@@ -96,13 +96,13 @@ class BSLogDataModel(QtCore.QAbstractItemModel):
 		header = self.HEADERS[index.column()]
 
 		if role == QtCore.Qt.ItemDataRole.DisplayRole:
-			if header == "Module":
+			if header == self.tr("Module"):
 				return record.module
-			elif header == "Timestamp":
+			elif header == self.tr("Timestamp"):
 				return str(datetime.datetime.fromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S"))
-			elif header == "Message":
+			elif header == self.tr("Message"):
 				return record.getMessage()
-			elif header == "Level":
+			elif header == self.tr("Level"):
 				return record.levelname.title()
 			else:
 				return ""

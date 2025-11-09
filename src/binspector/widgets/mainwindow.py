@@ -48,16 +48,16 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._main_bincontents = binwidget.BSBinContentsWidget()
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView()
-		self._dock_bindisplay  = QtWidgets.QDockWidget("Bin Display Settings")
+		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
 		self._tool_sifting     = toolboxes.BSBinSiftSettingsView()
-		self._dock_sifting     = QtWidgets.QDockWidget("Sift Settings")
+		self._dock_sifting     = QtWidgets.QDockWidget(self.tr("Sift Settings"))
 
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
-		self._dock_appearance  = QtWidgets.QDockWidget("Font Colors")
+		self._dock_appearance  = QtWidgets.QDockWidget(self.tr("Font & Colors"))
 
 		self._tool_binview     = treeview.LBTreeView()
-		self._dock_binview     = QtWidgets.QDockWidget("Bin View Settings")
+		self._dock_binview     = QtWidgets.QDockWidget(self.tr("Bin View Settings"))
 
 		self._btn_toolbox_bindisplay = buttons.BSPushButtonAction(show_text=False)
 		self._btn_toolbox_appearance = buttons.BSPushButtonAction(show_text=False)
@@ -234,7 +234,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
 		self._sigs_binloader.sig_aborted_loading             .connect(self.cleanupPartialBin)
 		self._sigs_binloader.sig_got_mob_count               .connect(self._main_bincontents.topWidgetBar().progressBar().setMaximum)
-		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading %v of %m mobs"))
+		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setFormat(self.tr("Loading %v of %m mobs", "%v=current_count; %m=total_count")))
 		#self._sigs_binloader.sig_got_mob_count               .connect(lambda: self.updateLoadingBar([]))
  
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
@@ -347,7 +347,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		self._man_binitems.viewModel().clear()
 		
-		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
+		self._main_bincontents.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
 		self._main_bincontents.topWidgetBar().progressBar().show()
 
 		self._main_bincontents.listView().setSortingEnabled(False)
@@ -445,7 +445,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		logging.getLogger(__name__).warning("Aborted loading bin")
 		
 		if message:
-			QtWidgets.QMessageBox.critical(self, "Bin Not Loaded", message)
+			QtWidgets.QMessageBox.critical(self, self.tr("Bin Not Loaded"), message)
 
 
 
@@ -462,8 +462,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
 			parent=self,
-			caption = "Choose an Avid bin...",
-			filter="Avid Bin (*.avb);;All Files (*)",
+			caption = self.tr("Choose an Avid bin..."),
+			filter=self.tr("Avid Bin (*.avb);;All Files (*)"),
 			dir=initial_path or self.windowFilePath()
 		)
 

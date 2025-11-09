@@ -29,7 +29,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._localStoragePath = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
 		if not QtCore.QDir().mkpath(self._localStoragePath):
 			import sys
-			sys.exit(f"Cannot set up local storage path at {self._localStoragePath}")
+			sys.exit(self.tr("Cannot set up local storage path at {local_storage_path}").format(local_storage_path=self._localStoragePath))
 		
 		# Setup logging
 		logging.basicConfig(level=logging.DEBUG)

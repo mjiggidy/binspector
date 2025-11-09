@@ -53,12 +53,12 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		self.viewModel().clear()
 
 		headers = [
-			viewmodelitems.LBAbstractViewHeaderItem("order", "Order"),
-			viewmodelitems.LBAbstractViewHeaderItem("title", "Title"),
-			viewmodelitems.LBAbstractViewHeaderItem("format", "Format"),
-			viewmodelitems.LBAbstractViewHeaderItem("type", "Type"),
-			viewmodelitems.LBAbstractViewHeaderItem("width", "Width"),
-			viewmodelitems.LBAbstractViewHeaderItem("hidden", "Is Hidden"),
+			viewmodelitems.LBAbstractViewHeaderItem("order",  self.tr("Order")),
+			viewmodelitems.LBAbstractViewHeaderItem("title",  self.tr("Title")),
+			viewmodelitems.LBAbstractViewHeaderItem("format", self.tr("Format")),
+			viewmodelitems.LBAbstractViewHeaderItem("type",   self.tr("Type")),
+			viewmodelitems.LBAbstractViewHeaderItem("width",  self.tr("Width")),
+			viewmodelitems.LBAbstractViewHeaderItem("hidden", self.tr("Is Hidden")),
 		]
 		
 		for header in headers:
@@ -118,8 +118,8 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 		self.viewModel().clear()
 
 		headers = [
-			viewmodelitems.LBAbstractViewHeaderItem("name", "Name"),
-			viewmodelitems.LBAbstractViewHeaderItem("value", "Value"),
+			viewmodelitems.LBAbstractViewHeaderItem("name",  self.tr("Name")),
+			viewmodelitems.LBAbstractViewHeaderItem("value", self.tr("Value")),
 		]
 		
 		for header in headers:
@@ -192,8 +192,8 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 
 		for col, width in column_widths.items():
 			self.addRow({
-				"Width":  width,
-				"Column": col,
+				self.tr("Width"):  width,
+				self.tr("Column"): col,
 			}, add_new_headers=True)
 	
 	@QtCore.Slot(object)
@@ -214,9 +214,9 @@ class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 		self.viewModel().clear()
 
 		headers = [
-			viewmodelitems.LBAbstractViewHeaderItem("order", "Order"),
-			viewmodelitems.LBAbstractViewHeaderItem("direction", "Direction"),
-			viewmodelitems.LBAbstractViewHeaderItem("column", "Column")
+			viewmodelitems.LBAbstractViewHeaderItem("order",     self.tr("Order")),
+			viewmodelitems.LBAbstractViewHeaderItem("direction", self.tr("Direction")),
+			viewmodelitems.LBAbstractViewHeaderItem("column",    self.tr("Column"))
 		]
 
 		for header in headers:
@@ -238,9 +238,9 @@ class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 	@QtCore.Slot(bool, object)
 	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avb.bin.SiftItem]):
 
-		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="string", display_name="String"))
-		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="method", display_name="Method"))
-		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="column", display_name="Column"))
+		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="string", display_name=self.tr("String")))
+		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="method", display_name=self.tr("Method")))
+		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="column", display_name=self.tr("Column")))
 		for idx, setting in enumerate(sift_settings):
 			self.addRow({
 				"order": idx,

@@ -33,9 +33,9 @@ class BSSettingsPanel(QtWidgets.QWidget):
 		self._sld_mob_queue.setTickPosition(QtWidgets.QSlider.TickPosition.TicksBelow)
 		self._sld_mob_queue.setTickInterval(500)
 
-		self.layout().addRow("On Startup", self._cmb_startup_behavior)
-		self.layout().addRow("Use Fancy Animations", self._chk_use_animations)
-		self.layout().addRow("Mob Queue Size", self._sld_mob_queue)
+		self.layout().addRow(self.tr("On Startup"), self._cmb_startup_behavior)
+		self.layout().addRow(self.tr("Use Fancy Animations"), self._chk_use_animations)
+		self.layout().addRow(self.tr("Mob Queue Size"), self._sld_mob_queue)
 	
 	@QtCore.Slot(bool)
 	def setUseAnimations(self, use_animations:bool):

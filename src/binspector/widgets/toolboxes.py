@@ -19,53 +19,53 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 		self.setLayout(QtWidgets.QVBoxLayout())
 
 		self._spn_geo_x = QtWidgets.QSpinBox()
-		self._spn_geo_x.setSuffix(" px")
+		self._spn_geo_x.setSuffix(self.tr(" px"))
 		self._spn_geo_x.setMaximum(9999)
 		self._spn_geo_x.setMinimum(-9999)
 		self._spn_geo_x.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
 		self._spn_geo_y = QtWidgets.QSpinBox()
-		self._spn_geo_y.setSuffix(" px")
+		self._spn_geo_y.setSuffix(self.tr(" px"))
 		self._spn_geo_y.setMaximum(9999)
 		self._spn_geo_y.setMinimum(-9999)
 		self._spn_geo_y.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
 
 		self._spn_geo_w = QtWidgets.QSpinBox()
-		self._spn_geo_w.setSuffix(" px")
+		self._spn_geo_w.setSuffix(self.tr(" px"))
 		self._spn_geo_w.setMaximum(9999)
 		self._spn_geo_w.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
 		#self._spn_geo_w.setMinimum(-9999)
 		self._spn_geo_h = QtWidgets.QSpinBox()
-		self._spn_geo_h.setSuffix(" px")
+		self._spn_geo_h.setSuffix(self.tr(" px"))
 		self._spn_geo_h.setMaximum(9999)
 		self._spn_geo_h.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
 		#self._spn_geo_h.setMinimum(-9999)
 
-		self.layout().addWidget(QtWidgets.QLabel("Window Geometry"))
+		self.layout().addWidget(QtWidgets.QLabel(self.tr("Window Geometry")))
 		
 		lay_geo= QtWidgets.QGridLayout()
-		lay_geo.addWidget(QtWidgets.QLabel("X:"), 0, 0, QtCore.Qt.AlignmentFlag.AlignRight)
+		lay_geo.addWidget(QtWidgets.QLabel(self.tr("X:")), 0, 0, QtCore.Qt.AlignmentFlag.AlignRight)
 		lay_geo.addWidget(self._spn_geo_x, 0, 1)
-		lay_geo.addWidget(QtWidgets.QLabel("Y:"), 1, 0, QtCore.Qt.AlignmentFlag.AlignRight)
+		lay_geo.addWidget(QtWidgets.QLabel(self.tr("Y:")), 1, 0, QtCore.Qt.AlignmentFlag.AlignRight)
 		lay_geo.addWidget(self._spn_geo_y, 1, 1)
 		
 		lay_geo.setColumnStretch(2, 1)
 		
-		lay_geo.addWidget(QtWidgets.QLabel("W:"), 0, 3, QtCore.Qt.AlignmentFlag.AlignRight)
+		lay_geo.addWidget(QtWidgets.QLabel(self.tr("W:")), 0, 3, QtCore.Qt.AlignmentFlag.AlignRight)
 		lay_geo.addWidget(self._spn_geo_w, 0, 4)
-		lay_geo.addWidget(QtWidgets.QLabel("H:"), 1, 3, QtCore.Qt.AlignmentFlag.AlignRight)
+		lay_geo.addWidget(QtWidgets.QLabel(self.tr("H:")), 1, 3, QtCore.Qt.AlignmentFlag.AlignRight)
 		lay_geo.addWidget(self._spn_geo_h, 1, 4)
 		#lay_geo_dimensions.addStretch()
 
 		self.layout().addLayout(lay_geo)
 
-		self._chk_was_iconic = QtWidgets.QCheckBox("Was Iconic")
+		self._chk_was_iconic = QtWidgets.QCheckBox(self.tr("Was Iconic"))
 		self.layout().addWidget(self._chk_was_iconic)
 
 		lay_fonts = QtWidgets.QHBoxLayout()
 		self._cmb_fonts = QtWidgets.QFontComboBox()
 		self._spn_size  = QtWidgets.QSpinBox(minimum=8, maximum=100)	# Avid font dialog extents
 
-		self.layout().addWidget(QtWidgets.QLabel("Font And Colors"))
+		self.layout().addWidget(QtWidgets.QLabel(self.tr("Font And Colors")))
 		lay_fonts.addWidget(self._cmb_fonts)
 		lay_fonts.addWidget(self._spn_size)
 
@@ -81,7 +81,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 		self.layout().addLayout(lay_colors)
 
 		self._tree_column_widths = treeview.LBTreeView()
-		self.layout().addWidget(QtWidgets.QLabel("Column Widths"))
+		self.layout().addWidget(QtWidgets.QLabel(self.tr("Column Widths")))
 		self.layout().addWidget(self._tree_column_widths)
 
 		
@@ -102,7 +102,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	def bgColorPickerRequested(self):
 		
 		_,bg_color = self.binPalette()
-		new_color = QtWidgets.QColorDialog.getColor(bg_color, self._btn_bg_color, "Choose a text color")
+		new_color = QtWidgets.QColorDialog.getColor(bg_color, self._btn_bg_color, self.tr("Choose a background color"))
 		
 		if new_color.isValid():
 			self.setBinBackgroundColor(new_color)
@@ -111,7 +111,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	def fgColorPickerRequested(self):
 		
 		fg_color,_ = self.binPalette()
-		new_color = QtWidgets.QColorDialog.getColor(fg_color, self._btn_fg_color, "Choose a text color")
+		new_color = QtWidgets.QColorDialog.getColor(fg_color, self._btn_fg_color, self.tr("Choose a text color"))
 
 		if new_color.isValid():
 			self.setBinForegroundColor(new_color)
@@ -189,69 +189,69 @@ class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 		self.layout().setSpacing(0)
 		self.layout().setContentsMargins(3,0,3,0)
 
-		grp_clips = QtWidgets.QGroupBox(title="Clip Types")
+		grp_clips = QtWidgets.QGroupBox(title=self.tr("Clip Types"))
 
 		grp_clips.setLayout(QtWidgets.QVBoxLayout())
 		grp_clips.layout().setSpacing(0)
 		grp_clips.layout().setContentsMargins(3,0,3,0)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.MASTER_CLIP]
-		chk.setText("Master Clips")
+		chk.setText(self.tr("Master Clips"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.LINKED_MASTER_CLIP]
-		chk.setText("Linked Master Clips")
+		chk.setText(self.tr("Linked Master Clips"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.SUBCLIP]
-		chk.setText("Subclips")
+		chk.setText(self.tr("Subclips"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.SEQUENCE]
-		chk.setText("Sequences")
+		chk.setText(self.tr("Sequences"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.SOURCE]
-		chk.setText("Sources")
+		chk.setText(self.tr("Sources"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.EFFECT]
-		chk.setText("Effects")
+		chk.setText(self.tr("Effects"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.MOTION_EFFECT]
-		chk.setText("Motion Effects")
+		chk.setText(self.tr("Motion Effects"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.PRECOMP_RENDERED_EFFECT]
-		chk.setText("Precompute Clips - Rendered Effects")
+		chk.setText(self.tr("Precompute Clips - Rendered Effects"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.PRECOMP_TITLE_MATTEKEY]
-		chk.setText("Precompute Clips - Titles and Matte Keys")
+		chk.setText(self.tr("Precompute Clips - Titles and Matte Keys"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.GROUP]
-		chk.setText("Groups")
+		chk.setText(self.tr("Groups"))
 		grp_clips.layout().addWidget(chk)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.STEREOSCOPIC_CLIP]
-		chk.setText("Stereoscopic Clips")
+		chk.setText(self.tr("Stereoscopic Clips"))
 		grp_clips.layout().addWidget(chk)
 
 		self.layout().addWidget(grp_clips)
 
-		grp_origins = QtWidgets.QGroupBox(title="Clip Origins")
+		grp_origins = QtWidgets.QGroupBox(title=self.tr("Clip Origins"))
 		grp_origins.setLayout(QtWidgets.QVBoxLayout())
 		grp_origins.layout().setSpacing(0)
 		grp_origins.layout().setContentsMargins(3,0,3,0)
 
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.USER_CLIP]
-		chk.setText("Show clips created by user")
+		chk.setText(self.tr("Show clips created by user"))
 		grp_origins.layout().addWidget(chk)
 		
 		chk = self._option_mappings[avbutils.BinDisplayItemTypes.REFERENCE_CLIP]
-		chk.setText("Show reference clips")
+		chk.setText(self.tr("Show reference clips"))
 		grp_origins.layout().addWidget(chk)
 		
 
@@ -271,7 +271,7 @@ class BSBinSiftSettingsView(QtWidgets.QWidget):
 		self.setLayout(QtWidgets.QVBoxLayout())
 		self.layout().setContentsMargins(0,0,0,0)
 
-		self._chk_sift_enabled = QtWidgets.QCheckBox("Sift Enabled")
+		self._chk_sift_enabled = QtWidgets.QCheckBox(self.tr("Sift Enabled"))
 
 		self._tree_siftsettings = treeview.LBTreeView()
 

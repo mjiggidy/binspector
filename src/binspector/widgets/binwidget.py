@@ -262,12 +262,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Shortcuts/Actions
 		# TODO: Not here lol but i dunno
 		self._act_set_view_width_for_columns = QtGui.QAction(self._binitems_list)
-		self._act_set_view_width_for_columns.setText("Fit bin list columns to contents")
+		self._act_set_view_width_for_columns.setText(self.tr("Fit bin list columns to contents"))
 		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
 		self._act_set_view_width_for_columns.triggered.connect(lambda: self._binitems_list.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._binitems_list.header().count()-1))
 
 		self._act_autofit_columns = QtGui.QAction(self._binitems_list)
-		self._act_autofit_columns.setText("Auto-fit bin list columns to contents")
+		self._act_autofit_columns.setText(self.tr("Auto-fit bin list columns to contents"))
 		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
 		self._act_autofit_columns.triggered.connect(self._binitems_list.resizeAllColumnsToContents)
 		#self._act_autofit_columns.triggered.connect(lambda: print)
@@ -408,10 +408,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		count_visible = self._binitems_list.model().rowCount()
 		count_all     = self._binitems_list.model().sourceModel().rowCount()
 
-		info_text = f"Showing {QtCore.QLocale.system().toString(count_visible)} of {QtCore.QLocale.system().toString(count_all)} items"
-
-		#self._section_bottom.setInfoText(info_text)
-
+		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
+			current_item_count=QtCore.QLocale.system().toString(count_visible),
+			total_item_count=QtCore.QLocale.system().toString(count_all)
+		)
 		self._txt_binstats.setText(info_text)
 	
 	@QtCore.Slot(object)
