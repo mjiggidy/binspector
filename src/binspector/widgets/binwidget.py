@@ -205,14 +205,17 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 class ScrollBarStyle(QtWidgets.QProxyStyle):
 
-	SCALE_FACTOR = 1.25
+	def __init__(self, *args, scale_factor:int|float=1.25, **kwargs):
+
+		super().__init__(*args, **kwargs)
+		self._scale_factor = scale_factor
 	
 	def pixelMetric(self, metric:QtWidgets.QStyle.PixelMetric, option:QtWidgets.QStyleOption=None, widget:QtWidgets.QWidget=None):
 
 		if metric == QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent:
-			return round(super().pixelMetric(metric, option, widget) * self.SCALE_FACTOR)
+			return round(self.baseStyle().pixelMetric(metric, option, widget) * self._scale_factor)
 		else:
-			return super().pixelMetric(metric, option, widget)
+			return self.baseStyle().pixelMetric(metric, option, widget)
 
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
@@ -251,7 +254,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
-		self._proxystyle_hscroll = ScrollBarStyle(self._binitems_list.horizontalScrollBar().style())
+		# NOTE: `base_style` junk copies a new instance of the hbar base style, otherwise it goes out of scope
+		# and segfaults on exit, which I really love.  I really love all of this.  I don't need money or a career.
+		base_style = QtWidgets.QStyleFactory.create(self._binitems_list.horizontalScrollBar().style().objectName())
+		self._proxystyle_hscroll = ScrollBarStyle(base_style, scale_factor=1.25, parent=self)
 		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 		self.layout().addWidget(self._section_top)
