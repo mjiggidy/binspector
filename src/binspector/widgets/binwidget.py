@@ -203,6 +203,17 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 		self._mode_controls.setCurrentIndex(int(view_mode))
 
+class ScrollBarStyle(QtWidgets.QProxyStyle):
+
+	SCALE_FACTOR = 1.25
+	
+	def pixelMetric(self, metric:QtWidgets.QStyle.PixelMetric, option:QtWidgets.QStyleOption=None, widget:QtWidgets.QWidget=None):
+
+		if metric == QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent:
+			return round(super().pixelMetric(metric, option, widget) * self.SCALE_FACTOR)
+		else:
+			return super().pixelMetric(metric, option, widget)
+
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
@@ -238,6 +249,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._txt_binstats      = QtWidgets.QLabel()
 
 		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		
+		# Adjust scrollbar height for macOS rounded corner junk
+		self._proxystyle_hscroll = ScrollBarStyle(self._binitems_list.horizontalScrollBar().style())
+		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 		self.layout().addWidget(self._section_top)
 		self.layout().addWidget(self._section_main)
