@@ -299,17 +299,17 @@
 <context>
     <name>BSBinContentsWidget</name>
     <message>
-        <location filename="../../src/binspector/widgets/binwidget.py" line="265"/>
+        <location filename="../../src/binspector/widgets/binwidget.py" line="293"/>
         <source>Fit bin list columns to contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/binspector/widgets/binwidget.py" line="270"/>
+        <location filename="../../src/binspector/widgets/binwidget.py" line="298"/>
         <source>Auto-fit bin list columns to contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/binspector/widgets/binwidget.py" line="411"/>
+        <location filename="../../src/binspector/widgets/binwidget.py" line="446"/>
         <source>Showing {current_item_count} of {total_item_count} items</source>
         <translation type="unfinished"></translation>
     </message>
@@ -585,7 +585,7 @@
 <context>
     <name>BSMainApplication</name>
     <message>
-        <location filename="../../src/binspector/core/application.py" line="32"/>
+        <location filename="../../src/binspector/core/application.py" line="33"/>
         <source>Cannot set up local storage path at {local_storage_path}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -619,22 +619,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/binspector/widgets/mainwindow.py" line="350"/>
+        <location filename="../../src/binspector/widgets/mainwindow.py" line="351"/>
         <source>Loading bin properties...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/binspector/widgets/mainwindow.py" line="448"/>
+        <location filename="../../src/binspector/widgets/mainwindow.py" line="449"/>
         <source>Bin Not Loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/binspector/widgets/mainwindow.py" line="465"/>
+        <location filename="../../src/binspector/widgets/mainwindow.py" line="466"/>
         <source>Choose an Avid bin...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/binspector/widgets/mainwindow.py" line="466"/>
+        <location filename="../../src/binspector/widgets/mainwindow.py" line="467"/>
         <source>Avid Bin (*.avb);;All Files (*)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -642,17 +642,22 @@
 <context>
     <name>BSSettingsPanel</name>
     <message>
-        <location filename="../../src/binspector/widgets/settingswindow.py" line="36"/>
+        <location filename="../../src/binspector/widgets/settingswindow.py" line="45"/>
         <source>On Startup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/binspector/widgets/settingswindow.py" line="37"/>
+        <location filename="../../src/binspector/widgets/settingswindow.py" line="47"/>
         <source>Use Fancy Animations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/binspector/widgets/settingswindow.py" line="38"/>
+        <location filename="../../src/binspector/widgets/settingswindow.py" line="48"/>
+        <source>Bottom Scrollbar Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/binspector/widgets/settingswindow.py" line="49"/>
         <source>Mob Queue Size</source>
         <translation type="unfinished"></translation>
     </message>
