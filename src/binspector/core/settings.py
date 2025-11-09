@@ -179,3 +179,21 @@ class BSSettingsManager:
 			
 		logging.getLogger(__name__).debug("Returning start_behavior: %s", behavior)
 		return behavior
+	
+	@QtCore.Slot(int)
+	def setBottomScrollbarScale(self, scale_factor:int|float):
+
+		self.settings("bs").setValue("Session/bottom_scrollbar_scale", scale_factor)
+		logging.getLogger(__name__).debug("Set bottom_scrollbar_scale: %s", scale_factor)
+
+	def bottomScrollbarScale(self) -> float:
+		
+		scale_factor = max(0.5, self.settings("bs").value("Session/bottom_scrollbar_scale", 1.25, float))
+		logging.getLogger(__name__).debug("Returning bottom_scrollbar_scale: %s", scale_factor)
+		return scale_factor
+
+	def useFancyProgressBar(self) -> int:
+		
+		use_animation = self.settings("bs").value("BinLoading/fancy_progress_bar", True, bool)
+		logging.getLogger(__name__).debug("Returning fancy_progress_bar: %s", use_animation)
+		return use_animation

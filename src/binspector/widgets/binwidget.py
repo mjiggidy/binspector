@@ -203,7 +203,8 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 		self._mode_controls.setCurrentIndex(int(view_mode))
 
-class ScrollBarStyle(QtWidgets.QProxyStyle):
+class BSScrollBarStyle(QtWidgets.QProxyStyle):
+	"""Modify scrollbar height"""
 
 	def __init__(self, *args, scale_factor:int|float=1.25, **kwargs):
 
@@ -216,6 +217,12 @@ class ScrollBarStyle(QtWidgets.QProxyStyle):
 			return round(self.baseStyle().pixelMetric(metric, option, widget) * self._scale_factor)
 		else:
 			return self.baseStyle().pixelMetric(metric, option, widget)
+	
+	@QtCore.Slot(int)
+	@QtCore.Slot(float)
+	def setScrollbarScaleFactor(self, scale_factor:float|int):
+		print("YOOO", scale_factor)
+		self._scale_factor = scale_factor
 
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
@@ -257,7 +264,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# NOTE: `base_style` junk copies a new instance of the hbar base style, otherwise it goes out of scope
 		# and segfaults on exit, which I really love.  I really love all of this.  I don't need money or a career.
 		base_style = QtWidgets.QStyleFactory.create(self._binitems_list.horizontalScrollBar().style().objectName())
-		self._proxystyle_hscroll = ScrollBarStyle(base_style, scale_factor=1.25, parent=self)
+		self._proxystyle_hscroll = BSScrollBarStyle(base_style, scale_factor=1.25, parent=self)
 		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 		self.layout().addWidget(self._section_top)
@@ -338,6 +345,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._binitems_script = script_view
 		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
+
+	@QtCore.Slot(int)
+	@QtCore.Slot(float)
+	def setBottomScrollbarScaleFactor(self, scale_factor:int|float):
+
+		self._proxystyle_hscroll.setScrollbarScaleFactor(scale_factor)
+		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):

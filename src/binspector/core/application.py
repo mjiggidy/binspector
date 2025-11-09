@@ -163,6 +163,7 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		window.setMobQueueSize(self._settingsManager.mobQueueSize())
 		window.setUseAnimation(self._settingsManager.useFancyProgressBar())
+		window.binContentsWidget().setBottomScrollbarScaleFactor(self._settingsManager.bottomScrollbarScale())
 
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
@@ -295,9 +296,14 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_settings.sig_mob_queue_size_changed.connect(self._settingsManager.setMobQueueSize)
 			self._wnd_settings.sig_startup_behavior_changed.connect(self._settingsManager.setStartupBehavior)
 			self._wnd_settings.sig_mob_queue_size_changed.connect(lambda queue_size: [w.setMobQueueSize(queue_size) for w in self._binwindows_manager.windows()])
+			
+			# TODO: Hacky
+			self._wnd_settings.sig_scrollbar_scale_changed.connect(lambda s: [w.binContentsWidget().setBottomScrollbarScaleFactor(s) for w in self._binwindows_manager.windows()])
+			self._wnd_settings.sig_scrollbar_scale_changed.connect(self._settingsManager.setBottomScrollbarScale)
 
 			# Settings Temp
 			self._wnd_settings.setUseAnimations(self._settingsManager.useFancyProgressBar())
+			self._wnd_settings.setBottomScrollBarScale(self._settingsManager.bottomScrollbarScale())
 			self._wnd_settings.setMobQueueSize(self._settingsManager.mobQueueSize())
 			self._wnd_settings.setStartupBehavior(self._settingsManager.startupBehavior())
 
