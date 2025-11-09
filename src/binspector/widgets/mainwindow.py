@@ -287,10 +287,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	
 	def actionsManager(self) -> actions.ActionsManager:
 		return self._man_actions
-	
-	def setSettings(self, settings:QtCore.QSettings):
-		raise DeprecationWarning("Let's not?")
-		self._settings = settings
 
 	def binViewManager(self) -> binproperties.BSBinViewManager:
 		return self._man_binview
@@ -310,12 +306,17 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
 		return self._sigs_binloader
 	
+	def binContentsWidget(self) -> binwidget.BSBinContentsWidget:
+		return self._main_bincontents
+
+	@QtCore.Slot(int)
 	def setMobQueueSize(self, queue_size:int):
 		self._queue_size = queue_size
 
 	def mobQueueSize(self) -> int:
 		return self._queue_size
 	
+	@QtCore.Slot(bool)
 	def setUseAnimation(self, use_animation:bool):
 		self._use_animation = use_animation
 	
