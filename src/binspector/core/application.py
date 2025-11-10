@@ -9,6 +9,7 @@ from . import settings
 from ..managers import windows, software_updates
 from ..widgets import mainwindow, logwidget, settingswindow
 from ..models import logmodels
+from ..res import translations
 
 class BSMainApplication(QtWidgets.QApplication):
 	"""Main application"""
@@ -18,7 +19,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		super().__init__(*args, **kwargs)
 
 		self.setApplicationName("Binspector")
-		self.setApplicationVersion("0.0.8")
+		self.setApplicationVersion("0.0.9")
 		self.setStyle("Fusion")
 
 		self.setOrganizationName("GlowingPixel")
@@ -29,7 +30,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._localStoragePath = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
 		if not QtCore.QDir().mkpath(self._localStoragePath):
 			import sys
-			sys.exit(f"Cannot set up local storage path at {self._localStoragePath}")
+			sys.exit(self.tr("Cannot set up local storage path at {local_storage_path}").format(local_storage_path=self._localStoragePath))
 		
 		# Setup logging
 		logging.basicConfig(level=logging.DEBUG)
@@ -60,21 +61,33 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._qt_log_handler.logEventReceived.connect(self._qt_log_model.addLogRecord, QtCore.Qt.ConnectionType.QueuedConnection)
 
 		self._wnd_log_viewer = None
+		self._wnd_settings   = None
 
 		# Setup settings
 		self._settingsManager = settings.BSSettingsManager(
 			format   = QtCore.QSettings.Format.IniFormat,
 			basepath = self.localStoragePath()
 		)
+
+		# Install local translator
+		translator_userlang = QtCore.QTranslator()
+		if translator_userlang.load(QtCore.QLocale(), "bs", ".", ":/translations"):
+			self.installTranslator(translator_userlang)
+			logging.getLogger(__name__).debug("Installed translation for user lang %s", QtCore.QLocale().name())
+		else:
+			logging.getLogger(__name__).debug("Falling back to default translation for user lang %s", QtCore.QLocale().name())
 		
 		# Setup default menu bar/actions (for macOS when no bin windows are open)
 		# NOTE: This is currently clumsy and weird.  I'll uh, come back to this
 #		self.setQuitOnLastWindowClosed(False)
-#		self._actionmanager = actions.ActionsManager()
-#		self._default_menubar = menus.DefaultMenuBar(self._actionmanager)
-#		self._actionmanager.newWindowAction().triggered.connect(self.createMainWindow)
-#		self._actionmanager.fileBrowserAction().triggered.connect(lambda: self.createMainWindow(show_file_browser=True))
-#		self._actionmanager.quitApplicationAction().triggered.connect(self.exit)
+		#from ..managers import actions
+		#from ..widgets import menus
+		#self._actionmanager   = actions.ActionsManager()
+		#self._default_menubar = menus.DefaultMenuBar(self._actionmanager)
+		#self._actionmanager.newWindowAction().triggered.connect(self.createMainWindow)
+		#self._actionmanager.fileBrowserAction().triggered.connect(lambda: self.createMainWindow(show_file_browser=True))
+		#self._actionmanager.showSettingsWindow().triggered.connect(self.showSettingsWindow)
+		#self._actionmanager.quitApplicationAction().triggered.connect(self.exit)
 		
 		# Setup window manager
 		self._binwindows_manager = windows.BSWindowManager()
@@ -88,18 +101,6 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._updates_manager.sig_newReleaseAvailable.connect(self.showUpdatesWindow)
 		self._updates_manager.sig_autoCheckChanged.connect(self._settingsManager.setSoftwareUpdateAutocheckEnabled)
 		self._wnd_update = None	# Window will be created in `self.showUpdatesWindow`
-
-		# Settings Temp
-		self._wnd_settings = settingswindow.BSSettingsPanel()
-		self._wnd_settings.setUseAnimations(self._settingsManager.useFancyProgressBar())
-		self._wnd_settings.setMobQueueSize(self._settingsManager.mobQueueSize())
-		self._wnd_settings.sig_use_animations_changed.connect(self._settingsManager.setUseFancyProgressBar)
-		self._wnd_settings.sig_use_animations_changed.connect(lambda use_animation: [w.setUseAnimation(use_animation) for w in self._binwindows_manager.windows()])
-		self._wnd_settings.sig_mob_queue_size_changed.connect(self._settingsManager.setMobQueueSize)
-		self._wnd_settings.sig_mob_queue_size_changed.connect(lambda queue_size: [w.setMobQueueSize(queue_size) for w in self._binwindows_manager.windows()])
-		self._wnd_settings.setWindowTitle("Temp Settings")
-		self._wnd_settings.setWindowFlag(QtCore.Qt.WindowType.Tool)
-		self._wnd_settings.show()
 
 	def localStoragePath(self) -> PathLike[str]:
 		"""Get the local user storage path"""
@@ -121,7 +122,7 @@ class BSMainApplication(QtWidgets.QApplication):
 	
 	@QtCore.Slot()
 	@QtCore.Slot(bool)
-	def createMainWindow(self, show_file_browser:bool=False) -> mainwindow.BSMainWindow:
+	def createMainWindow(self, is_first_window:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
 
 		if current_window := self.activeWindow():
@@ -141,13 +142,14 @@ class BSMainApplication(QtWidgets.QApplication):
 		# Connect signals/slots
 		# TODO: Probably connect this directly to managers, like binViewManager below
 		# The window shouldn't have to care much about emitting all these signals, I don't think
-		window.sig_request_new_window.connect(self.createMainWindow)
-		window.sig_request_quit_application.connect(self.exit)
-		window.sig_request_show_log_viewer.connect(self.showLogWindow)
-		window.sig_request_show_user_folder.connect(self.showLocalStorage)
-		window.sig_request_visit_discussions.connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
-		window.sig_request_check_updates.connect(self.showUpdatesWindow)
-		window.sig_bin_changed.connect(self._settingsManager.setLastBinPath)
+		window.sig_request_new_window        .connect(self.createMainWindow)
+		window.sig_request_quit_application  .connect(self.exit)
+		window.sig_request_show_settings     .connect(self.showSettingsWindow)
+		window.sig_request_show_log_viewer   .connect(self.showLogWindow)
+		window.sig_request_show_user_folder  .connect(self.showLocalStorage)
+		window.sig_request_visit_discussions .connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
+		window.sig_request_check_updates     .connect(self.showUpdatesWindow)
+		window.sig_bin_changed               .connect(self._settingsManager.setLastBinPath)
 
 		# Restore Toggle Settings
 		window.binViewManager().setBinViewEnabled(self._settingsManager.binViewIsEnabled())
@@ -161,6 +163,7 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		window.setMobQueueSize(self._settingsManager.mobQueueSize())
 		window.setUseAnimation(self._settingsManager.useFancyProgressBar())
+		window.binContentsWidget().setBottomScrollbarScaleFactor(self._settingsManager.bottomScrollbarScale())
 
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
@@ -168,14 +171,30 @@ class BSMainApplication(QtWidgets.QApplication):
 		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
 		window.show()
-		#window.raise_()
-		#window.activateWindow()
-		self.setActiveWindow(window)
+		window.raise_()
+		window.activateWindow()
 
-		if show_file_browser:
-			window.showFileBrowser(
-				self._settingsManager.lastBinPath() or QtCore.QDir.homePath()
-			)
+		# Startup behavior
+		startup_behavior = self._settingsManager.startupBehavior()
+
+		if is_first_window:
+
+			if startup_behavior == settings.BSStartupBehavior.LAST_BIN:
+
+				if QtCore.QFileInfo(self._settingsManager.lastBinPath() or "").isFile():
+
+					logging.getLogger(__name__).debug("Opening last bin at startup: %s", self._settingsManager.lastBinPath())
+					window.loadBinFromPath(self._settingsManager.lastBinPath())
+				
+				else:
+					logging.getLogger(__name__).error("Not opening last bin because it doesn't exist: %s", self._settingsManager.lastBinPath())
+
+			elif startup_behavior == settings.BSStartupBehavior.SHOW_BROWSER:
+
+				logging.getLogger(__name__).debug("Showing file browser at startup")
+				window.showFileBrowser(
+					self._settingsManager.lastBinPath() or QtCore.QDir.homePath()
+				)
 
 		return window
 	
@@ -218,8 +237,13 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_log_viewer.destroyed.connect(lambda: setattr(self, "_wnd_log_viewer", None))
 			
 			self._wnd_log_viewer.treeView().setModel(self._qt_log_model)
-		
-		self._wnd_log_viewer.show()
+
+		if self._wnd_log_viewer.isMinimized():
+			self._wnd_log_viewer.showNormal()
+		else:
+			self._wnd_log_viewer.show()
+
+		self._wnd_log_viewer.raise_()
 		self._wnd_log_viewer.activateWindow()
 
 	
@@ -246,7 +270,47 @@ class BSMainApplication(QtWidgets.QApplication):
 		else:
 			logging.getLogger(__name__).debug("Latest release info = %s", self._updates_manager.latestReleaseInfo())
 
-		self._wnd_update.show()
+		if self._wnd_update.isMinimized():
+			self._wnd_update.showNormal()
+		else:
+			self._wnd_update.show()
+
 		self._wnd_update.raise_()
 		self._wnd_update.activateWindow()
-		self._wnd_update.setFocus(QtCore.Qt.FocusReason.PopupFocusReason) # Not sure if want
+
+	@QtCore.Slot()
+	def showSettingsWindow(self):
+
+		if not self._wnd_settings:
+			
+			self._wnd_settings = settingswindow.BSSettingsPanel()
+
+			self._wnd_settings.setWindowTitle(f"{self.applicationDisplayName()} Settings")
+			self._wnd_settings.setWindowFlag(QtCore.Qt.WindowType.Tool)
+			self._wnd_settings.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+			
+			self._wnd_settings.destroyed.connect(lambda: setattr(self, "_wnd_settings", None))
+
+			self._wnd_settings.sig_use_animations_changed.connect(self._settingsManager.setUseFancyProgressBar)
+			self._wnd_settings.sig_use_animations_changed.connect(lambda use_animation: [w.setUseAnimation(use_animation) for w in self._binwindows_manager.windows()])
+			self._wnd_settings.sig_mob_queue_size_changed.connect(self._settingsManager.setMobQueueSize)
+			self._wnd_settings.sig_startup_behavior_changed.connect(self._settingsManager.setStartupBehavior)
+			self._wnd_settings.sig_mob_queue_size_changed.connect(lambda queue_size: [w.setMobQueueSize(queue_size) for w in self._binwindows_manager.windows()])
+			
+			# TODO: Hacky
+			self._wnd_settings.sig_scrollbar_scale_changed.connect(lambda s: [w.binContentsWidget().setBottomScrollbarScaleFactor(s) for w in self._binwindows_manager.windows()])
+			self._wnd_settings.sig_scrollbar_scale_changed.connect(self._settingsManager.setBottomScrollbarScale)
+
+			# Settings Temp
+			self._wnd_settings.setUseAnimations(self._settingsManager.useFancyProgressBar())
+			self._wnd_settings.setBottomScrollBarScale(self._settingsManager.bottomScrollbarScale())
+			self._wnd_settings.setMobQueueSize(self._settingsManager.mobQueueSize())
+			self._wnd_settings.setStartupBehavior(self._settingsManager.startupBehavior())
+
+		if self._wnd_settings.isMinimized():
+			self._wnd_settings.showNormal()
+		else:
+			self._wnd_settings.show()
+			
+		self._wnd_settings.raise_()
+		self._wnd_settings.activateWindow()

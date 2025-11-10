@@ -10,7 +10,7 @@ def main(bin_paths:list[PathLike]) -> int:
 		wnd.loadBinFromPath(bin_path)
 	
 	if not bin_paths:
-		wnd = app.createMainWindow(True)
+		wnd = app.createMainWindow(is_first_window=True)
 		
 	return app.exec()
 	

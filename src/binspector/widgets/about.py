@@ -2,7 +2,7 @@
 Big ol' mess for now
 """
 
-from PySide6 import QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 class BSAboutWidget(QtWidgets.QWidget):
 
@@ -13,15 +13,15 @@ class BSAboutWidget(QtWidgets.QWidget):
 		self.setLayout(QtWidgets.QVBoxLayout())
 
 		self._lbl_title = QtWidgets.QLabel(QtWidgets.QApplication.instance().applicationDisplayName() + "!")
-		self._lbl_version = QtWidgets.QLabel("Version " + QtWidgets.QApplication.instance().applicationVersion())
+		self._lbl_version = QtWidgets.QLabel(self.tr("Version ") + QtWidgets.QApplication.instance().applicationVersion())
 		self._lbl_version.setTextInteractionFlags(QtGui.Qt.TextInteractionFlag.TextSelectableByKeyboard|QtGui.Qt.TextInteractionFlag.TextSelectableByMouse)
 
 		self._lbl_quote  = QtWidgets.QLabel(
-			"\"Look at that bin real good and see the items and things in there until we've see it all!\""
+			self.tr("\"Look at that bin real good and see the items and things in there until we've see it all!\"")
 		)
 
-		self._lbl_author = QtWidgets.QLabel("Written by Michael Jordan")
-		self._lbl_thanks = QtWidgets.QLabel("Extra special kissies to Joy Fu for her help and feedback")
+		self._lbl_author = QtWidgets.QLabel(self.tr("Written by Michael Jordan"))
+		self._lbl_thanks = QtWidgets.QLabel(self.tr("Extra special kissies to Joy Fu for her help and feedback"))
 
 		quote_font = self._lbl_quote.font()
 		quote_font.setItalic(True)
@@ -38,7 +38,7 @@ class BSAboutWidget(QtWidgets.QWidget):
 		self._lbl_link_github.setTextInteractionFlags(QtGui.Qt.TextInteractionFlag.LinksAccessibleByKeyboard|QtGui.Qt.TextInteractionFlag.LinksAccessibleByMouse)
 		self._lbl_link_github.setOpenExternalLinks(True)
 
-		self._lbl_link_email  = QtWidgets.QLabel("<a href=\"mailto:michael@glowingpixel.com?subject=You've%20ruined%20my%20life\">michael@glowingpixel.com</a>")
+		self._lbl_link_email  = QtWidgets.QLabel("<a href=\"mailto:michael@glowingpixel.com?subject=" + QtCore.QUrl.toPercentEncoding("You've ruined my life") + "\">michael@glowingpixel.com</a>")
 		self._lbl_link_email.setTextInteractionFlags(QtGui.Qt.TextInteractionFlag.LinksAccessibleByKeyboard|QtGui.Qt.TextInteractionFlag.LinksAccessibleByMouse)
 		self._lbl_link_email.setOpenExternalLinks(True)
 
@@ -48,9 +48,9 @@ class BSAboutWidget(QtWidgets.QWidget):
 
 		self._lay_links = QtWidgets.QFormLayout()
 		self._lay_links.setSpacing(0)
-		self._lay_links.addRow("Github: ",    self._lbl_link_github)
-		self._lay_links.addRow("Contact: ",   self._lbl_link_email)
-		self._lay_links.addRow("Donations: ", self._lbl_link_donate)
+		self._lay_links.addRow(self.tr("Github: "),    self._lbl_link_github)
+		self._lay_links.addRow(self.tr("Contact: "),   self._lbl_link_email)
+		self._lay_links.addRow(self.tr("Donations: "), self._lbl_link_donate)
 		
 		self.setupWidgets()
 	
@@ -91,6 +91,6 @@ if __name__ == "__main__":
 	app.setApplicationVersion("0.0.1")
 	
 	about = BSAboutDialog()
-	about.setWindowTitle("About " + QtWidgets.QApplication.instance().applicationDisplayName())
+	about.setWindowTitle(QtCore.QObject.tr("About {application_name}").format(application_name=QtWidgets.QApplication.instance().applicationDisplayName()))
 	about.show()
 	app.exec()

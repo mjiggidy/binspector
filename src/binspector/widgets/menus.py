@@ -12,11 +12,11 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 		
 		super().__init__(*args, **kwargs)
 
-		mnu_main   = QtWidgets.QMenu("&File")
-		mnu_view   = QtWidgets.QMenu("&View")
-		mnu_tools  = QtWidgets.QMenu("&Tools")
-		mnu_window = QtWidgets.QMenu("&Window")
-		mnu_help   = QtWidgets.QMenu("&Help")
+		mnu_main   = QtWidgets.QMenu(self.tr("&File"))
+		mnu_view   = QtWidgets.QMenu(self.tr("&View"))
+		mnu_tools  = QtWidgets.QMenu(self.tr("&Tools"))
+		mnu_window = QtWidgets.QMenu(self.tr("&Window"))
+		mnu_help   = QtWidgets.QMenu(self.tr("&Help"))
 		
 
 		mnu_main.addAction(action_manager.newWindowAction())
@@ -30,6 +30,7 @@ class BinWindowMenuBar(QtWidgets.QMenuBar):
 		mnu_view.addSeparator()
 
 		mnu_tools.addActions(action_manager.userToolsActionsGroup().actions())
+		mnu_tools.addAction(action_manager.showSettingsWindow())
 
 		mnu_window.addAction(action_manager.closeWindowAction())
 
@@ -51,7 +52,7 @@ class DefaultMenuBar(QtWidgets.QMenuBar):
 
 		super().__init__(*args, **kwargs)
 
-		mnu_main = QtWidgets.QMenu("&File")
+		mnu_main = QtWidgets.QMenu(self.tr("&File"))
 		mnu_main.addAction(action_manager.newWindowAction())
 		mnu_main.addAction(action_manager.fileBrowserAction())
 		mnu_main.addSeparator()
@@ -59,12 +60,13 @@ class DefaultMenuBar(QtWidgets.QMenuBar):
 
 		self.addMenu(mnu_main)
 
-		mnu_tools = QtWidgets.QMenu("&Tools")
+		mnu_tools = QtWidgets.QMenu(self.tr("&Tools"))
 		mnu_tools.addActions(action_manager.userToolsActionsGroup().actions())
+		mnu_tools.addAction(action_manager.showSettingsWindow())
 
 		self.addMenu(mnu_tools)
 
-		mnu_help   = QtWidgets.QMenu("&Help")
+		mnu_help   = QtWidgets.QMenu(self.tr("&Help"))
 		mnu_help.addAction(action_manager.checkForUpdates())
 		mnu_help.addAction(action_manager.visitDiscussionBoard())
 		mnu_help.addSeparator()

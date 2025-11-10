@@ -91,7 +91,7 @@ class BSUpdatesManager(QtCore.QObject):
 	def setCooldownInterval(self, milliseconds:int):
 		"""Set cooldown interval (in milliseconds) for API rate limiting"""
 		if milliseconds > self.autoCheckInterval():
-			raise ValueError(f"Cooldown interval must be less than autocheck interval")
+			raise ValueError(self.tr("Cooldown interval must be less than autocheck interval"))
 		self._cooldown_timer.setInterval(milliseconds)
 	
 	def cooldownInterval(self) -> int:
@@ -161,7 +161,7 @@ class BSUpdatesManager(QtCore.QObject):
 		"""Set how often (in milliseconds) to check for updates if autocheck is enabled"""
 
 		if milliseconds < self.cooldownInterval():
-			raise ValueError(f"Autocheck interval must be greater than cooldown interval")
+			raise ValueError(self.tr("Autocheck interval must be greater than cooldown interval"))
 		
 		self._autocheck_timer.setInterval(milliseconds)
 

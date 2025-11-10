@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1">
+    <rect
+       style="fill:{Dark};fill-opacity:1;stroke-width:0.999996;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1"
+       width="8"
+       height="8"
+       x="0"
+       y="0"
+       rx="2"
+       ry="2" />
+    <rect
+       style="fill:{Dark};fill-opacity:1;stroke-width:0.999996;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1-78"
+       width="8"
+       height="8"
+       x="8"
+       y="0"
+       rx="2"
+       ry="2" />
+    <rect
+       style="fill:{Light};fill-opacity:1;stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1-7-4"
+       width="4"
+       height="4"
+       x="10"
+       y="2"
+       rx="0"
+       ry="0" />
+    <rect
+       style="fill:{Dark};fill-opacity:1;stroke-width:0.999996;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1-4"
+       width="8"
+       height="8"
+       x="0"
+       y="8"
+       rx="2"
+       ry="2" />
+    <rect
+       style="fill:{Light};fill-opacity:1;stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1-7-7"
+       width="4"
+       height="4"
+       x="2"
+       y="10"
+       rx="0"
+       ry="0" />
+    <rect
+       style="fill:{Dark};fill-opacity:1;stroke-width:0.999996;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1-78-4"
+       width="8"
+       height="8"
+       x="8"
+       y="8"
+       rx="2"
+       ry="2" />
+    <rect
+       style="fill:{Light};fill-opacity:1;stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1-7-4-1"
+       width="4"
+       height="4"
+       x="10"
+       y="10"
+       rx="0"
+       ry="0" />
+    <path
+       style="font-weight:800;font-size:7.81975px;font-family:'Open Sans';-inkscape-font-specification:'Open Sans Ultra-Bold';fill:{Light};stroke-width:0.999999;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       d="m 2.1496668,0.93037575 h 1.947301 q 1.1378346,0 1.6876608,0.33982315 0.5536444,0.3360048 0.5536444,1.0500152 0,0.4696432 -0.2405489,0.8018298 -0.240549,0.3321867 -0.6338274,0.4276426 v 0.038182 q 0.5192802,0.1374565 0.7521927,0.4581884 0.2329125,0.3207319 0.2329125,0.8323757 0,0.7598292 -0.5727356,1.1989265 Q 5.307349,6.5126386 4.3222437,6.5126386 H 2.1496668 Z M 3.6578705,3.0724068 h 0.4543702 q 0.3245502,0 0.5001891,-0.1336383 0.1794571,-0.1336383 0.1794571,-0.3970966 0,-0.4696432 -0.7101921,-0.4696432 H 3.6578705 Z m 0,1.1034706 v 1.1721988 h 0.5307349 q 0.7063739,0 0.7063739,-0.595645 0,-0.2787313 -0.1909118,-0.4276426 Q 4.5169738,4.1758774 4.1580595,4.1758774 Z"
+       id="text1"
+       transform="scale(0.93037693,1.0748332)"
+       aria-label="B" />
+  </g>
+</svg>

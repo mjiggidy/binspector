@@ -12,6 +12,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	sig_request_quit_application  = QtCore.Signal()
 	sig_request_show_user_folder  = QtCore.Signal()
 	sig_request_show_log_viewer   = QtCore.Signal()
+	sig_request_show_settings     = QtCore.Signal()
 	sig_request_check_updates     = QtCore.Signal()
 	sig_request_visit_discussions = QtCore.Signal()
 
@@ -47,16 +48,16 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._main_bincontents = binwidget.BSBinContentsWidget()
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView()
-		self._dock_bindisplay  = QtWidgets.QDockWidget("Bin Display Settings")
+		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
 		self._tool_sifting     = toolboxes.BSBinSiftSettingsView()
-		self._dock_sifting     = QtWidgets.QDockWidget("Sift Settings")
+		self._dock_sifting     = QtWidgets.QDockWidget(self.tr("Sift Settings"))
 
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
-		self._dock_appearance  = QtWidgets.QDockWidget("Font Colors")
+		self._dock_appearance  = QtWidgets.QDockWidget(self.tr("Font & Colors"))
 
 		self._tool_binview     = treeview.LBTreeView()
-		self._dock_binview     = QtWidgets.QDockWidget("Bin View Settings")
+		self._dock_binview     = QtWidgets.QDockWidget(self.tr("Bin View Settings"))
 
 		self._btn_toolbox_bindisplay = buttons.BSPushButtonAction(show_text=False)
 		self._btn_toolbox_appearance = buttons.BSPushButtonAction(show_text=False)
@@ -129,7 +130,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
 			
 			btn = buttons.BSPushButtonAction(act_toggle, show_text=False)
-			btn.setIconSize(QtCore.QSize(scrollbar_icon_size,scrollbar_icon_size))
+			btn.setIconSize(QtCore.QSize(8,8))
 			btn.setFixedWidth(scrollbar_height)
 			
 			self._main_bincontents.listView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
@@ -207,8 +208,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_binview.visibilityChanged                 .connect(self._man_actions.showBinViewSettings().setChecked)
 
 		# User debuggy-type tools
+		# NOTE: Have application instance hook directly intow window.actionsManager()?
 		self._man_actions.showUserFolder().triggered         .connect(self.sig_request_show_user_folder)
 		self._man_actions.showLogViewer().triggered          .connect(self.sig_request_show_log_viewer)
+		self._man_actions.showSettingsWindow().triggered     .connect(self.sig_request_show_settings)
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
@@ -231,7 +234,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
 		self._sigs_binloader.sig_aborted_loading             .connect(self.cleanupPartialBin)
 		self._sigs_binloader.sig_got_mob_count               .connect(self._main_bincontents.topWidgetBar().progressBar().setMaximum)
-		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading %v of %m mobs"))
+		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setFormat(self.tr("Loading %v of %m mobs", "%v=current_count; %m=total_count")))
 		#self._sigs_binloader.sig_got_mob_count               .connect(lambda: self.updateLoadingBar([]))
  
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
@@ -243,7 +246,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		#self._sigs_binloader.sig_got_mobs.connect(print)
 		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
 		#self._sigs_binloader.sig_got_mob                    .connect(self._man_binitems.addMob)
-		#self._sigs_binloader.sig_got_mob                     .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
+		#self._sigs_binloader.sig_got_mob                    .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
@@ -261,9 +264,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin View Modes
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
-		self._man_viewmode.sig_view_mode_changed             .connect(self._main_bincontents.setViewMode)
-		self._man_viewmode.sig_view_mode_changed             .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
-		self._man_actions._actgrp_view_mode.triggered        .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
+		self._man_viewmode.sig_view_mode_changed                .connect(self._main_bincontents.setViewMode)
+		self._man_viewmode.sig_view_mode_changed                .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
+		self._man_actions._actgrp_view_mode.triggered           .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
 
 		# Bin Settings Toggles
 		self._man_actions._act_toggle_use_binview.toggled       .connect(self._man_binview.setBinViewEnabled)
@@ -284,10 +287,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	
 	def actionsManager(self) -> actions.ActionsManager:
 		return self._man_actions
-	
-	def setSettings(self, settings:QtCore.QSettings):
-		raise DeprecationWarning("Let's not?")
-		self._settings = settings
 
 	def binViewManager(self) -> binproperties.BSBinViewManager:
 		return self._man_binview
@@ -307,12 +306,17 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
 		return self._sigs_binloader
 	
+	def binContentsWidget(self) -> binwidget.BSBinContentsWidget:
+		return self._main_bincontents
+
+	@QtCore.Slot(int)
 	def setMobQueueSize(self, queue_size:int):
 		self._queue_size = queue_size
 
 	def mobQueueSize(self) -> int:
 		return self._queue_size
 	
+	@QtCore.Slot(bool)
 	def setUseAnimation(self, use_animation:bool):
 		self._use_animation = use_animation
 	
@@ -344,7 +348,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		self._man_binitems.viewModel().clear()
 		
-		self._main_bincontents.topWidgetBar().progressBar().setFormat("Loading bin properties...")
+		self._main_bincontents.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
 		self._main_bincontents.topWidgetBar().progressBar().show()
 
 		self._main_bincontents.listView().setSortingEnabled(False)
@@ -442,7 +446,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		logging.getLogger(__name__).warning("Aborted loading bin")
 		
 		if message:
-			QtWidgets.QMessageBox.critical(self, "Bin Not Loaded", message)
+			QtWidgets.QMessageBox.critical(self, self.tr("Bin Not Loaded"), message)
 
 
 
@@ -459,8 +463,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
 			parent=self,
-			caption = "Choose an Avid bin...",
-			filter="Avid Bin (*.avb);;All Files (*)",
+			caption = self.tr("Choose an Avid bin..."),
+			filter=self.tr("Avid Bin (*.avb);;All Files (*)"),
 			dir=initial_path or self.windowFilePath()
 		)
 
@@ -483,3 +487,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		dlg_about = about.BSAboutDialog()
 		dlg_about.exec()
+
+	def closeEvent(self, event):
+
+		self._sigs_binloader.requestStop()
+		
+		#self._sigs_binloader.sig_
+		return super().closeEvent(event)

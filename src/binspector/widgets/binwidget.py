@@ -203,6 +203,27 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 		self._mode_controls.setCurrentIndex(int(view_mode))
 
+class BSScrollBarStyle(QtWidgets.QProxyStyle):
+	"""Modify scrollbar height"""
+
+	def __init__(self, *args, scale_factor:int|float=1.25, **kwargs):
+
+		super().__init__(*args, **kwargs)
+		self._scale_factor = scale_factor
+	
+	def pixelMetric(self, metric:QtWidgets.QStyle.PixelMetric, option:QtWidgets.QStyleOption=None, widget:QtWidgets.QWidget=None):
+
+		if metric == QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent:
+			return round(self.baseStyle().pixelMetric(metric, option, widget) * self._scale_factor)
+		else:
+			return self.baseStyle().pixelMetric(metric, option, widget)
+	
+	@QtCore.Slot(int)
+	@QtCore.Slot(float)
+	def setScrollbarScaleFactor(self, scale_factor:float|int):
+		#print("YOOO", scale_factor)
+		self._scale_factor = scale_factor
+
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
@@ -238,6 +259,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._txt_binstats      = QtWidgets.QLabel()
 
 		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		
+		# Adjust scrollbar height for macOS rounded corner junk
+		# NOTE: `base_style` junk copies a new instance of the hbar base style, otherwise it goes out of scope
+		# and segfaults on exit, which I really love.  I really love all of this.  I don't need money or a career.
+		base_style = QtWidgets.QStyleFactory.create(self._binitems_list.horizontalScrollBar().style().objectName())
+		self._proxystyle_hscroll = BSScrollBarStyle(base_style, scale_factor=1.25, parent=self)
+		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 		self.layout().addWidget(self._section_top)
 		self.layout().addWidget(self._section_main)
@@ -262,12 +290,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Shortcuts/Actions
 		# TODO: Not here lol but i dunno
 		self._act_set_view_width_for_columns = QtGui.QAction(self._binitems_list)
-		self._act_set_view_width_for_columns.setText("Fit bin list columns to contents")
+		self._act_set_view_width_for_columns.setText(self.tr("Fit bin list columns to contents"))
 		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
 		self._act_set_view_width_for_columns.triggered.connect(lambda: self._binitems_list.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._binitems_list.header().count()-1))
 
 		self._act_autofit_columns = QtGui.QAction(self._binitems_list)
-		self._act_autofit_columns.setText("Auto-fit bin list columns to contents")
+		self._act_autofit_columns.setText(self.tr("Auto-fit bin list columns to contents"))
 		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
 		self._act_autofit_columns.triggered.connect(self._binitems_list.resizeAllColumnsToContents)
 		#self._act_autofit_columns.triggered.connect(lambda: print)
@@ -317,6 +345,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._binitems_script = script_view
 		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
+
+	@QtCore.Slot(int)
+	@QtCore.Slot(float)
+	def setBottomScrollbarScaleFactor(self, scale_factor:int|float):
+
+		self._proxystyle_hscroll.setScrollbarScaleFactor(scale_factor)
+		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
@@ -381,7 +416,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		# Fusion scrollbar uses these colors per https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPalette.html
 		# Although it... like... doesn't? lol
-		palette.setColor(QtGui.QPalette.ColorRole.Light,    palette.color(QtGui.QPalette.ColorRole.Button).lighter(VARIATION))      # Lighter than Button color
+		palette.setColor(QtGui.QPalette.ColorRole.Light,    palette.color(QtGui.QPalette.ColorRole.Button).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION))      # Lighter than Button color
 		palette.setColor(QtGui.QPalette.ColorRole.Midlight, palette.color(QtGui.QPalette.ColorRole.Button).lighter(VARIATION_MID))  # Between Button and Light
 		palette.setColor(QtGui.QPalette.ColorRole.Mid,      palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION_MID))   # Between Button and Dark
 		palette.setColor(QtGui.QPalette.ColorRole.Dark,     palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION))       # Darker than Button
@@ -408,10 +443,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		count_visible = self._binitems_list.model().rowCount()
 		count_all     = self._binitems_list.model().sourceModel().rowCount()
 
-		info_text = f"Showing {QtCore.QLocale.system().toString(count_visible)} of {QtCore.QLocale.system().toString(count_all)} items"
-
-		#self._section_bottom.setInfoText(info_text)
-
+		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
+			current_item_count=QtCore.QLocale.system().toString(count_visible),
+			total_item_count=QtCore.QLocale.system().toString(count_all)
+		)
 		self._txt_binstats.setText(info_text)
 	
 	@QtCore.Slot(object)

@@ -10,7 +10,7 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		self.setWindowTitle("Check For Updates")
+		self.setWindowTitle(self.tr("Check For Updates"))
 		self.setMinimumWidth(375)
 
 		self.setLayout(QtWidgets.QVBoxLayout())
@@ -45,32 +45,32 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 		
 		# Version compare setup
 		lay_release_compare = QtWidgets.QGridLayout()
-		lbl_this_version = QtWidgets.QLabel("Installed Version:")
+		lbl_this_version = QtWidgets.QLabel(self.tr("Installed Version:"))
 		lbl_this_version.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter)
 		lay_release_compare.addWidget(lbl_this_version, 1, 0)
 		lay_release_compare.addWidget(self._lbl_current_version, 1, 1)
 		
-		lbl_latest_version = QtWidgets.QLabel("Latest Version:")
+		lbl_latest_version = QtWidgets.QLabel(self.tr("Latest Version:"))
 		lbl_latest_version.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter)
 		lay_release_compare.addWidget(lbl_latest_version, 2, 0)
 		lay_release_compare.addWidget(self._lbl_latest_release_version, 2, 1)
 		lay_release_compare.setColumnStretch(1,1)
 
 		self._btn_new_release_download.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.InsertLink))
-		self._btn_new_release_download.setText("Download")
+		self._btn_new_release_download.setText(self.tr("Download", "Text for download button"))
 		self._btn_new_release_download.setHidden(True)
-		self._btn_new_release_download.setToolTip("Download the latest release")
+		self._btn_new_release_download.setToolTip(self.tr("Download the latest release"))
 		lay_release_compare.addWidget(self._btn_new_release_download, 2,2)
 
 		self._btn_checkForUpdates.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewRefresh))
-		self._btn_checkForUpdates.setToolTip("Check 'er again")
+		self._btn_checkForUpdates.setToolTip(self.tr("Check 'er again"))
 		lay_release_compare.addWidget(self._btn_checkForUpdates, 2,3)
 	
 		self.layout().addLayout(lay_release_compare)
 		
 		# Progress bar setup
 		self._prg_checking.setRange(0,0)
-		self._prg_checking.setFormat("Connecting to server...")
+		self._prg_checking.setFormat(self.tr("Connecting to server..."))
 		self._prg_checking.setHidden(True)
 
 		self.layout().addWidget(self._prg_checking)
@@ -105,7 +105,7 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 		self.layout().addStretch()
 
 		# Check for updates
-		self._chk_automatic.setText("Automatically check for updates")
+		self._chk_automatic.setText(self.tr("Automatically check for updates"))
 		self.layout().addWidget(self._chk_automatic)
 
 	def _setupSignals(self):
@@ -148,7 +148,7 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 	# ---
 	@QtCore.Slot()
 	def networkCheckStart(self):
-		self._lbl_latest_release_version.setText("Checking...")
+		self._lbl_latest_release_version.setText(self.tr("Checking...", "Checking the server for updates"))
 		
 		self._prg_checking.setVisible(True)
 		self._grp_new_release_info.setHidden(True)
@@ -157,7 +157,7 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 		self._btn_new_release_download.setHidden(True)
 
 		self._btn_checkForUpdates.setEnabled(False)
-		self._btn_checkForUpdates.setToolTip("Cooling down...")
+		self._btn_checkForUpdates.setToolTip(self.tr("Cooling down...", "Tooltip while 'check for update' button is disabled"))
 	
 		self.adjustSize()
 
@@ -168,7 +168,7 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 	@QtCore.Slot()
 	def networkCheckAvailable(self):
 		self._btn_checkForUpdates.setEnabled(True)
-		self._btn_checkForUpdates.setToolTip("Check 'er again")
+		self._btn_checkForUpdates.setToolTip(self.tr("Check 'er again"))
 
 	# ---
 	# Result displays
@@ -178,9 +178,9 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 		"""Network check had an error"""
 
 		if error is QtNetwork.QNetworkReply.NetworkError.HostNotFoundError:
-			self._lbl_no_update_status.setText(f"Cannot connect to updates server!")
+			self._lbl_no_update_status.setText(self.tr("Cannot connect to updates server!"))
 		else:
-			self._lbl_no_update_status.setText(f"Error checking for update: {error.name}")
+			self._lbl_no_update_status.setText(self.tr("Error checking for update: {error_message}").format(error_message=error.name))
 		self._grp_no_update.setVisible(True)
 		
 		self.adjustSize()
@@ -194,7 +194,9 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 		self._btn_new_release_download.setDefault(True)
 
 		self._lbl_new_version_name.setText(release_info.name)
-		self._lbl_new_release_date.setText("Released " + QtCore.QDateTime.fromString(release_info.date, QtCore.Qt.DateFormat.ISODate).toLocalTime().toString("dd MMMM yyyy"))
+		self._lbl_new_release_date.setText(self.tr("Released {date_of_release}").format(
+			date_of_release=QtCore.QDateTime.fromString(release_info.date, QtCore.Qt.DateFormat.ISODate).toLocalTime().toString("dd MMMM yyyy"))
+		)
 		self._btn_new_release_download.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl(release_info.release_url)))
 		self._txt_new_release_notes.setMarkdown(release_info.release_notes)
 		
@@ -208,7 +210,7 @@ class BSCheckForUpdatesWindow(QtWidgets.QWidget):
 		version_string = release_info.version if release_info else self._lbl_current_version.text()
 		self._lbl_latest_release_version.setText(version_string)
 		self._grp_new_release_info.setHidden(True)
-		self._lbl_no_update_status.setText("You are on the latest version.  So that's nice!")
+		self._lbl_no_update_status.setText(self.tr("You are on the latest version.  So that's nice!"))
 		self._grp_no_update.setVisible(True)
 
 		self.adjustSize()

@@ -4,9 +4,15 @@ from PySide6 import QtCore
 Manage QSettings location & format
 """
 
-import logging
+import logging, enum
 from os import PathLike
 from PySide6 import QtCore
+
+class BSStartupBehavior(enum.StrEnum):
+
+	EMPTY_WINDOW = "Show Empty Window"
+	SHOW_BROWSER = "Show File Browser"
+	LAST_BIN     = "Open Last Bin"
 
 LATEST_CONFIG_VERSION = 1
 """Latest config version"""
@@ -63,24 +69,24 @@ class BSSettingsManager:
 	@QtCore.Slot(object)
 	def setLastBinPath(self, bin_path:PathLike):
 
-		self.settings("bs").setValue("LastSession/last_bin", str(bin_path))
+		self.settings("bs").setValue("Session/last_bin", str(bin_path))
 		logging.getLogger(__name__).debug("Set last_bin: %s", bin_path)
 
 	def lastBinPath(self) -> PathLike[str]:
 
-		bin_path = self.settings("bs").value("LastSession/last_bin", None, str)
+		bin_path = self.settings("bs").value("Session/last_bin", None, str)
 		logging.getLogger(__name__).debug("Returning last_bin: %s", bin_path)
 		return bin_path
 	
 	@QtCore.Slot(QtCore.QRect)
 	def setLastWindowGeometry(self, rect:QtCore.QRect):
 
-		self.settings("bs").setValue("LastSession/last_window_geometry", QtCore.QRect(rect))
+		self.settings("bs").setValue("Session/last_window_geometry", QtCore.QRect(rect))
 		logging.getLogger(__name__).debug("Set last_window_geometry: %s", rect)
 	
 	def lastWindowGeometry(self) -> QtCore.QRect:
 
-		last_rect = self.settings("bs").value("LastSession/last_window_geometry", None, QtCore.QRect)
+		last_rect = self.settings("bs").value("Session/last_window_geometry", None, QtCore.QRect)
 		logging.getLogger(__name__).debug("Returning last_window_geomoetry: %s", last_rect)
 		return last_rect
 	
@@ -149,6 +155,42 @@ class BSSettingsManager:
 
 		self.settings("bs").setValue("BinLoading/fancy_progress_bar", use_animation)
 		logging.getLogger(__name__).debug("Set fancy_progress_bar: %s", use_animation)
+
+	def useFancyProgressBar(self) -> int:
+		
+		use_animation = self.settings("bs").value("BinLoading/fancy_progress_bar", True, bool)
+		logging.getLogger(__name__).debug("Returning fancy_progress_bar: %s", use_animation)
+		return use_animation
+	
+	@QtCore.Slot(object)
+	def setStartupBehavior(self, behavior:BSStartupBehavior):
+
+		self.settings("bs").setValue("Session/start_behavior", behavior)
+		logging.getLogger(__name__).debug("Set start_behavior: %s", behavior)
+
+	def startupBehavior(self) -> BSStartupBehavior:
+		
+		behavior_string = self.settings("bs").value("Session/start_behavior", BSStartupBehavior.SHOW_BROWSER.value, str)
+		try:
+			behavior = BSStartupBehavior(behavior_string)
+		except ValueError:
+			behavior = BSStartupBehavior.SHOW_BROWSER
+			logging.getLogger(__name__).error("Invalid start_behavior=\"%s\"; default to: \"%s\"", behavior_string, behavior)
+			
+		logging.getLogger(__name__).debug("Returning start_behavior: %s", behavior)
+		return behavior
+	
+	@QtCore.Slot(int)
+	def setBottomScrollbarScale(self, scale_factor:int|float):
+
+		self.settings("bs").setValue("Session/bottom_scrollbar_scale", scale_factor)
+		logging.getLogger(__name__).debug("Set bottom_scrollbar_scale: %s", scale_factor)
+
+	def bottomScrollbarScale(self) -> float:
+		
+		scale_factor = max(0.5, self.settings("bs").value("Session/bottom_scrollbar_scale", 1.25, float))
+		logging.getLogger(__name__).debug("Returning bottom_scrollbar_scale: %s", scale_factor)
+		return scale_factor
 
 	def useFancyProgressBar(self) -> int:
 		
