@@ -130,7 +130,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
 			
 			btn = buttons.BSPushButtonAction(act_toggle, show_text=False)
-			btn.setIconSize(QtCore.QSize(scrollbar_icon_size,scrollbar_icon_size))
+			btn.setIconSize(QtCore.QSize(8,8))
 			btn.setFixedWidth(scrollbar_height)
 			
 			self._main_bincontents.listView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
@@ -264,9 +264,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin View Modes
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
-		self._man_viewmode.sig_view_mode_changed             .connect(self._main_bincontents.setViewMode)
-		self._man_viewmode.sig_view_mode_changed             .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
-		self._man_actions._actgrp_view_mode.triggered        .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
+		self._man_viewmode.sig_view_mode_changed                .connect(self._main_bincontents.setViewMode)
+		self._man_viewmode.sig_view_mode_changed                .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
+		self._man_actions._actgrp_view_mode.triggered           .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
 
 		# Bin Settings Toggles
 		self._man_actions._act_toggle_use_binview.toggled       .connect(self._man_binview.setBinViewEnabled)

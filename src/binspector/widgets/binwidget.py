@@ -221,7 +221,7 @@ class BSScrollBarStyle(QtWidgets.QProxyStyle):
 	@QtCore.Slot(int)
 	@QtCore.Slot(float)
 	def setScrollbarScaleFactor(self, scale_factor:float|int):
-		print("YOOO", scale_factor)
+		#print("YOOO", scale_factor)
 		self._scale_factor = scale_factor
 
 class BSBinContentsWidget(QtWidgets.QWidget):
