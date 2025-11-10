@@ -1,4 +1,4 @@
-from PySide6 import QtCore, QtGui
+from PySide6 import QtWidgets, QtCore, QtGui
 import avbutils
 from . import treeview
 from .delegates import binitems
@@ -6,9 +6,6 @@ from ..models import viewmodels
 from ..views.delegates import binitems
 from ..core import icons
 from ..res import icons_binitems
-
-
-
 
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
@@ -38,15 +35,18 @@ class BSBinTreeView(treeview.LBTreeView):
 		
 		super().__init__(*args, **kwargs)		
 
+		self._palette_watcher = icons.BSPaletteWatcherForSomeReason()
+		
 		self.setModel((viewmodels.LBSortFilterProxyModel()))
 
-		self.model().columnsInserted.connect(self.setColumnWidthsFromBinView)
+		self.setSelectionBehavior(QtWidgets.QTreeView.SelectionBehavior.SelectRows)
+		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.ExtendedSelection)
 
+		self.model().columnsInserted.connect(self.setColumnWidthsFromBinView)
 		self.model().columnsInserted.connect(
 			lambda parent_index, source_start, source_end:
 			self.assignItemDelegates(parent_index, source_start)
 		)
-
 		self.model().columnsMoved.connect(
 			lambda source_parent,
 				source_logical_start,
@@ -57,7 +57,53 @@ class BSBinTreeView(treeview.LBTreeView):
 		)
 
 		# TODO/TEMP: Prep clip color icons
-		self._palette_watcher = icons.BSPaletteWatcherForSomeReason()
+
+		self.setCustomDelegates()
+		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=self.DEFAULT_ITEM_PADDING))
+
+	def keyPressEvent(self, event:QtGui.QKeyEvent) -> None:
+		
+		
+		# Copy selected rows
+		if event.matches(QtGui.QKeySequence.StandardKey.Copy) and self.selectionModel().hasSelection():
+			
+		# TODO: Messssssy
+		# TODO: This'll be good to refactor for ALE/CSV/JSON exports, yay!
+
+			headers_text = []
+			
+			for col_vis in range(self.header().count()):
+				col_logical = self.header().logicalIndex(col_vis)
+				header_text = self.model().headerData(col_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
+				headers_text.append(header_text if isinstance(header_text,str) else "")
+			
+			rows_text = []
+			for idx_row in self.selectionModel().selectedRows():
+
+				row_text = []
+				for col_vis in range(self.header().count()):
+
+					col_logical = self.header().logicalIndex(col_vis)
+					display_text = self.model().data(
+						self.model().index(idx_row.row(), col_logical),
+						QtCore.Qt.ItemDataRole.DisplayRole
+					)
+					row_text.append(display_text if isinstance(display_text,str) else "")
+				rows_text.append(row_text)
+
+			final = "\t".join(headers_text) + "\n"
+			for row in rows_text:
+				final += "\t".join(row) + "\n"
+			
+			QtWidgets.QApplication.clipboard().setText(final)
+			event.accept()
+			#print(final)
+		else:
+			return super().keyPressEvent(event)
+
+	def setCustomDelegates(self):
+		"""Temp"""
+
 		clip_color_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[51]
 		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
 		for color in avbutils.get_default_clip_colors():
@@ -89,9 +135,6 @@ class BSBinTreeView(treeview.LBTreeView):
 					)
 				)
 			)
-
-
-		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=self.DEFAULT_ITEM_PADDING))
 
 	@QtCore.Slot(object, int, int)
 	def assignItemDelegates(self, parent_index:QtCore.QModelIndex, logical_start_column:int):
