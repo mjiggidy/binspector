@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="toggle_appearance_v02.svg"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="true"
+     inkscape:zoom="36.88"
+     inkscape:cx="6.2364425"
+     inkscape:cy="7.7277657"
+     inkscape:window-width="1512"
+     inkscape:window-height="907"
+     inkscape:window-x="234"
+     inkscape:window-y="151"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="2"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1"
+       width="16"
+       height="16"
+       x="0"
+       y="0"
+       ry="2"
+       rx="2"
+       inkscape:label="BG" />
+    <rect
+       style="fill:#808080;fill-opacity:1;stroke:none;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect2-5"
+       width="6"
+       height="6"
+       x="8"
+       y="8"
+       rx="0"
+       ry="0"
+       inkscape:label="BR" />
+    <rect
+       style="fill:#808080;fill-opacity:1;stroke:none;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect2-5-7"
+       width="6"
+       height="6"
+       x="2"
+       y="8"
+       rx="0"
+       ry="0"
+       inkscape:label="BL" />
+    <rect
+       style="fill:#808080;fill-opacity:1;stroke:none;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect2"
+       width="6"
+       height="6"
+       x="8"
+       y="2"
+       rx="0"
+       ry="0"
+       inkscape:label="TR" />
+    <rect
+       style="fill:#808080;fill-opacity:1;stroke:none;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect2-3"
+       width="6"
+       height="6"
+       x="2"
+       y="2"
+       rx="0"
+       ry="0"
+       inkscape:label="TL" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:800;font-stretch:normal;font-size:16.5693px;font-family:'Open Sans';-inkscape-font-specification:'Open Sans Ultra-Bold';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#800000;fill-opacity:1;stroke:none;stroke-width:0.999999;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       x="2.8198755"
+       y="13.796802"
+       id="text2"
+       transform="scale(0.98424869,1.0160034)"
+       inkscape:label="B"><tspan
+         sodipodi:role="line"
+         id="tspan2"
+         x="2.8198755"
+         y="13.796802"
+         style="fill:#800000;stroke-width:0.999999">B</tspan></text>
+  </g>
+</svg>
