@@ -3,6 +3,7 @@
 Logic is implemented via `.binparser`
 """
 
+import logging
 from os import PathLike
 from PySide6 import QtCore
 import avb
@@ -57,12 +58,13 @@ class BSBinViewLoader(QtCore.QRunnable):
 	def requestStop(self):
 		"""Request graceful stop"""
 
+		if not self._stop_requested:
+			logging.getLogger(__name__).warning("User requested abort")
+
 		self._stop_requested = True
 
 	def loadDataFromBin(self, bin_handle:avb.file.AVBFile):
 		"""Load and emit the data"""
-
-		import logging
 
 		# NOTE to self:
 		# I think I'm going for "very passive" error handling -- ideally so people can see something
@@ -137,8 +139,11 @@ class BSBinViewLoader(QtCore.QRunnable):
 				self._signals.sig_got_mobs.emit(mob_queue)
 				mob_queue = list()
 		
+		if self._stop_requested:
+			return
+		
 		if len(mob_queue):
-			import logging
+			
 			logging.getLogger(__name__).debug("Flushing the final %s mobs", len(mob_queue))
 			self._signals.sig_got_mobs.emit(mob_queue)
 		

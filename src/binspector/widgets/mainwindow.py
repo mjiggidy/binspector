@@ -492,6 +492,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def cleanupSignals(self):
 		"""Disconnect from worker signals on close"""
 
+		import logging
+		logging.getLogger(__name__).debug("Cleaning up signals")
+		
 		self._sigs_binloader.requestStop()
 		self._sigs_binloader.disconnect(self)
 
