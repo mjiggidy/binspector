@@ -92,7 +92,12 @@ class BSMainApplication(QtWidgets.QApplication):
 		# Setup window manager
 		self._binwindows_manager = windows.BSWindowManager()
 		# TODO: This is bad lol
-		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda: self._settingsManager.setLastWindowGeometry(self.activeWindow().geometry()))
+		self._binwindows_manager.windowGeometryWatcher().sig_window_geometry_changed.connect(lambda:
+			self._settingsManager.setLastWindowGeometry(
+				self.activeWindow().geometry() if self.activeWindow()
+				else self._binwindows_manager.windows()[-1].geometry()
+			)
+		)
 
 		# Setup updates manager
 		self._disable_updates_counter = 0
@@ -125,12 +130,14 @@ class BSMainApplication(QtWidgets.QApplication):
 	def createMainWindow(self, is_first_window:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
 
-		if current_window := self.activeWindow():
+		if current_window := self._binwindows_manager.lastActiveBinWindow():
 			start_geo = current_window.geometry().translated(QtCore.QPoint(10,10))
+		
 		elif saved_geo := self._settingsManager.lastWindowGeometry():
 			start_geo = saved_geo
+		
 		else:
-			start_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(1024,480)).translated(QtCore.QPoint(800,800))
+			start_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(1024,800)).translated(QtCore.QPoint(800,800))
 		
 		window:mainwindow.BSMainWindow = self._binwindows_manager.addWindow(mainwindow.BSMainWindow())
 

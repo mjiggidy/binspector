@@ -15,7 +15,27 @@ class BSWindowManager(QtCore.QObject):
 		super().__init__(*args, **kwargs)
 
 		self._window_refs:set[weakref.ReferenceType[QtWidgets.QWidget]] = set()
+		self._last_active_ref = None
 		self._window_geometry_watcher = BSWindowGeometryWatcher()
+
+		self._window_geometry_watcher.sig_window_has_focus.connect(self._setLastActiveBinWindow)
+		
+
+	def _setLastActiveBinWindow(self, wnd:QtWidgets.QWidget):
+
+		for wnd_ref in self._window_refs:
+			
+			if wnd_ref() == wnd:
+				
+				logging.getLogger(__name__).debug("Setting last active bin window: %s", wnd)
+				self._last_active_ref = wnd_ref
+				return
+			
+		logging.getLogger(__name__).warning("Newly-active window not in weakrefs...")
+	
+	def lastActiveBinWindow(self) -> QtWidgets.QWidget|None:
+
+		return self._last_active_ref() if self._last_active_ref else None
 	
 	def addWindow(self, window:QtWidgets.QWidget) -> QtWidgets.QWidget:
 		"""Add an existing window (and returns it again, unchanged)"""
@@ -36,7 +56,6 @@ class BSWindowManager(QtCore.QObject):
 		return self._window_geometry_watcher
 	
 	def windows(self) -> list[QtWidgets.QWidget]:
-
 		return [w() for w in self._window_refs if w()]
 	
 	@QtCore.Slot(object)
@@ -44,6 +63,7 @@ class BSWindowManager(QtCore.QObject):
 
 		try:
 			self._window_refs.discard(window_ref)
+		
 		except Exception as e:
 			logging.getLogger(__name__).warning("Strange thing while closing window: %s (window list length=%s)", e, len(self._window_refs))
 
@@ -56,6 +76,7 @@ class BSWindowGeometryWatcher(QtCore.QObject):
 	"""Watch windows for changes"""
 
 	sig_window_geometry_changed = QtCore.Signal()
+	sig_window_has_focus        = QtCore.Signal(object)
 
 	def __init__(self, timeout_ms:int=200, *args, **kwargs):
 
@@ -70,6 +91,10 @@ class BSWindowGeometryWatcher(QtCore.QObject):
 		# Watch for window moves and resizes
 		if event.type() in (QtCore.QEvent.Type.Resize, QtCore.QEvent.Type.Move, QtCore.QEvent.Type.FocusIn):
 			self._timer_window_geometry.start()
+
+		if event.type() == QtCore.QEvent.Type.WindowActivate:
+			self.sig_window_has_focus.emit(watched)
+
 
 		return super().eventFilter(watched, event)
 
