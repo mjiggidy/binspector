@@ -72,6 +72,11 @@ class BSBinViewLoader(QtCore.QRunnable):
 		# Load bin properties (view, sorting, etc)
 		try:
 
+			# NOTE: Mitigates signal freakouts during early close -- but need to do this better and more thoroughly
+			if self._stop_requested:
+				#self._signals.sig_aborted_loading.emit(None)
+				return
+
 			logging.getLogger(__name__).debug("Begin display flags")
 			self._signals.sig_got_bin_display_settings.emit(binparser.bin_display_flags_from_bin(bin_handle.content))
 			logging.getLogger(__name__).debug("End display flags")

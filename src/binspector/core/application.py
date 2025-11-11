@@ -143,7 +143,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		# TODO: Probably connect this directly to managers, like binViewManager below
 		# The window shouldn't have to care much about emitting all these signals, I don't think
 		window.sig_request_new_window        .connect(self.createMainWindow)
-		window.sig_request_quit_application  .connect(self.exit)
+		window.sig_request_quit_application  .connect(self.closeAllWindows)
 		window.sig_request_show_settings     .connect(self.showSettingsWindow)
 		window.sig_request_show_log_viewer   .connect(self.showLogWindow)
 		window.sig_request_show_user_folder  .connect(self.showLocalStorage)

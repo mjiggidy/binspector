@@ -488,9 +488,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		dlg_about = about.BSAboutDialog()
 		dlg_about.exec()
 
-	def closeEvent(self, event):
+	@QtCore.Slot()
+	def cleanupSignals(self):
+		"""Disconnect from worker signals on close"""
 
 		self._sigs_binloader.requestStop()
+		self._sigs_binloader.disconnect(self)
+
+	def closeEvent(self, event):
 		
-		#self._sigs_binloader.sig_
+		self.cleanupSignals()
+		
 		return super().closeEvent(event)
