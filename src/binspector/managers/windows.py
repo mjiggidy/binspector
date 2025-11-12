@@ -10,12 +10,18 @@ class BSWindowManager(QtCore.QObject):
 
 	# This is done by maintaining a set of weakrefs
 
+	NEW_WINDOW_OFFSET = QtCore.QPoint(16,16)
+	"""Offset new window from previous window"""
+
+	NEW_WINDOW_SIZE   = QtCore.QSize(1024,800)
+	"""Default size for new window"""
+
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._window_refs:set[weakref.ReferenceType[QtWidgets.QWidget]] = set()
 		self._last_active_ref = None
+		self._window_refs:set[weakref.ReferenceType[QtWidgets.QWidget]] = set()
 		self._window_geometry_watcher = BSWindowGeometryWatcher()
 
 		self._window_geometry_watcher.sig_window_has_focus.connect(self._setLastActiveBinWindow)
@@ -32,8 +38,20 @@ class BSWindowManager(QtCore.QObject):
 				return
 			
 		logging.getLogger(__name__).warning("Newly-active window not in weakrefs...")
+
+	def nextWindowGeometry(self) -> QtCore.QRect:
+		"""Return valid geometry for a new window"""
+		
+		if last_active := self.lastActiveBinWindow():
+			return last_active.geometry().translated(self.NEW_WINDOW_OFFSET)
+		
+		else:
+			return QtCore.QRect(QtCore.QPoint(0,0), self.NEW_WINDOW_SIZE).moveCenter(
+				QtWidgets.QApplication.primaryScreen().geometry().center()
+			)
 	
 	def lastActiveBinWindow(self) -> QtWidgets.QWidget|None:
+		"""Return the window that was last active, if it's still around; otherwise `None`"""
 
 		return self._last_active_ref() if self._last_active_ref else None
 	
@@ -75,26 +93,50 @@ class BSWindowManager(QtCore.QObject):
 class BSWindowGeometryWatcher(QtCore.QObject):
 	"""Watch windows for changes"""
 
-	sig_window_geometry_changed = QtCore.Signal()
+	sig_window_geometry_changed = QtCore.Signal(object)
 	sig_window_has_focus        = QtCore.Signal(object)
 
-	def __init__(self, timeout_ms:int=200, *args, **kwargs):
+	def __init__(self, *args, resized_ms:int=200, active_window_ms:int=1_000, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._timer_window_geometry = QtCore.QTimer(singleShot=True, interval=timeout_ms)
-		self._timer_window_geometry.timeout.connect(self.sig_window_geometry_changed)
+		self._timeout_resize_ms = resized_ms
+		"""Timeout before reporting the current window was moved or resized"""
+
+		self._timeout_focus_ms  = active_window_ms
+		"""Timeout before reporting the geo of a window that has recently received focus"""
+		# NOTE: So basically a user closes a window, an older one receives focus, and we should consider that 
+		# the latest geo if they're lingering on it.
+		# NOTE: This should be a substantial timeout (1 second+, I'd say) since the application calls closeAllWindows() at exit
+		# and I don't want to save all that old geo as each window closes and we end up remembering the oldest window instead
+		# of the most recent.  Nightmares will ensue and I just don't think I can take it.
+
+		self._timer_window_geometry = QtCore.QTimer(singleShot=True)
+		self._timer_window_geometry.timeout.connect(lambda: self.sig_window_geometry_changed.emit(self._last_geo))
+
+		self._last_geo = QtCore.QRect()
+		self._last_wnd = None
 	
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
 		"""Watch window events"""
 
 		# Watch for window moves and resizes
 		if event.type() in (QtCore.QEvent.Type.Resize, QtCore.QEvent.Type.Move, QtCore.QEvent.Type.FocusIn):
+			self._last_wnd = watched # NOTE: Currently not using, but likely need a weakref here
+			self._last_geo = watched.geometry()
+
+			self._timer_window_geometry.setInterval(self._timeout_resize_ms)
 			self._timer_window_geometry.start()
 
-		if event.type() == QtCore.QEvent.Type.WindowActivate:
+		# If switching focus to another window, save recently-focused window geo if the user's lingerin'
+		elif event.type() == QtCore.QEvent.Type.WindowActivate:
 			self.sig_window_has_focus.emit(watched)
 
+			self._last_wnd = watched
+			self._last_geo = watched.geometry()
+			
+			self._timer_window_geometry.setInterval(self._timeout_focus_ms)
+			self._timer_window_geometry.start()
 
 		return super().eventFilter(watched, event)
 
