@@ -27,9 +27,9 @@ class BSWindowManager(QtCore.QObject):
 		self._window_geometry_watcher.sig_window_has_focus.connect(self._setLastActiveBinWindow)
 		self._window_geometry_watcher.sig_screen_geometry_changed.connect(self.checkWindowVisibility)
 
-		self._btn_debug = QtWidgets.QPushButton("Check It")
-		self._btn_debug.clicked.connect(self.checkWindowVisibility)
-		self._btn_debug.show()
+		#self._btn_debug = QtWidgets.QPushButton("Check It")
+		#self._btn_debug.clicked.connect(self.checkWindowVisibility)
+		#self._btn_debug.show()
 		
 	def _setLastActiveBinWindow(self, wnd:QtWidgets.QWidget):
 
