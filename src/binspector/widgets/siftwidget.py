@@ -14,6 +14,14 @@ class BSSiftOption:
 	sift_text  :str
 	sift_column:str
 
+	@classmethod
+	def from_sift_item(cls, sift_item:avb.bin.SiftItem) -> "BSSiftOption":
+		return cls(
+			sift_method = bins.BinSiftMethod(sift_item.method),
+			sift_text   = sift_item.string,
+			sift_column = sift_item.column,
+		)
+
 class BSSiftOptionWidget(QtWidgets.QWidget):
 	
 	sig_option_set = QtCore.Signal(object)
@@ -136,7 +144,9 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 			wdg.setBinView(bin_view)
 	
 	@QtCore.Slot(list)
-	def setSiftOptions(self, sift_options:list[BSSiftOption]):
+	def setSiftOptions(self, sift_options:list[BSSiftOption]|None=None):
+
+		sift_options = sift_options or []
 
 		sift_options += [None] * max(0, (self.CRITERIA_PER_SIFT*2) - len(sift_options))
 
