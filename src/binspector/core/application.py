@@ -168,14 +168,13 @@ class BSMainApplication(QtWidgets.QApplication):
 	def createMainWindow(self, is_first_window:bool=False) -> mainwindow.BSMainWindow:
 		"""Create a main window"""
 
-		if self._man_binwindows.lastActiveBinWindow():
-			start_geo = self._man_binwindows.lastActiveBinWindow().geometry().translated(self._man_binwindows.NEW_WINDOW_OFFSET)
-		
-		elif self._man_settings.lastWindowGeometry():
+		# At launch: No last window, but position stored in settings?  Recall saved position.
+		if not self._man_binwindows.lastActiveBinWindow() and self._man_settings.lastWindowGeometry():
 			start_geo = self._man_settings.lastWindowGeometry()
 		
+		# Otherwise get next geo from window manager
 		else:
-			start_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(1024,800)).translated(QtCore.QPoint(800,800))
+			start_geo = self._man_binwindows.nextWindowGeometry(relative_to=self._man_binwindows.lastActiveBinWindow())
 		
 		window:mainwindow.BSMainWindow = self._man_binwindows.addWindow(mainwindow.BSMainWindow())
 

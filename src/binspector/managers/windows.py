@@ -54,11 +54,14 @@ class BSWindowManager(QtCore.QObject):
 
 				last_geo = window.geometry()
 				safe_geo = self.nextWindowGeometry(relative_to=last_repo_window)
+				last_repo_window = window
+				
 				window.setGeometry(safe_geo)
+				
 				window.show()
 				window.raise_()
 				window.activateWindow()
-				last_repo_window = window
+				
 				logging.getLogger(__name__).debug("Repositioned window %s from %s to %s", window, last_geo, safe_geo)
 
 	def nextWindowGeometry(self, relative_to:QtWidgets.QWidget|None=None) -> QtCore.QRect:
