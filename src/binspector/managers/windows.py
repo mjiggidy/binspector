@@ -13,7 +13,7 @@ class BSWindowManager(QtCore.QObject):
 	NEW_WINDOW_OFFSET = QtCore.QPoint(16,16)
 	"""Offset new window from previous window"""
 
-	NEW_WINDOW_SIZE   = QtCore.QSize(1024,800)
+	NEW_WINDOW_SIZE   = QtCore.QSize(1024,450)
 	"""Default size for new window"""
 
 	def __init__(self, *args, **kwargs):
@@ -25,8 +25,12 @@ class BSWindowManager(QtCore.QObject):
 		self._window_geometry_watcher = BSWindowGeometryWatcher()
 
 		self._window_geometry_watcher.sig_window_has_focus.connect(self._setLastActiveBinWindow)
-		
+		self._window_geometry_watcher.sig_screen_geometry_changed.connect(self.checkWindowVisibility)
 
+		self._btn_debug = QtWidgets.QPushButton("Check It")
+		self._btn_debug.clicked.connect(self.checkWindowVisibility)
+		self._btn_debug.show()
+		
 	def _setLastActiveBinWindow(self, wnd:QtWidgets.QWidget):
 
 		for wnd_ref in self._window_refs:
@@ -39,16 +43,46 @@ class BSWindowManager(QtCore.QObject):
 			
 		logging.getLogger(__name__).warning("Newly-active window not in weakrefs...")
 
-	def nextWindowGeometry(self) -> QtCore.QRect:
+	def checkWindowVisibility(self):
+		"""Reposition any windows that aren't entirely on a screen"""
+
+		last_repo_window = None
+		
+		for window in self.windows():
+
+			if not any(screen.geometry().contains(window.geometry()) for screen in QtWidgets.QApplication.screens()):
+
+				last_geo = window.geometry()
+				safe_geo = self.nextWindowGeometry(relative_to=last_repo_window)
+				window.setGeometry(safe_geo)
+				window.show()
+				window.raise_()
+				window.activateWindow()
+				last_repo_window = window
+				logging.getLogger(__name__).debug("Repositioned window %s from %s to %s", window, last_geo, safe_geo)
+
+	def nextWindowGeometry(self, relative_to:QtWidgets.QWidget|None=None) -> QtCore.QRect:
 		"""Return valid geometry for a new window"""
+
+		if relative_to:
+			return relative_to.geometry().translated(self.NEW_WINDOW_OFFSET)
 		
-		if last_active := self.lastActiveBinWindow():
-			return last_active.geometry().translated(self.NEW_WINDOW_OFFSET)
+		# Make a QRect that is at most the size of the primary screen
+		screen_rect = QtWidgets.QApplication.primaryScreen().geometry()
+		safe_size = QtCore.QSize(
+			min(screen_rect.width(),  self.NEW_WINDOW_SIZE.width()),
+			min(screen_rect.height(), self.NEW_WINDOW_SIZE.height())
+		)
+		safe_rect = QtCore.QRect(
+			QtCore.QPoint(0,0),
+			safe_size
+		)
+
+		safe_rect.moveCenter(QtWidgets.QApplication.primaryScreen().geometry().center())
+
+		logging.getLogger(__name__).debug("Returning safe screen rect %s", safe_rect)
 		
-		else:
-			return QtCore.QRect(QtCore.QPoint(0,0), self.NEW_WINDOW_SIZE).moveCenter(
-				QtWidgets.QApplication.primaryScreen().geometry().center()
-			)
+		return safe_rect
 	
 	def lastActiveBinWindow(self) -> QtWidgets.QWidget|None:
 		"""Return the window that was last active, if it's still around; otherwise `None`"""
@@ -93,6 +127,7 @@ class BSWindowManager(QtCore.QObject):
 class BSWindowGeometryWatcher(QtCore.QObject):
 	"""Watch windows for changes"""
 
+	sig_screen_geometry_changed = QtCore.Signal()
 	sig_window_geometry_changed = QtCore.Signal(object)
 	sig_window_has_focus        = QtCore.Signal(object)
 
@@ -111,11 +146,16 @@ class BSWindowGeometryWatcher(QtCore.QObject):
 		# and I don't want to save all that old geo as each window closes and we end up remembering the oldest window instead
 		# of the most recent.  Nightmares will ensue and I just don't think I can take it.
 
-		self._timer_window_geometry = QtCore.QTimer(singleShot=True)
-		self._timer_window_geometry.timeout.connect(lambda: self.sig_window_geometry_changed.emit(self._last_geo))
-
+		self._timer_window_geometry = QtCore.QTimer()
 		self._last_geo = QtCore.QRect()
 		self._last_wnd = None
+
+		self._timer_window_geometry.setSingleShot(True)
+		self._timer_window_geometry.timeout.connect(lambda: self.sig_window_geometry_changed.emit(self._last_geo))
+
+		QtWidgets.QApplication.instance().screenAdded  .connect(lambda: self.sig_screen_geometry_changed.emit())
+		QtWidgets.QApplication.instance().screenAdded  .connect(lambda: self.sig_screen_geometry_changed.emit())
+		QtWidgets.QApplication.instance().screenRemoved.connect(lambda: self.sig_screen_geometry_changed.emit())
 	
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
 		"""Watch window events"""
