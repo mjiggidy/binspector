@@ -108,6 +108,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 			logging.getLogger(__name__).debug("End appearance settings")
 
 		except Exception as e:
+			logging.getLogger(__name__).error("Encountered error while loading bin properties: %s", e)
 			self._signals.sig_got_exception.emit(e)
 			
 		# Get mob count for progress
