@@ -17,8 +17,11 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		self._filter_bin_display_items = avbutils.BinDisplayItemTypes(0)
 		self._filter_search_text       = ""
 
-		self._use_binview = False
-		self._use_filters = False
+		self._sift_options = []
+		self._sift_enabled = False
+
+		self._use_binview  = False
+		self._use_filters  = False
 
 		self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
 
@@ -30,6 +33,7 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		return all((
 			self.binDisplayFilter(source_row, source_parent),
+			self.binSiftFilter(source_row, source_parent),
 			self.searchTextFilter(source_row, source_parent),
 		))
 	
@@ -87,6 +91,81 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 				return True
 		
 		return False
+	
+	def binSiftFilter(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
+
+		if not self._sift_enabled or source_parent.isValid():
+			return True
+		
+		row_data: dict[str,str] = {}
+
+		for source_col in range(self.sourceModel().columnCount()):
+
+			col_is_hidden = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+3)
+
+			if col_is_hidden:
+				#print("Skip hidden col", source_col)
+				continue
+
+			col_name = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
+			col_text = self.sourceModel().data(self.sourceModel().index(source_row, source_col, source_parent), QtCore.Qt.ItemDataRole.DisplayPropertyRole) or ""
+
+			row_data[col_name] = col_text
+		
+		#return True
+		return all(self.siftOptionFilter(s, row_data) for s in self._sift_options[0:3]) #or all(self.siftOptionFilter(s, row_data) for s in self._sift_options[3:6])
+	
+	def siftOptionFilter(self, sift_option:avbutils.bins.BinSiftOption, row_data:dict[str,str]):
+
+		#print(f"{sift_option=}")
+		
+		if not sift_option.sift_text:
+			#print("Sift: No text, returning True")
+			return True
+		
+		elif not sift_option.sift_column or sift_option.sift_column == "None":
+			#print("Sift: '", sift_option.sift_column, "' option, returning True")
+			return True
+		
+		elif sift_option.sift_column not in row_data:
+			#print("****** Sift filter skips ", sift_option.sift_column, " AINT THERE BRUH")
+			return True
+		
+		sift_cols = []
+
+		if sift_option.sift_column == "Any":
+			sift_cols = list(row_data.keys())
+		else:
+			sift_cols = [sift_option.sift_column]
+
+		if sift_option.sift_method == avbutils.bins.BinSiftMethod.CONTAINS:
+			return any(sift_option.sift_text.casefold() in row_data[c].casefold() for c in sift_cols)
+		elif sift_option.sift_method == avbutils.bins.BinSiftMethod.BEGINS_WITH:
+			return any(row_data[c].casefold().startswith(sift_option.sift_text.casefold()) for c in sift_cols)
+		elif sift_option.sift_method == avbutils.bins.BinSiftMethod.MATCHES_EXACTLY:
+			return any(row_data[c].casefold() == sift_option.sift_text.casefold() for c in sift_cols)
+		else:
+			raise ValueError(f"Unknown sift option {sift_option.sift_method=}")
+		
+	@QtCore.Slot(bool)
+	def setSiftEnabled(self, is_enabled:bool):
+		"""Enable sift options"""
+
+		if not self._sift_enabled == is_enabled:
+			self._sift_enabled = is_enabled
+			self.invalidateRowsFilter()
+
+	def siftEnabled(self) -> bool:
+		return self._sift_enabled
+
+	@QtCore.Slot(list)
+	def setSiftOptions(self, sift_options:list[avbutils.bins.BinSiftOption]):
+		"""Set options for item sifting"""
+
+		self._sift_options = sift_options
+
+		if self._sift_enabled:
+			self.invalidateRowsFilter()
 	
 	@QtCore.Slot(object)
 	def setSearchText(self, search_text:str):
