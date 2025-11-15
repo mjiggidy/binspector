@@ -108,7 +108,7 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 				continue
 
 			col_name = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
-			col_text = self.sourceModel().data(self.sourceModel().index(source_row, source_col, source_parent), QtCore.Qt.ItemDataRole.DisplayPropertyRole) or ""
+			col_text = self.sourceModel().data(self.sourceModel().index(source_row, source_col, source_parent), QtCore.Qt.ItemDataRole.DisplayRole) or ""
 
 			row_data[col_name] = col_text
 		
@@ -120,16 +120,16 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		#print(f"{sift_option=}")
 		
 		if not sift_option.sift_text:
-			#print("Sift: No text, returning True")
+			print("Sift: No text, returning True")
 			return True
 		
 		elif not sift_option.sift_column or sift_option.sift_column == "None":
-			#print("Sift: '", sift_option.sift_column, "' option, returning True")
+			print("Sift: '", sift_option.sift_column, "' option, returning True")
 			return True
 		
-		elif sift_option.sift_column not in row_data:
-			#print("****** Sift filter skips ", sift_option.sift_column, " AINT THERE BRUH")
-			return True
+		#elif sift_option.sift_column not in row_data:
+		#	print("****** Sift filter skips ", sift_option.sift_column, " AINT THERE BRUH")
+		#	return True
 		
 		sift_cols = []
 
@@ -138,13 +138,20 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		else:
 			sift_cols = [sift_option.sift_column]
 
+		print("** NORMAL SIFT: ", sift_option)
+
 		if sift_option.sift_method == avbutils.bins.BinSiftMethod.CONTAINS:
+			#print(f"{sift_option.sift_text=} in {row_data}? {any(sift_option.sift_text.casefold() in row_data[c].casefold() for c in sift_cols)}")
 			return any(sift_option.sift_text.casefold() in row_data[c].casefold() for c in sift_cols)
+		
 		elif sift_option.sift_method == avbutils.bins.BinSiftMethod.BEGINS_WITH:
+			print(any(row_data[c].casefold().startswith(sift_option.sift_text.casefold()) for c in sift_cols), sift_cols, [row_data[c] for c in sift_cols])
 			return any(row_data[c].casefold().startswith(sift_option.sift_text.casefold()) for c in sift_cols)
+		
 		elif sift_option.sift_method == avbutils.bins.BinSiftMethod.MATCHES_EXACTLY:
 			return any(row_data[c].casefold() == sift_option.sift_text.casefold() for c in sift_cols)
 		else:
+			print("AAAAHA!!!!!!HHTOUIH$GOU$HGOU$NGUONTOU$NOUGNO@$UNGO@$GO$@NGO!!!!!\nHJO%IHJO%INHOITENHOUTNHUON%OGIOIRNMG\n*T)@(%JGO%UGNOI%ML)")
 			raise ValueError(f"Unknown sift option {sift_option.sift_method=}")
 		
 	@QtCore.Slot(bool)
