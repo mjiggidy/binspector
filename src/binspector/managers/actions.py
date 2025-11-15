@@ -108,6 +108,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_toggle_sift_settings = QtGui.QAction(self.tr("Show Sift Settings"), checkable=True, parent=self._parent)
 		"""Toggle visibility of Sift Settings toolbox"""
 		self._act_toggle_sift_settings.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AudioVolumeHigh))
+		self._act_toggle_sift_settings.setShortcut(QtGui.QKeySequence.StandardKey.Find)
 
 
 		# Bin Visibility Toggles
