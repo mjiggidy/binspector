@@ -2,7 +2,6 @@ from PySide6 import QtCore, QtGui, QtWidgets
 import avbutils
 from ..views import bintreeview, binframeview, binscriptview
 from . import buttons, sliders
-from ..managers import binproperties
 
 class BSAbstractBinContentsWidgetBar(QtWidgets.QWidget):
 	"""Widget bar to display above/below"""
@@ -478,13 +477,3 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		"""Current view mode"""
 
 		return avbutils.BinDisplayModes(self._section_main.currentIndex())
-	
-	@QtCore.Slot(bool)
-	def setSiftEnabled(self, is_enabled:bool):
-
-		self._binitems_list.model().setSiftEnabled(is_enabled)
-
-	@QtCore.Slot(object)
-	def setSiftOptions(self, sift_options:avbutils.bins.BinSiftOption):
-
-		self._binitems_list.model().setSiftOptions(sift_options)

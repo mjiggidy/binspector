@@ -3,7 +3,6 @@
 Logic is implemented via `.binparser`
 """
 
-import logging
 from os import PathLike
 from PySide6 import QtCore
 import avb
@@ -58,13 +57,12 @@ class BSBinViewLoader(QtCore.QRunnable):
 	def requestStop(self):
 		"""Request graceful stop"""
 
-		if not self._stop_requested:
-			logging.getLogger(__name__).warning("User requested abort")
-
 		self._stop_requested = True
 
 	def loadDataFromBin(self, bin_handle:avb.file.AVBFile):
 		"""Load and emit the data"""
+
+		import logging
 
 		# NOTE to self:
 		# I think I'm going for "very passive" error handling -- ideally so people can see something
@@ -73,11 +71,6 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 		# Load bin properties (view, sorting, etc)
 		try:
-
-			# NOTE: Mitigates signal freakouts during early close -- but need to do this better and more thoroughly
-			if self._stop_requested:
-				#self._signals.sig_aborted_loading.emit(None)
-				return
 
 			logging.getLogger(__name__).debug("Begin display flags")
 			self._signals.sig_got_bin_display_settings.emit(binparser.bin_display_flags_from_bin(bin_handle.content))
@@ -108,7 +101,6 @@ class BSBinViewLoader(QtCore.QRunnable):
 			logging.getLogger(__name__).debug("End appearance settings")
 
 		except Exception as e:
-			logging.getLogger(__name__).error("Encountered error while loading bin properties: %s", e)
 			self._signals.sig_got_exception.emit(e)
 			
 		# Get mob count for progress
@@ -140,11 +132,8 @@ class BSBinViewLoader(QtCore.QRunnable):
 				self._signals.sig_got_mobs.emit(mob_queue)
 				mob_queue = list()
 		
-		if self._stop_requested:
-			return
-		
 		if len(mob_queue):
-			
+			import logging
 			logging.getLogger(__name__).debug("Flushing the final %s mobs", len(mob_queue))
 			self._signals.sig_got_mobs.emit(mob_queue)
 		

@@ -206,7 +206,7 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 	"""Bin sorting"""
 
-	sig_bin_sorting_changed   = QtCore.Signal(object)
+	sig_bin_sorting_changed = QtCore.Signal(object)
 
 	@QtCore.Slot(object)
 	def setBinSortingProperties(self, sorting:list[int,str]):
@@ -233,30 +233,22 @@ class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 
 class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 
-	sig_sift_enabled          = QtCore.Signal(bool)
-	sig_bin_view_changed      = QtCore.Signal(object)
-	sig_sift_settings_changed = QtCore.Signal(object)
-
-	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
-		self.sig_bin_view_changed.emit(bin_view)
-
+	sig_sift_enabled = QtCore.Signal(bool)
 
 	@QtCore.Slot(bool, object)
-	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avbutils.bins.BinSiftOption]):
+	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avb.bin.SiftItem]):
 
 		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="string", display_name=self.tr("String")))
 		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="method", display_name=self.tr("Method")))
 		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="column", display_name=self.tr("Column")))
-		for idx, setting in enumerate(reversed(sift_settings)):
+		for idx, setting in enumerate(sift_settings):
 			self.addRow({
 				"order": idx,
-				"method": viewmodelitems.TRTEnumViewItem(setting.sift_method),
-				"string": setting.sift_text,
-				"column": setting.sift_column,
+				"method": viewmodelitems.TRTEnumViewItem(avbutils.BinSiftMethod(setting.method)),
+				"string": setting.string,
+				"column": setting.column,
 			})
 		
-		self.sig_sift_settings_changed.emit(sift_settings)		
 		self.sig_sift_enabled.emit(sift_enabled)
 
 class BSBinItemsManager(base.LBItemDefinitionView):
