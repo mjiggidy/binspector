@@ -340,6 +340,7 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_settings.sig_mob_queue_size_changed.connect(self._man_settings.setMobQueueSize)
 			self._wnd_settings.sig_startup_behavior_changed.connect(self._man_settings.setStartupBehavior)
 			self._wnd_settings.sig_mob_queue_size_changed.connect(lambda queue_size: [w.setMobQueueSize(queue_size) for w in self._man_binwindows.windows()])
+			self._wnd_settings.sig_item_padding_changed.connect(lambda padding: [w.binContentsWidget().setItemPadding(padding) for w in self._man_binwindows.windows()])
 			
 			# TODO: Hacky
 			self._wnd_settings.sig_scrollbar_scale_changed.connect(lambda s: [w.binContentsWidget().setBottomScrollbarScaleFactor(s) for w in self._man_binwindows.windows()])

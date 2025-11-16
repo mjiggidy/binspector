@@ -20,16 +20,22 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 			hint_og.height() + self._padding.top()  + self._padding.bottom()
 		)
 	
-	def setPadding(self, padding:QtCore.QMargins):
+	@QtCore.Slot(object)
+	def setItemPadding(self, padding:QtCore.QMargins):
 
 		if self._padding != padding:
 		
 			self._padding = padding
-			self.sizeHintChanged.emit(padding)
+			thing = QtCore.QModelIndex()
+			self.sizeHintChanged.emit(thing)
+			#print(padding)
 
 	def activeRectFromRect(self, rect:QtCore.QRect) -> QtCore.QRect:
 		"""The active area without padding and such"""
 
+		#return rect
+		#print(self._padding)
+		#print(rect.marginsRemoved(self._padding))
 		return rect.marginsRemoved(self._padding)
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
@@ -46,7 +52,7 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
 		#super().paint(painter, kewl_options, index)
 
-		kewl_rect = kewl_options.rect.marginsRemoved(self._padding)
+		kewl_rect = self.activeRectFromRect(kewl_options.rect)
 		kewl_options.rect = kewl_rect
 		kewl_options.text = kewl_text
 		

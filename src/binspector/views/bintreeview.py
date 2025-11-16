@@ -13,13 +13,14 @@ class BSBinTreeView(treeview.LBTreeView):
 	sig_default_sort_columns_changed = QtCore.Slot(object)
 	"""TODO: HMMMMMM"""
 
-	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(20,4,20,4)
+	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(16,4,16,4)
+	"""Default padding inside view item"""
 
-	COLUMN_PADDING_RIGHT:int = 0#24
-	"""Additional whitespace per column"""
+	BINVIEW_COLUMN_WIDTH_ADJUST:int = 64
+	"""Adjust binview-specified column widths for better fit"""
 
 	ITEM_DELEGATES_PER_FIELD_ID = {
-		51 : binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3),  padding=DEFAULT_ITEM_PADDING), # Clip color
+		51 : binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=DEFAULT_ITEM_PADDING), # Clip color
 		132: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=DEFAULT_ITEM_PADDING), # Marker
 		200: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=DEFAULT_ITEM_PADDING), # Bin Display Item Type
 
@@ -63,7 +64,6 @@ class BSBinTreeView(treeview.LBTreeView):
 
 	def keyPressEvent(self, event:QtGui.QKeyEvent) -> None:
 		
-		
 		# Copy selected rows
 		if event.matches(QtGui.QKeySequence.StandardKey.Copy) and self.selectionModel().hasSelection():
 			
@@ -104,6 +104,7 @@ class BSBinTreeView(treeview.LBTreeView):
 	def setCustomDelegates(self):
 		"""Temp"""
 
+		# Clip color chips
 		clip_color_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[51]
 		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
 		for color in avbutils.get_default_clip_colors():
@@ -112,7 +113,7 @@ class BSBinTreeView(treeview.LBTreeView):
 			icon = QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=icon_color, palette_watcher=self._palette_watcher))
 			clip_color_delegate.iconProvider().addIcon(icon_color.toTuple(), icon)
 
-		# TODO/TEMP: Prep marker icons
+		# Marker icons
 		marker_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[132]
 		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
 		for marker_color in avbutils.MarkerColors:
@@ -121,10 +122,9 @@ class BSBinTreeView(treeview.LBTreeView):
 			icon = QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=marker_color, palette_watcher=self._palette_watcher))
 			marker_delegate.iconProvider().addIcon(marker_color.toTuple(), icon)
 
+		# Bin item type icons
 		# TODO/TEMP: Prep bin display item type icons
 		item_type_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[200]
-		
-
 		for item_type in avbutils.bins.BinDisplayItemTypes:
 			item_type_delegate.iconProvider().addIcon(
 				item_type|avbutils.bins.BinDisplayItemTypes.USER_CLIP,
@@ -190,16 +190,26 @@ class BSBinTreeView(treeview.LBTreeView):
 		)
 		
 		if column_width:
-			self.setColumnWidth(col_index_logical, column_width + self.COLUMN_PADDING_RIGHT)
+			self.setColumnWidth(col_index_logical, column_width + 64)
 		
 		elif autosize_if_undefined:
 			self.resizeColumnToContents(col_index_logical)
 
-	def sizeHintForColumn(self, column):
-		return super().sizeHintForColumn(column) + self.COLUMN_PADDING_RIGHT
+	def sizeHintForColumn(self, column) -> int:
+		"""Column width"""
+
+		return super().sizeHintForColumn(column)
 	
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_columns:list[list[int,str]]):
 
 		self._default_sort = sort_columns
 		self.sig_default_sort_columns_changed.emit(self._default_sort)
+	
+	@QtCore.Slot(object)
+	def setItemPadding(self, padding:QtCore.QMargins):
+
+		self.itemDelegate().setItemPadding(padding)
+		for delegate in self.ITEM_DELEGATES_PER_FIELD_ID.values():
+			#print("Here")
+			delegate.setItemPadding(padding)
