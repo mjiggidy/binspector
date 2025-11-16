@@ -214,8 +214,9 @@ class TRTDateTimeViewItem(LBAbstractViewItem):
 		super()._prepare_data()
 	
 		self._data_roles.update({
-			QtCore.Qt.ItemDataRole.DisplayRole: self._data.toString(self._format_string),
-			QtCore.Qt.ItemDataRole.InitialSortOrderRole: str(self._data.toMSecsSinceEpoch())
+			QtCore.Qt.ItemDataRole.DisplayRole:          self._data.toString(self._format_string),
+			QtCore.Qt.ItemDataRole.InitialSortOrderRole: str(self._data.toMSecsSinceEpoch()),
+			QtCore.Qt.ItemDataRole.TextAlignmentRole:    QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter,
 		})
 	
 	def to_json(self) -> dict:
