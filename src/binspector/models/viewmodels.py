@@ -113,7 +113,7 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 			row_data[col_name] = col_text
 		
 		#return True
-		return all(self.siftOptionFilter(s, row_data) for s in self._sift_options[0:3]) or all(self.siftOptionFilter(s, row_data) for s in self._sift_options[3:6])
+		return all(self.siftOptionFilter(s, row_data) for s in self._sift_options[0:3]) and all(self.siftOptionFilter(s, row_data) for s in self._sift_options[3:6])
 	
 	def siftOptionFilter(self, sift_option:avbutils.bins.BinSiftOption, row_data:dict[str,str]):
 
@@ -135,8 +135,13 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		if sift_option.sift_column == "Any":
 			sift_cols = list(row_data.keys())
+		elif sift_option.sift_column not in row_data:
+			print("**** ", sift_option.sift_column, "not there, ignore")
+			return True
 		else:
 			sift_cols = [sift_option.sift_column]
+
+		
 
 		#print("** NORMAL SIFT: ", sift_option)
 
