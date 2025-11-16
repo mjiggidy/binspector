@@ -113,6 +113,8 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		self.grp_sift_bottom.setLayout(QtWidgets.QVBoxLayout())
 		self.grp_sift_bottom.setTitle(self.tr("Or, show clips that meet this criteria:"))
 
+		self._chk_enable_sift = QtWidgets.QCheckBox()
+
 		self._sift_top_widgets:list[SiftOptionWidget] = []
 		self._sift_bot_widgets:list[SiftOptionWidget] = []
 
@@ -121,6 +123,10 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 #		)
 #		self.btn_dialog.button(QtWidgets.QDialogButtonBox.StandardButton.Reset).setText(self.tr("Clear"))
 
+		self._chk_enable_sift.setText("Enable Sift")
+		self._chk_enable_sift.toggled.connect(lambda: self.sig_options_set.emit(*self.siftOptions()))
+		self.layout().addWidget(self._chk_enable_sift)
+		
 		self.layout().addWidget(self.grp_sift_top)
 
 		for _ in range(self.CRITERIA_PER_SIFT):
@@ -150,10 +156,14 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		for wdg in self._sift_bot_widgets:
 			wdg.setBinView(bin_view)
 	
+	@QtCore.Slot(bool)
+	def setSiftEnabled(self, is_enabled:bool):
+		self._chk_enable_sift.setChecked(is_enabled)
+	
 	@QtCore.Slot(list)
 	def setSiftOptions(self, sift_options:list[bins.BinSiftOption]|None=None):
 
-		print("SIFT GOT", sift_options)
+		#print("SIFT GOT", sift_options)
 
 		sift_options = sift_options or []
 
@@ -175,4 +185,4 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		options.extend([s.siftOption() for s in self._sift_top_widgets])
 		options.extend([s.siftOption() for s in self._sift_bot_widgets])
 
-		return (True, options)
+		return (self._chk_enable_sift.isChecked(), options)
