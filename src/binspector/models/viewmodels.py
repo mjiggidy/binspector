@@ -113,18 +113,18 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 			row_data[col_name] = col_text
 		
 		#return True
-		return all(self.siftOptionFilter(s, row_data) for s in self._sift_options[0:3]) #or all(self.siftOptionFilter(s, row_data) for s in self._sift_options[3:6])
+		return all(self.siftOptionFilter(s, row_data) for s in self._sift_options[0:3]) or all(self.siftOptionFilter(s, row_data) for s in self._sift_options[3:6])
 	
 	def siftOptionFilter(self, sift_option:avbutils.bins.BinSiftOption, row_data:dict[str,str]):
 
 		#print(f"{sift_option=}")
 		
 		if not sift_option.sift_text:
-			print("Sift: No text, returning True")
+			#print("Sift: No text, returning True")
 			return True
 		
 		elif not sift_option.sift_column or sift_option.sift_column == "None":
-			print("Sift: '", sift_option.sift_column, "' option, returning True")
+			#print("Sift: '", sift_option.sift_column, "' option, returning True")
 			return True
 		
 		#elif sift_option.sift_column not in row_data:
@@ -138,20 +138,20 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		else:
 			sift_cols = [sift_option.sift_column]
 
-		print("** NORMAL SIFT: ", sift_option)
+		#print("** NORMAL SIFT: ", sift_option)
 
 		if sift_option.sift_method == avbutils.bins.BinSiftMethod.CONTAINS:
 			#print(f"{sift_option.sift_text=} in {row_data}? {any(sift_option.sift_text.casefold() in row_data[c].casefold() for c in sift_cols)}")
 			return any(sift_option.sift_text.casefold() in row_data[c].casefold() for c in sift_cols)
 		
 		elif sift_option.sift_method == avbutils.bins.BinSiftMethod.BEGINS_WITH:
-			print(any(row_data[c].casefold().startswith(sift_option.sift_text.casefold()) for c in sift_cols), sift_cols, [row_data[c] for c in sift_cols])
+			#print(any(row_data[c].casefold().startswith(sift_option.sift_text.casefold()) for c in sift_cols), sift_cols, [row_data[c] for c in sift_cols])
 			return any(row_data[c].casefold().startswith(sift_option.sift_text.casefold()) for c in sift_cols)
 		
 		elif sift_option.sift_method == avbutils.bins.BinSiftMethod.MATCHES_EXACTLY:
 			return any(row_data[c].casefold() == sift_option.sift_text.casefold() for c in sift_cols)
 		else:
-			print("AAAAHA!!!!!!HHTOUIH$GOU$HGOU$NGUONTOU$NOUGNO@$UNGO@$GO$@NGO!!!!!\nHJO%IHJO%INHOITENHOUTNHUON%OGIOIRNMG\n*T)@(%JGO%UGNOI%ML)")
+			#print("AAAAHA!!!!!!HHTOUIH$GOU$HGOU$NGUONTOU$NOUGNO@$UNGO@$GO$@NGO!!!!!\nHJO%IHJO%INHOITENHOUTNHUON%OGIOIRNMG\n*T)@(%JGO%UGNOI%ML)")
 			raise ValueError(f"Unknown sift option {sift_option.sift_method=}")
 		
 	@QtCore.Slot(bool)
