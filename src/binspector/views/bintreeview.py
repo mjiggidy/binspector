@@ -13,9 +13,9 @@ class BSBinTreeView(treeview.LBTreeView):
 	sig_default_sort_columns_changed = QtCore.Slot(object)
 	"""TODO: HMMMMMM"""
 
-	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(2,4,2,4)
+	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(20,4,20,4)
 
-	COLUMN_PADDING_RIGHT:int = 24
+	COLUMN_PADDING_RIGHT:int = 0#24
 	"""Additional whitespace per column"""
 
 	ITEM_DELEGATES_PER_FIELD_ID = {

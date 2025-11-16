@@ -31,6 +31,29 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		"""The active area without padding and such"""
 
 		return rect.marginsRemoved(self._padding)
+	
+	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+
+		kewl_options = QtWidgets.QStyleOptionViewItem(option)
+		self.initStyleOption(kewl_options, index)
+
+		kewl_options.state &= ~QtWidgets.QStyle.State_HasFocus
+		kewl_text = kewl_options.text
+		kewl_options.text = ""
+
+		style = kewl_options.widget.style() if kewl_options.widget else QtWidgets.QApplication.style()
+		style.drawControl(QtWidgets.QStyle.ControlElement.CE_ItemViewItem, kewl_options, painter)
+
+		#super().paint(painter, kewl_options, index)
+
+		kewl_rect = kewl_options.rect.marginsRemoved(self._padding)
+		kewl_options.rect = kewl_rect
+		kewl_options.text = kewl_text
+		
+		# NOTE HERE: Uh so yeah this is redrawing a bunch at the smaller rect and I only really need text but lol
+		super().paint(painter, kewl_options, index)
+
+		#return super().paint(painter, my_kewl_options, index)
 
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
 
