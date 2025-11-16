@@ -163,6 +163,7 @@ class TRTNumericViewItem(LBAbstractViewItem):
 			QtCore.Qt.ItemDataRole.DisplayRole:          self.to_string(self._data),
 			#QtCore.Qt.ItemDataRole.InitialSortOrderRole: self._data,
 			QtCore.Qt.ItemDataRole.FontRole:             QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont).family(),
+			QtCore.Qt.ItemDataRole.TextAlignmentRole:    QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter,
 		})
 	
 	def to_json(self) -> int:
