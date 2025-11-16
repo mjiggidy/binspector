@@ -33,8 +33,8 @@ def bin_column_widths_from_bin(bin_content:avb.bin.Bin) -> dict[str, int]:
 	
 	return bin_column_widths
 	
-def sift_settings_from_bin(bin_content:avb.bin.Bin) -> tuple[bool, list[avb.bin.SiftItem]]:
-	return bin_content.sifted, bin_content.sifted_settings
+def sift_settings_from_bin(bin_content:avb.bin.Bin) -> tuple[bool, list[avbutils.bins.BinSiftOption]]:
+	return avbutils.bins.BinSiftOption.from_bin(bin_content)
 	
 def sort_settings_from_bin(bin_content:avb.bin.Bin) -> list[list[int, str]]:
 	return bin_content.sort_columns

@@ -1,7 +1,7 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 from os import PathLike
 from ..managers import actions, binproperties
-from ..widgets import binwidget, menus, toolboxes, buttons, about
+from ..widgets import binwidget, siftwidget, menus, toolboxes, buttons, about
 from ..views import treeview
 from ..core import binloader
 
@@ -50,7 +50,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView()
 		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
-		self._tool_sifting     = toolboxes.BSBinSiftSettingsView()
+		self._tool_sifting     = siftwidget.BSSiftSettingsWidget()
 		self._dock_sifting     = QtWidgets.QDockWidget(self.tr("Sift Settings"))
 
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
@@ -84,7 +84,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_binview.setWidget(self._tool_binview)
 		
 		self._dock_bindisplay.hide()
-		self._dock_sifting.hide()
+		#self._dock_sifting.hide()
 		self._dock_appearance.hide()
 		self._dock_binview.hide()
 
@@ -126,7 +126,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #
 		# Apply Bin Settings Toggles
 		scrollbar_height = self._main_bincontents.listView().horizontalScrollBar().style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent)
-		scrollbar_icon_size = round(scrollbar_height * 0.58)
+		#scrollbar_icon_size = round(scrollbar_height * 0.58)
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
 			
 			btn = buttons.BSPushButtonAction(act_toggle, show_text=False)
@@ -248,10 +248,19 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		#self._sigs_binloader.sig_got_mob                    .connect(self._man_binitems.addMob)
 		#self._sigs_binloader.sig_got_mob                    .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
 
+		self._sigs_binloader.sig_got_sift_settings           .connect(self._man_siftsettings.setSiftSettings)
+		self._man_siftsettings.sig_bin_view_changed          .connect(self._tool_sifting.setBinView)
+		self._man_siftsettings.sig_sift_settings_changed     .connect(self._tool_sifting.setSiftOptions)
+		self._man_siftsettings.sig_sift_enabled              .connect(self._tool_sifting.setSiftEnabled)
+		self._man_siftsettings.sig_sift_enabled              .connect(self._main_bincontents.setSiftEnabled)
+		self._man_siftsettings.sig_sift_settings_changed     .connect(self._main_bincontents.setSiftOptions)
+		self._tool_sifting.sig_options_set                   .connect(self._man_siftsettings.setSiftSettings)
+
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(lambda v,c,s: self._main_bincontents.frameView().setZoom(s))
 		self._man_binview.sig_bin_view_changed               .connect(lambda: self._main_bincontents.frameView().centerOn(QtCore.QPointF(0,0)))
+		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 		self._man_binitems.sig_bin_view_changed              .connect(lambda bv, widths: self._main_bincontents.setBinViewName(bv.name))
 
 		# Update display counts -- Not where where to put this
@@ -488,9 +497,18 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		dlg_about = about.BSAboutDialog()
 		dlg_about.exec()
 
-	def closeEvent(self, event):
+	@QtCore.Slot()
+	def cleanupSignals(self):
+		"""Disconnect from worker signals on close"""
 
-		self._sigs_binloader.requestStop()
+		import logging
+		logging.getLogger(__name__).debug("Cleaning up signals")
 		
-		#self._sigs_binloader.sig_
+		self._sigs_binloader.requestStop()
+		self._sigs_binloader.disconnect(self)
+
+	def closeEvent(self, event):
+		
+		self.cleanupSignals()
+		
 		return super().closeEvent(event)

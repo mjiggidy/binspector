@@ -21,7 +21,8 @@ class BSPaletteWatcherForSomeReason(QtCore.QObject):
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
 
-		for icon_engine in self._icon_engines:
+		# NOTE: Kinda hate this, but need to copy the set to allow the discard during iteration
+		for icon_engine in self._icon_engines.copy():
 
 			if not icon_engine():
 

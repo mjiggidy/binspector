@@ -84,7 +84,7 @@ class BSSettingsManager:
 		self.settings("bs").setValue("Session/last_window_geometry", QtCore.QRect(rect))
 		logging.getLogger(__name__).debug("Set last_window_geometry: %s", rect)
 	
-	def lastWindowGeometry(self) -> QtCore.QRect:
+	def lastWindowGeometry(self) -> QtCore.QRect|None:
 
 		last_rect = self.settings("bs").value("Session/last_window_geometry", None, QtCore.QRect)
 		logging.getLogger(__name__).debug("Returning last_window_geomoetry: %s", last_rect)
