@@ -135,15 +135,17 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		if sift_option.sift_column == "Any":
 			sift_cols = list(row_data.keys())
+		
 		elif sift_option.sift_column not in row_data:
-			print("**** ", sift_option.sift_column, "not there, ignore")
+			#print("**** ", sift_option.sift_column, "not there, ignore")
 			return True
+		
 		else:
 			sift_cols = [sift_option.sift_column]
 
 		
 
-		#print("** NORMAL SIFT: ", sift_option)
+		# TODO: Timecode ranges contain...
 
 		if sift_option.sift_method == avbutils.bins.BinSiftMethod.CONTAINS:
 			#print(f"{sift_option.sift_text=} in {row_data}? {any(sift_option.sift_text.casefold() in row_data[c].casefold() for c in sift_cols)}")
