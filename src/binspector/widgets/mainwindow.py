@@ -84,7 +84,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_binview.setWidget(self._tool_binview)
 		
 		self._dock_bindisplay.hide()
-		#self._dock_sifting.hide()
+		self._dock_sifting.hide()
 		self._dock_appearance.hide()
 		self._dock_binview.hide()
 
