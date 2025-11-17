@@ -64,7 +64,12 @@ class BSSettingsPanel(QtWidgets.QWidget):
 		margs = QtCore.QMargins(w,h,w,h)
 		
 		self.sig_item_padding_changed.emit(margs)
-		
+	
+	@QtCore.Slot(object)
+	def setListItemPadding(self, padding:QtCore.QMargins):
+
+		self._spn_padding_width .setValue(padding.left())
+		self._spn_padding_height.setValue(padding.top())
 	
 	@QtCore.Slot(bool)
 	def setUseAnimations(self, use_animations:bool):
