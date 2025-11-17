@@ -81,12 +81,27 @@ class BSSettingsManager:
 	@QtCore.Slot(QtCore.QRect)
 	def setLastWindowGeometry(self, rect:QtCore.QRect):
 
-		self.settings("bs").setValue("Session/last_window_geometry", QtCore.QRect(rect))
-		logging.getLogger(__name__).debug("Set last_window_geometry: %s", rect)
+		rect_list = [rect.left(), rect.top(), rect.width(), rect.height()]
+
+		self.settings("bs").setValue("Session/last_window_geometry", rect_list)
+		logging.getLogger(__name__).debug("Set last_window_geometry: %s", rect_list)
 	
 	def lastWindowGeometry(self) -> QtCore.QRect|None:
 
-		last_rect = self.settings("bs").value("Session/last_window_geometry", None, QtCore.QRect)
+		last_rect = self.settings("bs").value("Session/last_window_geometry", [], list)
+		print(last_rect)
+
+		if not len(last_rect) == 4:
+			last_rect = QtCore.QRect()
+		
+		else:
+			top_left = QtCore.QPoint(*map(int, last_rect[0:2]))
+			size     = QtCore.QSize (*map(int, last_rect[2:4]))
+			last_rect = QtCore.QRect(
+				top_left,
+				size
+			)
+
 		logging.getLogger(__name__).debug("Returning last_window_geomoetry: %s", last_rect)
 		return last_rect
 	
@@ -153,12 +168,12 @@ class BSSettingsManager:
 	@QtCore.Slot(int)
 	def setUseFancyProgressBar(self, use_animation:bool):
 
-		self.settings("bs").setValue("BinLoading/fancy_progress_bar", use_animation)
+		self.settings("bs").setValue("UserInterface/fancy_progress_bar", use_animation)
 		logging.getLogger(__name__).debug("Set fancy_progress_bar: %s", use_animation)
 
 	def useFancyProgressBar(self) -> int:
 		
-		use_animation = self.settings("bs").value("BinLoading/fancy_progress_bar", True, bool)
+		use_animation = self.settings("bs").value("UserInterface/fancy_progress_bar", True, bool)
 		logging.getLogger(__name__).debug("Returning fancy_progress_bar: %s", use_animation)
 		return use_animation
 	
@@ -183,17 +198,27 @@ class BSSettingsManager:
 	@QtCore.Slot(int)
 	def setBottomScrollbarScale(self, scale_factor:int|float):
 
-		self.settings("bs").setValue("Session/bottom_scrollbar_scale", scale_factor)
+		self.settings("bs").setValue("UserInterface/bottom_scrollbar_scale", scale_factor)
 		logging.getLogger(__name__).debug("Set bottom_scrollbar_scale: %s", scale_factor)
 
 	def bottomScrollbarScale(self) -> float:
 		
-		scale_factor = max(0.5, self.settings("bs").value("Session/bottom_scrollbar_scale", 1.25, float))
+		scale_factor = max(0.5, self.settings("bs").value("UserInterface/bottom_scrollbar_scale", 1.25, float))
 		logging.getLogger(__name__).debug("Returning bottom_scrollbar_scale: %s", scale_factor)
 		return scale_factor
+	
+	@QtCore.Slot(object)
+	def setListItemPadding(self, padding:QtCore.QMargins):
 
-	def useFancyProgressBar(self) -> int:
+		padding_list = [padding.left(), padding.top(), padding.right(), padding.bottom()]
+
+		self.settings("bs").setValue("UserInterface/list_item_padding", padding_list)
+		logging.getLogger(__name__).debug("Set list_item_padding: %s", padding_list)
+
+	def listItemPadding(self) -> QtCore.QMargins:
 		
-		use_animation = self.settings("bs").value("BinLoading/fancy_progress_bar", True, bool)
-		logging.getLogger(__name__).debug("Returning fancy_progress_bar: %s", use_animation)
-		return use_animation
+		padding = self.settings("bs").value("UserInterface/list_item_padding", [12, 6, 12, 6], list)
+		padding = QtCore.QMargins(*map(int, padding))
+
+		logging.getLogger(__name__).debug("Returning list_item_padding: %s", padding)
+		return padding
