@@ -12,6 +12,7 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		self._padding = padding or QtCore.QMargins()
 
 	def sizeHint(self, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> QtCore.QSize:
+		"""Return size hint with padding factored in"""
 		
 		hint_og = super().sizeHint(option, index)
 		
@@ -22,13 +23,15 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 	
 	@QtCore.Slot(object)
 	def setItemPadding(self, padding:QtCore.QMargins):
+		"""Set padding around individual items"""
 
 		if self._padding != padding:
-		
 			self._padding = padding
-			thing = QtCore.QModelIndex()
-			self.sizeHintChanged.emit(thing)
-			#print(padding)
+
+			# NOTE: Binding to sizeHintChanged here to trigger redraw
+			# Passing invalid model index seems to work ok
+			self.sizeHintChanged.emit(QtCore.QModelIndex())
+			
 
 	def activeRectFromRect(self, rect:QtCore.QRect) -> QtCore.QRect:
 		"""The active area without padding and such"""
@@ -82,7 +85,9 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		"""Return aspect ratio-corrected width x original height"""
 
 		orig = super().sizeHint(option, index)
-		return self.sizeWithAspectRatio(orig)
+		adj  = self.sizeWithAspectRatio(orig)
+		print(f"{orig=} {adj=}")
+		return orig
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
