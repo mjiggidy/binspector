@@ -46,23 +46,37 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		kewl_options = QtWidgets.QStyleOptionViewItem(option)
 		self.initStyleOption(kewl_options, index)
 
-		kewl_options.state &= ~QtWidgets.QStyle.State_HasFocus
 		kewl_text = kewl_options.text
+
+		# Remove focus and text for a generic paint from drawControl()
+		kewl_options.state &= ~QtWidgets.QStyle.State_HasFocus
 		kewl_options.text = ""
 
 		style = kewl_options.widget.style() if kewl_options.widget else QtWidgets.QApplication.style()
 		style.drawControl(QtWidgets.QStyle.ControlElement.CE_ItemViewItem, kewl_options, painter)
 
-		#super().paint(painter, kewl_options, index)
+		# Pull in rect adjusted for padding; text for paint
+		kewl_options.rect = self.activeRectFromRect(option.rect)
+		kewl_options.text = option.text
 
-		kewl_rect = self.activeRectFromRect(kewl_options.rect)
-		kewl_options.rect = kewl_rect
-		kewl_options.text = kewl_text
+		fm = QtGui.QFontMetrics(kewl_options.font)
+		elided_text = fm.elidedText(kewl_text, kewl_options.textElideMode, kewl_options.rect.width())
+
+		#print)
 		
 		# NOTE HERE: Uh so yeah this is redrawing a bunch at the smaller rect and I only really need text but lol
-		super().paint(painter, kewl_options, index)
+		painter.setFont(kewl_options.font)
+		style.drawItemText(
+			painter,
+			kewl_options.rect,
+			int(kewl_options.displayAlignment),
+			kewl_options.palette,
+			bool(kewl_options.state & QtWidgets.QStyle.StateFlag.State_Enabled),
+			elided_text,
+			QtGui.QPalette.ColorRole.HighlightedText if bool(kewl_options.state & QtWidgets.QStyle.StateFlag.State_Selected) else QtGui.QPalette.ColorRole.Text
+		)
 
-		#return super().paint(painter, my_kewl_options, index)
+		#return super().paint(painter, kewl_options, index)
 
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
 
