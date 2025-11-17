@@ -147,16 +147,22 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 		background_color:list[int],
 		column_widths:dict[str,int],
 		window_rect:list[int],
-		was_iconic:bool):
+		was_iconic:bool
+	):
 		
-		font = QtGui.QFont()
+		font = QtWidgets.QApplication.font()
+		
+		# JUST A NOTE:
+		# I could be wrong, but I have a suspicion that these mac_* properties are 
+		# specifically for frame view even though mac_font_size seems global
 		font.setPixelSize(mac_font_size)
 
 		if isinstance(bin_font, str) and QtGui.QFontDatabase.hasFamily(bin_font):
 			font.setFamily(bin_font)
 
-		elif isinstance(bin_font, int) and len(QtGui.QFontDatabase.families()) > bin_font:
-			font.setFamily(QtGui.QFontDatabase.families()[bin_font])
+		# NOTE: mac_font int not a font index, at least not one we can make use of
+		#elif isinstance(bin_font, int) and len(QtGui.QFontDatabase.families()) > bin_font:
+		#	font.setFamily(QtGui.QFontDatabase.families()[bin_font])
 		
 		self.sig_font_changed.emit(font)
 		
@@ -412,7 +418,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 			painter.setBrush(brush)
 			painter.drawRect(self.boundingRect().adjusted(.25,.25,-.25,-.25))
 
-		font = QtGui.QFont()
+		font = QtWidgets.QApplication.font()
 		font.setPixelSize(1/self.scale())
 		
 		painter.setFont(font)

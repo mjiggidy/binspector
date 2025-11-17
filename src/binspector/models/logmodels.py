@@ -117,7 +117,7 @@ class BSLogDataModel(QtCore.QAbstractItemModel):
 		
 		elif role == QtCore.Qt.ItemDataRole.FontRole:
 			if record.levelno >= logging.CRITICAL:
-				font = QtGui.QFont()
+				font = QtWidgets.QApplication.font()
 				font.setBold(True)
 				return font
 				
