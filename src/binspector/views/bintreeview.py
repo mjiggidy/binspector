@@ -190,7 +190,7 @@ class BSBinTreeView(treeview.LBTreeView):
 		)
 		
 		if column_width:
-			self.setColumnWidth(col_index_logical, column_width + 64)
+			self.setColumnWidth(col_index_logical, column_width + self.DEFAULT_ITEM_PADDING.left() + self.DEFAULT_ITEM_PADDING.right())
 		
 		elif autosize_if_undefined:
 			self.resizeColumnToContents(col_index_logical)
