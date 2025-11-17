@@ -101,8 +101,8 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 
 		orig = super().sizeHint(option, index)
 		adj  = self.sizeWithAspectRatio(orig)
-		print(f"{orig=} {adj=}")
-		return orig
+		#f"{orig=} {=}")
+		return adj
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
