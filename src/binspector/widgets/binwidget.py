@@ -347,6 +347,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_script = script_view
 		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
 
+	@QtCore.Slot(object)
+	def setItemPadding(self, padding:QtCore.QMargins):
+
+		self._binitems_list.setItemPadding(padding)
+	
 	@QtCore.Slot(int)
 	@QtCore.Slot(float)
 	def setBottomScrollbarScaleFactor(self, scale_factor:int|float):

@@ -7,6 +7,7 @@ class BSSettingsPanel(QtWidgets.QWidget):
 	sig_mob_queue_size_changed   = QtCore.Signal(int)
 	sig_startup_behavior_changed = QtCore.Signal(object)
 	sig_scrollbar_scale_changed  = QtCore.Signal(object)
+	sig_item_padding_changed     = QtCore.Signal(object)
 
 	def __init__(self, *args, **kwargs):
 
@@ -24,6 +25,11 @@ class BSSettingsPanel(QtWidgets.QWidget):
 
 		self._chk_use_animations = QtWidgets.QCheckBox()
 		self._chk_use_animations.toggled.connect(self.sig_use_animations_changed)
+
+		self._spn_padding_width  = QtWidgets.QSpinBox()
+		self._spn_padding_width.valueChanged.connect(self.calculateNewPadding)
+		self._spn_padding_height = QtWidgets.QSpinBox()
+		self._spn_padding_height.valueChanged.connect(self.calculateNewPadding)
 
 		self._sld_scrollbar_scale = QtWidgets.QSlider()
 		self._sld_scrollbar_scale.valueChanged.connect(lambda val: self.sig_scrollbar_scale_changed.emit(val/100))
@@ -43,10 +49,27 @@ class BSSettingsPanel(QtWidgets.QWidget):
 		self._sld_mob_queue.setTickInterval(500)
 
 		self.layout().addRow(self.tr("On Startup"), self._cmb_startup_behavior)
-		
+		self.layout().addRow(self.tr("List Item (W)"), self._spn_padding_width)
+		self.layout().addRow(self.tr("List Item (H)"), self._spn_padding_height)
 		self.layout().addRow(self.tr("Use Fancy Animations"), self._chk_use_animations)
 		self.layout().addRow(self.tr("Bottom Scrollbar Scale"), self._sld_scrollbar_scale)
 		self.layout().addRow(self.tr("Mob Queue Size"), self._sld_mob_queue)
+
+	@QtCore.Slot(int)
+	def calculateNewPadding(self, _:int):
+		
+		w = self._spn_padding_width.value()
+		h = self._spn_padding_height.value()
+		
+		margs = QtCore.QMargins(w,h,w,h)
+		
+		self.sig_item_padding_changed.emit(margs)
+	
+	@QtCore.Slot(object)
+	def setListItemPadding(self, padding:QtCore.QMargins):
+
+		self._spn_padding_width .setValue(padding.left())
+		self._spn_padding_height.setValue(padding.top())
 	
 	@QtCore.Slot(bool)
 	def setUseAnimations(self, use_animations:bool):
