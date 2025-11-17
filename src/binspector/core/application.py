@@ -95,7 +95,6 @@ class BSMainApplication(QtWidgets.QApplication):
 	def _setupLogging(self):
 		"""Setup logging config and handlers"""
 		
-		print("HUH")
 		logging.basicConfig(level=logging.DEBUG)
 
 		file_formatter = logging.Formatter("\t".join([
@@ -121,9 +120,6 @@ class BSMainApplication(QtWidgets.QApplication):
 		logging.getLogger().addHandler(self._qt_log_handler)
 
 		logging.getLogger(__name__).debug("Well hello.  I've missed you.")
-		print("Damn")
-
-		return "Pop"
 
 	def _setupSettingsManager(self):
 		"""Get all set up with the user settings"""
@@ -211,6 +207,8 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
+
+		window.binContentsWidget().setItemPadding(self._man_settings.listItemPadding())
 
 		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
@@ -341,6 +339,7 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_settings.sig_startup_behavior_changed.connect(self._man_settings.setStartupBehavior)
 			self._wnd_settings.sig_mob_queue_size_changed.connect(lambda queue_size: [w.setMobQueueSize(queue_size) for w in self._man_binwindows.windows()])
 			self._wnd_settings.sig_item_padding_changed.connect(lambda padding: [w.binContentsWidget().setItemPadding(padding) for w in self._man_binwindows.windows()])
+			self._wnd_settings.sig_item_padding_changed.connect(self._man_settings.setListItemPadding)
 			
 			# TODO: Hacky
 			self._wnd_settings.sig_scrollbar_scale_changed.connect(lambda s: [w.binContentsWidget().setBottomScrollbarScaleFactor(s) for w in self._man_binwindows.windows()])
@@ -351,6 +350,7 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_settings.setBottomScrollBarScale(self._man_settings.bottomScrollbarScale())
 			self._wnd_settings.setMobQueueSize(self._man_settings.mobQueueSize())
 			self._wnd_settings.setStartupBehavior(self._man_settings.startupBehavior())
+			self._wnd_settings.setListItemPadding(self._man_settings.listItemPadding())
 
 		if self._wnd_settings.isMinimized():
 			self._wnd_settings.showNormal()
