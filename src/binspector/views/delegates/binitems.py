@@ -77,12 +77,13 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		#return super().paint(painter, kewl_options, index)
 
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
+	"""Displays an icon centered in its item rect, with padding and aspect ratio preservation or something"""
 
 	def __init__(self, *args, aspect_ratio:QtCore.QSize|None=None, icon_provider:icons.BSIconProvider|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._aspect_ratio  = aspect_ratio or QtCore.QSize(1,1)
+		self._aspect_ratio  = aspect_ratio  or QtCore.QSize(1,1)
 		self._icon_provider = icon_provider or icons.BSIconProvider()
 
 	def iconProvider(self) -> icons.BSIconProvider:
@@ -99,10 +100,14 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 	def sizeHint(self, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex) -> QtCore.QSize:
 		"""Return aspect ratio-corrected width x original height"""
 
-		orig = super().sizeHint(option, index)
-		adj  = self.sizeWithAspectRatio(orig)
-		#f"{orig=} {=}")
-		return adj
+		orig_size = super().sizeHint(option, index)
+		adj_size  = self.sizeWithAspectRatio(orig_size)
+		
+		# NOTE: This was killing me for a while.  Adding back in the horizontal padding
+		# after correcting horizontal aspect ratio based on height.  I'm dumb.
+		adj_size += QtCore.QSize(self._padding.left() + self._padding.right(), 0)
+		
+		return adj_size
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
