@@ -183,6 +183,7 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
 		
 		# NOTE: Loads during setPalette now.  Assume it's better performance.
+		#  BUT: Probably need this back here to deal with current mode/state?
 		#self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
 		self._renderer.render(painter, rect)
 	
