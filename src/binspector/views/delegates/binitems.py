@@ -137,12 +137,16 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		canvas_active.moveCenter(opt_styled.rect.center())
 		
 		painter.save()
+		painter.setClipRect(opt_styled.rect)
 		
 		try:
 			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, opt_styled, painter, opt_styled.widget)
+
 			icon.paint(
 				painter,
-				canvas_active
+				canvas_active,
+				mode=QtGui.QIcon.Mode.Selected if opt_styled.state & QtWidgets.QStyle.StateFlag.State_Selected else QtGui.QIcon.Mode.Active,
+				state=QtGui.QIcon.State.On     if opt_styled.state & QtWidgets.QStyle.StateFlag.State_On       else QtGui.QIcon.State.Off,
 			)
 		
 		except Exception as e:

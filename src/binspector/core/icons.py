@@ -114,13 +114,13 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 		self._border_width = border_width
 
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
-
+		
 		drawing.draw_clip_color_chip(
 			painter      = painter,
 			canvas       = rect,
 			clip_color   = self._clip_color,
 			border_width = self._border_width,
-			border_color = self._palette.windowText().color(),
+			border_color = self._palette.brightText().color() if mode == QtGui.QIcon.Mode.Selected else self._palette.windowText().color(),
 			shadow_color = self._palette.shadow().color(),
 		)
 
