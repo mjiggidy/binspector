@@ -182,14 +182,17 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
 		
-		# Replace SVG color strings with QPalette color roll names, then render
-		self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
+		# NOTE: Loads during setPalette now.  Assume it's better performance.
+		#self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
 		self._renderer.render(painter, rect)
 	
 	def setPalette(self, palette:QtGui.QPalette):
 
 		super().setPalette(palette)
 		self._palette_dict = self._paletteToDict(palette)
+
+		# Moved here from paint()
+		self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
 
 	@staticmethod
 	def _paletteToDict(palette:QtGui.QPalette) -> dict[str,str]:
