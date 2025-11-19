@@ -17,6 +17,7 @@ class BSBinTreeView(treeview.LBTreeView):
 	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(16,4,16,4)
 	"""Default padding inside view item"""
 
+	SELECTION_BEHAVIOR_KEY     = QtCore.Qt.Key.Key_Alt
 	DEFAULT_SELECTION_BEHAVIOR = QtWidgets.QTreeView.SelectionBehavior.SelectRows
 	DEFAULT_SELECTION_MODE     = QtWidgets.QTreeView.SelectionMode    .ExtendedSelection
 
@@ -76,11 +77,17 @@ class BSBinTreeView(treeview.LBTreeView):
 			
 			logging.getLogger(__name__).debug("Nothing selected to copy")
 			return
+		
+		# Figure out which columns are selected, total
+		selected_columns_visual = sorted(
+			set(self.header().visualIndex(i.column()) for i in self.selectedIndexes())
+		)
+
 
 		# Collect header strings from selected columns
-		headers_text = []
+		headers_text:dict[int,str] = dict()
 		
-		for col_vis in range(self.header().count()):
+		for col_vis in selected_columns_visual:
 
 			col_logical = self.header().logicalIndex(col_vis)
 
@@ -91,35 +98,37 @@ class BSBinTreeView(treeview.LBTreeView):
 			)
 			
 			# NOTE: Needed?
-			headers_text.append(header_text if isinstance(header_text,str) else "")
+			headers_text[col_vis] = header_text if isinstance(header_text,str) else ""
 		
 		# Collect item strings from selected bin items
-		rows_text = []
-		for idx_row in self.selectionModel().selectedRows():
+		rows_text:list[dict[int, str]] = []
 
-			row_text = []
-			
-			for col_vis in range(self.header().count()):
+		last_row = None
 
-				col_logical = self.header().logicalIndex(col_vis)
-				item_text   = self.model().data(
-					self.model().index(idx_row.row(), col_logical),
-					QtCore.Qt.ItemDataRole.DisplayRole,
-				)
-				row_text.append(item_text if isinstance(item_text,str) else "")
+		for item_index in sorted(self.selectedIndexes(), key=lambda i: i.row()):
+
+			if item_index.row() != last_row:
+				last_row = item_index.row()
+				rows_text.append(dict())
+
+			item_text   = item_index.data(
+				QtCore.Qt.ItemDataRole.DisplayRole,
+			)
 			
-			rows_text.append(row_text)
+			rows_text[-1][self.header().visualIndex(item_index.column())] = item_text if isinstance(item_text, str) else ""
+			
+			
 
 		# Join all together
 		
-		final = "\t".join(headers_text) + "\n"
+		final_headers = "\t".join(headers_text[c] for c in selected_columns_visual)
+		final_items   = "\n".join(
+			"\t".join(i.get(c,"") for c in selected_columns_visual) for i in rows_text
+		)
 		
-		for row in rows_text:
-			final += "\t".join(row) + "\n"
-		
-		QtWidgets.QApplication.clipboard().setText(final)
+		QtWidgets.QApplication.clipboard().setText("\n".join([final_headers, final_items]))
 
-	def toggleSelectionBehavior(self, behavior:QtWidgets.QTreeView.SelectionBehavior|None=None):
+	def toggleSelectionBehavior(self, behavior:QtWidgets.QTreeView.SelectionBehavior|None=None, keep_current_selection:bool=False):
 
 		behavior = behavior or self.DEFAULT_SELECTION_BEHAVIOR
 
@@ -128,43 +137,41 @@ class BSBinTreeView(treeview.LBTreeView):
 			logging.getLogger(__name__).debug("Selection behavior already %s. Not changed.", behavior)
 			return
 		
-		self.selectionModel().clearSelection()
+		if not keep_current_selection:
+			self.clearSelection()
 
 		self.setSelectionBehavior(behavior)
 		
 		if behavior == QtWidgets.QTreeView.SelectionBehavior.SelectItems:
 			self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.MultiSelection)
-			
+
 		else:
 			self.setSelectionMode(self.DEFAULT_SELECTION_MODE)
 		
 		logging.getLogger(__name__).debug("Treeview selection changed to behavior=%s, mode=%s", self.selectionBehavior(), self.selectionMode())
 		
-	def keyPressEvent(self, event:QtGui.QKeyEvent) -> None:
-		
-		# Copy selected rows
+
+	def keyPressEvent(self, event):
+
 		if event.matches(QtGui.QKeySequence.StandardKey.Copy) and not event.isAutoRepeat():
 
 			self.copySelection()
 			event.accept()
-
-		elif event.key() == QtCore.Qt.Key.Key_Control and not event.isAutoRepeat():
-			
-			self.toggleSelectionBehavior(QtWidgets.QTreeView.SelectionBehavior.SelectItems)
-			event.accept()
-			
+		
 		else:
 			return super().keyPressEvent(event)
+
 	
-	def keyReleaseEvent(self, event:QtGui.QKeyEvent):
-		
-		if event.key() == QtCore.Qt.Key.Key_Control:
+	def mousePressEvent(self, event:QtGui.QMouseEvent):
 
-			self.toggleSelectionBehavior()
-			event.accept()
-
+		if event.modifiers() & QtCore.Qt.KeyboardModifier.AltModifier:
+			self.toggleSelectionBehavior(QtWidgets.QTreeView.SelectionBehavior.SelectItems, keep_current_selection=(event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier))
+			#event.accept()
 		else:
-			return super().keyReleaseEvent(event)
+			self.toggleSelectionBehavior()
+			#event.accept()
+
+		return super().mousePressEvent(event)
 
 	def setCustomDelegates(self):
 		"""Temp"""
