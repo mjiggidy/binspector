@@ -520,6 +520,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				self.sig_focus_set_on_column.emit(log_idx)
 				return True
 		
-		
+		QtWidgets.QApplication.beep()
+		#self.sig_focus_set_on_column.emit(-1)
 		
 		return False
