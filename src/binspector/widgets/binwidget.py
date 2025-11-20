@@ -247,7 +247,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_palette       = self.palette()
 		self._default_font      = self.font()
 		self._bin_font          = self.font()
-		self._use_bin_appearance= False
+		self._use_bin_appearance= True
 
 		self._section_top       = BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
@@ -292,12 +292,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# TODO: Not here lol but i dunno
 		self._act_set_view_width_for_columns = QtGui.QAction(self._binitems_list)
 		self._act_set_view_width_for_columns.setText(self.tr("Fit bin list columns to contents"))
-		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
+		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
 		self._act_set_view_width_for_columns.triggered.connect(lambda: self._binitems_list.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._binitems_list.header().count()-1))
 
 		self._act_autofit_columns = QtGui.QAction(self._binitems_list)
 		self._act_autofit_columns.setText(self.tr("Auto-fit bin list columns to contents"))
-		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
+		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
 		self._act_autofit_columns.triggered.connect(self._binitems_list.resizeAllColumnsToContents)
 		#self._act_autofit_columns.triggered.connect(lambda: print)
 		
@@ -391,6 +391,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._use_bin_appearance = is_enabled
 		self.setPalette(self._bin_palette if is_enabled else self._default_palette)
 		self._binitems_list.setFont(self._bin_font if is_enabled else self._default_font)
+
+	@QtCore.Slot(object)
+	def setUseSystemAppearance(self, use_system:bool):
+
+		self.setBinAppearanceEnabled(not use_system)
 
 	@QtCore.Slot(object)
 	def setBinFiltersEnabled(self, is_enabled:bool):
