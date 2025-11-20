@@ -20,8 +20,8 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		self._sift_options = []
 		self._sift_enabled = False
 
-		self._use_binview  = False
-		self._use_filters  = False
+		self._use_binview  = True
+		self._use_filters  = True
 
 		self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
 

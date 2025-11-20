@@ -36,8 +36,14 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	sig_view_mode_toggled = QtCore.Signal(object)
 	"""Binview has been toggled on/off"""
 
+	sig_all_columns_toggled = QtCore.Signal(object)
+	"""All columns have been toggled on/off (opposite of `sig_view_mode_toggled`)"""
+
 	sig_bin_filters_toggled = QtCore.Signal(object)
 	"""Filters have been toggled on/off"""
+
+	sig_all_items_toggled = QtCore.Signal(object)
+	"""All items have been toggled on/off (opposite of `sig_bin_filters_toggled`)"""
 
 	sig_focus_bin_column    = QtCore.Signal(str)
 	"""Focus a given bin column index"""
@@ -47,8 +53,15 @@ class BSBinViewManager(base.LBItemDefinitionView):
 
 		self._default_sort_columns:list[list[int,str]] = []
 
-		self._binview_is_enabled = False
-		self._filters_enabled    = False
+		self._binview_is_enabled = True
+		self._filters_enabled    = True
+
+		# Emit the opposites
+		self.sig_view_mode_toggled  .connect(lambda bv_enabled: self.sig_all_columns_toggled.emit(not bv_enabled))
+		self.sig_bin_filters_toggled.connect(lambda fl_enabled: self.sig_all_items_toggled  .emit(not fl_enabled))
+
+		self.sig_all_columns_toggled.connect(lambda all_columns: print(f"{all_columns=}")) #Not?
+		self.sig_all_items_toggled.connect(lambda all_visible: print(f"{all_visible=}")) # Firing
 
 	@QtCore.Slot(object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
@@ -99,7 +112,13 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		if is_enabled != self._binview_is_enabled:
 
 			self._binview_is_enabled = is_enabled
-			self.sig_view_mode_toggled.emit(is_enabled)
+			self.sig_view_mode_toggled.emit(self._binview_is_enabled)
+	
+	@QtCore.Slot(object)
+	def setAllColumnsVisible(self, all_visibile:bool):
+		"""Convenience method: Opposite of setBinViewEnabled"""
+
+		self.setBinViewEnabled(not all_visibile)
 
 	@QtCore.Slot(object)
 	def setBinFiltersEnabled(self, is_enabled:bool):
@@ -107,7 +126,12 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		if is_enabled != self._filters_enabled:
 
 			self._filters_enabled = is_enabled
-			self.sig_bin_filters_toggled.emit(is_enabled)
+			self.sig_bin_filters_toggled.emit(self._filters_enabled)
+	
+	@QtCore.Slot(object)
+	def setAllItemsVisible(self, all_visible:bool):
+
+		self.setBinFiltersEnabled(not all_visible)
 
 	@QtCore.Slot(QtCore.QModelIndex)
 	def requestFocusColumn(self, selected_index:QtCore.QModelIndex):
@@ -165,6 +189,15 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 	sig_window_rect_changed    = QtCore.Signal(object)
 	sig_was_iconic_changed     = QtCore.Signal(object)
 	sig_bin_appearance_toggled = QtCore.Signal(object)
+	sig_system_appearance_toggled = QtCore.Signal(object)
+
+	def __init__(self, *args, **kwargs):
+		
+		super().__init__(*args, **kwargs)
+
+		self._use_bin_appearance = True
+
+		self.sig_bin_appearance_toggled.connect(lambda use_bin: self.sig_system_appearance_toggled.emit(not use_bin))
 
 	@QtCore.Slot(object, object, object, object, object, object, object)
 	def setAppearanceSettings(self,
@@ -232,7 +265,14 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 	@QtCore.Slot(object)
 	def setEnableBinAppearance(self, is_enabled:bool):
 
-		self.sig_bin_appearance_toggled.emit(is_enabled)
+		if not self._use_bin_appearance == is_enabled:
+			self._use_bin_appearance = is_enabled
+			self.sig_bin_appearance_toggled.emit(is_enabled)
+	
+	@QtCore.Slot(object)
+	def setUseSystemAppearance(self, use_system:bool):
+
+		self.setEnableBinAppearance(not use_system)
 		
 
 

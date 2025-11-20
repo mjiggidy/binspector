@@ -112,24 +112,23 @@ class ActionsManager(QtCore.QObject):
 
 
 		# Bin Visibility Toggles
-		self._act_toggle_use_binview = QtGui.QAction(self.tr("Toggle Bin View"))
-		self._act_toggle_use_binview.setCheckable(True)
-		self._act_toggle_use_binview.setToolTip(self.tr("Toggle between columns shown in the bin view, and all columns available"))
-		self._act_toggle_use_binview.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_1))
-		self._act_toggle_use_binview.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_columns.svg", self._palette_watcher)))
+		self._act_toggle_show_all_items = QtGui.QAction(self.tr("Show All Rows"))
+		self._act_toggle_show_all_items.setCheckable(True)
+		self._act_toggle_show_all_items.setToolTip(self.tr("<b>Show All Bin Items</b><br>Show items normally hidden by filters such as Bin Display, Sift, or Find In Bin"))
+		self._act_toggle_show_all_items.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_2))
+		self._act_toggle_show_all_items.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_rows.svg", self._palette_watcher)))
 
-		self._act_toggle_use_binfilters = QtGui.QAction(self.tr("Toggle Bin Item Filters"))
-		self._act_toggle_use_binfilters.setCheckable(True)
-		self._act_toggle_use_binfilters.setToolTip(self.tr("Toggle between filtering bin items, and showing all items in the bin"))
-		self._act_toggle_use_binfilters.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_2))
-		self._act_toggle_use_binfilters.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_rows.svg", self._palette_watcher)))
+		self._act_toggle_show_all_columns = QtGui.QAction(self.tr("Show All Columns"))
+		self._act_toggle_show_all_columns.setCheckable(True)
+		self._act_toggle_show_all_columns.setToolTip(self.tr("<b>Show All Bin Columns</b><br>Show columns normally hidden by the current Bin View settings"))
+		self._act_toggle_show_all_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_1))
+		self._act_toggle_show_all_columns.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_columns.svg", self._palette_watcher)))
 
-		self._act_toggle_use_binappearance = QtGui.QAction(self.tr("Toggle Bin Appearance Settings"))
-		self._act_toggle_use_binappearance.setCheckable(True)
-		self._act_toggle_use_binappearance.setToolTip(self.tr("Toggle between saved fonts and colors, and default system appearance"))
-		self._act_toggle_use_binappearance.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_3))
-		self._act_toggle_use_binappearance.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_appearance.svg", self._palette_watcher)))
-
+		self._act_toggle_sys_appearance = QtGui.QAction(self.tr("Use System Appearance"))
+		self._act_toggle_sys_appearance.setCheckable(True)
+		self._act_toggle_sys_appearance.setToolTip(self.tr("<b>Use System Appearance</b><br>Use default system fonts and colors, rather than bin settings"))
+		self._act_toggle_sys_appearance.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_3))
+		self._act_toggle_sys_appearance.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_appearance.svg", self._palette_watcher)))
 
 		# Tools
 		self._act_show_local_storage = QtGui.QAction(self.tr("Open User Data Folder"), parent=self._parent)
@@ -191,9 +190,9 @@ class ActionsManager(QtCore.QObject):
 
 		self._actgrp_toggle_binsettings = QtGui.QActionGroup(self._parent)
 		self._actgrp_toggle_binsettings.setExclusive(False)
-		self._actgrp_toggle_binsettings.addAction(self._act_toggle_use_binview)
-		self._actgrp_toggle_binsettings.addAction(self._act_toggle_use_binfilters)
-		self._actgrp_toggle_binsettings.addAction(self._act_toggle_use_binappearance)
+		self._actgrp_toggle_binsettings.addAction(self._act_toggle_show_all_columns)
+		self._actgrp_toggle_binsettings.addAction(self._act_toggle_show_all_items)
+		self._actgrp_toggle_binsettings.addAction(self._act_toggle_sys_appearance)
 	
 	def applicationActionsGroup(self) -> QtGui.QActionGroup:
 		"""Application-wide actions"""
@@ -313,17 +312,17 @@ class ActionsManager(QtCore.QObject):
 	def toggleBinView(self) -> QtGui.QAction:
 		"""Toggle filtering columns through the bin view"""
 
-		return self._act_toggle_use_binview
+		return self._act_toggle_show_all_columns
 	
 	def toggleBinItemFilters(self) -> QtGui.QAction:
 		"""Toggle filtering of bin items"""
 
-		return self._act_toggle_use_binfilters
+		return self._act_toggle_show_all_items
 	
 	def toggleBinAppearance(self) -> QtGui.QAction:
 		"""Toggle saved fonts and colors"""
 
-		return self._act_toggle_use_binappearance
+		return self._act_toggle_sys_appearance
 	
 	def toggleBinSettingsActionGroup(self) -> QtGui.QActionGroup:
 		"""Toggles for saved bin settings"""
