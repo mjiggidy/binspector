@@ -305,7 +305,7 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_software_updates.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 			
 			# Release dat ref
-			self._wnd_software_updates.destroyed.connect(lambda: setattr(self, "_wnd_update", None))
+			self._wnd_software_updates.destroyed.connect(lambda: setattr(self, "_wnd_software_updates", None))
 
 		# Check for updates at window launch if an update hasn't already been found
 		if self._man_software_updates.latestReleaseInfo() is None:
