@@ -114,13 +114,13 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 		self._border_width = border_width
 
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
-
+		
 		drawing.draw_clip_color_chip(
 			painter      = painter,
 			canvas       = rect,
 			clip_color   = self._clip_color,
 			border_width = self._border_width,
-			border_color = self._palette.windowText().color(),
+			border_color = self._palette.brightText().color() if mode == QtGui.QIcon.Mode.Selected else self._palette.windowText().color(),
 			shadow_color = self._palette.shadow().color(),
 		)
 
@@ -182,14 +182,28 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
 		
-		# Replace SVG color strings with QPalette color roll names, then render
+		# NOTE: Loads during setPalette now.  Assume it's better performance.
+		#  BUT: Probably need this back here to deal with current mode/state?
+		#self._palette.setCurrentColorGroup(QtGui.QPalette.ColorGroup.Inactive if mode == QtGui.QPalette.ColorGroup.Inactive else QtGui.QPalette.ColorGroup.Active)
+		self._palette_dict = self._paletteToDict(self._palette)
+		
+		if mode == QtGui.QIcon.Mode.Selected:
+			self._palette_dict["ButtonText"] = self._palette.brightText().color().name()
+		elif state == QtGui.QIcon.State.On:
+			self._palette_dict["ButtonText"] = self._palette.accent().color().name()
+		else:
+			self._palette_dict["ButtonText"] = self._palette.buttonText().color().name()
+		
 		self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
 		self._renderer.render(painter, rect)
 	
 	def setPalette(self, palette:QtGui.QPalette):
 
 		super().setPalette(palette)
-		self._palette_dict = self._paletteToDict(palette)
+		#self._palette_dict = self._paletteToDict(palette)
+
+		# Moved here from paint()
+		#self._renderer.load(self._svg_template.format_map(self._palette_dict).encode("utf-8"))
 
 	@staticmethod
 	def _paletteToDict(palette:QtGui.QPalette) -> dict[str,str]:

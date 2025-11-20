@@ -63,6 +63,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btn_toolbox_appearance = buttons.BSPushButtonAction(show_text=False)
 		self._btn_toolbox_sifting    = buttons.BSPushButtonAction(show_text=False)
 		self._btn_toolbox_binview    = buttons.BSPushButtonAction(show_text=False)
+
+
+		
 		
 		# The rest
 		
@@ -208,7 +211,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_binview.visibilityChanged                 .connect(self._man_actions.showBinViewSettings().setChecked)
 
 		# User debuggy-type tools
-		# NOTE: Have application instance hook directly intow window.actionsManager()?
+		# NOTE: Have application instance hook directly into window.actionsManager()?
+		# NOTE FROM FUTURE SELF: ^^ what?
 		self._man_actions.showUserFolder().triggered         .connect(self.sig_request_show_user_folder)
 		self._man_actions.showLogViewer().triggered          .connect(self.sig_request_show_log_viewer)
 		self._man_actions.showSettingsWindow().triggered     .connect(self.sig_request_show_settings)
@@ -278,17 +282,20 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._actgrp_view_mode.triggered           .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
 
 		# Bin Settings Toggles
-		self._man_actions._act_toggle_use_binview.toggled       .connect(self._man_binview.setBinViewEnabled)
-		self._man_binview.sig_view_mode_toggled                 .connect(self._man_actions._act_toggle_use_binview.setChecked)
+		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._man_binview.setAllColumnsVisible)
+		self._man_binview.sig_all_columns_toggled               .connect(self._man_actions._act_toggle_show_all_columns.setChecked)
 		self._man_binview.sig_view_mode_toggled                 .connect(self._main_bincontents.setBinViewEnabled)
-
-		self._man_actions._act_toggle_use_binappearance.toggled .connect(self._man_appearance.setEnableBinAppearance)
-		self._man_appearance.sig_bin_appearance_toggled         .connect(self._man_actions._act_toggle_use_binappearance.setChecked)
-		self._man_appearance.sig_bin_appearance_toggled         .connect(self._main_bincontents.setBinAppearanceEnabled)
 		
-		self._man_actions._act_toggle_use_binfilters.toggled    .connect(self._man_binview.setBinFiltersEnabled)
-		self._man_binview.sig_bin_filters_toggled               .connect(self._man_actions._act_toggle_use_binfilters.setChecked)
+		self._man_actions._act_toggle_show_all_items.toggled    .connect(self._man_binview.setAllItemsVisible)
+		self._man_binview.sig_all_items_toggled                 .connect(self._man_actions._act_toggle_show_all_items.setChecked)
 		self._man_binview.sig_bin_filters_toggled               .connect(self._main_bincontents.setBinFiltersEnabled)
+		self._man_binview.sig_focus_bin_column                  .connect(self._main_bincontents.focusBinColumn)
+
+		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
+		self._man_appearance.sig_system_appearance_toggled      .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
+		self._man_appearance.sig_system_appearance_toggled      .connect(self._main_bincontents.setUseSystemAppearance)
+		
+		self._tool_binview.activated                            .connect(self._man_binview.requestFocusColumn)
 
 	##
 	## Getters & Setters

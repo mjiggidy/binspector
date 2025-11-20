@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="24"
+   height="18"
+   viewBox="0 0 24 18"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="item_masterclip_v07.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#505050"
+     showgrid="true"
+     inkscape:zoom="38.006989"
+     inkscape:cx="-0.43413067"
+     inkscape:cy="5.3279674"
+     inkscape:window-width="3840"
+     inkscape:window-height="2136"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="2"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <rect
+     style="fill:#000000;fill-opacity:0.32046333;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="Shadow"
+     width="22"
+     height="16"
+     x="2"
+     y="2"
+     ry="2"
+     rx="2" />
+  <rect
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.999994;stroke-dasharray:none;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="Outline"
+     width="22"
+     height="16"
+     x="0"
+     y="0"
+     ry="2"
+     rx="1.9999999" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect1"
+     width="2"
+     height="2"
+     x="2"
+     y="2"
+     rx="0"
+     ry="0"
+     inkscape:label="Perf" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect1-5"
+     width="2"
+     height="2"
+     x="18"
+     y="2"
+     rx="0"
+     ry="0"
+     inkscape:label="Perf" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect1-52"
+     width="2"
+     height="2"
+     x="2"
+     y="6"
+     rx="0"
+     ry="0"
+     inkscape:label="Perf" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect1-5-5"
+     width="2"
+     height="2"
+     x="18"
+     y="6"
+     rx="0"
+     ry="0"
+     inkscape:label="Perf" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect1-52-4"
+     width="2"
+     height="2"
+     x="2"
+     y="10"
+     rx="0"
+     ry="0"
+     inkscape:label="Perf" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect1-5-5-3"
+     width="2"
+     height="2"
+     x="18"
+     y="10"
+     rx="0"
+     ry="0"
+     inkscape:label="Perf" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect1-52-4-6"
+     width="2"
+     height="2"
+     x="2"
+     y="14"
+     rx="0"
+     ry="0"
+     inkscape:label="Perf" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect1-5-5-3-8"
+     width="2"
+     height="2"
+     x="18"
+     y="14"
+     rx="0"
+     ry="0"
+     inkscape:label="Perf" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="rect2"
+     width="10"
+     height="14"
+     x="6"
+     y="2" />
+</svg>

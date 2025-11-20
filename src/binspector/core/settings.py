@@ -89,7 +89,7 @@ class BSSettingsManager:
 	def lastWindowGeometry(self) -> QtCore.QRect|None:
 
 		last_rect = self.settings("bs").value("Session/last_window_geometry", [], list)
-		print(last_rect)
+		#print(last_rect)
 
 		if not len(last_rect) == 4:
 			last_rect = QtCore.QRect()
@@ -118,40 +118,40 @@ class BSSettingsManager:
 		return is_enabled
 	
 	@QtCore.Slot(bool)
-	def setBinViewEnabled(self, is_enabled:bool):
+	def setAllColumnsVisible(self, all_columns_visible:bool):
 
-		self.settings("bs").setValue("BinSettingsToggles/use_bin_view", is_enabled)
-		logging.getLogger(__name__).debug("Set use_bin_view: %s", is_enabled)
+		self.settings("bs").setValue("BinSettingsToggles/show_all_columns", all_columns_visible)
+		logging.getLogger(__name__).debug("Set show_all_columns: %s", all_columns_visible)
 	
-	def binViewIsEnabled(self) -> bool:
+	def allColumnsVisible(self) -> bool:
 		
-		is_enabled = self.settings("bs").value("BinSettingsToggles/use_bin_view", True, bool)
-		logging.getLogger(__name__).debug("Returning use_bin_view: %s", is_enabled)
-		return is_enabled
+		all_visible = self.settings("bs").value("BinSettingsToggles/show_all_columns", False, bool)
+		logging.getLogger(__name__).debug("Returning show_all_columns: %s", all_visible)
+		return all_visible
 	
 	@QtCore.Slot(bool)
-	def setBinFiltersEnabled(self, is_enabled:bool):
+	def setAllItemsVisible(self, show_all_items:bool):
 
-		self.settings("bs").setValue("BinSettingsToggles/use_bin_filters", is_enabled)
-		logging.getLogger(__name__).debug("Set use_bin_filters: %s", is_enabled)
+		self.settings("bs").setValue("BinSettingsToggles/show_all_items", show_all_items)
+		logging.getLogger(__name__).debug("Set show_all_items: %s", show_all_items)
 	
-	def binFiltersEnabled(self) -> bool:
+	def allItemsVisible(self) -> bool:
 		
-		is_enabled = self.settings("bs").value("BinSettingsToggles/use_bin_filters", True, bool)
-		logging.getLogger(__name__).debug("Returning use_bin_filters: %s", is_enabled)
-		return is_enabled
+		all_visible = self.settings("bs").value("BinSettingsToggles/show_all_items", False, bool)
+		logging.getLogger(__name__).debug("Returning all_visible: %s", all_visible)
+		return all_visible
 	
 	@QtCore.Slot(bool)
-	def setBinAppearanceEnabled(self, is_enabled:bool):
+	def setUseSystemAppearance(self, use_system:bool):
 
-		self.settings("bs").setValue("BinSettingsToggles/use_bin_appearance", is_enabled)
-		logging.getLogger(__name__).debug("Set use_bin_appearance: %s", is_enabled)
+		self.settings("bs").setValue("BinSettingsToggles/use_system_appearance", use_system)
+		logging.getLogger(__name__).debug("Set use_system_appearance: %s", use_system)
 	
-	def binAppearanceIsEnabled(self) -> bool:
+	def useSystemAppearance(self) -> bool:
 		
-		is_enabled = self.settings("bs").value("BinSettingsToggles/use_bin_appearance", True, bool)
-		logging.getLogger(__name__).debug("Returning use_bin_appearance: %s", is_enabled)
-		return is_enabled
+		use_system = self.settings("bs").value("BinSettingsToggles/use_system_appearance", False, bool)
+		logging.getLogger(__name__).debug("Returning use_system_appearance: %s", use_system)
+		return use_system
 	
 	@QtCore.Slot(int)
 	def setMobQueueSize(self, queue_size:int):

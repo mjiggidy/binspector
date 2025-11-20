@@ -47,6 +47,7 @@ class LBAbstractViewHeaderItem:
 			QtCore.Qt.ItemDataRole.UserRole+2:  self._format_id,
 			QtCore.Qt.ItemDataRole.UserRole+3:  self._is_hidden,
 			QtCore.Qt.ItemDataRole.UserRole+4:  self._field_width,
+			QtCore.Qt.ItemDataRole.UserRole+5:  self._field_name,
 		 })
 	
 	def data(self, role:QtCore.Qt.ItemDataRole) -> typing.Any:

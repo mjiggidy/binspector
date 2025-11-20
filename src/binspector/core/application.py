@@ -20,7 +20,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		super().__init__(*args, **kwargs)
 
 		self.setApplicationName("Binspector")
-		self.setApplicationVersion("0.0.10")
+		self.setApplicationVersion("0.0.11")
 		self.setStyle("Fusion")
 
 		self.setOrganizationName("GlowingPixel")
@@ -192,14 +192,15 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_bin_changed               .connect(self._man_settings.setLastBinPath)
 
 		# Restore Toggle Settings
-		window.binViewManager().setBinViewEnabled(self._man_settings.binViewIsEnabled())
-		window.binViewManager().sig_view_mode_toggled.connect(self._man_settings.setBinViewEnabled)
+		window.binViewManager().setAllColumnsVisible(self._man_settings.allColumnsVisible())
+		window.binViewManager().sig_all_columns_toggled.connect(self._man_settings.setAllColumnsVisible)
 		
-		window.binViewManager().setBinFiltersEnabled(self._man_settings.binFiltersEnabled())
-		window.binViewManager().sig_bin_filters_toggled.connect(self._man_settings.setBinFiltersEnabled)
+		window.binViewManager().setAllItemsVisible(self._man_settings.allItemsVisible())
+		window.binViewManager().sig_all_items_toggled.connect(self._man_settings.setAllItemsVisible)
 
-		window.appearanceManager().setEnableBinAppearance(self._man_settings.binAppearanceIsEnabled())
-		window.appearanceManager().sig_bin_appearance_toggled.connect(self._man_settings.setBinAppearanceEnabled)
+		window.appearanceManager().setUseSystemAppearance(self._man_settings.useSystemAppearance())
+		window.appearanceManager().sig_system_appearance_toggled.connect(self._man_settings.setUseSystemAppearance)
+		#window.appearanceManager().sig_bin_appearance_toggled.connect(self._man_settings.setUseSystemAppearance)
 
 		window.setMobQueueSize(self._man_settings.mobQueueSize())
 		window.setUseAnimation(self._man_settings.useFancyProgressBar())

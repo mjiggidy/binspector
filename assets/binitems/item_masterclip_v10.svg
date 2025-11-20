@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="24"
+   height="18"
+   viewBox="0 0 24 18"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="item_masterclip_v10.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#505050"
+     showgrid="true"
+     inkscape:zoom="53.75"
+     inkscape:cx="7.1348837"
+     inkscape:cy="6.6325581"
+     inkscape:window-width="3840"
+     inkscape:window-height="2136"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="2"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <path
+     d="M 23,1 V 17 H 1 v 1 H 24 V 1 Z"
+     style="fill-opacity:0.5;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     id="path28" />
+  <path
+     id="path27"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     d="M 0,0 V 17 H 1 V 16 1 h 21 1 V 0 Z M 23,1 H 22 V 16 H 1 v 1 h 22 z" />
+  <path
+     id="path30"
+     style="stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     d="M 1,1 V 16 H 22 V 1 Z M 2,2 H 2.5 3 V 3 H 2.5 2 Z m 3,0 h 13 c 0.554,0 1,0.446 1,1 v 11 c 0,0.554 -0.446,1 -1,1 H 5 C 4.446,15 4,14.554 4,14 V 3 C 4,2.446 4.446,2 5,2 Z M 20,2 H 20.5 21 V 3 H 20.5 20 Z M 2,6 H 2.5 3 V 7 H 2.5 2 Z M 20,6 H 20.5 21 V 7 H 20.5 20 Z M 2,10 H 2.5 3 v 1 H 2.5 2 Z m 18,0 h 0.5 0.5 v 1 H 20.5 20 Z M 2,14 H 2.5 3 v 1 H 2.5 2 Z m 18,0 h 0.5 0.5 v 1 H 20.5 20 Z" />
+  <path
+     d="M 2,2 V 3 H 2.5 3 V 2 H 2.5 Z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path31" />
+  <path
+     d="M 2,6 V 7 H 2.5 3 V 6 H 2.5 Z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path34" />
+  <path
+     d="m 2,14 v 1 H 2.5 3 V 14 H 2.5 Z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path38" />
+  <path
+     d="m 2,10 v 1 H 2.5 3 V 10 H 2.5 Z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path36" />
+  <path
+     d="M 20,2 V 3 H 20.5 21 V 2 h -0.5 z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path33" />
+  <path
+     d="M 20,6 V 7 H 20.5 21 V 6 h -0.5 z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path35" />
+  <path
+     d="m 20,10 v 1 h 0.5 0.5 v -1 h -0.5 z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path37" />
+  <path
+     d="m 20,14 v 1 h 0.5 0.5 v -1 h -0.5 z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path37-1" />
+  <path
+     d="M 5,2 C 4.446,2 4,2.446 4,3 v 11 c 0,0.554 0.446,1 1,1 h 13 c 0.554,0 1,-0.446 1,-1 V 3 C 19,2.446 18.554,2 18,2 Z"
+     style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.0015"
+     id="path32" />
+</svg>

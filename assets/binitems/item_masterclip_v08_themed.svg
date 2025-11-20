@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="24"
+   height="18"
+   viewBox="0 0 24 18"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <path
+     d="M 22.824219,1.1757812 C 22.937288,1.426821 23,1.7058727 23,2 v 13 c 0,1.108 -0.892,2 -2,2 H 2 C 1.7058727,17 1.426821,16.937288 1.1757812,16.824219 1.4886525,17.518865 2.1861273,18 3,18 h 19 c 1.108,0 2,-0.892 2,-2 V 3 C 24,2.1861273 23.518865,1.4886525 22.824219,1.1757812 Z"
+     style="fill-opacity:0.25;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill:{Shadow}"
+     id="path19" />
+  <path
+     id="path20"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     d="M 2 0 C 0.892 0 0 0.892 0 2 L 0 15 C 0 15.813873 0.48113516 16.511347 1.1757812 16.824219 C 1.426821 16.937288 1.7058727 17 2 17 L 21 17 C 22.108 17 23 16.108 23 15 L 23 2 C 23 1.7058727 22.937288 1.4268211 22.824219 1.1757812 C 22.511347 0.48113516 21.813873 -1.4802974e-16 21 0 L 2 0 z M 2 1 L 21 1 C 21.554 1 22 1.446 22 2 L 22 15 C 22 15.554 21.554 16 21 16 L 2 16 C 1.446 16 1 15.554 1 15 L 1 2 C 1 1.446 1.446 1 2 1 z " />
+  <path
+     id="path22"
+     style="stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+     d="M 2 1 C 1.446 1 1 1.446 1 2 L 1 3 L 1 15 C 1 15.554 1.446 16 2 16 L 21 16 C 21.554 16 22 15.554 22 15 L 22 2 C 22 1.446 21.554 1 21 1 L 3 1 L 2 1 z M 2 2 L 2.5 2 L 3 2 L 3 3 L 2.5 3 L 2 3 L 2 2 z M 4 2 L 5.5996094 2 L 17.400391 2 L 19 2 L 19 15 L 17.400391 15 L 5.5996094 15 L 4 15 L 4 2 z M 20 2 L 20.5 2 L 21 2 L 21 3 L 20.5 3 L 20 3 L 20 2 z M 2 6 L 2.5 6 L 3 6 L 3 7 L 2.5 7 L 2 7 L 2 6 z M 20 6 L 20.5 6 L 21 6 L 21 7 L 20.5 7 L 20 7 L 20 6 z M 2 10 L 2.5 10 L 3 10 L 3 11 L 2.5 11 L 2 11 L 2 10 z M 20 10 L 20.5 10 L 21 10 L 21 11 L 20.5 11 L 20 11 L 20 10 z M 2 14 L 2.5 14 L 3 14 L 3 15 L 2.5 15 L 2 15 L 2 14 z M 20 14 L 20.5 14 L 21 14 L 21 15 L 20.5 15 L 20 15 L 20 14 z " />
+  <path
+     d="M 2,2 V 3 H 2.5 3 V 2 H 2.5 Z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path23" />
+  <path
+     d="M 2,6 V 7 H 2.5 3 V 6 H 2.5 Z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path26" />
+  <path
+     d="m 2,14 v 1 H 2.5 3 V 14 H 2.5 Z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path30" />
+  <path
+     d="m 2,10 v 1 H 2.5 3 V 10 H 2.5 Z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path28" />
+  <path
+     d="M 20,2 V 3 H 20.5 21 V 2 h -0.5 z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path25" />
+  <path
+     d="M 20,6 V 7 H 20.5 21 V 6 h -0.5 z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path27" />
+  <path
+     d="m 20,14 v 1 h 0.5 0.5 v -1 h -0.5 z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path31" />
+  <path
+     d="m 20,10 v 1 h 0.5 0.5 v -1 h -0.5 z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path29" />
+  <path
+     d="M 4,2 V 15 H 5.5996094 17.400391 19 V 2 H 17.400391 5.5996094 Z"
+     style="stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15;fill:{WindowText}"
+     id="path24" />
+</svg>

@@ -1,3 +1,4 @@
+import logging
 from PySide6 import QtWidgets, QtCore, QtGui
 import avbutils
 from . import treeview
@@ -7,6 +8,63 @@ from ..views.delegates import binitems
 from ..core import icons
 from ..res import icons_binitems
 
+class BSColumnSelectWatcher(QtCore.QObject):
+
+	DEFAULT_SELECTION_MODIFIER = QtGui.Qt.KeyboardModifier.AltModifier
+
+	sig_column_selection_activated = QtCore.Signal(bool)
+	sig_column_selected            = QtCore.Signal(object)
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		# Start out accurate!
+		self._column_selection_active = bool(QtWidgets.QApplication.keyboardModifiers() & self.DEFAULT_SELECTION_MODIFIER)
+
+	def columnSelectionIsActive(self) -> bool:
+		"""Column selection mode currently active"""
+
+		return self._column_selection_active
+	
+	def setColumnSelectionActive(self, is_active:bool):
+		"""Indicate column selection has begun"""
+
+		if is_active != self._column_selection_active:
+
+			self._column_selection_active = is_active
+			
+			logging.getLogger(__name__).debug("Column selection changed to %s", self.columnSelectionIsActive())
+			self.sig_column_selection_activated.emit(is_active)
+
+	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent) -> bool:
+
+		if event.type() == QtCore.QEvent.Type.MouseButtonPress:
+			
+			if not event.button() & QtCore.Qt.MouseButton.LeftButton:
+				return super().eventFilter(watched, event)
+	
+			# If clicked with modifier key: Column select begin!
+			if not event.modifiers() & self.DEFAULT_SELECTION_MODIFIER:
+				return super().eventFilter(watched, event)
+			
+			self.setColumnSelectionActive(True)
+				
+			
+			if self.columnSelectionIsActive():
+				event = QtGui.QMouseEvent(event)
+				self.sig_column_selected.emit(event.localPos())
+			
+			return True
+
+		if event.type() == QtCore.QEvent.Type.MouseButtonRelease and self.columnSelectionIsActive():
+			
+			# On mouse release, we done wit dat column selection
+			self.setColumnSelectionActive(False)
+			return True
+
+		return super().eventFilter(watched, event)
+
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
 
@@ -15,6 +73,13 @@ class BSBinTreeView(treeview.LBTreeView):
 
 	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(16,4,16,4)
 	"""Default padding inside view item"""
+
+	SELECTION_BEHAVIOR_KEY     = QtCore.Qt.Key.Key_Alt
+	DEFAULT_SELECTION_BEHAVIOR = QtWidgets.QTreeView.SelectionBehavior.SelectRows
+	DEFAULT_SELECTION_MODE     = QtWidgets.QTreeView.SelectionMode    .ExtendedSelection
+	
+	ALLOW_KEEP_CURRENT_SELECTION_BETWEEN_MODES = False
+	"""Actually allow `keep_current_selection` bool argument to take effect"""
 
 	BINVIEW_COLUMN_WIDTH_ADJUST:int = 64
 	"""Adjust binview-specified column widths for better fit"""
@@ -40,8 +105,8 @@ class BSBinTreeView(treeview.LBTreeView):
 		
 		self.setModel((viewmodels.LBSortFilterProxyModel()))
 
-		self.setSelectionBehavior(QtWidgets.QTreeView.SelectionBehavior.SelectRows)
-		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.ExtendedSelection)
+		self.setSelectionBehavior(self.DEFAULT_SELECTION_BEHAVIOR)
+		self.setSelectionMode(self.DEFAULT_SELECTION_MODE)
 
 		self.model().columnsInserted.connect(self.setColumnWidthsFromBinView)
 		self.model().columnsInserted.connect(
@@ -62,44 +127,154 @@ class BSBinTreeView(treeview.LBTreeView):
 		self.setCustomDelegates()
 		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=self.DEFAULT_ITEM_PADDING))
 
-	def keyPressEvent(self, event:QtGui.QKeyEvent) -> None:
+		self._column_select_watcher = BSColumnSelectWatcher()
+		self.header().viewport().installEventFilter(self._column_select_watcher)
+		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
+
+	@QtCore.Slot(object)
+	def selectSectionFromCoordinates(self, viewport_coords:QtCore.QPoint):
 		
-		# Copy selected rows
-		if event.matches(QtGui.QKeySequence.StandardKey.Copy) and self.selectionModel().hasSelection():
-			
+		section_logical = self.header().logicalIndexAt(viewport_coords.x())
+		self.selectSection(section_logical)
+		#print(self.model().headerData(section_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole))
+
+	@QtCore.Slot(int)
+	def selectSection(self, column_logical:int):
+
+		# TODO: TESTING WIHTOUT
+		#if not QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.AltModifier:
+		#	logging.getLogger(__name__).debug("NAAAH")
+		#	return
+		
+		
+		
+		self.toggleSelectionBehavior(
+			QtWidgets.QTreeView.SelectionBehavior.SelectColumns,
+			keep_current_selection = QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
+		)
+
+		if QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier:
+			selection_behavior_flags = QtCore.QItemSelectionModel.SelectionFlag.Toggle
+		
+		else:
+			selection_behavior_flags = QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect
+
+
+		self.selectionModel().select(
+			QtCore.QItemSelection(self.model().index(0, column_logical), self.model().index(self.model().rowCount()-1, column_logical)),
+			QtCore.QItemSelectionModel.SelectionFlag.Columns|
+			selection_behavior_flags
+		)
+
+	def copySelection(self):
+		"""Copy selection to clipboard"""
+
 		# TODO: Messssssy
 		# TODO: This'll be good to refactor for ALE/CSV/JSON exports, yay!
 
-			headers_text = []
+		if not self.selectionModel().hasSelection():
 			
-			for col_vis in range(self.header().count()):
-				col_logical = self.header().logicalIndex(col_vis)
-				header_text = self.model().headerData(col_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
-				headers_text.append(header_text if isinstance(header_text,str) else "")
+			logging.getLogger(__name__).debug("Nothing selected to copy")
+			return
+		
+		# Figure out which columns are selected, total
+		selected_columns_visual = sorted(
+			set(self.header().visualIndex(i.column()) for i in self.selectedIndexes())
+		)
+
+
+		# Collect header strings from selected columns
+		headers_text:dict[int,str] = dict()
+		
+		for col_vis in selected_columns_visual:
+
+			col_logical = self.header().logicalIndex(col_vis)
+
+			header_text = self.model().headerData(
+				col_logical,
+				QtCore.Qt.Orientation.Horizontal,
+				QtCore.Qt.ItemDataRole.DisplayRole,
+			)
 			
-			rows_text = []
-			for idx_row in self.selectionModel().selectedRows():
+			# NOTE: Needed?
+			headers_text[col_vis] = header_text if isinstance(header_text,str) else ""
+		
+		# Collect item strings from selected bin items
+		rows_text:list[dict[int, str]] = []
 
-				row_text = []
-				for col_vis in range(self.header().count()):
+		last_row = None
 
-					col_logical = self.header().logicalIndex(col_vis)
-					display_text = self.model().data(
-						self.model().index(idx_row.row(), col_logical),
-						QtCore.Qt.ItemDataRole.DisplayRole
-					)
-					row_text.append(display_text if isinstance(display_text,str) else "")
-				rows_text.append(row_text)
+		for item_index in sorted(self.selectedIndexes(), key=lambda i: i.row()):
 
-			final = "\t".join(headers_text) + "\n"
-			for row in rows_text:
-				final += "\t".join(row) + "\n"
+			if item_index.row() != last_row:
+				last_row = item_index.row()
+				rows_text.append(dict())
+
+			item_text   = item_index.data(
+				QtCore.Qt.ItemDataRole.DisplayRole,
+			)
 			
-			QtWidgets.QApplication.clipboard().setText(final)
+			rows_text[-1][self.header().visualIndex(item_index.column())] = item_text if isinstance(item_text, str) else ""
+			
+			
+
+		# Join all together
+		
+		final_headers = "\t".join(headers_text[c] for c in selected_columns_visual)
+		final_items   = "\n".join(
+			"\t".join(i.get(c,"") for c in selected_columns_visual) for i in rows_text
+		)
+		
+		QtWidgets.QApplication.clipboard().setText("\n".join([final_headers, final_items]))
+
+	def toggleSelectionBehavior(self, behavior:QtWidgets.QTreeView.SelectionBehavior|None=None, keep_current_selection:bool=False):
+
+		behavior = behavior or self.DEFAULT_SELECTION_BEHAVIOR
+
+		if self.selectionBehavior() == behavior:
+			
+			logging.getLogger(__name__).debug("Selection behavior already %s. Not changed.", behavior)
+			return
+		
+		# NOTE: BIG NOTE: TODO: ETC:
+		# Disabling keep_current_selection for all instances for now
+		keep_current_selection = keep_current_selection and self.ALLOW_KEEP_CURRENT_SELECTION_BETWEEN_MODES
+		
+		if not keep_current_selection:
+			self.clearSelection()
+
+		self.setSelectionBehavior(behavior)
+		
+		if behavior == QtWidgets.QTreeView.SelectionBehavior.SelectItems:
+			self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.MultiSelection)
+
+		else:
+			self.setSelectionMode(self.DEFAULT_SELECTION_MODE)
+		
+		logging.getLogger(__name__).debug("Treeview selection changed to behavior=%s, mode=%s", self.selectionBehavior(), self.selectionMode())
+		
+
+	def keyPressEvent(self, event):
+
+		if event.matches(QtGui.QKeySequence.StandardKey.Copy) and not event.isAutoRepeat():
+
+			self.copySelection()
 			event.accept()
-			#print(final)
+		
 		else:
 			return super().keyPressEvent(event)
+
+	
+	def mousePressEvent(self, event:QtGui.QMouseEvent):
+
+		if event.modifiers() & QtCore.Qt.KeyboardModifier.AltModifier:
+			self.toggleSelectionBehavior(QtWidgets.QTreeView.SelectionBehavior.SelectItems, keep_current_selection=(event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier))
+			#event.accept()
+		else:
+			self.toggleSelectionBehavior()
+			#event.accept()
+
+		return super().mousePressEvent(event)
 
 	def setCustomDelegates(self):
 		"""Temp"""

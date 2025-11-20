@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer3" />
+  <g
+     id="layer2">
+    <path
+       d="M 1,0 C 0.446,0 0,0.446 0,1 v 10 c 0,0.554 0.446,1 1,1 h 14 c 0.554,0 1,-0.446 1,-1 V 1 C 16,0.446 15.554,0 15,0 Z M 1,1 H 2 V 2 H 1 Z M 3,1 H 13 V 11 H 3 Z m 11,0 h 1 V 2 H 14 Z M 1,4 H 2 V 5 H 1 Z m 13,0 h 1 V 5 H 14 Z M 1,7 H 2 V 8 H 1 Z m 13,0 h 1 V 8 H 14 Z M 1,10 h 1 v 1 H 1 Z m 13,0 h 1 v 1 h -1 z"
+       style="stroke-width:0.999992;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="path1" />
+    <path
+       d="M 3,1 V 11 H 13 V 1 Z"
+       style="fill:#ffffff;stroke-width:0.999995;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path3" />
+  </g>
+  <g
+     id="layer1">
+    <path
+       d="M 1,1 V 2 H 2 V 1 Z"
+       style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path2" />
+    <path
+       d="M 1,4 V 5 H 2 V 4 Z"
+       style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path5" />
+    <path
+       d="M 1,7 V 8 H 2 V 7 Z"
+       style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path7" />
+    <path
+       d="m 1,10 v 1 h 1 v -1 z"
+       style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path9" />
+    <path
+       d="m 14,1 v 1 h 1 V 1 Z"
+       style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path4" />
+    <path
+       d="m 14,4 v 1 h 1 V 4 Z"
+       style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path6" />
+    <path
+       d="m 14,7 v 1 h 1 V 7 Z"
+       style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path8" />
+    <path
+       d="m 14,10 v 1 h 1 v -1 z"
+       style="fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;fill-opacity:0.15000001"
+       id="path10" />
+  </g>
+</svg>
