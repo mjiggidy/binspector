@@ -89,7 +89,7 @@ class BSSettingsManager:
 	def lastWindowGeometry(self) -> QtCore.QRect|None:
 
 		last_rect = self.settings("bs").value("Session/last_window_geometry", [], list)
-		print(last_rect)
+		#print(last_rect)
 
 		if not len(last_rect) == 4:
 			last_rect = QtCore.QRect()

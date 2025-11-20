@@ -60,8 +60,8 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		self.sig_view_mode_toggled  .connect(lambda bv_enabled: self.sig_all_columns_toggled.emit(not bv_enabled))
 		self.sig_bin_filters_toggled.connect(lambda fl_enabled: self.sig_all_items_toggled  .emit(not fl_enabled))
 
-		self.sig_all_columns_toggled.connect(lambda all_columns: print(f"{all_columns=}")) #Not?
-		self.sig_all_items_toggled.connect(lambda all_visible: print(f"{all_visible=}")) # Firing
+		#self.sig_all_columns_toggled.connect(lambda all_columns: print(f"{all_columns=}")) #Not?
+		#self.sig_all_items_toggled.connect(lambda all_visible: print(f"{all_visible=}")) # Firing
 
 	@QtCore.Slot(object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
@@ -148,7 +148,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 
 		selected_field_name = f"{selected_format}_{selected_name}" if selected_format == 40 else str(selected_format)
 
-		print(selected_field_name)
+		#print(selected_field_name)
 
 		
 		#print(selected_index.data(QtCore.Qt.ItemDataRole.UserRole))
