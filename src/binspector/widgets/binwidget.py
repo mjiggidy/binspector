@@ -230,6 +230,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	sig_view_mode_changed   = QtCore.Signal(object)
 	sig_bin_palette_changed = QtCore.Signal(QtGui.QPalette)
+	sig_focus_set_on_column = QtCore.Signal(int)	# Logical column index
 
 	def __init__(self, *args, **kwargs):
 
@@ -507,12 +508,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			for i in range(self._binitems_list.header().count())]
 			):
 
-			print(log_idx, field_name)
+			#print(log_idx, field_name)
 
 			if field_name == focus_field_name:
-				print("GOT IT AT", log_idx)
+				#print("GOT IT AT", log_idx)
+				self._section_main.currentWidget().setFocus()
 				self._binitems_list.selectSection(log_idx)
 				self._binitems_list.scrollTo(self._binitems_list.model().index(0, log_idx, QtCore.QModelIndex()), QtWidgets.QTreeView.ScrollHint.PositionAtCenter)
+				
+				
+				self.sig_focus_set_on_column.emit(log_idx)
 				return True
+		
+		
 		
 		return False

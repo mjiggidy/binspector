@@ -77,6 +77,9 @@ class BSBinTreeView(treeview.LBTreeView):
 	SELECTION_BEHAVIOR_KEY     = QtCore.Qt.Key.Key_Alt
 	DEFAULT_SELECTION_BEHAVIOR = QtWidgets.QTreeView.SelectionBehavior.SelectRows
 	DEFAULT_SELECTION_MODE     = QtWidgets.QTreeView.SelectionMode    .ExtendedSelection
+	
+	ALLOW_KEEP_CURRENT_SELECTION_BETWEEN_MODES = False
+	"""Actually allow `keep_current_selection` bool argument to take effect"""
 
 	BINVIEW_COLUMN_WIDTH_ADJUST:int = 64
 	"""Adjust binview-specified column widths for better fit"""
@@ -143,17 +146,24 @@ class BSBinTreeView(treeview.LBTreeView):
 		#	logging.getLogger(__name__).debug("NAAAH")
 		#	return
 		
-		logging.getLogger(__name__).debug("OH YEAAAAH")
+		
 		
 		self.toggleSelectionBehavior(
 			QtWidgets.QTreeView.SelectionBehavior.SelectColumns,
 			keep_current_selection = QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
 		)
 
+		if QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier:
+			selection_behavior_flags = QtCore.QItemSelectionModel.SelectionFlag.Toggle
+		
+		else:
+			selection_behavior_flags = QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect
+
+
 		self.selectionModel().select(
 			QtCore.QItemSelection(self.model().index(0, column_logical), self.model().index(self.model().rowCount()-1, column_logical)),
 			QtCore.QItemSelectionModel.SelectionFlag.Columns|
-			QtCore.QItemSelectionModel.SelectionFlag.Toggle
+			selection_behavior_flags
 		)
 
 	def copySelection(self):
@@ -225,6 +235,10 @@ class BSBinTreeView(treeview.LBTreeView):
 			
 			logging.getLogger(__name__).debug("Selection behavior already %s. Not changed.", behavior)
 			return
+		
+		# NOTE: BIG NOTE: TODO: ETC:
+		# Disabling keep_current_selection for all instances for now
+		keep_current_selection = keep_current_selection and self.ALLOW_KEEP_CURRENT_SELECTION_BETWEEN_MODES
 		
 		if not keep_current_selection:
 			self.clearSelection()
