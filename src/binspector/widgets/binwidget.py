@@ -493,3 +493,21 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setSiftOptions(self, sift_options:avbutils.bins.BinSiftOption):
 
 		self._binitems_list.model().setSiftOptions(sift_options)
+
+	@QtCore.Slot(str)
+	def focusBinColumn(self, focus_field_name:str) -> bool:
+
+		for log_idx, field_name in enumerate(
+			[self._binitems_list.model().headerData(i, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+5)
+			for i in range(self._binitems_list.header().count())]
+			):
+
+			print(log_idx, field_name)
+
+			if field_name == focus_field_name:
+				print("GOT IT AT", log_idx)
+				self._binitems_list.selectSection(log_idx)
+				self._binitems_list.scrollTo(self._binitems_list.model().index(0, log_idx, QtCore.QModelIndex()), QtWidgets.QTreeView.ScrollHint.PositionAtCenter)
+				return True
+		
+		return False

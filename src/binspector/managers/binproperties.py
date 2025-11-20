@@ -1,3 +1,4 @@
+import logging
 import avb, avbutils
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..models import viewmodelitems
@@ -37,6 +38,9 @@ class BSBinViewManager(base.LBItemDefinitionView):
 
 	sig_bin_filters_toggled = QtCore.Signal(object)
 	"""Filters have been toggled on/off"""
+
+	sig_focus_bin_column    = QtCore.Signal(str)
+	"""Focus a given bin column index"""
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -93,6 +97,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	def setBinViewEnabled(self, is_enabled:bool):
 
 		if is_enabled != self._binview_is_enabled:
+
 			self._binview_is_enabled = is_enabled
 			self.sig_view_mode_toggled.emit(is_enabled)
 
@@ -100,8 +105,30 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	def setBinFiltersEnabled(self, is_enabled:bool):
 
 		if is_enabled != self._filters_enabled:
+
 			self._filters_enabled = is_enabled
 			self.sig_bin_filters_toggled.emit(is_enabled)
+
+	@QtCore.Slot(QtCore.QModelIndex)
+	def requestFocusColumn(self, selected_index:QtCore.QModelIndex):
+
+		
+		# Field name
+		#clicked_row  = selected_index.row()
+		header_names = [selected_index.model().headerData(i, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole) for i in range(selected_index.model().columnCount())]
+		
+		selected_format  = selected_index.siblingAtColumn(header_names.index("Type")).data(QtCore.Qt.ItemDataRole.UserRole).raw_data()
+		selected_name    = selected_index.siblingAtColumn(header_names.index("Title")).data(QtCore.Qt.ItemDataRole.DisplayRole)
+		
+		logging.getLogger(__name__).debug("Requesting to focus bin view column %s: %s", selected_format, selected_name)
+
+		selected_field_name = f"{selected_format}_{selected_name}" if selected_format == 40 else str(selected_format)
+
+		print(selected_field_name)
+
+		
+		#print(selected_index.data(QtCore.Qt.ItemDataRole.UserRole))
+		self.sig_focus_bin_column.emit(selected_field_name)
 
 
 class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
