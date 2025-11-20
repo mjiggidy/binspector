@@ -8,6 +8,63 @@ from ..views.delegates import binitems
 from ..core import icons
 from ..res import icons_binitems
 
+class BSColumnSelectWatcher(QtCore.QObject):
+
+	DEFAULT_SELECTION_MODIFIER = QtGui.Qt.KeyboardModifier.AltModifier
+
+	sig_column_selection_activated = QtCore.Signal(bool)
+	sig_column_selected            = QtCore.Signal(object)
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		# Start out accurate!
+		self._column_selection_active = bool(QtWidgets.QApplication.keyboardModifiers() & self.DEFAULT_SELECTION_MODIFIER)
+
+	def columnSelectionIsActive(self) -> bool:
+		"""Column selection mode currently active"""
+
+		return self._column_selection_active
+	
+	def setColumnSelectionActive(self, is_active:bool):
+		"""Indicate column selection has begun"""
+
+		if is_active != self._column_selection_active:
+
+			self._column_selection_active = is_active
+			
+			logging.getLogger(__name__).debug("Column selection changed to %s", self.columnSelectionIsActive())
+			self.sig_column_selection_activated.emit(is_active)
+
+	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent) -> bool:
+
+		if event.type() == QtCore.QEvent.Type.MouseButtonPress:
+			
+			if not event.button() & QtCore.Qt.MouseButton.LeftButton:
+				return super().eventFilter(watched, event)
+	
+			# If clicked with modifier key: Column select begin!
+			if not event.modifiers() & self.DEFAULT_SELECTION_MODIFIER:
+				return super().eventFilter(watched, event)
+			
+			self.setColumnSelectionActive(True)
+				
+			
+			if self.columnSelectionIsActive():
+				event = QtGui.QMouseEvent(event)
+				self.sig_column_selected.emit(event.localPos())
+			
+			return True
+
+		if event.type() == QtCore.QEvent.Type.MouseButtonRelease and self.columnSelectionIsActive():
+			
+			# On mouse release, we done wit dat column selection
+			self.setColumnSelectionActive(False)
+			return True
+
+		return super().eventFilter(watched, event)
+
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
 
@@ -66,6 +123,37 @@ class BSBinTreeView(treeview.LBTreeView):
 
 		self.setCustomDelegates()
 		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=self.DEFAULT_ITEM_PADDING))
+
+		self._column_select_watcher = BSColumnSelectWatcher()
+		self.header().viewport().installEventFilter(self._column_select_watcher)
+		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
+
+	@QtCore.Slot(object)
+	def selectSectionFromCoordinates(self, viewport_coords:QtCore.QPoint):
+		
+		section_logical = self.header().logicalIndexAt(viewport_coords.x())
+		self.selectSection(section_logical)
+		#print(self.model().headerData(section_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole))
+
+	@QtCore.Slot(int)
+	def selectSection(self, column_logical:int):
+
+		if not QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.AltModifier:
+			logging.getLogger(__name__).debug("NAAAH")
+			return
+		
+		logging.getLogger(__name__).debug("OH YEAAAAH")
+		
+		self.toggleSelectionBehavior(
+			QtWidgets.QTreeView.SelectionBehavior.SelectColumns,
+			keep_current_selection = QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
+		)
+
+		self.selectionModel().select(
+			QtCore.QItemSelection(self.model().index(0, column_logical), self.model().index(self.model().rowCount()-1, column_logical)),
+			QtCore.QItemSelectionModel.SelectionFlag.Columns|
+			QtCore.QItemSelectionModel.SelectionFlag.Toggle
+		)
 
 	def copySelection(self):
 		"""Copy selection to clipboard"""
