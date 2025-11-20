@@ -138,9 +138,10 @@ class BSBinTreeView(treeview.LBTreeView):
 	@QtCore.Slot(int)
 	def selectSection(self, column_logical:int):
 
-		if not QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.AltModifier:
-			logging.getLogger(__name__).debug("NAAAH")
-			return
+		# TODO: TESTING WIHTOUT
+		#if not QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.AltModifier:
+		#	logging.getLogger(__name__).debug("NAAAH")
+		#	return
 		
 		logging.getLogger(__name__).debug("OH YEAAAAH")
 		
