@@ -1,5 +1,5 @@
 from PySide6 import QtCore, QtGui, QtWidgets
-import avbutils
+import avbutils, avb
 from ..views import bintreeview, binframeview, binscriptview
 from . import buttons, sliders
 from ..managers import binproperties
@@ -460,6 +460,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			total_item_count=QtCore.QLocale.system().toString(count_all)
 		)
 		self._txt_binstats.setText(info_text)
+
+	@QtCore.Slot(object, object, object)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int):
+
+		self.setBinViewName(bin_view.name)
+
+		self.frameView().setZoom(frame_scale)
+		self.frameView().centerOn(QtCore.QPointF(0,0))
+
 	
 	@QtCore.Slot(object)
 	def setBinViewName(self, bin_view_name:str):
