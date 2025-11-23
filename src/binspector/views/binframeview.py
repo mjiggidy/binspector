@@ -1,7 +1,43 @@
+import logging
 from PySide6 import QtCore, QtGui, QtWidgets
+
+
+class BSPinchEventHandler(QtCore.QObject):
+	"""I peench"""
+
+	sig_user_is_pinching    = QtCore.Signal(QtWidgets.QPinchGesture)
+	"""User did a pinchy"""
+
+	sig_user_finished_pinch = QtCore.Signal(QtWidgets.QPinchGesture)
+	"""User tired of the pinch"""
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		logging.getLogger(__name__).error("Hello from me")
+	
+	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
+
+		if event.type() == QtCore.QEvent.Type.Gesture and event.gesture(QtCore.Qt.GestureType.PinchGesture):
+			#event = QtWidgets.QGestureEvent(event)
+			self.reportPinch(event.gesture(QtCore.Qt.GestureType.PinchGesture))
+			#return True
+
+		return super().eventFilter(watched, event)
+	
+	def reportPinch(self, pinch_gesture:QtWidgets.QPinchGesture):
+		
+		if pinch_gesture.state() in (QtCore.Qt.GestureState.GestureUpdated, QtCore.Qt.GestureState.GestureFinished):
+			self.sig_user_is_pinching.emit(pinch_gesture)
+		
+		if pinch_gesture.state() == QtCore.Qt.GestureState.GestureFinished:
+			self.sig_user_finished_pinch.emit(pinch_gesture)
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
+
+
 
 	sig_scale_changed = QtCore.Signal(int)
 
@@ -14,46 +50,38 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
 
 		self._current_zoom = 1
-	
-	def drawBackground(self, painter:QtGui.QPainter, rect:QtCore.QRectF):
 
-		raise DeprecationWarning("WHAT")
+		# This is fancy for me. Heehee.
+		# https://doc.qt.io/qtforpython-6/overviews/qtwidgets-gestures-overview.html
+		self.grabGesture(QtCore.Qt.GestureType.PinchGesture)
 		
-		BASE_MAGNIFICATION = 12
+		# TODO: Seems I need to grabGesture() before installing the event filter
+		# or the event filter doesn't work? I don't know lol look at this later 
+		# just to understand it better.  But I'm just saying: keep this order
+		self._pinchy_boy   = BSPinchEventHandler(parent=self)
+		self.installEventFilter(self._pinchy_boy)
+
+		self._pinchy_boy.sig_user_is_pinching.connect(self.reframeOnPinch)
+		self._pinchy_boy.sig_user_finished_pinch.connect(self.userFinishedPinch)
+
+	@QtCore.Slot(QtWidgets.QPinchGesture)
+	def reframeOnPinch(self, pinch_gesture:QtWidgets.QPinchGesture):
 		
-		GRID_WIDTH         = 16 * BASE_MAGNIFICATION
-		GRID_HEIGHT        =  9 * BASE_MAGNIFICATION
-		GRID_DIVISIONS     =  3
+		
+		rect = self.sceneRect()
+		rect.translate(pinch_gesture.centerPoint())
 
-		super().drawBackground(painter, rect)
+		print(pinch_gesture.centerPoint())
+		#self.setSceneRect(rect)
 
-		painter.save()
+		self.setZoom(self._current_zoom * pinch_gesture.scaleFactor())
 
-		for x in range(int(rect.left()), int(rect.right())+1):
+	@QtCore.Slot(QtWidgets.QPinchGesture)
+	def userFinishedPinch(self, pinch_gesture:QtWidgets.QPinchGesture):
 
-			if x%GRID_WIDTH == 0:
+		ZOOM_RANGE = range(4,14)
 
-				painter.drawLine(QtCore.QLine(
-					QtCore.QPoint(x, rect.top()),
-					QtCore.QPoint(x, rect.bottom())
-				))
-
-				print("HEY YOOHO HO")
-				#painter.drawText(QtCore.QPoint(x, 50), f"{x},0")
-
-
-		for y in range(int(rect.top()), int(rect.bottom())+1):
-
-			if y%GRID_HEIGHT == 0:
-
-				painter.drawLine(QtCore.QLine(
-					QtCore.QPoint(rect.left(),  y),
-					QtCore.QPoint(rect.right(), y)
-				))
-
-		painter.restore()
-
-		self.setZoom(4)
+		self.setZoom(max(ZOOM_RANGE.start, min(round(self._current_zoom), ZOOM_RANGE.stop)))
 
 	@QtCore.Slot(int)
 	def setZoom(self, zoom_level:int):
@@ -61,7 +89,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		if zoom_level != self._current_zoom:
 			
-			import logging
+			
 			logging.getLogger(__name__).debug("Setting zoom level to %s", zoom_level)
 
 			zoom_level = float(zoom_level) #/ float(4)
