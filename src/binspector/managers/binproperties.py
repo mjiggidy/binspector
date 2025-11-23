@@ -5,6 +5,8 @@ from ..models import viewmodelitems
 from ..core import binparser
 from . import base
 
+TEMP_POSITION_OFFSET_THING = 10
+
 class BSBinViewModeManager(QtCore.QObject):
 	"""Manage them viewmodes"""
 
@@ -408,7 +410,7 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 			
 			self._frame_scale = 1
 		
-			TEMP_POSITION_OFFSET_THING = 10
+			
 
 			item_rect = BSFrameModeItem()
 			item_rect.setPos(mob_info.coordinates[0]/TEMP_POSITION_OFFSET_THING, mob_info.coordinates[1]/TEMP_POSITION_OFFSET_THING)
@@ -433,6 +435,12 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 		return self._frame_scene
 	
 class BSFrameModeItem(QtWidgets.QGraphicsItem):
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._clip_color = QtGui.QColor()
 
 	def boundingRect(self) -> QtCore.QRectF:
 		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(18,12))
@@ -470,7 +478,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 		painter.drawRect(clip_preview_rect)
 
 		if self._clip_color.isValid():
-			pass
+			#pass
 
 			pen = QtGui.QPen()
 			pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
@@ -493,6 +501,8 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 		painter.setPen(pen)
 		painter.drawText(self.boundingRect().adjusted(0.25,0.25,-0.25,-0.25), QtCore.Qt.AlignmentFlag.AlignCenter|QtCore.Qt.AlignmentFlag.AlignBottom, self._name)
 
+		painter.drawText(QtCore.QPoint(0,0) + QtCore.QPoint(0,1), f"({self.pos().x():.1f},{self.pos().y():.1f})")
+		
 		if self.isSelected():
 			brush = QtGui.QBrush()
 			brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
@@ -506,6 +516,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 			painter.setBrush(brush)
 			painter.setPen(pen)
 			painter.drawRect(self.boundingRect())
+
 		
 		painter.restore()
 
