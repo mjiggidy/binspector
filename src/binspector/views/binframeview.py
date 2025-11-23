@@ -20,7 +20,6 @@ class BSPinchEventHandler(QtCore.QObject):
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
 
 		if event.type() == QtCore.QEvent.Type.Gesture and event.gesture(QtCore.Qt.GestureType.PinchGesture):
-			#event = QtWidgets.QGestureEvent(event)
 			self.reportPinch(event.gesture(QtCore.Qt.GestureType.PinchGesture))
 			#return True
 
@@ -37,9 +36,8 @@ class BSPinchEventHandler(QtCore.QObject):
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
 
-
-
-	sig_scale_changed = QtCore.Signal(int)
+	sig_zoom_level_changed = QtCore.Signal(int)
+	sig_zoom_range_changed = QtCore.Signal(object)
 
 	def __init__(self, *args, **kwargs):
 
@@ -50,6 +48,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
 
 		self._current_zoom = 1
+		self._zoom_range   = range(100)
 
 		# This is fancy for me. Heehee.
 		# https://doc.qt.io/qtforpython-6/overviews/qtwidgets-gestures-overview.html
@@ -61,12 +60,11 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._pinchy_boy   = BSPinchEventHandler(parent=self)
 		self.installEventFilter(self._pinchy_boy)
 
-		self._pinchy_boy.sig_user_is_pinching.connect(self.reframeOnPinch)
+		self._pinchy_boy.sig_user_is_pinching   .connect(self.reframeOnPinch)
 		self._pinchy_boy.sig_user_finished_pinch.connect(self.userFinishedPinch)
 
 	@QtCore.Slot(QtWidgets.QPinchGesture)
 	def reframeOnPinch(self, pinch_gesture:QtWidgets.QPinchGesture):
-		
 		
 		rect = self.sceneRect()
 		rect.translate(pinch_gesture.centerPoint())
@@ -82,6 +80,16 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		ZOOM_RANGE = range(4,14)
 
 		self.setZoom(max(ZOOM_RANGE.start, min(round(self._current_zoom), ZOOM_RANGE.stop)))
+
+	@QtCore.Slot(object)
+	def setZoomRange(self, zoom_range:range):
+
+		if self._zoom_range != zoom_range:
+			self._zoom_range = zoom_range
+			self.sig_zoom_range_changed.emit(zoom_range)
+	
+	def zoomRange(self) -> range:
+		return self._zoom_range
 
 	@QtCore.Slot(int)
 	def setZoom(self, zoom_level:int):
@@ -99,7 +107,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			t.scale(zoom_level, zoom_level)
 			self.setTransform(t)
 
-			self.sig_scale_changed.emit(zoom_level)
+			self.sig_zoom_level_changed.emit(zoom_level)
 	
 	def drawBackground(self, painter:QtGui.QPainter, rect:QtCore.QRectF):
 

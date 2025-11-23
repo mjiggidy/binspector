@@ -112,10 +112,10 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		self._cmb_binviews.addItem("")
 		self._cmb_binviews.insertSeparator(1)
 
-		self._sld_frame_scale.setRange(
-			avbutils.bins.THUMB_FRAME_MODE_RANGE.start,
-			avbutils.bins.THUMB_FRAME_MODE_RANGE.stop,
-		)
+		#self._sld_frame_scale.setRange(
+		#	avbutils.bins.THUMB_FRAME_MODE_RANGE.start,
+		#	avbutils.bins.THUMB_FRAME_MODE_RANGE.stop,
+		#)
 
 		self._sld_script_scale.setRange(
 			avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start,
@@ -286,7 +286,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
 		self._section_bottom.layout().setContentsMargins(2,2,2,2)
 
-		self._binitems_frame.sig_scale_changed.connect(self._section_top._sld_frame_scale.setValue)
+		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
+		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
+		
+		self._binitems_frame.setZoomRange(avbutils.bins.THUMB_FRAME_MODE_RANGE)
 		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
 
 		# Shortcuts/Actions
