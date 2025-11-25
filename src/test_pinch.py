@@ -66,12 +66,12 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 	def sizeHint(self) -> QtCore.QSize:
 		return QtCore.QSize(100,100)
 	
-	@QtCore.Slot(object)
-	def setScaleDelta(self, delta:float|None=None):
+	@QtCore.Slot(float)
+	def setScaleDelta(self, accumulated:float|None=None):
 		"""Process delta and use it"""
 		
-		delta = delta or 0
-		self.scale = max(0.1, min(self._resting_scale + (delta * self._scale_sensitivity), 2))
+		accumulated = accumulated or 0
+		self.scale = max(0.1, min(self._resting_scale + (accumulated * self._scale_sensitivity), 2))
 
 		self.update()
 	
@@ -137,7 +137,7 @@ class MichaelsCoolTestWindowHahaOk(QtWidgets.QWidget):
 		self.installEventFilter(self._pinch_event_filter)
 		
 		self._pinch_event_filter.sig_user_started_gesture.connect(self._visualizer._animator.stop)
-		self._pinch_event_filter.sig_user_is_pinching.connect(self._visualizer.setScaleDelta)
+		self._pinch_event_filter.sig_user_is_pinching.connect(lambda d,a: self._visualizer.setScaleDelta(a))
 		self._pinch_event_filter.sig_user_finished_gesture.connect(self._visualizer.resetScale)
 
 if __name__ == "__main__":
