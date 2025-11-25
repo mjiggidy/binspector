@@ -54,7 +54,6 @@ class BSPinchEventFilter(QtCore.QObject):
 			self._tracked_gesture_count -= 1
 			logging.getLogger(__name__).debug("End gesture=%s, active_gestures=%s", event.gestureType(), self._tracked_gesture_count)
 			
-
 			if not self._tracked_gesture_count:
 				
 				self.reset()
