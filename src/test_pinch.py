@@ -1,3 +1,7 @@
+"""
+Quick n sloppy test of some trackpad event filters here
+"""
+
 import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from binspector.managers import eventfilters
@@ -17,15 +21,25 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 		self._scale_sensitivity = 0.5
 		self._resting_scale     = 0.8
 		self._current_scale     = self._resting_scale
-
 		self._curve_scale.setType(QtCore.QEasingCurve.Type.InOutQuad)
-		
-		self._animator = QtCore.QPropertyAnimation()
-		self._animator.setParent(self)
-		self._animator.setTargetObject(self)
-		self._animator.setPropertyName(QtCore.QByteArray.fromStdString("scale"))
-		self._animator.setDuration(500) # Msec
-		self._animator.setEasingCurve(QtCore.QEasingCurve.Type.OutElastic)
+
+		self._position_resting_offset = QtCore.QPoint(0,0) 
+		self._position_current_offset = self._position_resting_offset
+		self._position_sensitivity = 0.5
+
+		self.scale_animator = QtCore.QPropertyAnimation()
+		self.scale_animator.setParent(self)
+		self.scale_animator.setTargetObject(self)
+		self.scale_animator.setPropertyName(QtCore.QByteArray.fromStdString("scale"))
+		self.scale_animator.setDuration(500) # Msec
+		self.scale_animator.setEasingCurve(QtCore.QEasingCurve.Type.OutElastic)
+
+		self.position_animator = QtCore.QPropertyAnimation()
+		self.position_animator.setParent(self)
+		self.position_animator.setTargetObject(self)
+		self.position_animator.setPropertyName(QtCore.QByteArray.fromStdString("position_offset"))
+		self.position_animator.setDuration(500) # Msec
+		self.position_animator.setEasingCurve(QtCore.QEasingCurve.Type.OutElastic)
 
 		self._setupPainters()
 
@@ -62,6 +76,19 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 
 		self._current_scale = scale
 		self.update()
+
+	@QtCore.Property(QtCore.QPoint)
+	def position_offset(self) -> QtCore.QPoint:
+		"""Needed for QPropertyAnimation"""
+
+		return self._position_current_offset
+
+	@position_offset.setter
+	def position_offset(self, offset:QtCore.QPoint):
+		"""Needed for QPropertyAnimation"""
+
+		self._position_current_offset = offset
+		self.update()
 	
 	def sizeHint(self) -> QtCore.QSize:
 		return QtCore.QSize(100,100)
@@ -77,11 +104,32 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 	
 	def resetScale(self):
 
-		self._animator.stop()
-		self._animator.setStartValue(self._current_scale)
-		self._animator.setEndValue(self._resting_scale)
-		self._animator.start()
+		self.scale_animator.stop()
+		self.scale_animator.setStartValue(self._current_scale)
+		self.scale_animator.setEndValue(self._resting_scale)
+		self.scale_animator.start()
 
+	@QtCore.Slot(QtCore.QPoint)
+	def setPositionOffset(self, accumulated:QtCore.QPoint|None=None):
+
+		accumulated = accumulated or QtCore.QPoint(0,0)
+
+		#print(accumulated)
+
+		self._position_current_offset = (accumulated * self._position_sensitivity)
+		self.update()
+
+	@QtCore.Slot()
+	def resetPosition(self):
+
+		self.position_animator.stop()
+		self.position_animator.setStartValue(self._position_current_offset)
+		self.position_animator.setEndValue(self._position_resting_offset)
+		self.position_animator.start()
+
+		#self._position_current_offset = self._position_resting_offset
+		#print("Reset to ", self._position_current_offset)
+		self.update()
 
 	def paintEvent(self, event:QtGui.QPaintEvent):
 		
@@ -109,7 +157,7 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 		painter.setBrush(self._brush)
 		painter.setFont(self._font)
 		painter.drawEllipse(
-			bounding_rect.center(),
+			bounding_rect.center() + self._position_current_offset,
 			base_rad * self._current_scale,
 			base_rad * self._current_scale
 		)
@@ -129,16 +177,21 @@ class MichaelsCoolTestWindowHahaOk(QtWidgets.QWidget):
 		super().__init__(*args, **kwargs)
 
 		self._pinch_event_filter = eventfilters.BSPinchEventFilter(parent=self)
+		self._pan_event_filter = eventfilters.BSPanEventFilter(parent=self)
 		self._visualizer = MichaelsCoolVisualizerOfThePinch()
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 		self.layout().addWidget(self._visualizer)
 
 		self.installEventFilter(self._pinch_event_filter)
+		self.installEventFilter(self._pan_event_filter)
 		
-		self._pinch_event_filter.sig_user_started_gesture.connect(self._visualizer._animator.stop)
-		self._pinch_event_filter.sig_user_is_pinching.connect(lambda d,a: self._visualizer.setScaleDelta(a))
-		self._pinch_event_filter.sig_user_finished_gesture.connect(self._visualizer.resetScale)
+		self._pinch_event_filter.sig_user_pinch_started.connect(self._visualizer.scale_animator.stop)
+		self._pinch_event_filter.sig_user_pinch_moved.connect(lambda d,a: self._visualizer.setScaleDelta(a))
+		self._pinch_event_filter.sig_user_pinch_finished.connect(self._visualizer.resetScale)
+
+		self._pan_event_filter.sig_user_pan_moved.connect(lambda d,a: self._visualizer.setPositionOffset(a))
+		self._pan_event_filter.sig_user_pan_finished.connect(self._visualizer.resetPosition)
 
 if __name__ == "__main__":
 
