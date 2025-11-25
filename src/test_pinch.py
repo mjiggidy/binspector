@@ -42,7 +42,7 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 		self._brush = self.style().standardPalette().midlight()
 		self._brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 
-		self._pen.setColor(self.palette().windowText().color())
+		self._pen.setColor(self.style().standardPalette().windowText().color())
 		self._pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
 		self._pen.setCapStyle(QtCore.Qt.PenCapStyle.RoundCap)
 		self._pen.setWidth(3)
