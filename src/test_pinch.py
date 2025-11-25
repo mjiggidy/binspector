@@ -9,36 +9,58 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 		super().__init__(*args, **kwargs)
 
 		self._curve_scale = QtCore.QEasingCurve()
+
+		self._brush = QtGui.QBrush()
+		self._pen   = QtGui.QPen()
+		self._font  = self.font()
+
+		self._scale_sensitivity = 0.5
+		self._resting_scale     = 0.8
+		self._current_scale     = self._resting_scale
+
 		self._curve_scale.setType(QtCore.QEasingCurve.Type.InOutQuad)
-
-		self._brush = QtGui.QBrush(self.palette().dark())
-		self._brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
-
-		self._pen = QtGui.QPen(self.palette().windowText().color())
-		self._pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-		self._pen.setCapStyle(QtCore.Qt.PenCapStyle.RoundCap)
-		self._pen.setWidth(3)
-
-		self._scale_delta = 1
-		self._scale_scale = 1
-
+		
 		self._animator = QtCore.QPropertyAnimation()
 		self._animator.setParent(self)
 		self._animator.setTargetObject(self)
 		self._animator.setPropertyName(QtCore.QByteArray.fromStdString("scale"))
 		self._animator.setDuration(500) # Msec
 		self._animator.setEasingCurve(QtCore.QEasingCurve.Type.OutElastic)
+
+		self._setupPainters()
+
+	def event(self, event:QtCore.QEvent) -> bool:
+
+		if not event.type() == QtCore.QEvent.Type.PaletteChange:
+			return super().event(event)
 		
+		self._setupPainters()
+		return True
+
+	def _setupPainters(self):
+
+		self._brush = self.style().standardPalette().midlight()
+		self._brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+
+		self._pen.setColor(self.palette().windowText().color())
+		self._pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
+		self._pen.setCapStyle(QtCore.Qt.PenCapStyle.RoundCap)
+		self._pen.setWidth(3)
+
+		self._font = self.font()
+		self._font.setPointSizeF(self.font().pointSizeF() * 0.8)
 
 	@QtCore.Property(float)
 	def scale(self) -> float:
+		"""Needed for QPropertyAnimation"""
 
-		return self._scale_delta
+		return self._current_scale
 
 	@scale.setter
 	def scale(self, scale:float):
+		"""Needed for QPropertyAnimation"""
 
-		self._scale_delta = scale
+		self._current_scale = scale
 		self.update()
 	
 	def sizeHint(self) -> QtCore.QSize:
@@ -46,16 +68,18 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 	
 	@QtCore.Slot(object)
 	def setScaleDelta(self, delta:float|None=None):
+		"""Process delta and use it"""
 		
 		delta = delta or 0
-		self.scale = 1 + (delta * self._scale_scale)
+		self.scale = max(0.1, min(self._resting_scale + (delta * self._scale_sensitivity), 2))
 
 		self.update()
 	
 	def resetScale(self):
 
-		self._animator.setStartValue(self._scale_delta)
-		self._animator.setEndValue(1)
+		self._animator.stop()
+		self._animator.setStartValue(self._current_scale)
+		self._animator.setEndValue(self._resting_scale)
 		self._animator.start()
 
 
@@ -77,20 +101,23 @@ class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 
 	def drawVisualizer(self, painter:QtGui.QPainter, bounding_rect:QtCore.QRect):
 		
+		base_rad = min(bounding_rect.width(), bounding_rect.height()) / 2 - painter.pen().widthF() * 2
+
 		painter.save()
 
 		painter.setPen(self._pen)
 		painter.setBrush(self._brush)
+		painter.setFont(self._font)
 		painter.drawEllipse(
 			bounding_rect.center(),
-			(bounding_rect.width()/2  - painter.pen().width()*2) * self._scale_delta,
-			(bounding_rect.height()/2 - painter.pen().width()*2) * self._scale_delta
+			base_rad * self._current_scale,
+			base_rad * self._current_scale
 		)
 
 		painter.drawText(
 			bounding_rect,
 			QtCore.Qt.AlignmentFlag.AlignCenter|QtCore.Qt.AlignmentFlag.AlignVCenter,
-			str(round(self._scale_delta, 1))
+			str(round(self._current_scale, 2))
 		)
 
 		painter.restore()
@@ -109,13 +136,14 @@ class MichaelsCoolTestWindowHahaOk(QtWidgets.QWidget):
 
 		self.installEventFilter(self._pinch_event_filter)
 		
+		self._pinch_event_filter.sig_user_started_gesture.connect(self._visualizer._animator.stop)
 		self._pinch_event_filter.sig_user_is_pinching.connect(self._visualizer.setScaleDelta)
 		self._pinch_event_filter.sig_user_finished_gesture.connect(self._visualizer.resetScale)
 
 if __name__ == "__main__":
 
 	import logging
-	#logging.basicConfig(level=logging.DEBUG)
+	logging.basicConfig(level=logging.DEBUG)
 
 	app = QtWidgets.QApplication()
 	app.setStyle("Fusion")
