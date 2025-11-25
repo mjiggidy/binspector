@@ -180,8 +180,10 @@ class MichaelsCoolTestWindowHahaOk(QtWidgets.QWidget):
 		self._pan_event_filter = eventfilters.BSPanEventFilter(parent=self)
 		self._visualizer = MichaelsCoolVisualizerOfThePinch()
 
+
 		self.setLayout(QtWidgets.QVBoxLayout())
 		self.layout().addWidget(self._visualizer)
+
 
 		self.installEventFilter(self._pinch_event_filter)
 		self.installEventFilter(self._pan_event_filter)
@@ -191,8 +193,10 @@ class MichaelsCoolTestWindowHahaOk(QtWidgets.QWidget):
 		self._pinch_event_filter.sig_user_pinch_finished.connect(self._visualizer.resetScale)
 
 		self._pan_event_filter.sig_user_pan_started.connect(self._visualizer.position_animator.stop)
+		self._pan_event_filter.sig_user_pan_started.connect(lambda: self._visualizer.setMouseTracking(True))
 		self._pan_event_filter.sig_user_pan_moved.connect(lambda d,a: self._visualizer.setPositionOffset(a))
 		self._pan_event_filter.sig_user_pan_finished.connect(self._visualizer.resetPosition)
+		self._pan_event_filter.sig_user_pan_started.connect(lambda: self._visualizer.setMouseTracking(False))
 
 if __name__ == "__main__":
 
