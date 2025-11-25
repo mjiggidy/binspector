@@ -4,71 +4,84 @@ in a good and nice way that is good and nice
 """
 
 import logging
-from PySide6 import QtCore
+from PySide6 import QtCore, QtGui
 
 class BSPinchEventFilter(QtCore.QObject):
-	"""Handle pinch 'n' pan multitouch events"""
+	"""Handle if the user gets pinchy"""
 
-	sig_user_started_gesture  = QtCore.Signal(object)
-	"""I peench"""
+	sig_user_started_gesture  = QtCore.Signal()
+	"""The user has began to pinch"""
 	
-	sig_user_is_pinching    = QtCore.Signal(float)
-	"""User did a pinchy"""
+	sig_user_is_pinching    = QtCore.Signal(float, float)
+	"""User is doing a pinchy (`delta since last:float`, `accumulated pinch:float`)"""
 
-	sig_user_finished_gesture = QtCore.Signal(object)
+	sig_user_finished_gesture = QtCore.Signal()
 	"""User has tired of the pinch"""
 
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
-
-		self._pinch_response_curve = QtCore.QEasingCurve()
-		self._accumulate = 0
+		
+		self._accumulated_scale     = 0
 		self._tracked_gesture_count = 0
-
-		self._pinch_response_curve.setType(QtCore.QEasingCurve.Type.InOutQuad)
 	
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
 
-		if not event.type() == QtCore.QEvent.Type.NativeGesture:
-			return super().eventFilter(watched, event)
+		if event.type() != QtCore.QEvent.Type.NativeGesture:
+			return False
 
 		# If Begin Native Gesture
 		if event.gestureType() == QtCore.Qt.NativeGestureType.BeginNativeGesture:
-
 			
-			self._tracked_gesture_count += 1
-			logging.getLogger(__name__).debug("Begin gesture=%s, active_gestures=%s", event.gestureType(), self._tracked_gesture_count)
+			self.reportPinchBegan()
+			return True
 			
-			self.sig_user_started_gesture.emit(event.gestureType())
-		
 		# If Actively Zooming
 		elif event.gestureType() == QtCore.Qt.NativeGestureType.ZoomNativeGesture:
-		
-			self._accumulate += event.value()
-			self.reportPinchZoom(self._accumulate)
+			
+			self.reportPinchUpdated(event)
+			return True
 
 		# If End Native Gesture
 		elif event.gestureType() == QtCore.Qt.NativeGestureType.EndNativeGesture:
 			
-			self._tracked_gesture_count -= 1
-			logging.getLogger(__name__).debug("End gesture=%s, active_gestures=%s", event.gestureType(), self._tracked_gesture_count)
-			
-			if not self._tracked_gesture_count:
-				
-				self.reset()
-				self.sig_user_finished_gesture.emit(event.gestureType())
+			self.reportPinchEnded()
+			return True
 		
-		return super().eventFilter(watched, event)
+		return False
 	
 	@QtCore.Slot()
-	def reportPinchZoom(self, zoom_delta:float):
+	def reportPinchBegan(self):
+		"""User began The Pinch"""
 
-		self.sig_user_is_pinching.emit(zoom_delta)
+		self._tracked_gesture_count += 1
+		logging.getLogger(__name__).debug("Begin gesture, active_gestures=%s", self._tracked_gesture_count)
+		
+		if self._tracked_gesture_count == 1:
+			self.sig_user_started_gesture.emit()
+
+	@QtCore.Slot(object)
+	def reportPinchUpdated(self, pinch_event:QtGui.QNativeGestureEvent):
+		"""Report the latest accumulated value of The Pinch"""
+
+		self._accumulated_scale += pinch_event.value()
+		self.sig_user_is_pinching.emit(pinch_event.value(), self._accumulated_scale)
+
+	@QtCore.Slot()
+	def reportPinchEnded(self):
+
+		self._tracked_gesture_count -= 1
+		logging.getLogger(__name__).debug("End gesture, active_gestures=%s",self._tracked_gesture_count)
+		
+		if self._tracked_gesture_count < 1:
+			
+			self._reset()
+			self.sig_user_finished_gesture.emit()
 	
-	def reset(self):
+	def _reset(self):
+		"""Reset tracking values for next pinch"""
 
 		self._tracked_gesture_count = 0
-		self._accumulate = 0
+		self._accumulated_scale = 0
 		
 		logging.getLogger(__name__).debug("Pinch reset")
