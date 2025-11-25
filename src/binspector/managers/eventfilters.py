@@ -3,6 +3,7 @@ Event filters to handle particular system events
 in a good and nice way that is good and nice
 """
 
+import logging
 from PySide6 import QtCore
 
 class BSPinchPanEventFilter(QtCore.QObject):
@@ -22,6 +23,8 @@ class BSPinchPanEventFilter(QtCore.QObject):
 	sig_user_finished_gesture = QtCore.Signal(object)
 	"""User has tired of the pinch"""
 
+	sig_pinch_reset           = QtCore.Signal()
+
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -39,20 +42,24 @@ class BSPinchPanEventFilter(QtCore.QObject):
 
 		# If Begin Native Gesture
 		if event.gestureType() == QtCore.Qt.NativeGestureType.BeginNativeGesture:
+
 			
 			self._tracked_gesture_count += 1
+			logging.getLogger(__name__).debug("Begin gesture=%s, active_gestures=%s", event.gestureType(), self._tracked_gesture_count)
+			
 			self.sig_user_started_gesture.emit(event.gestureType())
 		
 		# If End Native Gesture
 		elif event.gestureType() == QtCore.Qt.NativeGestureType.EndNativeGesture:
 			
 			self._tracked_gesture_count -= 1
+			logging.getLogger(__name__).debug("End gesture=%s, active_gestures=%s", event.gestureType(), self._tracked_gesture_count)
 			
 
 			if not self._tracked_gesture_count:
-
+				
+				self.reset()
 				self.sig_user_finished_gesture.emit(event.gestureType())
-				self._accumulate = 0
 		
 		# If Actively Zooming
 		elif event.gestureType() == QtCore.Qt.NativeGestureType.ZoomNativeGesture:
@@ -66,3 +73,11 @@ class BSPinchPanEventFilter(QtCore.QObject):
 	def reportPinchZoom(self, zoom_delta:float):
 
 		self.sig_user_is_pinching.emit(zoom_delta)
+	
+	def reset(self):
+
+		self._tracked_gesture_count = 0
+		self._accumulate = 0
+		
+		logging.getLogger(__name__).debug("Pinch reset")
+		self.sig_pinch_reset.emit()
