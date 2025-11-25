@@ -190,6 +190,7 @@ class MichaelsCoolTestWindowHahaOk(QtWidgets.QWidget):
 		self._pinch_event_filter.sig_user_pinch_moved.connect(lambda d,a: self._visualizer.setScaleDelta(a))
 		self._pinch_event_filter.sig_user_pinch_finished.connect(self._visualizer.resetScale)
 
+		self._pan_event_filter.sig_user_pan_started.connect(self._visualizer.position_animator.stop)
 		self._pan_event_filter.sig_user_pan_moved.connect(lambda d,a: self._visualizer.setPositionOffset(a))
 		self._pan_event_filter.sig_user_pan_finished.connect(self._visualizer.resetPosition)
 

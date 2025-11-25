@@ -112,48 +112,53 @@ class BSPanEventFilter(QtCore.QObject):
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent) -> bool:
 		
 		if event.type() == QtCore.QEvent.Type.Wheel and event.deviceType() == QtGui.QInputDevice.DeviceType.TouchPad:
-			
-			if event.phase() == QtCore.Qt.ScrollPhase.ScrollUpdate:
-				self.reportPanChanged(event, event.angleDelta())
-				return True
-			
-			elif event.phase() == QtCore.Qt.ScrollPhase.ScrollEnd:
-				self.reportPanFinished(event)
-				return True
-			
-			return False
+			return self.handleTouchpadInput(event)
 		
-		elif event.type() == QtCore.QEvent.Type.MouseButtonPress and event.button() == QtCore.Qt.MouseButton.MiddleButton:
-			
-			self.reportPanStarted(event)
-			return True
-
-		elif event.type() == QtCore.QEvent.Type.MouseMove and self._panning_active:
-
-			delta = QtCore.QPoint(self._last_start_pos)
-			
-			print("Start", delta)
-			
-			delta = event.position().toPoint() - self._last_start_pos
-			
-			print("After",delta)
-			self._last_start_pos = delta
-			#self._last_start_pos = QtCore.QPoint(delta)
-			#print(self._last_start_pos)
-			return True
-			delta_pos = event.position().toPoint() - self._last_start_pos
-			self._last_start_pos = QtCore.QPoint(delta_pos)
-
-			print(delta_pos)
-
-			self.reportPanChanged(event, delta_pos)
-
-		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and event.button() == QtCore.Qt.MouseButton.MiddleButton:
-
-			self.reportPanFinished(event)
-			return True
+		elif event.type() in (QtCore.QEvent.Type.MouseButtonPress, QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseMove):
+			return self.handleMouseInput(event)
+		
 		#else:
-		#	print(event)
+		#	print("Skip", event)
+		
+		return False
+	
+	def handleMouseInput(self, mouse_event:QtGui.QMouseEvent) -> bool:
+
+		if mouse_event.type() == QtCore.QEvent.Type.MouseButtonPress and mouse_event.button() == QtCore.Qt.MouseButton.MiddleButton:
+
+			self.reportPanStarted(mouse_event)
+			return True
+
+		elif mouse_event.type() == QtCore.QEvent.Type.MouseMove and self._panning_active:
+
+			# Calculate position changed since last sample
+			pos_abs   = mouse_event.position().toPoint()
+			pos_delta = pos_abs - self._last_start_pos
+
+			self._last_start_pos = pos_abs
+			
+			self.reportPanChanged(mouse_event, pos_delta)
+			return True
+		
+		elif mouse_event.type() == QtCore.QEvent.Type.MouseButtonRelease and mouse_event.button() == QtCore.Qt.MouseButton.MiddleButton:
+
+			self.reportPanFinished(mouse_event)
+			return True
+		
+		return False
+	
+	def handleTouchpadInput(self, pan_event:QtGui.QWheelEvent) -> bool:
+		"""Handle pan from touchpad"""
+
+		if pan_event.phase() == QtCore.Qt.ScrollPhase.ScrollUpdate:
+				
+			self.reportPanChanged(pan_event, pan_event.angleDelta())
+			return True
+		
+		elif pan_event.phase() == QtCore.Qt.ScrollPhase.ScrollEnd:
+			
+			self.reportPanFinished(pan_event)
+			return True
 		
 		return False
 	
@@ -165,7 +170,9 @@ class BSPanEventFilter(QtCore.QObject):
 		
 		self._last_start_pos = pan_event.position().toPoint()
 		self._panning_active = True
+		
 		logging.getLogger(__name__).debug("Pan started (device=%s, start_pos=%s)", pan_event.device(), self._last_start_pos)
+		
 		self.sig_user_pan_started.emit()
 
 
@@ -176,7 +183,6 @@ class BSPanEventFilter(QtCore.QObject):
 			self.reportPanStarted(pan_event)
 
 		self._accumulated_pan += pan_delta
-
 
 		self.sig_user_pan_moved.emit(pan_delta, self._accumulated_pan)
 	
