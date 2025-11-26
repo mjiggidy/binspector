@@ -25,6 +25,21 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._wheelzoom    = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
 		self._cursor_timer = QtCore.QTimer()
 
+		self._act_zoom_in  = QtGui.QAction("Zoom In")
+		self._act_zoom_in.triggered.connect(lambda: self.zoomIncrement())
+		self._act_zoom_in.setShortcut(QtGui.QKeySequence.StandardKey.ZoomIn)
+		self._act_zoom_in.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ZoomIn))
+
+		print("*(******)", QtGui.QKeySequence.StandardKey.ZoomIn)
+
+		self._act_zoom_out  = QtGui.QAction("Zoom Out")
+		self._act_zoom_out.triggered.connect(lambda: self.zoomDecrement())
+		self._act_zoom_out.setShortcut(QtGui.QKeySequence.StandardKey.ZoomOut)
+		self._act_zoom_out.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ZoomOut))
+
+		self.addAction(self._act_zoom_in)
+		self.addAction(self._act_zoom_out)
+
 		self.viewport().installEventFilter(self._pan_man)
 		self.viewport().installEventFilter(self._pinchy_boy)
 		self.viewport().installEventFilter(self._wheelzoom)
@@ -62,19 +77,26 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	
 	@QtCore.Slot()
 	@QtCore.Slot(int)
-	def zoomIncrement(self, zoom_increment:int=1):
+	def zoomIncrement(self, zoom_step:int=1):
 
-		zoom_increment += self._current_zoom
+		zoom_step += self._current_zoom
 
 		self.setZoom(
 			max(
 				self._zoom_range.start,
 				min(
-					zoom_increment,
+					zoom_step,
 					self._zoom_range.stop
 				)
 			)
 		)
+	
+	@QtCore.Slot()
+	@QtCore.Slot(int)
+	def zoomDecrement(self, zoom_step:int=1):
+		
+		return self.zoomIncrement(-zoom_step)
+
 
 	@QtCore.Slot()
 	def beginPan(self):
