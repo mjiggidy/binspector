@@ -214,34 +214,35 @@ class BSWheelZoomEventFilter(QtCore.QObject):
 		self._accumulated      = 0
 		self._last_orientation = QtCore.Qt.Orientation.Vertical
 		
-		self._threshold_timer  = QtCore.QTimer()
+		self._threshold_timer  = QtCore.QTimer(parent=self)
 		self._threshold_timer.setInterval(threshold_ms)
 		self._threshold_timer.setSingleShot(True)
 		self._threshold_timer.timeout.connect(self.reset)
 
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
+		
 		# Skip if non-wheel
 		if not event.type() == QtCore.QEvent.Type.Wheel:
-			return False
-		
-		if event.phase() not in (QtCore.Qt.ScrollPhase.ScrollUpdate, QtCore.Qt.ScrollPhase.NoScrollPhase):
 			return False
 
 		# Skip if modifiers not included
 		if self._modifiers and not event.modifiers() & self._modifiers:
 			return False
 		
-		print(event.angleDelta())
+		# Consume but ignore ScrollStart/End
+		if event.phase() not in (QtCore.Qt.ScrollPhase.ScrollUpdate, QtCore.Qt.ScrollPhase.NoScrollPhase):
+			return True
+		
+		#print(event.angleDelta())
 		
 		# Handle, orientation-aware
-		if event.angleDelta().x():
+		if abs(event.angleDelta().x()) > abs(event.angleDelta().y()):
 			self.updateLastScroll(event.angleDelta().x(), QtCore.Qt.Orientation.Horizontal)
 
-		elif event.angleDelta().y():
+		elif abs(event.angleDelta().y()) > abs(event.angleDelta().x()):
 			self.updateLastScroll(event.angleDelta().y(), QtCore.Qt.Orientation.Vertical)
 		
 		else:
-
 			logging.getLogger(__name__).warning("Got weird zero-length scroll value: %s", str(event))
 			return False
 
@@ -250,11 +251,11 @@ class BSWheelZoomEventFilter(QtCore.QObject):
 	def updateLastScroll(self, delta:int, orientation:QtCore.Qt.Orientation):
 
 		if orientation != self._last_orientation:
-			print("Resetting: New orientation")
+			logging.getLogger(__name__).debug("Resetting: New orientation")
 			self.reset()
 		
 		elif (delta > 0 and self._accumulated < 0) or (delta < 0 and self._accumulated > 0):
-			print("Resetting: New direction")
+			logging.getLogger(__name__).debug("Resetting: New direction")
 			self.reset()
 
 		self._last_orientation  = orientation
