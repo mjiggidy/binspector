@@ -1,68 +1,6 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
-
-
-class BSPinchEventHandler(QtCore.QObject):
-	"""I peench"""
-
-	GESTURE_SAMPLE_TIMEOUT = 40
-
-	sig_user_is_pinching    = QtCore.Signal(float)
-	"""User did a pinchy"""
-
-	sig_user_finished_pinch = QtCore.Signal()
-	"""User tired of the pinch"""
-
-	def __init__(self, *args, **kwargs):
-
-		super().__init__(*args, **kwargs)
-
-		self._timer = QtCore.QTimer()
-		self._timer.setInterval(self.GESTURE_SAMPLE_TIMEOUT) # ms
-		self._timer.setSingleShot(False)
-		self._timer.timeout.connect(self.reportPinchZoom)
-
-		self._last_scale_factor = 0
-	
-	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
-
-		if event.type() == QtCore.QEvent.Type.NativeGesture and \
-		  event.gestureType() == QtCore.Qt.NativeGestureType.BeginNativeGesture:
-			self._timer.start()
-		
-		elif event.type() == QtCore.QEvent.Type.NativeGesture and \
-		  event.gestureType() == QtCore.Qt.NativeGestureType.EndNativeGesture:
-			print("Done")
-			self.sig_user_finished_pinch.emit()
-			self._timer.stop()
-		
-		elif event.type() == QtCore.QEvent.Type.NativeGesture and \
-		  event.gestureType() == QtCore.Qt.NativeGestureType.ZoomNativeGesture:
-		
-			
-			self._last_scale_factor = event.value() if abs(event.value()) > 0.0025 else 0
-			#self._timer.start()
-
-
-		return super().eventFilter(watched, event)
-	
-	@QtCore.Slot()
-	def reportPinchZoom(self):
-
-		self.sig_user_is_pinching.emit(self._last_scale_factor)
-
-	
-	#def reportPinch(self, pinch_gesture:QtWidgets.QPinchGesture):
-		
-		#if pinch_gesture.state() in (QtCore.Qt.GestureState.GestureUpdated, QtCore.Qt.GestureState.GestureFinished):
-	#	self.sig_user_is_pinching.emit(pinch_gesture)
-		
-	#	if pinch_gesture.state() == QtCore.Qt.GestureState.GestureFinished:
-	#		self.sig_user_finished_pinch.emit(pinch_gesture)
-	
-	def reportPan(self, pan_gesture:QtWidgets.QPanGesture):
-
-		print("Pan delta:", pan_gesture.delta())
+from ..managers import eventfilters
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
@@ -78,41 +16,112 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
 
-		self._current_zoom = 1
+		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
 
-		# This is fancy for me. Heehee.
-		# https://doc.qt.io/qtforpython-6/overviews/qtwidgets-gestures-overview.html
-		#self.grabGesture(QtCore.Qt.GestureType.PinchGesture)
-		#self.grabGesture(QtCore.Qt.GestureType.PanGesture)
-		
-		# TODO: Seems I need to grabGesture() before installing the event filter
-		# or the event filter doesn't work? I don't know lol look at this later 
-		# just to understand it better.  But I'm just saying: keep this order
-		self._pinchy_boy   = BSPinchEventHandler(parent=self)
-		self.installEventFilter(self._pinchy_boy)
+		#self.setMouseTracking(True)
+		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self.viewport())
+		self._pan_man      = eventfilters.BSPanEventFilter(parent=self.viewport())
+		self._wheelzoom    = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
+		self._cursor_timer = QtCore.QTimer()
 
-		self._pinchy_boy.sig_user_is_pinching   .connect(self.reframeOnPinch, QtCore.Qt.ConnectionType.QueuedConnection)
-		self._pinchy_boy.sig_user_finished_pinch.connect(self.userFinishedPinch)
+		self._act_zoom_in  = QtGui.QAction("Zoom In")
+		self._act_zoom_in.triggered.connect(lambda: self.zoomIncrement())
+		self._act_zoom_in.setShortcut(QtGui.QKeySequence.StandardKey.ZoomIn)
+		self._act_zoom_in.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ZoomIn))
 
-	@QtCore.Slot(float)
-	def reframeOnPinch(self, zoom_delta:float):
-		
-		#rect = self.sceneRect()
-		#rect.translate(pinch_gesture.centerPoint())
+		print("*(******)", QtGui.QKeySequence.StandardKey.ZoomIn)
 
-		#print(pinch_gesture.centerPoint())
-		#self.setSceneRect(rect)
-		#print(pinch_gesture.scaleFactor())
+		self._act_zoom_out  = QtGui.QAction("Zoom Out")
+		self._act_zoom_out.triggered.connect(lambda: self.zoomDecrement())
+		self._act_zoom_out.setShortcut(QtGui.QKeySequence.StandardKey.ZoomOut)
+		self._act_zoom_out.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ZoomOut))
+
+		self.addAction(self._act_zoom_in)
+		self.addAction(self._act_zoom_out)
+
+		self.viewport().installEventFilter(self._pan_man)
+		self.viewport().installEventFilter(self._pinchy_boy)
+		self.viewport().installEventFilter(self._wheelzoom)
+
+		self._zoom_animator = QtCore.QPropertyAnimation(parent=self)
+		self._zoom_animator.setTargetObject(self)
+		self._zoom_animator.setPropertyName(QtCore.QByteArray.fromStdString("raw_zoom"))
+		self._zoom_animator.setDuration(300) #ms
+		self._zoom_animator.setEasingCurve(QtCore.QEasingCurve.Type.OutExpo)
+
+		self._cursor_timer.setInterval(1_000) # ms
+		self._cursor_timer.setSingleShot(True)
+		self._cursor_timer.timeout.connect(self.unsetCursor)
+
+		#self._pan_man.sig_user_pan_started.connect()
+		self._pan_man.sig_user_pan_started.connect(self.beginPan)
+		self._pan_man.sig_user_pan_moved.connect(self.panViewByDelta)
+		self._pan_man.sig_user_pan_finished.connect(self.finishPan)
+
+		self._pinchy_boy.sig_user_pinch_started .connect(self._zoom_animator.stop)
+		self._pinchy_boy.sig_user_pinch_moved   .connect(self.zoomViewByDelta)
+		self._pinchy_boy.sig_user_pinch_finished.connect(self.userFinishedPinch)
+
+		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
+
+	@QtCore.Slot(int, QtCore.Qt.Orientation)
+	def zoomByWheel(self, zoom_delta:int, orientation:QtCore.Qt.Orientation):
 
 		if zoom_delta > 0:
-			zoom_delta *= 10
+			self.zoomIncrement(1)
+		elif zoom_delta < 0:
+			self.zoomIncrement(-1)
+		else:
+			logging.getLogger(__name__).debug("Ignored weird 0-delta zoom")
+	
+	@QtCore.Slot()
+	@QtCore.Slot(int)
+	def zoomIncrement(self, zoom_step:int=1):
 
+		zoom_step += self._current_zoom
+
+		self.setZoom(
+			max(
+				self._zoom_range.start,
+				min(
+					zoom_step,
+					self._zoom_range.stop
+				)
+			)
+		)
+	
+	@QtCore.Slot()
+	@QtCore.Slot(int)
+	def zoomDecrement(self, zoom_step:int=1):
+		
+		return self.zoomIncrement(-zoom_step)
+
+
+	@QtCore.Slot()
+	def beginPan(self):
+
+		self._cursor_timer.stop()
+		self.setCursor(QtCore.Qt.CursorShape.ClosedHandCursor)
+	
+	@QtCore.Slot(QtCore.QPoint)
+	def panViewByDelta(self, pan_delta:QtCore.QPoint):
+
+		self._cursor_timer.stop()
+		self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - pan_delta.x())
+		self.verticalScrollBar()  .setValue(self.verticalScrollBar()  .value() - pan_delta.y())
+	
+	@QtCore.Slot()
+	def finishPan(self):
+
+		self._cursor_timer.start()
+		self.setCursor(QtCore.Qt.CursorShape.OpenHandCursor)
+
+	@QtCore.Slot(float)
+	def zoomViewByDelta(self, zoom_delta:float):
+		
 		zoom_delta += 1
-
 		new_zoom = self._current_zoom * (zoom_delta)
-
-		print(f"{zoom_delta=}")
 
 		# Allow overshoot
 		ZOOM_RANGE_OVERSHOOT = range(self._zoom_range.start-1, self._zoom_range.stop +1)
@@ -129,8 +138,17 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	@QtCore.Slot()
 	def userFinishedPinch(self):
 
+		start_val = self._current_zoom
+		end_val = max(self._zoom_range.start, min(round(self._current_zoom), self._zoom_range.stop))
 
-		self.setZoom(max(self._zoom_range.start, min(round(self._current_zoom), self._zoom_range.stop)))
+		if start_val == end_val:
+			#print("EXACT")
+			return
+
+		self._zoom_animator.stop()
+		self._zoom_animator.setStartValue(start_val)
+		self._zoom_animator.setEndValue(end_val)
+		self._zoom_animator.start()
 
 	@QtCore.Slot(object)
 	def setZoomRange(self, zoom_range:range):
@@ -141,6 +159,26 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	
 	def zoomRange(self) -> range:
 		return self._zoom_range
+	
+	@QtCore.Property(float)
+	def raw_zoom(self) -> float:
+
+		return self._current_zoom
+
+	
+	@raw_zoom.setter
+	def raw_zoom(self, raw_zoom:float):
+
+		#print(raw_zoom)
+
+		if raw_zoom != self._current_zoom:
+			self._current_zoom = raw_zoom
+			
+			t = QtGui.QTransform()
+			t.scale(raw_zoom, raw_zoom)
+			self.setTransform(t)
+
+			self.sig_zoom_level_changed.emit(raw_zoom)
 
 	@QtCore.Slot(int)
 	@QtCore.Slot(float)
@@ -150,7 +188,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		if zoom_level != self._current_zoom:
 			
 			
-			#logging.getLogger(__name__).debug("Setting zoom level to %s", zoom_level)
+			logging.getLogger(__name__).debug("Setting zoom level to %s", zoom_level)
 
 			zoom_level = float(zoom_level) #/ float(4)
 			self._current_zoom = zoom_level

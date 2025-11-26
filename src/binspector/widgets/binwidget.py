@@ -150,9 +150,10 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 	def _setupSignals(self):
 
-		self._sld_frame_scale.valueChanged.connect(self.sig_frame_scale_changed)
+		self._sld_frame_scale.sliderMoved.connect(self.sig_frame_scale_changed)
+		self._sld_frame_scale.valueChanged.connect(lambda s: self._sld_frame_scale.setToolTip(str(s)))
 		#self._sld_frame_scale.valueChanged.connect(print)
-		self._sld_script_scale.valueChanged.connect(self.sig_script_scale_changed)
+		self._sld_script_scale.sliderMoved.connect(self.sig_script_scale_changed)
 
 		#self._txt_search.textEdited.connect(self.sig_search_text_changed)
 	
@@ -281,16 +282,20 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.model().rowsRemoved  .connect(self.updateBinStats)
 		self._binitems_list.model().modelReset   .connect(self.updateBinStats)
 
-		self._section_top.sig_frame_scale_changed.connect(self.frameView().setZoom)
 		
-		self._section_bottom.setLayout(QtWidgets.QHBoxLayout())
-		self._section_bottom.layout().setContentsMargins(2,2,2,2)
+		self._section_top.sig_frame_scale_changed.connect(self._binitems_frame.setZoom)
 
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 		
+
+		import logging
 		self._binitems_frame.setZoomRange(avbutils.bins.THUMB_FRAME_MODE_RANGE)
+		logging.getLogger(__name__).error("Zoom range set to %s, confirm: %s", avbutils.bins.THUMB_FRAME_MODE_RANGE, self._binitems_frame.zoomRange())
 		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
+		logging.getLogger(__name__).error("Setting current zoom to %s, confirm: %s", self._section_top._sld_frame_scale.minimum(), self._binitems_frame._current_zoom)
+		
+
 
 		# Shortcuts/Actions
 		# TODO: Not here lol but i dunno
@@ -469,8 +474,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.setBinViewName(bin_view.name)
 
+
+		#self.frameView().translate(500, 500)
+		#self.frameView().setSceneRect(QtCore.QRect(QtCore.QPoint(-2500, -2500), QtCore.QSize(5000, 5000)))
+		#self.frameView().centerOn(0,0)
+		#print("***********", self.frameView().sceneRect())
+		#print("***********", self.frameView().viewport().rect())
 		self.frameView().setZoom(frame_scale)
-		self.frameView().centerOn(QtCore.QPointF(0,0))
+		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
+		#self.frameView().centerOn(QtCore.QPointF(0,0))
 
 	
 	@QtCore.Slot(object)

@@ -204,9 +204,20 @@ if __name__ == "__main__":
 	logging.basicConfig(level=logging.DEBUG)
 
 	app = QtWidgets.QApplication()
-	app.setStyle("Fusion")
+
+	#app.setStyle("Fusion")
+	app.setApplicationName("Pinchy Toy")
+	app.setApplicationVersion("1.0.0")
+	app.setOrganizationName("GlowingPixel")
+	app.setOrganizationDomain("com.glowingpixel")
 
 	wnd = MichaelsCoolTestWindowHahaOk()
+	wnd.setWindowTitle(app.applicationDisplayName())
+	
 	wnd.show()
+
+	wnd_geo = QtCore.QRect(QtCore.QPoint(0,0), QtCore.QSize(256,256))
+	wnd_geo.moveCenter(app.primaryScreen().geometry().center())
+	wnd.setGeometry(wnd_geo)
 
 	sys.exit(app.exec())
