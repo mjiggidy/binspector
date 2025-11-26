@@ -120,7 +120,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		end_val = max(self._zoom_range.start, min(round(self._current_zoom), self._zoom_range.stop))
 
 		if start_val == end_val:
-			print("EXACT")
+			#print("EXACT")
 			return
 
 		self._zoom_animator.stop()
@@ -147,7 +147,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	@raw_zoom.setter
 	def raw_zoom(self, raw_zoom:float):
 
-		print(raw_zoom)
+		#print(raw_zoom)
 
 		if raw_zoom != self._current_zoom:
 			self._current_zoom = raw_zoom
