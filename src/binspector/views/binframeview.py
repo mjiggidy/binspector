@@ -19,16 +19,15 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
 
-		# This is fancy for me. Heehee.
-		# https://doc.qt.io/qtforpython-6/overviews/qtwidgets-gestures-overview.html
-		#self.grabGesture(QtCore.Qt.GestureType.PinchGesture)
-		#self.grabGesture(QtCore.Qt.GestureType.PanGesture)
-		
-		# TODO: Seems I need to grabGesture() before installing the event filter
-		# or the event filter doesn't work? I don't know lol look at this later 
-		# just to understand it better.  But I'm just saying: keep this order
-		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self)
-		self.installEventFilter(self._pinchy_boy)
+		#self.setMouseTracking(True)
+		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self.viewport())
+		self._pan_man      = eventfilters.BSPanEventFilter(parent=self.viewport())
+		self._wheelzoom    = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
+		self._cursor_timer = QtCore.QTimer()
+
+		self.viewport().installEventFilter(self._pan_man)
+		self.viewport().installEventFilter(self._pinchy_boy)
+		self.viewport().installEventFilter(self._wheelzoom)
 
 		self._zoom_animator = QtCore.QPropertyAnimation(parent=self)
 		self._zoom_animator.setTargetObject(self)
@@ -36,30 +35,71 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._zoom_animator.setDuration(300) #ms
 		self._zoom_animator.setEasingCurve(QtCore.QEasingCurve.Type.OutExpo)
 
+		self._cursor_timer.setInterval(1_000) # ms
+		self._cursor_timer.setSingleShot(True)
+		self._cursor_timer.timeout.connect(self.unsetCursor)
+
+		#self._pan_man.sig_user_pan_started.connect()
+		self._pan_man.sig_user_pan_started.connect(self.beginPan)
+		self._pan_man.sig_user_pan_moved.connect(self.panViewByDelta)
+		self._pan_man.sig_user_pan_finished.connect(self.finishPan)
+
 		self._pinchy_boy.sig_user_pinch_started .connect(self._zoom_animator.stop)
-		self._pinchy_boy.sig_user_pinch_moved   .connect(self.reframeOnPinch)
+		self._pinchy_boy.sig_user_pinch_moved   .connect(self.zoomViewByDelta)
 		self._pinchy_boy.sig_user_pinch_finished.connect(self.userFinishedPinch)
 
+		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
+
+	@QtCore.Slot(int, QtCore.Qt.Orientation)
+	def zoomByWheel(self, zoom_delta:int, orientation:QtCore.Qt.Orientation):
+
+		if zoom_delta > 0:
+			self.zoomIncrement(1)
+		elif zoom_delta < 0:
+			self.zoomIncrement(-1)
+		else:
+			logging.getLogger(__name__).debug("Ignored weird 0-delta zoom")
+	
+	@QtCore.Slot()
+	@QtCore.Slot(int)
+	def zoomIncrement(self, zoom_increment:int=1):
+
+		zoom_increment += self._current_zoom
+
+		self.setZoom(
+			max(
+				self._zoom_range.start,
+				min(
+					zoom_increment,
+					self._zoom_range.stop
+				)
+			)
+		)
+
+	@QtCore.Slot()
+	def beginPan(self):
+
+		self._cursor_timer.stop()
+		self.setCursor(QtCore.Qt.CursorShape.ClosedHandCursor)
+	
+	@QtCore.Slot(QtCore.QPoint)
+	def panViewByDelta(self, pan_delta:QtCore.QPoint):
+
+		self._cursor_timer.stop()
+		self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - pan_delta.x())
+		self.verticalScrollBar()  .setValue(self.verticalScrollBar()  .value() - pan_delta.y())
+	
+	@QtCore.Slot()
+	def finishPan(self):
+
+		self._cursor_timer.start()
+		self.setCursor(QtCore.Qt.CursorShape.OpenHandCursor)
+
 	@QtCore.Slot(float)
-	def reframeOnPinch(self, zoom_delta:float):
+	def zoomViewByDelta(self, zoom_delta:float):
 		
-		#rect = self.sceneRect()
-		#rect.translate(pinch_gesture.centerPoint())
-
-		#print(pinch_gesture.centerPoint())
-		#self.setSceneRect(rect)
-		#print(pinch_gesture.scaleFactor())
-
-		#if zoom_delta > 0:
-		#	zoom_delta *= 10
-
 		zoom_delta += 1
-
-		#print(f"{self._current_zoom=} * ({zoom_delta=}) = newzoom={self._current_zoom * (zoom_delta)}")
-
 		new_zoom = self._current_zoom * (zoom_delta)
-
-		#print(f"{zoom_delta=}")
 
 		# Allow overshoot
 		ZOOM_RANGE_OVERSHOOT = range(self._zoom_range.start-1, self._zoom_range.stop +1)
@@ -70,8 +110,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 				ZOOM_RANGE_OVERSHOOT.stop
 			)
 		)
-
-		#print(padded_zoom)
 
 		self.setZoom(padded_zoom)
 
