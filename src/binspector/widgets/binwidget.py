@@ -151,8 +151,9 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 	def _setupSignals(self):
 
 		self._sld_frame_scale.sliderMoved.connect(self.sig_frame_scale_changed)
+		self._sld_frame_scale.valueChanged.connect(lambda s: self._sld_frame_scale.setToolTip(str(s)))
 		#self._sld_frame_scale.valueChanged.connect(print)
-		self._sld_script_scale.valueChanged.connect(self.sig_script_scale_changed)
+		self._sld_script_scale.sliderMoved.connect(self.sig_script_scale_changed)
 
 		#self._txt_search.textEdited.connect(self.sig_search_text_changed)
 	
@@ -473,8 +474,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.setBinViewName(bin_view.name)
 
+
+		#self.frameView().translate(500, 500)
+		#self.frameView().setSceneRect(QtCore.QRect(QtCore.QPoint(-2500, -2500), QtCore.QSize(5000, 5000)))
+		#self.frameView().centerOn(0,0)
+		#print("***********", self.frameView().sceneRect())
+		#print("***********", self.frameView().viewport().rect())
 		self.frameView().setZoom(frame_scale)
-		self.frameView().centerOn(QtCore.QPointF(0,0))
+		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
+		#self.frameView().centerOn(QtCore.QPointF(0,0))
 
 	
 	@QtCore.Slot(object)
