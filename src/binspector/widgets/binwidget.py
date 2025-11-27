@@ -29,28 +29,28 @@ class BSAbstractBinContentsWidgetBar(QtWidgets.QWidget):
 		else:
 			self.layout().addWidget(widget)
 
-class BSBinContentsBottomWidgetBar(BSAbstractBinContentsWidgetBar):
-	"""Default bottom widget bar"""
-
-	def __init__(self, *args, **kwargs):
-
-
-		super().__init__(*args, **kwargs)
-		
-		if not isinstance(self, QtWidgets.QToolBar):
-			self.setLayout(QtWidgets.QGridLayout())
-			#self.layout().setContentsMargins(*[4]*4)
-		
-		self._txt_info = QtWidgets.QLabel()
-		self._txt_info.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-
-		self.layout().addWidget(self._txt_info)
-		
-		
-	@QtCore.Slot(object)
-	def setInfoText(self, text:str):
-
-		self._txt_info.setText(text)
+#class BSBinContentsBottomWidgetBar(BSAbstractBinContentsWidgetBar):
+#	"""Default bottom widget bar"""
+#
+#	def __init__(self, *args, **kwargs):
+#
+#
+#		super().__init__(*args, **kwargs)
+#		
+#		if not isinstance(self, QtWidgets.QToolBar):
+#			self.setLayout(QtWidgets.QGridLayout())
+#			#self.layout().setContentsMargins(*[4]*4)
+#		
+#		self._txt_info = QtWidgets.QLabel()
+#		self._txt_info.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+#
+#		self.layout().addWidget(self._txt_info)
+#		
+#		
+#	@QtCore.Slot(object)
+#	def setInfoText(self, text:str):
+#
+#		self._txt_info.setText(text)
 		
 class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 	"""Default top widget bar"""
@@ -253,7 +253,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._section_top       = BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
-		self._section_bottom    = BSBinContentsBottomWidgetBar()
+		#self._section_bottom    = BSBinContentsBottomWidgetBar()
 		
 		self._binitems_list     = bintreeview.BSBinTreeView()
 		self._binitems_frame    = binframeview.BSBinFrameView()
@@ -324,37 +324,37 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._txt_binstats.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
 		self._binitems_list.addScrollBarWidget(self._txt_binstats, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-	def _setViewModeWidget(self, mode:avbutils.BinDisplayModes, widget:QtWidgets.QWidget):
-		"""Set view mode widget delegate for the stacked widget"""
-
-		self._section_main.removeWidget(self._section_main.widget(int(mode)))
-		self._section_main.insertWidget(int(mode), widget)
+#	def _setViewModeWidget(self, mode:avbutils.BinDisplayModes, widget:QtWidgets.QWidget):
+#		"""Set view mode widget delegate for the stacked widget"""
+#
+#		self._section_main.removeWidget(self._section_main.widget(int(mode)))
+#		self._section_main.insertWidget(int(mode), widget)
 
 	def listView(self) -> bintreeview.BSBinTreeView:
 		"""Get the main view"""
 
 		return self._binitems_list
 	
-	def setListView(self, treeview:bintreeview.BSBinTreeView):
-
-		self._binitems_list = treeview
-		self._setViewModeWidget(avbutils.BinDisplayModes.LIST, self._binitems_list)
+#	def setListView(self, treeview:bintreeview.BSBinTreeView):
+#
+#		self._binitems_list = treeview
+#		self._setViewModeWidget(avbutils.BinDisplayModes.LIST, self._binitems_list)
 
 	def frameView(self) -> binframeview.BSBinFrameView:
 		return self._binitems_frame
 	
-	def setFrameView(self, frame_view:binframeview.BSBinFrameView):
-
-		self._binitems_frame = frame_view
-		self._setViewModeWidget(avbutils.BinDisplayModes.FRAME, self._binitems_frame)
+#	def setFrameView(self, frame_view:binframeview.BSBinFrameView):
+#
+#		self._binitems_frame = frame_view
+#		self._setViewModeWidget(avbutils.BinDisplayModes.FRAME, self._binitems_frame)
 
 	def scriptView(self) -> binscriptview.BSBinScriptView:
 		return self._binitems_script
 	
-	def setScriptView(self, script_view:binscriptview.BSBinScriptView):
-
-		self._binitems_script = script_view
-		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
+#	def setScriptView(self, script_view:binscriptview.BSBinScriptView):
+#
+#		self._binitems_script = script_view
+#		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
 
 	@QtCore.Slot(object)
 	def setItemPadding(self, padding:QtCore.QMargins):
@@ -382,11 +382,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setTopWidgetBar(self, toolbar:BSBinContentsTopWidgetBar):
 		self._section_top = toolbar
 	
-	def bottomWidgetBar(self) -> BSBinContentsBottomWidgetBar:
-		return self._section_bottom
-	
-	def setBottomWidgetBar(self, widget:BSBinContentsBottomWidgetBar):
-		self._section_bottom = widget
+#	def bottomWidgetBar(self) -> BSBinContentsBottomWidgetBar:
+#		return self._section_bottom
+#	
+#	def setBottomWidgetBar(self, widget:BSBinContentsBottomWidgetBar):
+#		self._section_bottom = widget
 	
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
