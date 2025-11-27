@@ -357,6 +357,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		"""Connect bin model to all the schtuff"""
 
 		self._bin_filter_model.setSourceModel(self._bin_model)
+		self._binitems_frame.scene().setBinFilterModel(self._bin_filter_model)
 
 	def listView(self) -> bintreeview.BSBinTreeView:
 		"""Get the main view"""
