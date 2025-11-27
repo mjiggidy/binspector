@@ -91,10 +91,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_appearance.hide()
 		self._dock_binview.hide()
 
-		self._main_bincontents.listView().model().setSourceModel(self._man_binitems.viewModel())
+		self._main_bincontents.setBinModel(self._man_binitems.viewModel())
+		
 		self._tool_binview.setModel(self._man_binview.viewModel())
 
-		self._main_bincontents.frameView().setScene(self._man_binitems.frameScene())
+		#self._main_bincontents.frameView().setScene(self._man_binitems.frameScene())
 
 		# Top binbarboy
 		topbar = self._main_bincontents.topWidgetBar()

@@ -1,6 +1,41 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..managers import eventfilters
+from ..models import viewmodels
+
+class BSBinFrameScene(QtWidgets.QGraphicsScene):
+	"""Graphics scene based on a bin model"""
+
+	sig_bin_filter_model_changed = QtCore.Signal(object)
+
+	def __init__(self, *args, bin_filter_model:viewmodels.LBTimelineViewModel|None=None, **kwargs):
+		
+		super().__init__(*args, **kwargs)
+
+		self._bin_filter_model = bin_filter_model or viewmodels.LBSortFilterProxyModel()
+		self._setupModel()
+
+	def _setupModel(self):
+
+		self._bin_filter_model.rowsInserted  .connect(print)
+		self._bin_filter_model.rowsMoved     .connect(print)
+		self._bin_filter_model.rowsRemoved   .connect(print)
+		self._bin_filter_model.modelReset    .connect(print)
+		self._bin_filter_model.layoutChanged .connect(print)
+
+	def binFilterModel(self) -> viewmodels.LBSortFilterProxyModel:
+		return self._bin_filter_model
+
+	@QtCore.Slot(object)
+	def setBinFilterModel(self, bin_model:viewmodels.LBSortFilterProxyModel):
+		
+		if not self._bin_filter_model == bin_model:
+
+			self._bin_filter_model = bin_model
+			self._setupModel()
+
+			logging.getLogger(__name__).debug("Set bin filter model=%s (source model=%s)", self._bin_filter_model, self._bin_filter_model.sourceModel())
+			self.sig_bin_filter_model_changed.emit(bin_model)
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
@@ -8,13 +43,14 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	sig_zoom_level_changed = QtCore.Signal(int)
 	sig_zoom_range_changed = QtCore.Signal(object)
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, frame_scene:BSBinFrameScene|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+		self.setScene(frame_scene or BSBinFrameScene())
 
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
@@ -29,8 +65,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._act_zoom_in.triggered.connect(lambda: self.zoomIncrement())
 		self._act_zoom_in.setShortcut(QtGui.QKeySequence.StandardKey.ZoomIn)
 		self._act_zoom_in.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ZoomIn))
-
-		print("*(******)", QtGui.QKeySequence.StandardKey.ZoomIn)
 
 		self._act_zoom_out  = QtGui.QAction("Zoom Out")
 		self._act_zoom_out.triggered.connect(lambda: self.zoomDecrement())

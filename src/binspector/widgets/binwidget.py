@@ -1,6 +1,8 @@
+import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 import avbutils, avb
 from ..views import bintreeview, binframeview, binscriptview
+from ..models import sceneitems, viewmodels
 from . import buttons, sliders
 from ..managers import binproperties
 
@@ -231,9 +233,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	sig_view_mode_changed   = QtCore.Signal(object)
 	sig_bin_palette_changed = QtCore.Signal(QtGui.QPalette)
+	sig_bin_model_changed   = QtCore.Signal(object)
 	sig_focus_set_on_column = QtCore.Signal(int)	# Logical column index
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, bin_model:viewmodels.LBTimelineViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -243,6 +246,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
+		
+		self._bin_model         = bin_model or viewmodels.LBTimelineViewModel()
+		self._bin_filter_model  = viewmodels.LBSortFilterProxyModel()
 
 		# Save initial palette for later togglin'
 		self._default_palette   = self.palette()
@@ -259,8 +265,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_frame    = binframeview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
 
+		self._scene_frame       = QtWidgets.QGraphicsScene()
+
 		self._txt_binstats      = QtWidgets.QLabel()
 
+		self._binitems_list.setModel(self._bin_filter_model)
 		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
@@ -278,13 +287,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
 
-		self._binitems_list.model().rowsInserted .connect(self.updateBinStats)
-		self._binitems_list.model().rowsRemoved  .connect(self.updateBinStats)
-		self._binitems_list.model().modelReset   .connect(self.updateBinStats)
+		self._bin_filter_model.rowsInserted  .connect(self.updateBinStats)
+		self._bin_filter_model.rowsRemoved   .connect(self.updateBinStats)
+		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
+		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
 
 		
 		self._section_top.sig_frame_scale_changed.connect(self._binitems_frame.setZoom)
-
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 		
@@ -324,11 +333,30 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._txt_binstats.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
 		self._binitems_list.addScrollBarWidget(self._txt_binstats, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-#	def _setViewModeWidget(self, mode:avbutils.BinDisplayModes, widget:QtWidgets.QWidget):
-#		"""Set view mode widget delegate for the stacked widget"""
-#
-#		self._section_main.removeWidget(self._section_main.widget(int(mode)))
-#		self._section_main.insertWidget(int(mode), widget)
+		self._setupBinModel()
+		# Frame view stuff
+		#self._binitems_frame.setScene(self._scene_frame)
+
+	@QtCore.Slot(object)
+	def setBinModel(self, bin_model:viewmodels.LBTimelineViewModel):
+		"""Set the bin item model for the bin"""
+
+		if self._bin_model == bin_model:
+			return
+		
+		self._bin_model = bin_model
+		self._setupBinModel()
+		
+		logging.getLogger(__name__).debug("Set bin model=%s", self._bin_model)
+		self.sig_bin_model_changed.emit(bin_model)
+	
+	def binModel(self) -> viewmodels.LBTimelineViewModel:
+		return self._bin_model
+	
+	def _setupBinModel(self):
+		"""Connect bin model to all the schtuff"""
+
+		self._bin_filter_model.setSourceModel(self._bin_model)
 
 	def listView(self) -> bintreeview.BSBinTreeView:
 		"""Get the main view"""
@@ -392,7 +420,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setBinViewEnabled(self, is_enabled:bool):
 
 		# TODO: Do I need to emit a confirmation signal here?
-		self._binitems_list.model().setBinViewEnabled(is_enabled)
+		self._bin_filter_model.setBinViewEnabled(is_enabled)
 
 	@QtCore.Slot(object)
 	def setBinAppearanceEnabled(self, is_enabled:bool):
@@ -409,7 +437,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(object)
 	def setBinFiltersEnabled(self, is_enabled:bool):
 
-		self._binitems_list.model().setBinFiltersEnabled(is_enabled)
+		self._bin_filter_model.setBinFiltersEnabled(is_enabled)
 
 	@QtCore.Slot(object)
 	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
@@ -460,8 +488,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot()
 	def updateBinStats(self):
 
-		count_visible = self._binitems_list.model().rowCount()
-		count_all     = self._binitems_list.model().sourceModel().rowCount()
+		count_visible = self._bin_filter_model.rowCount()
+		count_all     = self._bin_filter_model.sourceModel().rowCount()
 
 		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
 			current_item_count=QtCore.QLocale.system().toString(count_visible),
@@ -517,12 +545,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(bool)
 	def setSiftEnabled(self, is_enabled:bool):
 
-		self._binitems_list.model().setSiftEnabled(is_enabled)
+		self._bin_filter_model.setSiftEnabled(is_enabled)
 
 	@QtCore.Slot(object)
 	def setSiftOptions(self, sift_options:avbutils.bins.BinSiftOption):
 
-		self._binitems_list.model().setSiftOptions(sift_options)
+		self._bin_filter_model.setSiftOptions(sift_options)
 
 	@QtCore.Slot(str)
 	def focusBinColumn(self, focus_field_name:str) -> bool:

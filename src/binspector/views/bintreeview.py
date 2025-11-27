@@ -102,11 +102,21 @@ class BSBinTreeView(treeview.LBTreeView):
 		super().__init__(*args, **kwargs)		
 
 		self._palette_watcher = icons.BSPaletteWatcherForSomeReason()
+		self._column_select_watcher = BSColumnSelectWatcher()
 		
 		self.setModel((viewmodels.LBSortFilterProxyModel()))
 
 		self.setSelectionBehavior(self.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(self.DEFAULT_SELECTION_MODE)
+
+		# TODO/TEMP: Prep clip color icons
+
+		self.header().viewport().installEventFilter(self._column_select_watcher)
+		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
+
+	def setModel(self, model):
+
+		super().setModel(model)
 
 		self.model().columnsInserted.connect(self.setColumnWidthsFromBinView)
 		self.model().columnsInserted.connect(
@@ -122,15 +132,9 @@ class BSBinTreeView(treeview.LBTreeView):
 			self.assignItemDelegates(destination_parent, min(source_logical_start, destination_logical_start))
 		)
 
-		# TODO/TEMP: Prep clip color icons
-
-		self.setCustomDelegates()
 		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=self.DEFAULT_ITEM_PADDING))
-
-		self._column_select_watcher = BSColumnSelectWatcher()
-		self.header().viewport().installEventFilter(self._column_select_watcher)
-		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
-
+		self.setCustomDelegates()
+	
 	@QtCore.Slot(object)
 	def selectSectionFromCoordinates(self, viewport_coords:QtCore.QPoint):
 		
