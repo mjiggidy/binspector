@@ -377,24 +377,9 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	
 	@QtCore.Slot(object)
 	def addMob(self, mob_info:binparser.BinItemInfo):
-		
-		TEMP_POSITION_OFFSET_THING = 10
+		"""Add a single mob (convience method for `self.addMobs(mob_info_list:list[binparser.BinItemInfo])`)"""
 
-#		item_rect = sceneitems.BSFrameModeItem()
-#		item_rect.setPos(mob_info.coordinates[0]/TEMP_POSITION_OFFSET_THING, mob_info.coordinates[1]/TEMP_POSITION_OFFSET_THING)
-#		item_rect.setScale(self._frame_scale)
-#		item_rect.setName(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Name")))
-#		item_rect.setClipColor(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Color")).raw_data())
-#		item_rect.setSelected(True)
-#		item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
-#
-#		
-#		self._frame_scene.addItem(
-#			item_rect
-#		)
-
-		self.addRow(mob_info.column_data)
-
+		self.addMobs([mob_info])
 		#self.sig_mob_added.emit(mob_info)
 	
 	@QtCore.Slot(object)

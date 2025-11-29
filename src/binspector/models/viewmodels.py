@@ -1,7 +1,15 @@
-import typing
+import typing, enum
 from PySide6 import QtCore
 import avbutils
 from . import viewmodelitems
+
+class BSBinItemDataRoles(enum.IntEnum):
+
+	BSItemName         = QtCore.Qt.ItemDataRole.UserRole + 1
+	BSItemType         = enum.auto()
+	BSClipColor        = enum.auto()
+	BSFrameCoordinates = enum.auto()
+	BSFrameThumbnail   = enum.auto()
 
 class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 	"""QSortFilterProxyModel that implements natural sorting and such"""
@@ -232,6 +240,7 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 class LBTimelineViewModel(QtCore.QAbstractItemModel):
 	"""A view model for timelines"""
 
+
 	def __init__(self):
 
 		super().__init__()
@@ -283,13 +292,31 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 		if not index.isValid():
 			return None
 		
-		timeline   = self._bin_items[index.row()]
-		field_name = self._headers[index.column()].field_name()
+		bin_item_data = self._bin_items[index.row()]
 
-		if field_name not in timeline:
+		# Do row stuff first
+		if role == BSBinItemDataRoles.BSItemName:
+			return bin_item_data.get("201").data(QtCore.Qt.ItemDataRole.DisplayRole)
+		#elif role == BSBinItemDataRoles.BSFrameCoordinates:
+		#	return bin_item_data.frame_coordinates
+			
+
+
+		field_name    = self._headers[index.column()].field_name()
+
+		if field_name not in bin_item_data:
 			return None
 
-		return timeline.get(field_name).data(role)
+		return bin_item_data.get(field_name).data(role)
+	
+	def flags(self, index:QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
+		
+		# Append flag `QtCore.Qt.ItemFlag.ItemNeverHasChildren` for flat list optimization
+		
+		if index.isValid():
+			return super().flags(index) | QtCore.Qt.ItemFlag.ItemNeverHasChildren
+		
+		return super().flags(index)
 	
 	def fields(self) -> list[str]:
 		"""Binspecific: Field names for mapping headers and columns, in order"""

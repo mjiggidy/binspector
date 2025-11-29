@@ -1,10 +1,15 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..managers import eventfilters
-from ..models import viewmodels
+from ..models import viewmodels, sceneitems
 
 class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	"""Graphics scene based on a bin model"""
+
+	DEFAULT_ITEM_FLAGS = \
+		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|\
+		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|\
+		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable
 
 	sig_bin_filter_model_changed = QtCore.Signal(object)
 
@@ -13,15 +18,16 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		super().__init__(*args, **kwargs)
 
 		self._bin_filter_model = bin_filter_model or viewmodels.LBSortFilterProxyModel()
+		self._bin_items:list[sceneitems.BSFrameModeItem] = list()
 		self._setupModel()
 
 	def _setupModel(self):
 
-		self._bin_filter_model.rowsInserted  .connect(print)
-		self._bin_filter_model.rowsMoved     .connect(print)
-		self._bin_filter_model.rowsRemoved   .connect(print)
-		self._bin_filter_model.modelReset    .connect(print)
-		self._bin_filter_model.layoutChanged .connect(print)
+		self._bin_filter_model.rowsInserted  .connect(self.addBinItems)
+		#self._bin_filter_model.rowsMoved     .connect(lambda: print("** Rows Moved"))
+		self._bin_filter_model.rowsAboutToBeRemoved .connect(self.removeBinItems)
+		self._bin_filter_model.modelReset    .connect(self.clear)
+		#self._bin_filter_model.layoutChanged .connect(lambda: print("** Layout Changed"))
 
 	def binFilterModel(self) -> viewmodels.LBSortFilterProxyModel:
 		return self._bin_filter_model
@@ -31,11 +37,55 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		
 		if not self._bin_filter_model == bin_model:
 
+			#self._bin_filter_model.rowsInserted.disconnect()
+			#self._bin_filter_model.rowsMoved.disconnect()
+			#self._bin_filter_model.rowsRemoved.disconnect()
+			#self._bin_filter_model.modelReset.disconnect()
+			#self._bin_filter_model.layoutChanged.disconnect()
+
 			self._bin_filter_model = bin_model
 			self._setupModel()
 
 			logging.getLogger(__name__).debug("Set bin filter model=%s (source model=%s)", self._bin_filter_model, self._bin_filter_model.sourceModel())
 			self.sig_bin_filter_model_changed.emit(bin_model)
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def addBinItems(self, parent_row_index:QtCore.QModelIndex, row_start:int, row_end:int):
+
+		for row in range(row_start, row_end+1):
+
+			# Resolve source model to ensure we always have relevent columns available
+			proxy_row_index  = self._bin_filter_model.index(row, 0, parent_row_index)
+			#parent_row_index = self._bin_filter_model.mapToSource(proxy_row_index)
+			bin_item_name = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemName)
+
+			#bin_item_name = self._bin_filter_model.index(row, 2, parent_index).data(QtCore.Qt.ItemDataRole.DisplayRole)
+
+			bin_item = sceneitems.BSFrameModeItem()
+			bin_item.setName(str(bin_item_name))
+			bin_item.setFlags(self.DEFAULT_ITEM_FLAGS)
+			bin_item.setPos(QtCore.QPoint(row%6 * 18, row//6 * 12))
+
+			self._bin_items.insert(row, bin_item)
+
+			self.addItem(bin_item)
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def removeBinItems(self, model_index:QtCore.QModelIndex, row_start:int, row_end:int):
+		
+		for row in range(row_end, row_start-1, -1):
+
+			bin_item = self._bin_items.pop(row)
+			self.removeItem(bin_item)
+	
+	@QtCore.Slot()
+	def clear(self):
+		
+		self._bin_items.clear()
+		
+		return super().clear()
+
+
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
