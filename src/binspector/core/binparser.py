@@ -73,9 +73,11 @@ import dataclasses
 class BinItemInfo:
 	"""Bin item info for a given mob"""
 
-	column_data :dict
-	coordinates :tuple[int,int]
-	keyframe    :int
+	name              :str
+	item_type         :avbutils.bins.BinDisplayItemTypes
+	column_data       :dict[int,viewmodelitems.LBAbstractViewItem|str]
+	frame_coordinates :tuple[int,int]
+	keyframe_offset   :int
 
 
 def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
@@ -183,11 +185,17 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 			
 		}
 
+		# Old
 		for key, val in user_attributes.items():
 			item.update({"40_"+key: val})
+
+		# New
+		#item.update({40: user_attributes})
 		
 		return BinItemInfo(
+			name = str(comp.name),
+			item_type = bin_item_role,
 			column_data = item,
-			coordinates = (bin_item.x, bin_item.y),
-			keyframe    = bin_item.keyframe
+			frame_coordinates = (bin_item.x, bin_item.y),
+			keyframe_offset   = bin_item.keyframe
 		)

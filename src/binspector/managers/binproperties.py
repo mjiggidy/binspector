@@ -385,26 +385,6 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	@QtCore.Slot(object)
 	def addMobs(self, mob_info_list:list[binparser.BinItemInfo]):
 
-
-		for mob_info in mob_info_list:
-			
-			self._frame_scale = 1
-		
-			
-
-#			item_rect = sceneitems.BSFrameModeItem()
-#			item_rect.setPos(mob_info.coordinates[0]/TEMP_POSITION_OFFSET_THING, mob_info.coordinates[1]/TEMP_POSITION_OFFSET_THING)
-#			item_rect.setScale(self._frame_scale)
-#			item_rect.setName(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Name")))
-#			item_rect.setClipColor(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Color")).raw_data())
-#			item_rect.setSelected(True)
-#			item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
-#			item_rect.setVisible(False)
-#			#print( "Me", self._frame_scene.items())
-#			self._frame_scene.addItem(
-#				item_rect
-#			)
-
 		self.addRows([m.column_data for m in mob_info_list])
 
 
