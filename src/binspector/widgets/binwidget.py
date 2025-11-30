@@ -218,7 +218,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.setAutoFillBackground(True)
 
 		self.setLayout(QtWidgets.QVBoxLayout())
-
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
 		
@@ -245,6 +244,22 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._txt_binstats      = QtWidgets.QLabel()
 
+		self._setupWidgets()
+		self._setupSignals()
+		self._setupActions()
+		
+		self._setupBinModel()
+
+	def _setupWidgets(self):
+
+		self.layout().addWidget(self._section_top)
+
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._binitems_list)
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
+		
+		self.layout().addWidget(self._section_main)
+
 		self._binitems_list.setModel(self._bin_filter_model)
 		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		
@@ -255,32 +270,36 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._proxystyle_hscroll = BSScrollBarStyle(base_style, scale_factor=1.25, parent=self)
 		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
-		self.layout().addWidget(self._section_top)
-		self.layout().addWidget(self._section_main)
+		self._binitems_frame.setZoomRange(avbutils.bins.THUMB_FRAME_MODE_RANGE)
+		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
+		self._section_top._sld_frame_scale.setRange(self._binitems_frame.zoomRange().start, self._binitems_frame.zoomRange().stop)
+		# TODO: Necessary?
+		#logging.getLogger(__name__).error("Zoom range set to %s, confirm: %s", avbutils.bins.THUMB_FRAME_MODE_RANGE, self._binitems_frame.zoomRange())
 
-		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._binitems_list)
-		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
-		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
+		f = self._txt_binstats.font()
+		f.setPointSizeF(f.pointSizeF() * 0.8)
+		self._txt_binstats.setFont(f)
+		self._txt_binstats.setMinimumWidth(self._txt_binstats.fontMetrics().averageCharWidth() * 32)	# Showing 999,999 of 999,999 items
+		self._txt_binstats.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+		self._txt_binstats.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
+		self._txt_binstats.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
+		self._binitems_list.addScrollBarWidget(self._txt_binstats, QtCore.Qt.AlignmentFlag.AlignLeft)
 
+	def _setupSignals(self):
+		
 		self._bin_filter_model.rowsInserted  .connect(self.updateBinStats)
 		self._bin_filter_model.rowsRemoved   .connect(self.updateBinStats)
 		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
 		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
 
-		
 		self._section_top.sig_frame_scale_changed.connect(self._binitems_frame.setZoom)
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
-		
-		self._binitems_frame.setZoomRange(avbutils.bins.THUMB_FRAME_MODE_RANGE)
-		logging.getLogger(__name__).error("Zoom range set to %s, confirm: %s", avbutils.bins.THUMB_FRAME_MODE_RANGE, self._binitems_frame.zoomRange())
-		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
-		logging.getLogger(__name__).error("Setting current zoom to %s, confirm: %s", self._section_top._sld_frame_scale.minimum(), self._binitems_frame._current_zoom)
-		
 
+		self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
 
-		# Shortcuts/Actions
-		# TODO: Not here lol but i dunno
+	def _setupActions(self):
+
 		self._act_set_view_width_for_columns = QtGui.QAction(self._binitems_list)
 		self._act_set_view_width_for_columns.setText(self.tr("Fit bin list columns to contents"))
 		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
@@ -290,27 +309,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._act_autofit_columns.setText(self.tr("Auto-fit bin list columns to contents"))
 		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
 		self._act_autofit_columns.triggered.connect(self._binitems_list.resizeAllColumnsToContents)
-		#self._act_autofit_columns.triggered.connect(lambda: print)
 		
 		self._binitems_list.addAction(self._act_set_view_width_for_columns)
 		self._binitems_list.addAction(self._act_autofit_columns)
-
-		f = self._txt_binstats.font()
-		f.setPointSizeF(f.pointSizeF() * 0.8)
-		self._txt_binstats.setFont(f)
-		self._txt_binstats.setMinimumWidth(self._txt_binstats.fontMetrics().averageCharWidth() * 32)	# Showing 999,999 of 999,999 items
-		self._txt_binstats.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-		
-		self._txt_binstats.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
-		
-		self._txt_binstats.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
-		self._binitems_list.addScrollBarWidget(self._txt_binstats, QtCore.Qt.AlignmentFlag.AlignLeft)
-
-
-		self._setupBinModel()
-
-		self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
-		#self._selection_model.selectionChanged.connect(print)
 
 	@QtCore.Slot(object)
 	def setSelectedItems(self, proxy_indexes:list[QtCore.QModelIndex]):
