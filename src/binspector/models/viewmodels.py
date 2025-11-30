@@ -245,6 +245,9 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 
 		super().__init__()
 
+		self._frame_locations:list[tuple[int,int]] = []
+		"""List of frame view mode position tuples `(x:int, y:int)`"""
+
 		self._bin_items:list[dict[str, viewmodelitems.LBAbstractViewItem]] = []
 		"""List of view items by key"""
 
@@ -286,11 +289,6 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 		if orientation == QtCore.Qt.Orientation.Horizontal:
 			return self._headers[section].data(role)
 		
-	def itemData(self, index):
-		return super().itemData(index)
-	
-
-		
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
 		"""Get the data for the given role of a specified item index"""
 
@@ -301,9 +299,16 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 
 		# Do row stuff first
 		if role == BSBinItemDataRoles.BSItemName:
-			return bin_item_data.get(201).data(QtCore.Qt.ItemDataRole.DisplayRole)
-		#elif role == BSBinItemDataRoles.BSFrameCoordinates:
-		#	return bin_item_data.frame_coordinates
+			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Name"]).data(QtCore.Qt.ItemDataRole.DisplayRole)
+		
+		elif role == BSBinItemDataRoles.BSFrameCoordinates:
+			return self._frame_locations[index.row()]
+		
+		elif role == BSBinItemDataRoles.BSClipColor:
+			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Color"]).data(QtCore.Qt.ItemDataRole.UserRole)
+		
+		elif role == BSBinItemDataRoles.BSItemType:
+			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES[""]).data(QtCore.Qt.ItemDataRole.UserRole)
 
 		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+1)
 
@@ -342,6 +347,7 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 		self.beginResetModel()
 		
 		self._bin_items = []
+		self._frame_locations = []
 		self._headers = []
 		
 		self.endResetModel()
@@ -357,17 +363,24 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 		
 		return True
 
-	def addBinItem(self, bin_item:dict[str,viewmodelitems.LBAbstractViewItem]) -> bool:
+	def addBinItem(self, bin_item:dict[str,viewmodelitems.LBAbstractViewItem], frame_position:tuple[int,int]|None=None) -> bool:
 		"""Binspecific: Add a bin item"""
-		return self.addBinItems([bin_item])
+
+		return self.addBinItems([bin_item], [frame_position])
 		
 	
-	def addBinItems(self, bin_items:list[dict[str,viewmodelitems.LBAbstractViewItem]]) -> bool:
+	def addBinItems(self, bin_items:list[dict[str,viewmodelitems.LBAbstractViewItem]], frame_positions:list[tuple[int,int]]|None=None) -> bool:
 		"""Binspecific: Add a bin items"""
 
 		# Ignore empty lists
 		if not len(bin_items):
 			return False
+		
+		if not frame_positions:
+			frame_positions = [(-30000,-30000)] * len(bin_items)
+		
+		elif not len(bin_items) == len(frame_positions):
+			raise ValueError(f"Frame positions cound ({len(frame_positions)}) does not match bin items count ({len(bin_items)})")
 		
 		row_start = len(self._bin_items)
 		row_end   = row_start + len(bin_items) - 1 # Row end is inclusive
@@ -375,6 +388,8 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 		self.beginInsertRows(QtCore.QModelIndex(), row_start, row_end)
 		#print("Adding", bin_items)
 		self._bin_items.extend(bin_items)
+		self._frame_locations.extend(frame_positions)
+		
 		self.endInsertRows()
 
 		return True

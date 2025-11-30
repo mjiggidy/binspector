@@ -84,16 +84,20 @@ class BinItemInfo:
 
 def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		"""Parse a mob and its bin item properties"""
+
 		
 		comp:avb.trackgroups.Composition = bin_item.mob
 
+		# Get frame scale to normalize frame coords below
+		frame_scale = bin_frame_view_scale_from_bin(bin_item.root.content)
+		
 		# Initial data model info
 		mob_id    = comp.mob_id
 		mob_types = avbutils.BinDisplayItemTypes.from_bin_item(bin_item)
 		mob_tracks= avbutils.timeline.get_tracks_from_composition(comp)
 		mob_name  = comp.name
 		mob_color = avbutils.compositions.composition_clip_color(comp)
-		mob_coords= (bin_item.x, bin_item.y),
+		mob_coords= (bin_item.x / frame_scale, bin_item.y / frame_scale)
 		mob_frame = bin_item.keyframe
 
 		# Prep defaults
@@ -167,7 +171,10 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 			if "attributes" in comp.property_data:
 				user_attributes.update(comp.attributes.get("_USER",{}))
 
-		markers = list(avbutils.get_markers_from_timeline(comp))
+		try:
+			marker = next(avbutils.get_markers_from_timeline(comp))
+		except StopIteration:
+			marker = None
 
 		item = {
 			avbutils.BIN_COLUMN_ROLES["Name"]:  viewmodelitems.TRTStringViewItem(mob_name),
@@ -178,7 +185,7 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 			avbutils.BIN_COLUMN_ROLES["Modified Date"]: comp.last_modified,
 			avbutils.BIN_COLUMN_ROLES["Creation Date"]: comp.creation_time,
 			avbutils.BIN_COLUMN_ROLES[""]: mob_types,
-			avbutils.BIN_COLUMN_ROLES["Marker"]: viewmodelitems.TRTMarkerViewItem(markers[0]) if markers else None,
+			avbutils.BIN_COLUMN_ROLES["Marker"]: viewmodelitems.TRTMarkerViewItem(marker) if marker else None,
 			avbutils.BIN_COLUMN_ROLES["Tracks"]: viewmodelitems.TRTStringViewItem(avbutils.timeline.format_track_labels(mob_tracks)) or None,
 			avbutils.BIN_COLUMN_ROLES["Tape"]: tape_name or "",
 			avbutils.BIN_COLUMN_ROLES["Drive"]: source_drive or "",

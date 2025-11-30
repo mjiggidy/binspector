@@ -407,27 +407,34 @@ class BSBinItemsManager(QtCore.QObject):
 	
 	@QtCore.Slot(object)
 	def addMobs(self, mob_info_list:list[binparser.BinItemInfo]):
+		"""Given a `list[binparser.BinItemInfo]` of parsed mobs, add their viewitems to the model"""
 
-		processed_row_list = []
-		for row_data in mob_info_list:
+		# NOTE: ViewItems are currently determined in BinParser but then double-checked here
+		# Figure out where to actually do that.  I think probably here instead.
 
-			processed_row = dict()
+		mobs_viewitems = []
+		mobs_framepositions = []
 
-			for field_id, item_definition in row_data.view_items.items():
+		for mob_info in mob_info_list:
 
-				if field_id == 40 and isinstance(item_definition, dict): # User column
-					item_definition = {
+			mobs_framepositions.append(mob_info.frame_coordinates)
+
+			mob_viewitems = dict()
+
+			for field_id, mob_viewitem in mob_info.view_items.items():
+
+				if field_id == 40 and isinstance(mob_viewitem, dict): # User column
+
+					mob_viewitem = {
 						str(user_col_name): viewmodelitems.get_viewitem_for_item(user_col_data)
-						for user_col_name, user_col_data in item_definition.items()
+						for user_col_name, user_col_data in mob_viewitem.items()
 					}
-
-					#print(item_definition)
 				
 				else:
-					item_definition = viewmodelitems.get_viewitem_for_item(item_definition)
+					mob_viewitem = viewmodelitems.get_viewitem_for_item(mob_viewitem)
 					
-				processed_row[field_id] = item_definition
+				mob_viewitems[field_id] = mob_viewitem
 
-			processed_row_list.append(processed_row)
+			mobs_viewitems.append(mob_viewitems)
 		
-		self._view_model.addBinItems(processed_row_list)
+		self._view_model.addBinItems(mobs_viewitems, mobs_framepositions)

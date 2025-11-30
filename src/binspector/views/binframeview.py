@@ -57,14 +57,18 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			# Resolve source model to ensure we always have relevent columns available
 			proxy_row_index  = self._bin_filter_model.index(row, 0, parent_row_index)
 			#parent_row_index = self._bin_filter_model.mapToSource(proxy_row_index)
+			
 			bin_item_name = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemName)
+			bin_item_coords = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSFrameCoordinates)
 
 			#bin_item_name = self._bin_filter_model.index(row, 2, parent_index).data(QtCore.Qt.ItemDataRole.DisplayRole)
 
 			bin_item = sceneitems.BSFrameModeItem()
 			bin_item.setName(str(bin_item_name))
 			bin_item.setFlags(self.DEFAULT_ITEM_FLAGS)
-			bin_item.setPos(QtCore.QPoint(row%6 * 18, row//6 * 12))
+
+			x, y = bin_item_coords
+			bin_item.setPos(QtCore.QPoint(x, y))
 
 			self._bin_items.insert(row, bin_item)
 
