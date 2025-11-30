@@ -1,9 +1,8 @@
-import logging
+import logging, typing
 import avb, avbutils
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..models import viewmodelitems
+from ..models import viewmodelitems, viewmodels
 from ..core import binparser
-from ..models import sceneitems
 from . import base
 
 TEMP_POSITION_OFFSET_THING = 10
@@ -335,7 +334,7 @@ class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 		self.sig_sift_settings_changed.emit(sift_settings)		
 		self.sig_sift_enabled.emit(sift_enabled)
 
-class BSBinItemsManager(base.LBItemDefinitionView):
+class BSBinItemsManager(QtCore.QObject):
 	
 	sig_mob_added = QtCore.Signal(object)
 	"""A mob was added to the bin items"""
@@ -345,15 +344,39 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 
 	sig_bin_view_changed = QtCore.Signal(object, object)
 
-	def __init__(self):
+	def __init__(self, *args, **kwargs):
 
-		super().__init__()
+		super().__init__(*args, **kwargs)
+
+		self._view_model = viewmodels.LBTimelineViewModel()
 
 #		self._frame_scene = QtWidgets.QGraphicsScene()
 		
 		self._view_model.rowsInserted .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.rowsRemoved  .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.modelReset   .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
+
+	def viewModel(self) -> viewmodels.LBTimelineViewModel:
+		"""Return the internal view model"""
+		return self._view_model
+	
+	@QtCore.Slot(object)
+	def addRow(self, row_data:dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any], add_new_headers:bool=False):
+		
+		return self.addRows([row_data], add_new_headers)
+
+	@QtCore.Slot(object)
+	def addRows(self, row_data_list:list[dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any]], add_new_headers:bool=False):
+		#print("I HAVE HERE:", row_data_list)
+		pass
+	
+	def addHeader(self, header_data:viewmodelitems.LBAbstractViewHeaderItem):
+		self._view_model.addHeader(header_data)
+
+	def _buildViewHeader(self, term:typing.Any) -> viewmodelitems.LBAbstractViewHeaderItem:
+		if isinstance(term, viewmodelitems.LBAbstractViewHeaderItem):
+			return term
+		return viewmodelitems.LBAbstractViewHeaderItem(field_name=str(term), display_name=str(term).replace("_", " ").title())
 
 	@QtCore.Slot(object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int]):
@@ -385,10 +408,26 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	@QtCore.Slot(object)
 	def addMobs(self, mob_info_list:list[binparser.BinItemInfo]):
 
-		self.addRows([m.column_data for m in mob_info_list])
+		processed_row_list = []
+		for row_data in mob_info_list:
 
+			processed_row = dict()
 
-		#self.sig_mob_added.emit(mob_info_list)
+			for field_id, item_definition in row_data.view_items.items():
 
-		# ALSO Add Frame Items
+				if field_id == 40 and isinstance(item_definition, dict): # User column
+					item_definition = {
+						str(user_col_name): viewmodelitems.get_viewitem_for_item(user_col_data)
+						for user_col_name, user_col_data in item_definition.items()
+					}
 
+					#print(item_definition)
+				
+				else:
+					item_definition = viewmodelitems.get_viewitem_for_item(item_definition)
+					
+				processed_row[field_id] = item_definition
+
+			processed_row_list.append(processed_row)
+		
+		self._view_model.addBinItems(processed_row_list)

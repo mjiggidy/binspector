@@ -68,23 +68,33 @@ def appearance_settings_from_bin(bin_content:avb.bin.Bin) -> tuple:
 	)
 
 import dataclasses
-
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class BinItemInfo:
 	"""Bin item info for a given mob"""
 
-	name              :str
+	mob_id            :avb.mobid.MobID
 	item_type         :avbutils.bins.BinDisplayItemTypes
-	column_data       :dict[int,viewmodelitems.LBAbstractViewItem|str]
-	frame_coordinates :tuple[int,int]
+	tracks            :set[avb.trackgroups.Track]
+	clip_color        :avbutils.compositions.ClipColor|None
+	name              :str
+	frame_coordinates :tuple[int,int]|None
 	keyframe_offset   :int
+	view_items        :dict[int,viewmodelitems.LBAbstractViewItem|dict[str,str]]	# Field ID -> ViewItem or 40 -> dict[term,def]
 
 
 def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		"""Parse a mob and its bin item properties"""
 		
-		bin_item_role = avbutils.BinDisplayItemTypes.from_bin_item(bin_item)
-		comp = bin_item.mob
+		comp:avb.trackgroups.Composition = bin_item.mob
+
+		# Initial data model info
+		mob_id    = comp.mob_id
+		mob_types = avbutils.BinDisplayItemTypes.from_bin_item(bin_item)
+		mob_tracks= avbutils.timeline.get_tracks_from_composition(comp)
+		mob_name  = comp.name
+		mob_color = avbutils.compositions.composition_clip_color(comp)
+		mob_coords= (bin_item.x, bin_item.y),
+		mob_frame = bin_item.keyframe
 
 		# Prep defaults
 		# TODO: Should be at least, like, some sort of struct
@@ -94,7 +104,7 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		user_attributes = dict()
 		source_drive = None
 
-		if avbutils.BinDisplayItemTypes.SEQUENCE in bin_item_role:
+		if avbutils.BinDisplayItemTypes.SEQUENCE in mob_types:
 			timecode_range = avbutils.get_timecode_range_for_composition(comp)
 			user_attributes = comp.attributes.get("_USER",{})
 
@@ -144,7 +154,8 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 					tc_component, offset = avbutils.resolve_base_component_from_component(tc_track.component, offset + source.start_time)
 					
 					if not isinstance(tc_component, avb.components.Timecode):
-						print("Hmm",tc_component)
+						import logging
+						logging.getLogger(__name__).error("Got weird TC component for %s: %s", mob_name,tc_component)
 						continue
 					
 					timecode_range = timecode.TimecodeRange(
@@ -156,19 +167,19 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 			if "attributes" in comp.property_data:
 				user_attributes.update(comp.attributes.get("_USER",{}))
 
-		markers = avbutils.get_markers_from_timeline(comp)
+		markers = list(avbutils.get_markers_from_timeline(comp))
 
 		item = {
-			avbutils.BIN_COLUMN_ROLES["Name"]: comp.name or "",
-			avbutils.BIN_COLUMN_ROLES["Color"]: viewmodelitems.TRTClipColorViewItem(avbutils.composition_clip_color(comp) if avbutils.composition_clip_color(comp) else None),
+			avbutils.BIN_COLUMN_ROLES["Name"]:  viewmodelitems.TRTStringViewItem(mob_name),
+			avbutils.BIN_COLUMN_ROLES["Color"]: viewmodelitems.TRTClipColorViewItem(mob_color),
 			avbutils.BIN_COLUMN_ROLES["Start"]: timecode_range.start if timecode_range else "",
 			avbutils.BIN_COLUMN_ROLES["End"]: timecode_range.end if timecode_range else "",
 			avbutils.BIN_COLUMN_ROLES["Duration"]: viewmodelitems.TRTDurationViewItem(timecode_range.duration) if timecode_range else "",
 			avbutils.BIN_COLUMN_ROLES["Modified Date"]: comp.last_modified,
 			avbutils.BIN_COLUMN_ROLES["Creation Date"]: comp.creation_time,
-			avbutils.BIN_COLUMN_ROLES[""]: bin_item_role,
+			avbutils.BIN_COLUMN_ROLES[""]: mob_types,
 			avbutils.BIN_COLUMN_ROLES["Marker"]: viewmodelitems.TRTMarkerViewItem(markers[0]) if markers else None,
-			avbutils.BIN_COLUMN_ROLES["Tracks"]: avbutils.format_track_labels(list(avbutils.get_tracks_from_composition(comp))) or None,
+			avbutils.BIN_COLUMN_ROLES["Tracks"]: viewmodelitems.TRTStringViewItem(avbutils.timeline.format_track_labels(mob_tracks)) or None,
 			avbutils.BIN_COLUMN_ROLES["Tape"]: tape_name or "",
 			avbutils.BIN_COLUMN_ROLES["Drive"]: source_drive or "",
 			avbutils.BIN_COLUMN_ROLES["Source File"]: source_file_name or "",
@@ -186,16 +197,19 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		}
 
 		# Old
-		for key, val in user_attributes.items():
-			item.update({"40_"+key: val})
+		#for key, val in user_attributes.items():
+		#	item.update({"40_"+key: val})
 
 		# New
-		#item.update({40: user_attributes})
+		item.update({40: user_attributes})
 		
 		return BinItemInfo(
-			name = str(comp.name),
-			item_type = bin_item_role,
-			column_data = item,
-			frame_coordinates = (bin_item.x, bin_item.y),
-			keyframe_offset   = bin_item.keyframe
+			name = mob_name,
+			item_type = mob_types,
+			view_items = item,
+			frame_coordinates = mob_coords,
+			keyframe_offset   = mob_frame,
+			mob_id = mob_id,
+			tracks=mob_tracks,
+			clip_color=mob_color,
 		)

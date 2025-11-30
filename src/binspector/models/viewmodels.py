@@ -286,6 +286,11 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 		if orientation == QtCore.Qt.Orientation.Horizontal:
 			return self._headers[section].data(role)
 		
+	def itemData(self, index):
+		return super().itemData(index)
+	
+
+		
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
 		"""Get the data for the given role of a specified item index"""
 
@@ -296,18 +301,26 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 
 		# Do row stuff first
 		if role == BSBinItemDataRoles.BSItemName:
-			return bin_item_data.get("201").data(QtCore.Qt.ItemDataRole.DisplayRole)
+			return bin_item_data.get(201).data(QtCore.Qt.ItemDataRole.DisplayRole)
 		#elif role == BSBinItemDataRoles.BSFrameCoordinates:
 		#	return bin_item_data.frame_coordinates
-			
 
+		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+1)
 
-		field_name    = self._headers[index.column()].field_name()
-
-		if field_name not in bin_item_data:
+		if field_id not in bin_item_data:
+			#print(field_id, "Not here in ", list(bin_item_data.keys()))
 			return None
+		
+		elif field_id == 40:
+			# Look up user field
+			field_name = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
+			if field_name not in bin_item_data.get(field_id):
+				#print("Didnt find", field_name)
+				return None
+			#print("Return user data")
+			return bin_item_data.get(field_id).get(field_name).data(role)
 
-		return bin_item_data.get(field_name).data(role)
+		return bin_item_data.get(field_id).data(role)
 	
 	def flags(self, index:QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
 		
@@ -346,8 +359,8 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 
 	def addBinItem(self, bin_item:dict[str,viewmodelitems.LBAbstractViewItem]) -> bool:
 		"""Binspecific: Add a bin item"""
-
 		return self.addBinItems([bin_item])
+		
 	
 	def addBinItems(self, bin_items:list[dict[str,viewmodelitems.LBAbstractViewItem]]) -> bool:
 		"""Binspecific: Add a bin items"""
@@ -360,6 +373,7 @@ class LBTimelineViewModel(QtCore.QAbstractItemModel):
 		row_end   = row_start + len(bin_items) - 1 # Row end is inclusive
 
 		self.beginInsertRows(QtCore.QModelIndex(), row_start, row_end)
+		#print("Adding", bin_items)
 		self._bin_items.extend(bin_items)
 		self.endInsertRows()
 
