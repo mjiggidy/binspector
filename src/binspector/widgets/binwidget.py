@@ -30,29 +30,6 @@ class BSAbstractBinContentsWidgetBar(QtWidgets.QWidget):
 			super().addWidget(widget)
 		else:
 			self.layout().addWidget(widget)
-
-#class BSBinContentsBottomWidgetBar(BSAbstractBinContentsWidgetBar):
-#	"""Default bottom widget bar"""
-#
-#	def __init__(self, *args, **kwargs):
-#
-#
-#		super().__init__(*args, **kwargs)
-#		
-#		if not isinstance(self, QtWidgets.QToolBar):
-#			self.setLayout(QtWidgets.QGridLayout())
-#			#self.layout().setContentsMargins(*[4]*4)
-#		
-#		self._txt_info = QtWidgets.QLabel()
-#		self._txt_info.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-#
-#		self.layout().addWidget(self._txt_info)
-#		
-#		
-#	@QtCore.Slot(object)
-#	def setInfoText(self, text:str):
-#
-#		self._txt_info.setText(text)
 		
 class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 	"""Default top widget bar"""
@@ -147,8 +124,6 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		self._txt_search.setPlaceholderText("Find in bin")
 		self._txt_search.setClearButtonEnabled(True)
 		self.addWidget(self._txt_search)
-
-
 
 	def _setupSignals(self):
 
@@ -259,11 +234,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._section_top       = BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
-		#self._section_bottom    = BSBinContentsBottomWidgetBar()
 		
 		self._binitems_list     = bintreeview.BSBinTreeView()
 		self._binitems_frame    = binframeview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
+
+		self._selection_model  = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
 		self._scene_frame       = QtWidgets.QGraphicsScene()
 
@@ -281,7 +257,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.layout().addWidget(self._section_top)
 		self.layout().addWidget(self._section_main)
-		#self.layout().addWidget(self._section_bottom)
 
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._binitems_list)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
@@ -297,8 +272,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 		
-
-		import logging
 		self._binitems_frame.setZoomRange(avbutils.bins.THUMB_FRAME_MODE_RANGE)
 		logging.getLogger(__name__).error("Zoom range set to %s, confirm: %s", avbutils.bins.THUMB_FRAME_MODE_RANGE, self._binitems_frame.zoomRange())
 		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
@@ -333,9 +306,30 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._txt_binstats.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
 		self._binitems_list.addScrollBarWidget(self._txt_binstats, QtCore.Qt.AlignmentFlag.AlignLeft)
 
+
 		self._setupBinModel()
-		# Frame view stuff
-		#self._binitems_frame.setScene(self._scene_frame)
+
+		self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
+		#self._selection_model.selectionChanged.connect(print)
+
+	@QtCore.Slot(object)
+	def setSelectedItems(self, proxy_indexes:list[QtCore.QModelIndex]):
+		"""Frame view selection changed, update the selection model"""
+
+		if not proxy_indexes:
+			logging.getLogger(__name__).debug("Selection cleared from frameview")
+			self._binitems_list.selectionModel().clear()
+			return
+		
+		logging.getLogger(__name__).debug("Setting selection from frameview: %s", proxy_indexes)
+
+		self._binitems_list.selectionModel().clear()
+		for proxy_index in proxy_indexes:
+			self._binitems_list.selectionModel().select(
+				proxy_index,
+				QtCore.QItemSelectionModel.SelectionFlag.Select|
+				QtCore.QItemSelectionModel.SelectionFlag.Rows
+			)
 
 	@QtCore.Slot(object)
 	def setBinModel(self, bin_model:viewmodels.LBTimelineViewModel):
@@ -398,12 +392,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 	@QtCore.Slot(QtGui.QPalette)
-	def setPalette(self, palette:QtGui.QPalette):
+	def setPalette(self, palette:QtGui.QPalette) -> None:
 		
-		val = super().setPalette(palette)
+		super().setPalette(palette)
 		self.sig_bin_palette_changed.emit(palette)
 		self._binitems_list._palette_watcher.setPalette(palette)
-		return val
 	
 	def topWidgetBar(self) -> BSBinContentsTopWidgetBar:
 		return self._section_top

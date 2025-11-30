@@ -11,7 +11,8 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|\
 		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable
 
-	sig_bin_filter_model_changed = QtCore.Signal(object)
+	sig_bin_filter_model_changed   = QtCore.Signal(object)
+	sig_bin_item_selection_changed = QtCore.Signal(object)
 
 	def __init__(self, *args, bin_filter_model:viewmodels.LBTimelineViewModel|None=None, **kwargs):
 		
@@ -19,6 +20,9 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 		self._bin_filter_model = bin_filter_model or viewmodels.LBSortFilterProxyModel()
 		self._bin_items:list[sceneitems.BSFrameModeItem] = list()
+
+		self.selectionChanged.connect(self.resolveSelectedRows)
+
 		self._setupModel()
 
 	def _setupModel(self):
@@ -28,6 +32,13 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		self._bin_filter_model.rowsAboutToBeRemoved .connect(self.removeBinItems)
 		self._bin_filter_model.modelReset    .connect(self.clear)
 		#self._bin_filter_model.layoutChanged .connect(lambda: print("** Layout Changed"))
+
+	@QtCore.Slot()
+	def resolveSelectedRows(self):
+
+		self.sig_bin_item_selection_changed.emit(
+			[self._bin_filter_model.index(self._bin_items.index(i), 0) for i in self.selectedItems()]
+		)
 
 	def binFilterModel(self) -> viewmodels.LBSortFilterProxyModel:
 		return self._bin_filter_model
@@ -152,6 +163,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._pinchy_boy.sig_user_pinch_finished.connect(self.userFinishedPinch)
 
 		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
+
+	def scene(self) -> BSBinFrameScene:
+		# Just for type hints
+		return super().scene()
 
 	@QtCore.Slot(int, QtCore.Qt.Orientation)
 	def zoomByWheel(self, zoom_delta:int, orientation:QtCore.Qt.Orientation):
