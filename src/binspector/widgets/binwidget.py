@@ -223,6 +223,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._bin_model         = bin_model or viewmodels.LBTimelineViewModel()
 		self._bin_filter_model  = viewmodels.LBSortFilterProxyModel()
+		self._selection_model   = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
+		
+		self._scene_frame       = QtWidgets.QGraphicsScene()
 
 		# Save initial palette for later togglin'
 		self._default_palette   = self.palette()
@@ -237,10 +240,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list     = bintreeview.BSBinTreeView()
 		self._binitems_frame    = binframeview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
-
-		self._selection_model  = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
-
-		self._scene_frame       = QtWidgets.QGraphicsScene()
 
 		self._txt_binstats      = QtWidgets.QLabel()
 
@@ -263,6 +262,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.setModel(self._bin_filter_model)
 		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		
+		# NOTE: Set AFTER `view.setModel()`.  Got me good.
+		self._binitems_list.setSelectionModel(self._selection_model)
+		self._binitems_frame.scene().setSelectionModel(self._selection_model)
+		
+
 		# Adjust scrollbar height for macOS rounded corner junk
 		# NOTE: `base_style` junk copies a new instance of the hbar base style, otherwise it goes out of scope
 		# and segfaults on exit, which I really love.  I really love all of this.  I don't need money or a career.
@@ -296,7 +300,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 
-		self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
+		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
 
 	def _setupActions(self):
 
@@ -312,25 +316,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._binitems_list.addAction(self._act_set_view_width_for_columns)
 		self._binitems_list.addAction(self._act_autofit_columns)
-
-	@QtCore.Slot(object)
-	def setSelectedItems(self, proxy_indexes:list[QtCore.QModelIndex]):
-		"""Frame view selection changed, update the selection model"""
-
-		if not proxy_indexes:
-			logging.getLogger(__name__).debug("Selection cleared from frameview")
-			self._binitems_list.selectionModel().clear()
-			return
-		
-		logging.getLogger(__name__).debug("Setting selection from frameview: %s", proxy_indexes)
-
-		self._binitems_list.selectionModel().clear()
-		for proxy_index in proxy_indexes:
-			self._binitems_list.selectionModel().select(
-				proxy_index,
-				QtCore.QItemSelectionModel.SelectionFlag.Select|
-				QtCore.QItemSelectionModel.SelectionFlag.Rows
-			)
 
 	@QtCore.Slot(object)
 	def setBinModel(self, bin_model:viewmodels.LBTimelineViewModel):
@@ -352,7 +337,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		"""Connect bin model to all the schtuff"""
 
 		self._bin_filter_model.setSourceModel(self._bin_model)
-		self._binitems_frame.scene().setBinFilterModel(self._bin_filter_model)
+		self._binitems_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK
 
 	def listView(self) -> bintreeview.BSBinTreeView:
 		"""Get the main view"""

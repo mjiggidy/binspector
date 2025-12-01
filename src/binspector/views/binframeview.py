@@ -38,7 +38,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		self._bin_filter_model.rowsMoved     .connect(self.reloadBinFilterModel)
 		self._bin_filter_model.layoutChanged .connect(self.reloadBinFilterModel)
 
-		#self.selectionChanged.connect(self.updateSelectionModel)
+		self.selectionChanged.connect(self.updateSelectionModel)
 
 	def _setupSelectionModel(self):
 		
@@ -84,7 +84,8 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		current_rows = set(self._bin_items.index(i) for i in self.selectedItems())
 		stale_rows   = set(i.row() for i in self._selection_model.selection().indexes()) - current_rows
 
-		self._selection_model.blockSignals(True)
+		
+		self.blockSignals(True)
 		
 		self._selection_model.clear()
 		
@@ -96,7 +97,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 				QtCore.QItemSelectionModel.SelectionFlag.Rows
 			)
 
-		self._selection_model.blockSignals(False)
+		self.blockSignals(False)
 
 #	@QtCore.Slot()
 #	def resolveSelectedRows(self):
@@ -133,7 +134,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		self.clear()
 
 		self.addBinItems(QtCore.QModelIndex(), 0, self._bin_filter_model.rowCount()-1)
-		self.setSelectedItemsFromSelectionModel(self._selection_model.selection(), QtCore.QItemSelection())
+		#self.setSelectedItemsFromSelectionModel(self._selection_model.selection(), QtCore.QItemSelection())
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def addBinItems(self, parent_row_index:QtCore.QModelIndex, row_start:int, row_end:int):
@@ -440,7 +441,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		painter.restore()
 
 	def mouseMoveEvent(self, event):
-		
+
 		self.viewport().update()
 		return super().mouseMoveEvent(event)
 

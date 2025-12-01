@@ -68,8 +68,11 @@ class BSColumnSelectWatcher(QtCore.QObject):
 class BSBinTreeView(treeview.LBTreeView):
 	"""QTreeView but nicer"""
 
-	sig_default_sort_columns_changed = QtCore.Slot(object)
+	sig_default_sort_columns_changed = QtCore.Signal(object)
 	"""TODO: HMMMMMM"""
+
+	sig_selection_model_changed = QtCore.Signal(object)
+	"""Selection model was changed"""
 
 	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(16,4,16,4)
 	"""Default padding inside view item"""
@@ -113,6 +116,15 @@ class BSBinTreeView(treeview.LBTreeView):
 
 		self.header().viewport().installEventFilter(self._column_select_watcher)
 		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
+
+	def setSelectionModel(self, selectionModel):
+		
+		if selectionModel != self.selectionModel():
+		
+			logging.getLogger(__name__).error("BinTreeView changed selection model to %s", selectionModel)
+			self.sig_selection_model_changed.emit(selectionModel)
+
+			return super().setSelectionModel(selectionModel)
 
 	def setModel(self, model):
 
