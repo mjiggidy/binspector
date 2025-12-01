@@ -12,33 +12,98 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable
 
 	sig_bin_filter_model_changed   = QtCore.Signal(object)
-	sig_bin_item_selection_changed = QtCore.Signal(object)
+	#sig_bin_item_selection_changed = QtCore.Signal(object)
+	sig_selection_model_changed    = QtCore.Signal(object)
 
 	def __init__(self, *args, bin_filter_model:viewmodels.LBTimelineViewModel|None=None, **kwargs):
 		
 		super().__init__(*args, **kwargs)
 
 		self._bin_filter_model = bin_filter_model or viewmodels.LBSortFilterProxyModel()
+		self._selection_model = QtCore.QItemSelectionModel()
+		
 		self._bin_items:list[sceneitems.BSFrameModeItem] = list()
 
-		self.selectionChanged.connect(self.resolveSelectedRows)
+		#self.selectionChanged.connect(self.resolveSelectedRows)
 
 		self._setupModel()
+		self._setupSelectionModel()
 
 	def _setupModel(self):
 
 		self._bin_filter_model.rowsInserted  .connect(self.addBinItems)
-		#self._bin_filter_model.rowsMoved     .connect(lambda: print("** Rows Moved"))
 		self._bin_filter_model.rowsAboutToBeRemoved .connect(self.removeBinItems)
 		self._bin_filter_model.modelReset    .connect(self.clear)
-		#self._bin_filter_model.layoutChanged .connect(lambda: print("** Layout Changed"))
+		
+		self._bin_filter_model.rowsMoved     .connect(self.reloadBinFilterModel)
+		self._bin_filter_model.layoutChanged .connect(self.reloadBinFilterModel)
+
+		#self.selectionChanged.connect(self.updateSelectionModel)
+
+	def _setupSelectionModel(self):
+		
+		self._selection_model.selectionChanged.connect(self.setSelectedItemsFromSelectionModel)
+
+	def selectionModel(self) -> QtCore.QItemSelectionModel:
+		return self._selection_model
+	
+	@QtCore.Slot(object)
+	def setSelectionModel(self, selection_model:QtCore.QItemSelectionModel):
+
+		self._selection_model.disconnect(self)
+
+		if self._selection_model != selection_model:
+
+			self._selection_model = selection_model
+			self._setupSelectionModel()
+			self.sig_selection_model_changed.emit(selection_model)
+
+
+	@QtCore.Slot(object,object)
+	def setSelectedItemsFromSelectionModel(self, selected:QtCore.QItemSelection, deselected:QtCore.QItemSelection):
+		"""Update selected bin items according to the selection model"""
+
+		#self._selection_model.blockSignals(True)
+
+		for row in set(i.row() for i in selected.indexes()):
+			item = self._bin_items[row]
+			if not item.isSelected():
+				self._bin_items[row].setSelected(True)
+			
+		for row in set(i.row() for i in deselected.indexes()):
+			item = self._bin_items[row]
+			if item.isSelected():
+				self._bin_items[row].setSelected(False)
+
+		#self._selection_model.blockSignals(False)
 
 	@QtCore.Slot()
-	def resolveSelectedRows(self):
+	def updateSelectionModel(self):
+		"""Update selection model to mirror the scene's selected items"""
 
-		self.sig_bin_item_selection_changed.emit(
-			[self._bin_filter_model.index(self._bin_items.index(i), 0) for i in self.selectedItems()]
-		)
+		current_rows = set(self._bin_items.index(i) for i in self.selectedItems())
+		stale_rows   = set(i.row() for i in self._selection_model.selection().indexes()) - current_rows
+
+		self._selection_model.blockSignals(True)
+		
+		self._selection_model.clear()
+		
+		for row in current_rows:
+		
+			self._selection_model.select(
+				self._bin_filter_model.index(row, 0, QtCore.QModelIndex()),
+				QtCore.QItemSelectionModel.SelectionFlag.Select|
+				QtCore.QItemSelectionModel.SelectionFlag.Rows
+			)
+
+		self._selection_model.blockSignals(False)
+
+#	@QtCore.Slot()
+#	def resolveSelectedRows(self):
+#
+#		self.sig_bin_item_selection_changed.emit(
+#			[self._bin_filter_model.index(self._bin_items.index(i), 0) for i in self.selectedItems()]
+#		)
 
 	def binFilterModel(self) -> viewmodels.LBSortFilterProxyModel:
 		return self._bin_filter_model
@@ -59,6 +124,16 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 			logging.getLogger(__name__).debug("Set bin filter model=%s (source model=%s)", self._bin_filter_model, self._bin_filter_model.sourceModel())
 			self.sig_bin_filter_model_changed.emit(bin_model)
+
+	@QtCore.Slot()
+	def reloadBinFilterModel(self):
+		"""Reset and reload items from bin filter model to stay in sync with order changes"""
+		
+		logging.getLogger(__name__).debug("About to clear bin frame view for layout change")
+		self.clear()
+
+		self.addBinItems(QtCore.QModelIndex(), 0, self._bin_filter_model.rowCount()-1)
+		self.setSelectedItemsFromSelectionModel(self._selection_model.selection(), QtCore.QItemSelection())
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def addBinItems(self, parent_row_index:QtCore.QModelIndex, row_start:int, row_end:int):
@@ -97,7 +172,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	def clear(self):
 		
 		self._bin_items.clear()
-		
+		logging.getLogger(__name__).debug("Bin frame view cleared")
 		return super().clear()
 
 
@@ -116,7 +191,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
 		self.setScene(frame_scene or BSBinFrameScene())
-
+		self.viewport().setMouseTracking(True)
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
 
@@ -332,11 +407,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		#import logging
 		#logging.getLogger(__name__).debug("Set font size to %s px", coord_font.pointSizeF())
 
-		mapped_viewport_rect = self.mapToScene(self.viewport().rect()).boundingRect()
-
-		y_top = mapped_viewport_rect.top()
-		x_left = mapped_viewport_rect.left()
-
 		for x in range(round(rect.left()), round(rect.right())+1):
 
 			if x % (GRID_UNIT_SIZE.width() // GRID_DIVISIONS):
@@ -351,8 +421,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 				QtCore.QPoint(x, rect.top()),
 				QtCore.QPoint(x, rect.bottom())
 			))
-
-			painter.drawText(QtCore.QPointF(x, float(y_top) - (float(y_top) - float(y_top + GRID_UNIT_SIZE.height()))-11), str(int(x)))
 		
 		for y in range(int(rect.top()), int(rect.bottom())+1):
 			
@@ -368,7 +436,157 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 				QtCore.QPoint(rect.left(), y),
 				QtCore.QPoint(rect.right(), y),
 			))
-
-			painter.drawText(QtCore.QPoint(float(x_left) - (float(x_left) - float(x_left + GRID_UNIT_SIZE.width())+18), y), str(int(y)))
-
+			
 		painter.restore()
+
+	def mouseMoveEvent(self, event):
+		
+		self.viewport().update()
+		return super().mouseMoveEvent(event)
+
+	def paintEvent(self, event):
+
+		GRID_DIVISIONS   = 3
+		GRID_UNIT_SIZE   = QtCore.QSizeF(18,12)
+
+		RULER_SIZE       = 20 #device px
+		RULER_OVERDRAW   = 2 #device px
+		RULER_TEXT_SCALE = 0.5 # %
+		RULER_OPACITY    = 0.8
+
+
+		super().paintEvent(event)
+		painter = QtGui.QPainter(self.viewport())
+
+		pen   = QtGui.QPen()
+		pen.setColor(self.palette().windowText().color())
+		pen.setStyle(QtCore.Qt.PenStyle.NoPen)
+		pen.setWidth(1)
+		
+
+		brush = QtGui.QBrush()
+		col = self.palette().base().color()
+		col.setAlphaF(RULER_OPACITY)
+		brush.setColor(col)
+		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+
+		font = painter.font()
+		font.setPointSizeF(font.pointSizeF() * RULER_TEXT_SCALE)
+		painter.setFont(font)
+
+		viewport_rect = QtCore.QRectF(event.rect())
+
+		rect_ruler_top = QtCore.QRectF(viewport_rect)
+		rect_ruler_top.setHeight(RULER_SIZE)
+		rect_ruler_top.adjust(RULER_SIZE, 0, 0, 0)
+
+		rect_ruler_side = QtCore.QRectF(viewport_rect)
+		rect_ruler_side.setWidth(RULER_SIZE)
+		rect_ruler_side.adjust(0, RULER_SIZE, 0, 0)
+
+		rect_corner = QtCore.QRectF(0, 0, RULER_SIZE, RULER_SIZE)
+
+		ruler_color_start = self.palette().button().color()
+		ruler_color_end   = QtGui.QColor(ruler_color_start)
+		ruler_color_end.setAlphaF(0.75)
+		grad_ruler_top = QtGui.QLinearGradient(QtCore.QPointF(0,0), QtCore.QPointF(0, RULER_SIZE))
+		grad_ruler_top.setColorAt(0.5, ruler_color_start)
+		grad_ruler_top.setColorAt(1, ruler_color_end)
+
+		#painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
+
+		grad_ruler_side = QtGui.QLinearGradient(QtCore.QPointF(0,0), QtCore.QPointF(RULER_SIZE, 0))
+		grad_ruler_side.setColorAt(0.5, ruler_color_start)
+		grad_ruler_side.setColorAt(1, ruler_color_end)
+
+		mouse_coord_pen = QtGui.QPen()
+		mouse_col = self.palette().buttonText().color()
+		mouse_col.setAlphaF(0.25)
+		mouse_coord_pen.setColor(mouse_col)
+		mouse_coord_pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
+		mouse_coord_pen.setWidthF(1)
+
+
+		painter.setPen(pen)
+		painter.setBrush(brush)
+
+		painter.fillRect(rect_ruler_top , grad_ruler_top)
+		painter.fillRect(rect_ruler_side, grad_ruler_side)
+		
+		col = self.palette().window().color()
+		#col.setAlphaF(RULER_OPACITY)
+		brush.setColor(col)
+		painter.setBrush(brush)
+		#painter.drawRect(rect_corner)
+
+		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
+		painter.setPen(pen)
+
+		painter.drawLine(QtCore.QLineF(
+			QtCore.QPointF(RULER_SIZE - RULER_OVERDRAW, RULER_SIZE),
+			QtCore.QPointF(viewport_rect.right(), RULER_SIZE)
+		))
+
+		painter.drawLine(QtCore.QLineF(
+			QtCore.QPointF(RULER_SIZE, RULER_SIZE - RULER_OVERDRAW),
+			QtCore.QPointF(RULER_SIZE, viewport_rect.bottom())
+		))
+
+		# Map viewport coords to scene coords
+
+		# Find if scene coords are within the unit range
+		# Paint unit number if so
+
+		painter.setClipRect(rect_ruler_top)
+		painter.setPen(mouse_coord_pen)
+
+		mouse_pos = self.mapFromGlobal(QtGui.QCursor.pos())
+		painter.drawLine(QtCore.QLineF(
+			QtCore.QPointF(mouse_pos.x(), 0),
+			QtCore.QPointF(mouse_pos.x(), RULER_SIZE)
+		))
+
+
+		
+		for x in range(0, round(viewport_rect.width())):
+
+			scene_x = self.mapToScene(QtCore.QPoint(x, 0)).x()
+
+			if scene_x % GRID_UNIT_SIZE.width() == 0:
+				
+				text_rect = QtCore.QRectF(viewport_rect)
+				text_rect.setWidth(painter.fontMetrics().averageCharWidth() * len("-30000"))
+				text_rect.setHeight(RULER_SIZE)
+				text_rect.moveCenter(QtCore.QPointF(x, RULER_SIZE/2))
+				
+				painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, str(round(scene_x)))
+
+				painter.drawLine(QtCore.QLineF(
+					QtCore.QPointF(x, RULER_SIZE - RULER_OVERDRAW),
+					QtCore.QPointF(x, RULER_SIZE)
+				))
+		
+		painter.setClipRect(rect_ruler_side)
+		painter.setPen(mouse_coord_pen)
+		painter.drawLine(QtCore.QLineF(
+			QtCore.QPointF(0, mouse_pos.y()),
+			QtCore.QPointF(RULER_SIZE, mouse_pos.y())
+		))
+
+		for y in range(0, round(viewport_rect.height())):
+			
+			scene_y = self.mapToScene(QtCore.QPoint(0,y)).y()
+
+			if scene_y % GRID_UNIT_SIZE.height() == 0:
+
+				text_rect = QtCore.QRectF(viewport_rect)
+				text_rect.setWidth(80)
+				text_rect.setHeight(painter.fontMetrics().height())
+				text_rect.moveCenter(QtCore.QPointF(RULER_SIZE/2, y))
+
+				painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, str(int(scene_y)))
+
+				painter.drawLine(QtCore.QLineF(
+					QtCore.QPointF(RULER_SIZE - RULER_OVERDRAW, y),
+					QtCore.QPointF(RULER_SIZE, y)
+				))
