@@ -447,29 +447,45 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 	def paintEvent(self, event):
 
-		GRID_DIVISIONS   = 3
-		GRID_UNIT_SIZE   = QtCore.QSizeF(18,12)
+		GRID_DIVISIONS     = 3
+		GRID_UNIT_SIZE     = QtCore.QSizeF(18,12)
 
-		RULER_SIZE       = 20 #device px
-		RULER_OVERDRAW   = 2 #device px
-		RULER_TEXT_SCALE = 0.5 # %
-		RULER_OPACITY    = 0.8
+		RULER_SIZE         = 20  # device px
+		RULER_OVERDRAW     = 2   # device px
+		RULER_BORDER_WIDTH = 1   # device px
+		RULER_BORDER_COLOR = self.palette().buttonText().color()
+		
+		RULER_BASE_COLOR   = self.palette().button().color()
+		RULER_BASE_OPACITY = 0.8 # %
+
+		RULER_TEXT_SCALE   = 0.7 # %
+		RULER_TEXT_COLOR   = self.palette().buttonText().color()
+		
 
 
 		super().paintEvent(event)
 		painter = QtGui.QPainter(self.viewport())
 
-		pen   = QtGui.QPen()
-		pen.setColor(self.palette().windowText().color())
-		pen.setStyle(QtCore.Qt.PenStyle.NoPen)
-		pen.setWidth(1)
-		
+		# Define pens and brushes
+		# Ruler edge
+		pen_ruler_edge = QtGui.QPen()
+		pen_ruler_edge.setColor(RULER_BORDER_COLOR)
+		pen_ruler_edge.setStyle(QtCore.Qt.PenStyle.SolidLine)
+		pen_ruler_edge.setWidth(RULER_BORDER_WIDTH)
 
-		brush = QtGui.QBrush()
-		col = self.palette().base().color()
-		col.setAlphaF(RULER_OPACITY)
-		brush.setColor(col)
-		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+		# Ruler base gradients
+		pen_ruler_base = QtGui.QPen()
+		pen_ruler_base.setStyle(QtCore.Qt.PenStyle.NoPen)
+		grad_ruler_side = QtGui.QLinearGradient(QtCore.QPointF(0,0), QtCore.QPointF(RULER_SIZE, 0))
+		grad_ruler_side.setColorAt(0.5, RULER_BASE_COLOR)
+		ruler_bkg_alpha = QtGui.QColor(RULER_BASE_COLOR)
+		ruler_bkg_alpha.setAlphaF(RULER_BASE_OPACITY)
+		grad_ruler_side.setColorAt(1, ruler_bkg_alpha)
+
+		grad_ruler_top = QtGui.QLinearGradient(QtCore.QPointF(0,0), QtCore.QPointF(0, RULER_SIZE))
+		grad_ruler_top.setColorAt(0.5, RULER_BASE_COLOR)
+		grad_ruler_top.setColorAt(1, ruler_bkg_alpha)
+
 
 		font = painter.font()
 		font.setPointSizeF(font.pointSizeF() * RULER_TEXT_SCALE)
@@ -490,38 +506,33 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		ruler_color_start = self.palette().button().color()
 		ruler_color_end   = QtGui.QColor(ruler_color_start)
 		ruler_color_end.setAlphaF(0.75)
-		grad_ruler_top = QtGui.QLinearGradient(QtCore.QPointF(0,0), QtCore.QPointF(0, RULER_SIZE))
-		grad_ruler_top.setColorAt(0.5, ruler_color_start)
-		grad_ruler_top.setColorAt(1, ruler_color_end)
+
 
 		#painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
 
-		grad_ruler_side = QtGui.QLinearGradient(QtCore.QPointF(0,0), QtCore.QPointF(RULER_SIZE, 0))
-		grad_ruler_side.setColorAt(0.5, ruler_color_start)
-		grad_ruler_side.setColorAt(1, ruler_color_end)
+
 
 		mouse_coord_pen = QtGui.QPen()
 		mouse_col = self.palette().buttonText().color()
-		mouse_col.setAlphaF(0.25)
+		#mouse_col.setAlphaF(0.25)
 		mouse_coord_pen.setColor(mouse_col)
 		mouse_coord_pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
 		mouse_coord_pen.setWidthF(1)
 
+		# DRAWERINGS
 
-		painter.setPen(pen)
-		painter.setBrush(brush)
+		# DRAWERINGS - Ruler Base
+		painter.setPen(pen_ruler_base)
 
-		painter.fillRect(rect_ruler_top , grad_ruler_top)
-		painter.fillRect(rect_ruler_side, grad_ruler_side)
+		painter.setBrush(grad_ruler_top)
+		painter.drawRect(rect_ruler_top)
 		
-		col = self.palette().window().color()
-		#col.setAlphaF(RULER_OPACITY)
-		brush.setColor(col)
-		painter.setBrush(brush)
-		#painter.drawRect(rect_corner)
+		painter.setBrush(grad_ruler_side)
+		painter.drawRect(rect_ruler_side)
+		
 
-		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-		painter.setPen(pen)
+		# Ruler Edges
+		painter.setPen(pen_ruler_edge)
 
 		painter.drawLine(QtCore.QLineF(
 			QtCore.QPointF(RULER_SIZE - RULER_OVERDRAW, RULER_SIZE),
