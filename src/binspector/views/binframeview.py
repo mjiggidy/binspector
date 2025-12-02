@@ -2,6 +2,7 @@ import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..managers import eventfilters
 from ..models import viewmodels, sceneitems
+from .overlays import frameruler
 
 class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	"""Graphics scene based on a bin model"""
@@ -181,8 +182,9 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
 
-	sig_zoom_level_changed = QtCore.Signal(int)
-	sig_zoom_range_changed = QtCore.Signal(object)
+	sig_zoom_level_changed      = QtCore.Signal(int)
+	sig_zoom_range_changed      = QtCore.Signal(object)
+	sig_overlay_manager_changed = QtCore.Signal(object)
 
 	def __init__(self, *args, frame_scene:BSBinFrameScene|None=None, **kwargs):
 
@@ -195,6 +197,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.viewport().setMouseTracking(True)
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
+
+		self._overlay_manager = frameruler.BSGraphicsOverlayManager(parent=self)
 
 		#self.setMouseTracking(True)
 		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self.viewport())
@@ -239,6 +243,18 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._pinchy_boy.sig_user_pinch_finished.connect(self.userFinishedPinch)
 
 		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
+
+	def overlayManager(self) -> frameruler.BSGraphicsOverlayManager:
+
+		return self._overlay_manager
+	
+	def setOverlayManager(self, overlay_manager:frameruler.BSGraphicsOverlayManager):
+
+		if self._overlay_manager != overlay_manager:
+			
+			self._overlay_manager = overlay_manager
+			self.sig_overlay_manager_changed.emit(overlay_manager)
+
 
 	def scene(self) -> BSBinFrameScene:
 		# Just for type hints
@@ -464,7 +480,12 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 
 		super().paintEvent(event)
+
+
 		painter = QtGui.QPainter(self.viewport())
+
+		self._overlay_manager.paintOverlays(painter, self.viewport())
+
 
 		# Define pens and brushes
 		# Ruler edge
