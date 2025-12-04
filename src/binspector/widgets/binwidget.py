@@ -383,6 +383,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		super().setPalette(palette)
 		self.sig_bin_palette_changed.emit(palette)
 		self._binitems_list._palette_watcher.setPalette(palette)
+		self._binitems_frame.overlayManager().setPalette(palette)
 	
 	def topWidgetBar(self) -> BSBinContentsTopWidgetBar:
 		return self._section_top
@@ -453,6 +454,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		if self._use_bin_appearance:
 			self.setPalette(self._bin_palette)
+			
 		
 		#else:
 		#	self.setPalette(self._default_palette)
@@ -464,6 +466,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		if self._use_bin_appearance:
 			self._binitems_list.setFont(bin_font)
+			self._binitems_frame.setFont(bin_font)
 
 	@QtCore.Slot()
 	def updateBinStats(self):

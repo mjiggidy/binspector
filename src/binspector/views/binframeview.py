@@ -1,8 +1,8 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..managers import eventfilters
+from ..managers import eventfilters, overlaymanager
 from ..models import viewmodels, sceneitems
-from .overlays import frameruler
+from ..views.overlays import frameruler
 
 class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	"""Graphics scene based on a bin model"""
@@ -185,6 +185,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	sig_zoom_level_changed      = QtCore.Signal(int)
 	sig_zoom_range_changed      = QtCore.Signal(object)
 	sig_overlay_manager_changed = QtCore.Signal(object)
+	sig_view_rect_changed       = QtCore.Signal(object)
 
 	def __init__(self, *args, frame_scene:BSBinFrameScene|None=None, **kwargs):
 
@@ -198,7 +199,9 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
 
-		self._overlay_manager = frameruler.BSGraphicsOverlayManager(parent=self)
+		self._overlay_manager = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
+		#self._overlay_ruler = frameruler.BSFrameRulerOverlay()
+		#self._overlay_manager.installOverlay(self._overlay_ruler)
 
 		#self.setMouseTracking(True)
 		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self.viewport())
@@ -244,11 +247,21 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
 
-	def overlayManager(self) -> frameruler.BSGraphicsOverlayManager:
+		self.horizontalScrollBar().valueChanged.connect(lambda: self.sig_view_rect_changed.emit(self.viewRect()))
+		self.verticalScrollBar().valueChanged.connect(lambda: self.sig_view_rect_changed.emit(self.viewRect()))
+
+	def setTransform(self, matrix:QtGui.QTransform, *args, combine:bool=False, **kwargs) -> None:
+
+		super().setTransform(matrix, combine)
+		self.sig_view_rect_changed.emit(self.viewRect())
+
+
+	def overlayManager(self) -> overlaymanager.BSGraphicsOverlayManager:
 
 		return self._overlay_manager
 	
-	def setOverlayManager(self, overlay_manager:frameruler.BSGraphicsOverlayManager):
+	@QtCore.Slot(object)
+	def setOverlayManager(self, overlay_manager:overlaymanager.BSGraphicsOverlayManager):
 
 		if self._overlay_manager != overlay_manager:
 			
@@ -393,6 +406,16 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			self.setTransform(t)
 
 			self.sig_zoom_level_changed.emit(zoom_level)
+
+			self.sig_view_rect_changed.emit(self.viewRect())
+	
+	def viewRect(self) -> QtCore.QRectF:
+		"""The portion of the scene rect viewable in the viewport"""
+
+		return QtCore.QRectF(
+			self.mapToScene(self.viewport().rect().topLeft()),
+			self.mapToScene(self.viewport().rect().bottomRight()),
+		)
 	
 	def drawBackground(self, painter:QtGui.QPainter, rect:QtCore.QRectF):
 
@@ -418,7 +441,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# Setup stuff for ruler
 		
 		coord_font = self.font()
-		coord_font.setPointSizeF(coord_font.pointSizeF()/(self._current_zoom))
+		#coord_font.setPointSizeF(coord_font.pointSizeF()/(self._current_zoom))
 		painter.setFont(coord_font)
 		
 		#import logging
@@ -456,11 +479,23 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			
 		painter.restore()
 
+	@QtCore.Slot(QtGui.QFont)
+	def setFont(self, new_font:QtGui.QFont):
+		
+		#self._overlay_manager.setFont(new_font)
+		return super().setFont(new_font)
+	
+	@QtCore.Slot(QtGui.QPalette)
+	def setPalette(self, new_palette:QtGui.QPalette):
+		#self._overlay_manager.setPalette(new_palette)
+		
+		return super().setPalette(new_palette)
+
 	def mouseMoveEvent(self, event):
 
 		self.viewport().update()
 		return super().mouseMoveEvent(event)
-
+	
 	def paintEvent(self, event):
 
 		GRID_DIVISIONS     = 3
@@ -484,7 +519,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		painter = QtGui.QPainter(self.viewport())
 
-		self._overlay_manager.paintOverlays(painter, self.viewport())
+		self._overlay_manager.paintOverlays(painter, self.viewport().rect())
 
 
 		# Define pens and brushes
@@ -509,7 +544,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 
 		font = painter.font()
-		font.setPointSizeF(font.pointSizeF() * RULER_TEXT_SCALE)
+		#font.setPointSizeF(font.pointSizeF() * RULER_TEXT_SCALE)
 		painter.setFont(font)
 
 		viewport_rect = QtCore.QRectF(event.rect())
@@ -546,24 +581,24 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		painter.setPen(pen_ruler_base)
 
 		painter.setBrush(grad_ruler_top)
-		painter.drawRect(rect_ruler_top)
+#		painter.drawRect(rect_ruler_top)
 		
 		painter.setBrush(grad_ruler_side)
-		painter.drawRect(rect_ruler_side)
+#		painter.drawRect(rect_ruler_side)
 		
 
 		# Ruler Edges
 		painter.setPen(pen_ruler_edge)
 
-		painter.drawLine(QtCore.QLineF(
-			QtCore.QPointF(RULER_SIZE - RULER_OVERDRAW, RULER_SIZE),
-			QtCore.QPointF(viewport_rect.right(), RULER_SIZE)
-		))
+#		painter.drawLine(QtCore.QLineF(
+#			QtCore.QPointF(RULER_SIZE - RULER_OVERDRAW, RULER_SIZE),
+#			QtCore.QPointF(viewport_rect.right(), RULER_SIZE)
+#		))
 
-		painter.drawLine(QtCore.QLineF(
-			QtCore.QPointF(RULER_SIZE, RULER_SIZE - RULER_OVERDRAW),
-			QtCore.QPointF(RULER_SIZE, viewport_rect.bottom())
-		))
+#		painter.drawLine(QtCore.QLineF(
+#			QtCore.QPointF(RULER_SIZE, RULER_SIZE - RULER_OVERDRAW),
+#			QtCore.QPointF(RULER_SIZE, viewport_rect.bottom())
+#		))
 
 		# Map viewport coords to scene coords
 
@@ -574,52 +609,53 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		painter.setPen(mouse_coord_pen)
 
 		mouse_pos = self.mapFromGlobal(QtGui.QCursor.pos())
-		painter.drawLine(QtCore.QLineF(
-			QtCore.QPointF(mouse_pos.x(), 0),
-			QtCore.QPointF(mouse_pos.x(), RULER_SIZE)
-		))
+#		painter.drawLine(QtCore.QLineF(
+#			QtCore.QPointF(mouse_pos.x(), 0),
+#			QtCore.QPointF(mouse_pos.x(), RULER_SIZE)
+#		))
 
 
 		
-		for x in range(0, round(viewport_rect.width())):
-
-			scene_x = self.mapToScene(QtCore.QPoint(x, 0)).x()
-
-			if scene_x % GRID_UNIT_SIZE.width() == 0:
-				
-				text_rect = QtCore.QRectF(viewport_rect)
-				text_rect.setWidth(painter.fontMetrics().averageCharWidth() * len("-30000"))
-				text_rect.setHeight(RULER_SIZE)
-				text_rect.moveCenter(QtCore.QPointF(x, RULER_SIZE/2))
-				
-				painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, str(round(scene_x)))
-
-				painter.drawLine(QtCore.QLineF(
-					QtCore.QPointF(x, RULER_SIZE - RULER_OVERDRAW),
-					QtCore.QPointF(x, RULER_SIZE)
-				))
-		
+#		for x in range(0, round(viewport_rect.width())):
+#
+#			scene_x = self.mapToScene(QtCore.QPoint(x, 0)).x()
+#
+#			if scene_x % GRID_UNIT_SIZE.width() == 0:
+#				
+#				text_rect = QtCore.QRectF(viewport_rect)
+#				text_rect.setWidth(painter.fontMetrics().averageCharWidth() * len("-30000"))
+#				text_rect.setHeight(RULER_SIZE)
+#				text_rect.moveCenter(QtCore.QPointF(x, RULER_SIZE/2))
+#				
+#				painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, str(round(scene_x)))
+#
+#				painter.drawLine(QtCore.QLineF(
+#					QtCore.QPointF(x, RULER_SIZE - RULER_OVERDRAW),
+#					QtCore.QPointF(x, RULER_SIZE)
+#				))
+#		
 		painter.setClipRect(rect_ruler_side)
 		painter.setPen(mouse_coord_pen)
-		painter.drawLine(QtCore.QLineF(
-			QtCore.QPointF(0, mouse_pos.y()),
-			QtCore.QPointF(RULER_SIZE, mouse_pos.y())
-		))
+#		painter.drawLine(QtCore.QLineF(
+#			QtCore.QPointF(0, mouse_pos.y()),
+#			QtCore.QPointF(RULER_SIZE, mouse_pos.y())
+#		))
 
-		for y in range(0, round(viewport_rect.height())):
-			
-			scene_y = self.mapToScene(QtCore.QPoint(0,y)).y()
-
-			if scene_y % GRID_UNIT_SIZE.height() == 0:
-
-				text_rect = QtCore.QRectF(viewport_rect)
-				text_rect.setWidth(80)
-				text_rect.setHeight(painter.fontMetrics().height())
-				text_rect.moveCenter(QtCore.QPointF(RULER_SIZE/2, y))
-
-				painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, str(int(scene_y)))
-
-				painter.drawLine(QtCore.QLineF(
-					QtCore.QPointF(RULER_SIZE - RULER_OVERDRAW, y),
-					QtCore.QPointF(RULER_SIZE, y)
-				))
+#		for y in range(0, round(viewport_rect.height())):
+#			
+#			scene_y = self.mapToScene(QtCore.QPoint(0,y)).y()
+#
+#			if scene_y % GRID_UNIT_SIZE.height() == 0:
+#
+#				text_rect = QtCore.QRectF(viewport_rect)
+#				text_rect.setWidth(80)
+#				text_rect.setHeight(painter.fontMetrics().height())
+#				text_rect.moveCenter(QtCore.QPointF(RULER_SIZE/2, y))
+#
+#				painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, str(int(scene_y)))
+#
+#				painter.drawLine(QtCore.QLineF(
+#					QtCore.QPointF(RULER_SIZE - RULER_OVERDRAW, y),
+#					QtCore.QPointF(RULER_SIZE, y)
+#				))
+#
