@@ -24,11 +24,14 @@ class BSRulerTickInfo:
 
 
 class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
+	"""Ruler displayed over widget"""
 
 	sig_ruler_size_changed         = QtCore.Signal(int)
 	sig_ruler_ticks_changed        = QtCore.Signal(object)
 	sig_ruler_orientations_changed = QtCore.Signal(object)
 	sig_ruler_position_changed     = QtCore.Signal(object)
+	sig_mouse_coords_changed       = QtCore.Signal(object)
+	sig_show_mouse_coords_changed  = QtCore.Signal(bool)
 
 	def __init__(self, *args, ruler_size:int=DEFAULT_RULER_SIZE, **kwargs):
 		
@@ -48,6 +51,9 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			QtCore.Qt.Orientation.Horizontal,
 			QtCore.Qt.Orientation.Vertical
 		])
+
+		self._last_mouse_coords      = QtCore.QPointF(500,500)
+		self._show_mouse_coords = True
 
 		self._ruler_stroke      = DEFAULT_RULER_OUTLINE_WIDTH
 
@@ -69,6 +75,33 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		
 		self._font.setPointSizeF(self._font.pointSizeF() * DEFAULT_FONT_SCALE)
 		self.setFont(self._font)
+
+	@QtCore.Slot(object)
+	def setMouseCoordinates(self, mouse_coordinates:QtCore.QPoint|QtCore.QPointF):
+
+		if self._last_mouse_coords != mouse_coordinates:
+
+			self._last_mouse_coords = mouse_coordinates
+			self.sig_mouse_coords_changed.emit(mouse_coordinates)
+
+			self.sig_update_requested.emit()
+	
+	def mouseCoordinates(self) -> QtCore.QPoint|QtCore.QPointF:
+
+		return self._last_mouse_coords
+
+	@QtCore.Slot(bool)
+	def setShowMouseCoords(self, show_coords:bool):
+
+		if self._show_mouse_coords != show_coords:
+
+			self._show_mouse_coords = show_coords
+			self.sig_show_mouse_coords_changed.emit(show_coords)
+
+	def showMouseCoords(self) -> bool:
+
+		return self._show_mouse_coords
+
 	
 	@QtCore.Slot(object)
 	def setRulerPosition(self, ruler_position:QtCore.QPoint|QtCore.QPointF):
@@ -77,6 +110,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			
 			self._ruler_position = ruler_position
 			self.sig_ruler_position_changed.emit(ruler_position)
+			
 			self.sig_update_requested.emit()
 
 	def rulerPosition(self) -> QtCore.QPoint|QtCore.QPointF:
@@ -103,6 +137,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		self._ruler_ticks[orientation] = set(ruler_ticks)
 		self.sig_ruler_ticks_changed.emit(ruler_ticks)
+		
 		self.sig_update_requested.emit()
 	
 	def ticks(self, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal) -> list[BSRulerTickInfo]:
@@ -116,6 +151,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		
 		super().setFont(new_font)
 		self.setupDrawingTools()
+		
 		self.sig_update_requested.emit()
 
 	@QtCore.Slot(QtGui.QPalette)
@@ -123,6 +159,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		super().setPalette(new_palette)
 		self.setupDrawingTools()
+		
 		self.sig_update_requested.emit()
 
 	@QtCore.Slot()
@@ -167,8 +204,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	def paintOverlay(self, painter, rect_canvas, rect_dirty):
 		"""Do the paint"""
 
-		if USE_ANTIALIASING:
-			painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
+		painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, USE_ANTIALIASING)
 
 		for orientation in self._ruler_orientations:
 
@@ -176,9 +212,45 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 			self._draw_ruler_base(painter, rect_canvas, orientation)
 			self._draw_ruler_ticks(painter, rect_canvas, orientation)
+			
+			if self._show_mouse_coords:
+				self._draw_mouse_coords(painter, rect_canvas)
+
 			self._draw_ruler_handle(painter, rect_canvas)
 
 			painter.restore()
+	
+	def _draw_mouse_coords(self, painter:QtGui.QPainter, rect_canvas:QtGui.QRectF):
+
+		painter.save()
+
+		painter.setPen(self._pen_mouse_coords)
+
+		mouse_coords_local = painter.device().mapFromGlobal(self._last_mouse_coords)
+		#print(mouse_coords_local)
+
+		if QtCore.Qt.Orientation.Horizontal in self._ruler_orientations:
+
+			rect_rule = self.rulerRect(rect_canvas, QtCore.Qt.Orientation.Horizontal)
+			painter.setClipRect(rect_rule)
+
+			painter.drawLine(QtCore.QLineF(
+				QtCore.QPointF(mouse_coords_local.x(), rect_rule.topLeft().y()),
+				QtCore.QPointF(mouse_coords_local.x(), rect_rule.bottomLeft().y()),
+			))
+		
+
+		if QtCore.Qt.Orientation.Vertical in self._ruler_orientations:
+
+			rect_rule = self.rulerRect(rect_canvas, QtCore.Qt.Orientation.Vertical)
+			painter.setClipRect(rect_rule)
+
+			painter.drawLine(QtCore.QLineF(
+				QtCore.QPointF(rect_rule.topLeft().x(), mouse_coords_local.y()),
+				QtCore.QPointF(rect_rule.topRight().x(), mouse_coords_local.y()),
+			))	
+
+		painter.restore()
 
 	def _draw_ruler_handle(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRectF):
 
