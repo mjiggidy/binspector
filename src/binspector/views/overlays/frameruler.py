@@ -37,25 +37,24 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		
 		super().__init__(*args, **kwargs)
 
-		self._ruler_position = DEFAULT_RULER_POSITION
+		self._ruler_position     = DEFAULT_RULER_POSITION
+		self._ruler_stoke_width  = DEFAULT_RULER_OUTLINE_WIDTH
+		self._ruler_size         = ruler_size
+		self._ruler_tick_size    = 4
 		
 		self._ruler_ticks:dict[QtCore.Qt.Orientation, list[BSRulerTickInfo]] = {
 			QtCore.Qt.Orientation.Horizontal: set(),
 			QtCore.Qt.Orientation.Vertical:   set(),
 		}
 
-		self._ruler_size        = ruler_size
-		self._ruler_tick_size   = 4
-
-		self._ruler_orientations= set([
+		self._ruler_orientations = set([
 			QtCore.Qt.Orientation.Horizontal,
 			QtCore.Qt.Orientation.Vertical
 		])
 
-		self._last_mouse_coords      = QtCore.QPointF(500,500)
-		self._show_mouse_coords = True
-
-		self._ruler_stroke      = DEFAULT_RULER_OUTLINE_WIDTH
+		self._last_mouse_coords  = QtCore.QPointF(500,500)
+		self._mouse_coords_enabled  = True
+		self._mouse_drag_start   = QtCore.QPointF()
 
 		# Pens
 		self._pen_ruler_base    = QtGui.QPen()
@@ -78,6 +77,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 	@QtCore.Slot(object)
 	def setMouseCoordinates(self, mouse_coordinates:QtCore.QPoint|QtCore.QPointF):
+		"""Set local mouse coordinates"""
 
 		if self._last_mouse_coords != mouse_coordinates:
 
@@ -91,16 +91,16 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		return self._last_mouse_coords
 
 	@QtCore.Slot(bool)
-	def setShowMouseCoords(self, show_coords:bool):
+	def setMouseCoordsEnabled(self, coords_enabled:bool):
 
-		if self._show_mouse_coords != show_coords:
+		if self._mouse_coords_enabled != coords_enabled:
 
-			self._show_mouse_coords = show_coords
-			self.sig_show_mouse_coords_changed.emit(show_coords)
+			self._mouse_coords_enabled = coords_enabled
+			self.sig_show_mouse_coords_changed.emit(coords_enabled)
 
-	def showMouseCoords(self) -> bool:
+	def mouseCoordsEnabled(self) -> bool:
 
-		return self._show_mouse_coords
+		return self._mouse_coords_enabled
 
 	
 	@QtCore.Slot(object)
@@ -167,7 +167,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		"""Setup pens, brushes and fonts"""
 
 		self._pen_ruler_base  .setColor(self._palette.dark().color())
-		self._pen_ruler_base  .setWidth(self._ruler_stroke)
+		self._pen_ruler_base  .setWidth(self._ruler_stoke_width)
 
 		# Dark mode?
 		if self._palette.window().color().value() > self._palette.windowText().color().value():
@@ -183,7 +183,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._brush_ruler_base.setColorAt(1.0, self._palette.dark()  .color())
 
 		self._pen_ruler_ticks .setColor(self._palette.buttonText().color())
-		self._pen_ruler_ticks .setWidth(self._ruler_stroke)
+		self._pen_ruler_ticks .setWidth(self._ruler_stoke_width)
 
 		self._font_ruler_ticks = self._font
 
@@ -213,7 +213,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			self._draw_ruler_base(painter, rect_canvas, orientation)
 			self._draw_ruler_ticks(painter, rect_canvas, orientation)
 			
-			if self._show_mouse_coords:
+			if self._mouse_coords_enabled:
 				self._draw_mouse_coords(painter, rect_canvas)
 
 			self._draw_ruler_handle(painter, rect_canvas)
@@ -226,8 +226,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		painter.setPen(self._pen_mouse_coords)
 
-		mouse_coords_local = painter.device().mapFromGlobal(self._last_mouse_coords)
-		#print(mouse_coords_local)
+		mouse_coords_local = self._last_mouse_coords
 
 		if QtCore.Qt.Orientation.Horizontal in self._ruler_orientations:
 
@@ -258,10 +257,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		painter.setPen(self._pen_ruler_base)
 
-		rect_handle = QtCore.QRectF(
-			rect_canvas.topLeft(),
-			QtCore.QSizeF(self._ruler_size, self._ruler_size)
-		)
+		rect_handle = self.handleRect(rect_canvas)
 
 		# Draw background
 
@@ -270,12 +266,12 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		grad.setFinalStop(rect_handle.bottomLeft())
 		painter.setBrush(grad)
 
-		rect_handle.translate(self._ruler_position)
+		#rect_handle.translate(self._ruler_position)
 		rect_handle.adjust(
-			-self._ruler_stroke/2,
-			-self._ruler_stroke/2,
-			-self._ruler_stroke/2,
-			-self._ruler_stroke/2,
+			-self._ruler_stoke_width/2,
+			-self._ruler_stoke_width/2,
+			-self._ruler_stoke_width/2,
+			-self._ruler_stoke_width/2,
 		)
 
 		painter.drawRect(rect_handle)
@@ -300,10 +296,10 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		painter.setBrush(grad)
 
 		rect_handle.adjust(
-			 self._ruler_stroke * 1,
-			 self._ruler_stroke * 1,
-			-self._ruler_stroke * 1,
-			-self._ruler_stroke * 1,
+			 self._ruler_stoke_width * 1,
+			 self._ruler_stoke_width * 1,
+			-self._ruler_stoke_width * 1,
+			-self._ruler_stoke_width * 1,
 		)
 
 		painter.drawRect(rect_handle)
@@ -384,6 +380,33 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			)
 
 		painter.restore()
+
+	def activeRects(self, rect_canvas:QtCore.QRect|QtCore.QRectF) -> list[QtCore.QRect|QtCore.QRectF]:
+		
+		rects = []
+
+		for orientation in self._ruler_orientations:
+			rects.append(self.rulerRect(rect_canvas, orientation))
+		rects.append(self.handleRect(rect_canvas))
+
+		return rects
+	
+	def safePosition(self, test_point:QtCore.QRect|QtCore.QRectF, rect_canvas:QtCore.QRect|QtCore.QRectF):
+		"""Determine the nearest "safe" position for the ruler, ensuring the handle rect is visible"""
+
+		handle_rect = self.handleRect(rect_canvas)
+
+		return QtCore.QPointF(
+			max(rect_canvas.topLeft().x(), min(test_point.x(), rect_canvas.width() - handle_rect.width())),
+			max(rect_canvas.topLeft().y(), min(test_point.y(), rect_canvas.height() - handle_rect.height())),
+		)
+
+	def handleRect(self, rect_canvas:QtCore.QRect|QtCore.QRectF) -> QtCore.QRectF:
+
+		return QtCore.QRectF(
+			self._ruler_position,
+			QtCore.QSizeF(self._ruler_size, self._ruler_size)
+		)
 	
 	def rulerRect(self, rect_canvas:QtCore.QRectF, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal) -> QtCore.QRectF:
 		"""Given a viewport rect, get a rect of the current ruler area"""
@@ -394,23 +417,56 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 			ruler_rect.setWidth(self._ruler_size)
 			ruler_rect.adjust(
-				-self._ruler_stroke/2,
-				-self._ruler_stroke/2,
-				-self._ruler_stroke/2,
-				-self._ruler_stroke/2,
+				-self._ruler_stoke_width/2,
+				-self._ruler_stoke_width/2,
+				-self._ruler_stoke_width/2,
+				-self._ruler_stoke_width/2,
 			)
 
 			ruler_rect.translate(self._ruler_position.x(), 0)
 		
-		elif orientation == QtCore.Qt.Orientation.Horizontal:
+		elif orientation == QtCore.Qt.Orientation.Horizontal:	
 
 			ruler_rect.setHeight(self._ruler_size)
 			ruler_rect.adjust(
-				-self._ruler_stroke/2,
-				-self._ruler_stroke/2,
-				-self._ruler_stroke/2,
-				-self._ruler_stroke/2,
+				-self._ruler_stoke_width/2,
+				-self._ruler_stoke_width/2,
+				-self._ruler_stoke_width/2,
+				-self._ruler_stoke_width/2,
 			)
 			ruler_rect.translate(0, self._ruler_position.y())
 
 		return ruler_rect
+	
+	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
+
+		if event.type() == QtCore.QEvent.Type.MouseButtonPress and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
+			
+			if self.handleRect(watched.rect()).contains(event.position()):
+
+				self._mouse_drag_start = event.position() - self.handleRect(watched.rect()).topLeft()
+				return True
+		
+		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and not self._mouse_drag_start.isNull():
+			self._mouse_drag_start = QtCore.QPointF()
+		
+		if event.type() == QtCore.QEvent.Type.MouseMove:
+
+			self.setMouseCoordinates(event.position())
+
+			if not self._mouse_drag_start.isNull():
+
+				# Mouse position relative to drag start, for proper offset from handle
+				mouse_rel = event.position() - self._mouse_drag_start
+
+				pos = self.safePosition(
+					mouse_rel, watched.rect()
+				)
+
+				#pos = pos-self._mouse_drag_start
+
+				#print(watched.rect().topLeft().x(), event.position().x())
+
+				self.setRulerPosition(pos)
+
+		return super().eventFilter(watched, event)
