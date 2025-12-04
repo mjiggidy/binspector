@@ -9,7 +9,8 @@ DEFAULT_RULER_SIZE = 24
 DEFAULT_RULER_OUTLINE_WIDTH = 1
 DEFAULT_FANCY_ALPHA = 0.75
 DEFAULT_FONT_SCALE = 0.7
-DEFAULT_RULER_POSITION = QtCore.QPointF(50,30)
+DEFAULT_RULER_POSITION = QtCore.QPointF(0,0)
+USE_ANTIALIASING = False
 
 @dataclasses.dataclass(frozen=True)
 class BSRulerTickInfo:
@@ -166,7 +167,8 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	def paintOverlay(self, painter, rect_canvas, rect_dirty):
 		"""Do the paint"""
 
-		#painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
+		if USE_ANTIALIASING:
+			painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
 
 		for orientation in self._ruler_orientations:
 
@@ -185,8 +187,17 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		painter.setPen(self._pen_ruler_base)
 		painter.setBrush(self._palette.button())
 
-		rect_handle = QtCore.QRectF(self._ruler_position, QtCore.QSizeF(self._ruler_size, self._ruler_size))
-		rect_handle.translate(QtCore.QPointF(-self._ruler_stroke/2, -self._ruler_stroke/2))
+		rect_handle = QtCore.QRectF(
+			rect_canvas.topLeft(),
+			QtCore.QSizeF(self._ruler_size, self._ruler_size)
+		)
+		rect_handle.translate(self._ruler_position)
+		rect_handle.adjust(
+			-self._ruler_stroke/2,
+			-self._ruler_stroke/2,
+			-self._ruler_stroke/2,
+			-self._ruler_stroke/2,
+		)
 
 		painter.drawRect(rect_handle)
 
