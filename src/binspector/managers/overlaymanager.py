@@ -3,9 +3,6 @@ import logging
 from typing import TYPE_CHECKING
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..views.overlays import abstractoverlay
-
-if TYPE_CHECKING:
-	from ..views import binframeview
 		
 class BSGraphicsOverlayManager(QtCore.QObject):
 	"""Overlay manager for a widget"""
@@ -24,11 +21,11 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 
 		self._installOnParent()
 
-	@QtCore.Slot()
 	def _installOnParent(self):
-		"""Update style option from the widget"""
+		"""Hook manager into the parent widget event loop"""
 
 		self.parent().installEventFilter(self)
+
 	
 	def overlays(self) -> list[abstractoverlay.BSAbstractOverlay]:
 		"""Get all installed overlays"""
@@ -40,14 +37,14 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 
 		if overlay not in self._overlays:
 
+			self._overlays.add(overlay)
+			self.installEventFilter(overlay)
+			
 			overlay.setParent(self)
 			overlay.setPalette(self.parent().palette())
 			overlay.sig_update_requested.connect(self.parent().update)
-
+			
 			logging.getLogger(__name__).debug("Installed parent %s on %s", overlay.parent(), overlay)
-			self._overlays.add(overlay)
-
-			logging.getLogger(__name__).debug("Added overlay %s", overlay)
 			self.sig_overlay_installed.emit(overlay)
 
 	def removeOverlay(self, overlay:abstractoverlay.BSAbstractOverlay):
@@ -62,6 +59,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		
 		self.sig_overlay_removed(overlay)
 		overlay.deleteLater()
+
 	
 	@QtCore.Slot(QtGui.QFont)
 	def setFont(self, new_font:QtGui.QFont):
@@ -75,9 +73,9 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		for overlay in self._overlays:
 			overlay.setPalette(new_palette)
 
+
 	def paintOverlays(self, painter:QtGui.QPainter, rect:QtCore.QRect):
 		"""Paint installed overlays"""
-
 
 		for overlay in self._overlays:
 
@@ -91,3 +89,20 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 				logging.getLogger(__name__).error("Error painting %s: %s", overlay, e)
 			finally:
 				painter.restore()
+	
+	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
+		"""Foreward events to active overlays"""
+
+		# Ignore paint events -- must be handled via parent widget's paintEvent
+		if event.type() == QtCore.QEvent.Type.Paint:
+			return False
+		
+		for overlay in self._overlays:
+
+			if not overlay.isEnabled():
+				continue
+
+			if overlay.eventFilter(watched, event):
+				return True
+		
+		return False

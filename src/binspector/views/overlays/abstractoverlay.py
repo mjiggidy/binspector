@@ -1,7 +1,8 @@
 from PySide6 import QtCore, QtGui, QtWidgets
+from ...managers import overlaymanager
 
 class BSAbstractOverlay(QtCore.QObject):
-	"""Manage overlays for QGraphicsViews"""
+	"""Abstract overlay for display over a widget"""
 	
 	sig_enabled_changed  = QtCore.Signal(bool)
 	sig_update_requested = QtCore.Signal()
@@ -12,16 +13,23 @@ class BSAbstractOverlay(QtCore.QObject):
 		super().__init__(*args, **kwargs)
 
 		self._is_enabled:bool = True
-
 		self._font    = QtWidgets.QApplication.font()
 		self._palette = QtWidgets.QApplication.palette()
-
-		#self.setPalette(self._palette)
-		#self.setFont(self._font)
+	
 	
 	def paintOverlay(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRect, rect_dirty:QtCore.QRect|None=None):
 		"""Paint the overlay, with the given paintEvent"""
 		# Virtual method
+
+	def eventOverlay(self, event:QtCore.QEvent) -> bool:
+		"""Event handler for overlays"""
+		# Virtual method
+		return False
+
+	def widget(self) -> QtWidgets.QWidget:
+		"""The widget this overlay draws to"""
+
+		return self.parent().parent()
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, new_palette:QtGui.QPalette):
@@ -53,3 +61,4 @@ class BSAbstractOverlay(QtCore.QObject):
 		"""Toggle overlay enabled state"""
 
 		self.setIsEnabled(not self._is_enabled)
+	
