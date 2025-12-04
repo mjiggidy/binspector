@@ -185,12 +185,19 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		painter.save()
 
 		painter.setPen(self._pen_ruler_base)
-		painter.setBrush(self._palette.button())
 
 		rect_handle = QtCore.QRectF(
 			rect_canvas.topLeft(),
 			QtCore.QSizeF(self._ruler_size, self._ruler_size)
 		)
+
+		# Draw background
+
+		grad = QtGui.QLinearGradient(self._brush_ruler_base)
+		grad.setStart(rect_handle.topLeft())
+		grad.setFinalStop(rect_handle.bottomLeft())
+		painter.setBrush(grad)
+
 		rect_handle.translate(self._ruler_position)
 		rect_handle.adjust(
 			-self._ruler_stroke/2,
@@ -200,6 +207,35 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		)
 
 		painter.drawRect(rect_handle)
+
+		# Draw button (inverted gradient)
+
+		pen = painter.pen()
+
+		pen.setWidthF(pen.widthF() * 3)
+		pen.setCapStyle(QtCore.Qt.PenCapStyle.RoundCap)
+		pen.setJoinStyle(QtCore.Qt.PenJoinStyle.RoundJoin)
+		
+		col = pen.color()
+		col.setAlphaF(0.5)
+		pen.setColor(col)
+		
+		painter.setPen(pen)
+
+		grad.setStart(rect_handle.bottomLeft())
+		grad.setFinalStop(rect_handle.topLeft())
+		
+		painter.setBrush(grad)
+
+		rect_handle.adjust(
+			 self._ruler_stroke * 1,
+			 self._ruler_stroke * 1,
+			-self._ruler_stroke * 1,
+			-self._ruler_stroke * 1,
+		)
+
+		painter.drawRect(rect_handle)
+
 
 		painter.restore()
 
