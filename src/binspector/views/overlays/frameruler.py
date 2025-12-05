@@ -374,7 +374,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		painter.setFont(self._font_ruler_ticks)
 
 		for tick_info in self._ruler_ticks[orientation]:
-
+			
 			tick_lines = []
 
 			if orientation == QtCore.Qt.Orientation.Horizontal:

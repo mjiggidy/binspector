@@ -532,3 +532,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			logging.getLogger(__name__).error(e)
 		finally:
 			painter.end()
+	
+	def resizeEvent(self, event):
+		self.handleVisibleSceneRectChanged()
+		return super().resizeEvent(event)
