@@ -1,4 +1,4 @@
-import logging
+import logging, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..managers import eventfilters, overlaymanager
 from ..models import viewmodels, sceneitems
@@ -240,14 +240,21 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
 
-		self.horizontalScrollBar().valueChanged.connect(lambda: self.sig_view_rect_changed.emit(self.viewRect()))
-		self.verticalScrollBar().valueChanged.connect(lambda: self.sig_view_rect_changed.emit(self.viewRect()))
+		self.horizontalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
+		self.verticalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
+
+	@QtCore.Slot()
+	def handleVisibleSceneRectChanged(self):
+		"""Do necessary updates when user pans/zooms"""
+
+		self.updateRulerTicks()
+
+		self.sig_view_rect_changed.emit(self.visibleSceneRect())
 
 	def setTransform(self, matrix:QtGui.QTransform, *args, combine:bool=False, **kwargs) -> None:
 
 		super().setTransform(matrix, combine)
-		self.sig_view_rect_changed.emit(self.viewRect())
-
+		self.handleVisibleSceneRectChanged()
 
 	def overlayManager(self) -> overlaymanager.BSGraphicsOverlayManager:
 
@@ -397,9 +404,60 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 			self.sig_zoom_level_changed.emit(zoom_level)
 
-			self.sig_view_rect_changed.emit(self.viewRect())
+			self.handleVisibleSceneRectChanged()
+
+	def updateRulerTicks(self, rect_scene:QtCore.QRect|None=None, tick_orientations:typing.Iterable[QtCore.Qt.Orientation]|None=None):
+
+		rect_scene        = rect_scene or self.visibleSceneRect()
+		tick_orientations = tick_orientations or [QtCore.Qt.Orientation.Horizontal, QtCore.Qt.Orientation.Vertical]
+
+		if QtCore.Qt.Orientation.Horizontal in tick_orientations:
+			
+			# Align to grid divisions
+			range_scene_start = rect_scene.left()  - rect_scene.left()  % GRID_UNIT_SIZE.width()
+			range_scene_end  = rect_scene.right()  - rect_scene.right() % GRID_UNIT_SIZE.width() + GRID_UNIT_SIZE.width()
+			range_scene_steps = (range_scene_end - range_scene_start) / GRID_UNIT_SIZE.width() + 1
+
+			ticks = []
+			
+			for step in range(round(range_scene_steps)):
+
+				scene_x = range_scene_start + (GRID_UNIT_SIZE.width() * step)
+				viewport_x = self.mapFromScene(scene_x, 0).x()
+
+				ticks.append(
+					frameruler.BSRulerTickInfo(
+						ruler_offset = viewport_x,
+						tick_label = str(round(scene_x))
+					)
+				)
+
+			self._overlay_ruler.setTicks(ticks, QtCore.Qt.Orientation.Horizontal)
+		
+		if QtCore.Qt.Orientation.Vertical in tick_orientations:
+
+			# Align to grid divisions
+			range_scene_start = rect_scene.top() - rect_scene.top() % GRID_UNIT_SIZE.height()
+			range_scene_end   = rect_scene.bottom() - rect_scene.bottom() % GRID_UNIT_SIZE.height() + GRID_UNIT_SIZE.height()
+			range_scene_steps = (range_scene_end - range_scene_start) / GRID_UNIT_SIZE.height() + 1
+
+			ticks = []
+
+			for step in range(round(range_scene_steps)):
+
+				scene_y = range_scene_start + (GRID_UNIT_SIZE.height() * step)
+				viewport_y = self.mapFromScene(0, scene_y).y()
+
+				ticks.append(
+					frameruler.BSRulerTickInfo(
+						ruler_offset= viewport_y,
+						tick_label = str(round(scene_y))
+					)
+				)
+
+			self._overlay_ruler.setTicks(ticks, QtCore.Qt.Orientation.Vertical)
 	
-	def viewRect(self) -> QtCore.QRectF:
+	def visibleSceneRect(self) -> QtCore.QRectF:
 		"""The portion of the scene rect viewable in the viewport"""
 
 		return QtCore.QRectF(
@@ -428,11 +486,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# Setup stuff for ruler
 		
 		coord_font = self.font()
-		#coord_font.setPointSizeF(coord_font.pointSizeF()/(self._current_zoom))
 		painter.setFont(coord_font)
-		
-		#import logging
-		#logging.getLogger(__name__).debug("Set font size to %s px", coord_font.pointSizeF())
 
 		for x in range(round(rect.left()), round(rect.right())+1):
 
@@ -465,17 +519,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			))
 			
 		painter.restore()
-
-#	@QtCore.Slot(QtGui.QFont)
-#	def setFont(self, new_font:QtGui.QFont):
-#		
-#		#self._overlay_manager.setFont(new_font)
-#		return super().setFont(new_font)
-#	
-#	@QtCore.Slot(QtGui.QPalette)
-#	def setPalette(self, new_palette:QtGui.QPalette):
-#		
-#		return super().setPalette(new_palette)
 	
 	def paintEvent(self, event):
 		"""Paint widget, then overlays"""
