@@ -9,6 +9,7 @@ DEFAULT_FANCY_ALPHA         = 0.75 # %
 DEFAULT_FONT_SCALE          = 0.7  # %
 DEFAULT_RULER_POSITION      = QtCore.QPointF(0,0)
 USE_ANTIALIASING            = False
+DEFAULT_TICK_SIZE           = 3    # px
 
 @dataclasses.dataclass(frozen=True)
 class BSRulerTickInfo:
@@ -38,7 +39,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._ruler_position     = DEFAULT_RULER_POSITION
 		self._ruler_stoke_width  = DEFAULT_RULER_OUTLINE_WIDTH
 		self._ruler_width        = ruler_width
-		self._ruler_tick_size    = 4
+		self._ruler_tick_size    = DEFAULT_TICK_SIZE
 		
 		self._ruler_ticks:dict[QtCore.Qt.Orientation, list[BSRulerTickInfo]] = {
 			QtCore.Qt.Orientation.Horizontal: set(),
@@ -297,12 +298,12 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		painter.setBrush(grad)
 
 		#rect_handle.translate(self._ruler_position)
-		rect_handle.adjust(
-			-self._ruler_stoke_width/2,
-			-self._ruler_stoke_width/2,
-			-self._ruler_stoke_width/2,
-			-self._ruler_stoke_width/2,
-		)
+#		rect_handle.adjust(
+#			-self._ruler_stoke_width/2,
+#			-self._ruler_stoke_width/2,
+#			-self._ruler_stoke_width/2,
+#			-self._ruler_stoke_width/2,
+#		)
 
 		painter.drawRect(rect_handle)
 
@@ -366,7 +367,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		painter.save()
 		
-		ruler_rect = self.rulerRect(rect_canvas, orientation)
+		ruler_rect  = self.rulerRect(rect_canvas, orientation)
 		painter.setClipRect(ruler_rect)
 		
 		painter.setPen(self._pen_ruler_ticks)
@@ -374,36 +375,62 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		for tick_info in self._ruler_ticks[orientation]:
 
+			tick_lines = []
+
 			if orientation == QtCore.Qt.Orientation.Horizontal:
+				
+				# Bottom Ticks
+				if ruler_rect.bottom() < self.widget().rect().bottom():
 
-				line_tick = QtCore.QLineF(
-					QtCore.QPointF(tick_info.ruler_offset, ruler_rect.bottom() - self._ruler_tick_size),
-					QtCore.QPointF(tick_info.ruler_offset, ruler_rect.bottom())
-				)
+					tick_lines.append(QtCore.QLineF(
+						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.bottom() - self._ruler_tick_size),
+						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.bottom())
+					))
 
-				text_rect = QtCore.QRectF(
+				# Top Ticks
+				if ruler_rect.top() > self.widget().rect().top():
+					
+					tick_lines.append(QtCore.QLineF(
+						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.top() + self._ruler_tick_size),
+						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.top())
+					))
+
+				tick_text = QtCore.QRectF(
 					ruler_rect.topLeft(),
 					ruler_rect.size()
 				)
-				text_rect.moveCenter(QtCore.QPoint(tick_info.ruler_offset, ruler_rect.center().y()))
+
+				tick_text.moveCenter(QtCore.QPoint(tick_info.ruler_offset, ruler_rect.center().y()))
 
 			elif orientation == QtCore.Qt.Orientation.Vertical:
 
-				line_tick = QtCore.QLineF(
-					QtCore.QPointF(ruler_rect.right() - self._ruler_tick_size, tick_info.ruler_offset),
-					QtCore.QPointF(ruler_rect.right(), tick_info.ruler_offset)
-				)
+				# Right ticks
+				if ruler_rect.right() < self.widget().rect().right():
 
-				text_rect = QtCore.QRectF(
+					tick_lines.append(QtCore.QLineF(
+						QtCore.QPointF(ruler_rect.right() - self._ruler_tick_size, tick_info.ruler_offset),
+						QtCore.QPointF(ruler_rect.right(), tick_info.ruler_offset)
+					))
+
+				# Left ticks
+				if ruler_rect.left() > self.widget().rect().left():
+					#print(ruler_rect.left(), self.widget().rect().left())
+					tick_lines.append(QtCore.QLineF(
+						QtCore.QPointF(ruler_rect.left() + self._ruler_tick_size, tick_info.ruler_offset),
+						QtCore.QPointF(ruler_rect.left(), tick_info.ruler_offset)
+					))
+
+				tick_text = QtCore.QRectF(
 					ruler_rect.topLeft(),
 					ruler_rect.size()
 				)
-				text_rect.moveCenter(QtCore.QPoint(ruler_rect.center().x(), tick_info.ruler_offset))
+				tick_text.moveCenter(QtCore.QPoint(ruler_rect.center().x(), tick_info.ruler_offset))
 
-			painter.drawLine(line_tick)
+			for line_tick in tick_lines:
+				painter.drawLine(line_tick)
 
 			painter.drawText( 
-				text_rect,
+				tick_text,
 				QtCore.Qt.AlignmentFlag.AlignCenter,
 				tick_info.tick_label
 			)
@@ -431,6 +458,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		)
 
 	def handleRect(self, rect_canvas:QtCore.QRect|QtCore.QRectF) -> QtCore.QRectF:
+		"""Rect represending the handle"""
 
 		return QtCore.QRectF(
 			self._ruler_position,
@@ -445,24 +473,24 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		if orientation == QtCore.Qt.Orientation.Vertical:
 
 			ruler_rect.setWidth(self._ruler_width)
-			ruler_rect.adjust(
-				-self._ruler_stoke_width/2,
-				-self._ruler_stoke_width/2,
-				-self._ruler_stoke_width/2,
-				-self._ruler_stoke_width/2,
-			)
+#			ruler_rect.adjust(
+#				-self._ruler_stoke_width/2,
+#				-self._ruler_stoke_width/2,
+#				-self._ruler_stoke_width/2,
+#				-self._ruler_stoke_width/2,
+#			)
 
 			ruler_rect.translate(self._ruler_position.x(), 0)
 		
 		elif orientation == QtCore.Qt.Orientation.Horizontal:	
 
 			ruler_rect.setHeight(self._ruler_width)
-			ruler_rect.adjust(
-				-self._ruler_stoke_width/2,
-				-self._ruler_stoke_width/2,
-				-self._ruler_stoke_width/2,
-				-self._ruler_stoke_width/2,
-			)
+#			ruler_rect.adjust(
+#				self._ruler_stoke_width/2,
+#				self._ruler_stoke_width/2,
+#				-self._ruler_stoke_width/2,
+#				-self._ruler_stoke_width/2,
+#			)
 			ruler_rect.translate(0, self._ruler_position.y())
 
 		return ruler_rect
