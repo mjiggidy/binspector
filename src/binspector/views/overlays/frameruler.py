@@ -5,12 +5,12 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from ...managers import overlaymanager
 from . import abstractoverlay
 
-DEFAULT_RULER_SIZE = 24
-DEFAULT_RULER_OUTLINE_WIDTH = 1
-DEFAULT_FANCY_ALPHA = 0.75
-DEFAULT_FONT_SCALE = 0.7
-DEFAULT_RULER_POSITION = QtCore.QPointF(0,0)
-USE_ANTIALIASING = False
+DEFAULT_RULER_WIDTH         = 24   # px
+DEFAULT_RULER_OUTLINE_WIDTH = 1    # px
+DEFAULT_FANCY_ALPHA         = 0.75 # %
+DEFAULT_FONT_SCALE          = 0.7  # %
+DEFAULT_RULER_POSITION      = QtCore.QPointF(0,0)
+USE_ANTIALIASING            = False
 
 @dataclasses.dataclass(frozen=True)
 class BSRulerTickInfo:
@@ -26,20 +26,20 @@ class BSRulerTickInfo:
 class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	"""Ruler displayed over widget"""
 
-	sig_ruler_size_changed         = QtCore.Signal(int)
+	sig_ruler_width_changed        = QtCore.Signal(int)
 	sig_ruler_ticks_changed        = QtCore.Signal(object)
 	sig_ruler_orientations_changed = QtCore.Signal(object)
 	sig_ruler_position_changed     = QtCore.Signal(object)
 	sig_mouse_coords_changed       = QtCore.Signal(object)
 	sig_show_mouse_coords_changed  = QtCore.Signal(bool)
 
-	def __init__(self, *args, ruler_size:int=DEFAULT_RULER_SIZE, **kwargs):
+	def __init__(self, *args, ruler_width:int=DEFAULT_RULER_WIDTH, **kwargs):
 		
 		super().__init__(*args, **kwargs)
 
 		self._ruler_position     = DEFAULT_RULER_POSITION
 		self._ruler_stoke_width  = DEFAULT_RULER_OUTLINE_WIDTH
-		self._ruler_size         = ruler_size
+		self._ruler_width        = ruler_width
 		self._ruler_tick_size    = 4
 		
 		self._ruler_ticks:dict[QtCore.Qt.Orientation, list[BSRulerTickInfo]] = {
@@ -77,21 +77,23 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 	@QtCore.Slot(object)
 	def setMouseCoordinates(self, mouse_coordinates:QtCore.QPoint|QtCore.QPointF):
-		"""Set local mouse coordinates"""
+		"""Set the local mouse coordinates relative to the topLeft of the widget rect"""
 
 		if self._last_mouse_coords != mouse_coordinates:
 
 			self._last_mouse_coords = mouse_coordinates
 			self.sig_mouse_coords_changed.emit(mouse_coordinates)
 
-			self.sig_update_requested.emit()
+			self.update()
 	
 	def mouseCoordinates(self) -> QtCore.QPoint|QtCore.QPointF:
+		"""Last known mouse coordinates relative to the topLeft of the widget rect"""
 
 		return self._last_mouse_coords
 
 	@QtCore.Slot(bool)
 	def setMouseCoordsEnabled(self, coords_enabled:bool):
+		"""Enable live mouse coordinates to be drawn"""
 
 		if self._mouse_coords_enabled != coords_enabled:
 
@@ -99,21 +101,24 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			self.sig_show_mouse_coords_changed.emit(coords_enabled)
 
 	def mouseCoordsEnabled(self) -> bool:
+		"""Mouse coordinates are enabled to be drawn"""
 
 		return self._mouse_coords_enabled
 
 	
 	@QtCore.Slot(object)
 	def setRulerPosition(self, ruler_position:QtCore.QPoint|QtCore.QPointF):
+		"""Set the offset of the ruler relative to the topLeft of the widget rect"""
 
 		if self._ruler_position != ruler_position:
 			
 			self._ruler_position = ruler_position
 			self.sig_ruler_position_changed.emit(ruler_position)
 			
-			self.sig_update_requested.emit()
+			self.update()
 
 	def rulerPosition(self) -> QtCore.QPoint|QtCore.QPointF:
+		"""The offset of the ruler relative to the topLeft of the widget rect"""
 
 		return self._ruler_position
 
@@ -122,13 +127,16 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	def setRulerOrientations(self, orientations:typing.Iterable[QtCore.Qt.Orientation]):
 		"""Set ruler display orientations"""
 
+		orientations = set(orientations)
+
 		if self._ruler_orientations != orientations:
 			
 			self._ruler_orientations = orientations
 			self.sig_ruler_orientations_changed.emit(orientations)
-			self.sig_update_requested.emit()
+			self.update()
 	
 	def rulerOrientations(self) -> set[QtCore.Qt.Orientation]:
+		"""Ruler orientations displayed"""
 
 		return set(self._ruler_orientations)
 	
@@ -138,7 +146,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._ruler_ticks[orientation] = set(ruler_ticks)
 		self.sig_ruler_ticks_changed.emit(ruler_ticks)
 		
-		self.sig_update_requested.emit()
+		self.update()
 	
 	def ticks(self, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal) -> list[BSRulerTickInfo]:
 
@@ -152,7 +160,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		super().setFont(new_font)
 		self.setupDrawingTools()
 		
-		self.sig_update_requested.emit()
+		self.update()
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, new_palette:QtGui.QPalette):
@@ -160,7 +168,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		super().setPalette(new_palette)
 		self.setupDrawingTools()
 		
-		self.sig_update_requested.emit()
+		self.update()
 
 	@QtCore.Slot()
 	def setupDrawingTools(self):
@@ -187,19 +195,24 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		self._font_ruler_ticks = self._font
 
-	def rulerSize(self) -> int:
+	def rulerWidth(self) -> int:
 		"""Size of the ruler"""
 
-		return self._ruler_size
+		return self._ruler_width
 	
 	@QtCore.Slot(int)
-	def setRulerSize(self, ruler_size:int):
+	def setRulerWidth(self, ruler_width:int):
 
-		if ruler_size != self._ruler_size:
+		if ruler_width != self._ruler_width:
 
-			self._ruler_size = ruler_size
-			self.sig_ruler_size_changed.emit(ruler_size)
-			self.sig_update_requested.emit()
+			self._ruler_width = ruler_width
+			self.sig_ruler_width_changed.emit(ruler_width)
+			self.update()
+
+	def _dragIsActive(self) -> bool:
+		"""User is currently dragging"""
+
+		return not self._mouse_drag_start.isNull()
 
 	def paintOverlay(self, painter, rect_canvas, rect_dirty):
 		"""Do the paint"""
@@ -306,7 +319,6 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 
 		painter.restore()
-
 	
 	def _draw_ruler_base(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRectF, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal):
 
@@ -405,7 +417,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		return QtCore.QRectF(
 			self._ruler_position,
-			QtCore.QSizeF(self._ruler_size, self._ruler_size)
+			QtCore.QSizeF(self._ruler_width, self._ruler_width)
 		)
 	
 	def rulerRect(self, rect_canvas:QtCore.QRectF, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal) -> QtCore.QRectF:
@@ -415,7 +427,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		if orientation == QtCore.Qt.Orientation.Vertical:
 
-			ruler_rect.setWidth(self._ruler_size)
+			ruler_rect.setWidth(self._ruler_width)
 			ruler_rect.adjust(
 				-self._ruler_stoke_width/2,
 				-self._ruler_stoke_width/2,
@@ -427,7 +439,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		
 		elif orientation == QtCore.Qt.Orientation.Horizontal:	
 
-			ruler_rect.setHeight(self._ruler_size)
+			ruler_rect.setHeight(self._ruler_width)
 			ruler_rect.adjust(
 				-self._ruler_stoke_width/2,
 				-self._ruler_stoke_width/2,
@@ -438,35 +450,33 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		return ruler_rect
 	
-	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
-
+	def event(self, event):
 		if event.type() == QtCore.QEvent.Type.MouseButtonPress and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
 			
-			if self.handleRect(watched.rect()).contains(event.position()):
+			if self.handleRect(self.widget().rect()).contains(event.position()):
 
-				self._mouse_drag_start = event.position() - self.handleRect(watched.rect()).topLeft()
+				self._mouse_drag_start = event.position() - self.handleRect(self.widget().rect()).topLeft()
 				return True
 		
-		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and not self._mouse_drag_start.isNull():
+		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and self._dragIsActive():
 			self._mouse_drag_start = QtCore.QPointF()
 		
 		if event.type() == QtCore.QEvent.Type.MouseMove:
 
 			self.setMouseCoordinates(event.position())
+			#self.update()
 
-			if not self._mouse_drag_start.isNull():
+			if self._dragIsActive():
 
 				# Mouse position relative to drag start, for proper offset from handle
 				mouse_rel = event.position() - self._mouse_drag_start
 
 				pos = self.safePosition(
-					mouse_rel, watched.rect()
+					mouse_rel, self.widget().rect()
 				)
-
-				#pos = pos-self._mouse_drag_start
-
-				#print(watched.rect().topLeft().x(), event.position().x())
 
 				self.setRulerPosition(pos)
 
-		return super().eventFilter(watched, event)
+				return True
+
+		return super().event(event)

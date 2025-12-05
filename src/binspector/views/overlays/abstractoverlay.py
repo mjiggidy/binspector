@@ -1,30 +1,32 @@
+
 from PySide6 import QtCore, QtGui, QtWidgets
 from ...managers import overlaymanager
 
 class BSAbstractOverlay(QtCore.QObject):
 	"""Abstract overlay for display over a widget"""
 	
-	sig_enabled_changed  = QtCore.Signal(bool)
-	sig_update_requested = QtCore.Signal()
+	sig_enabled_changed       = QtCore.Signal(bool)
+	sig_update_rect_requested = QtCore.Signal(object)
+	sig_update_requested      = QtCore.Signal()
 
 	def __init__(self, *args, **kwargs):
 		
-
 		super().__init__(*args, **kwargs)
 
 		self._is_enabled:bool = True
 		self._font    = QtWidgets.QApplication.font()
 		self._palette = QtWidgets.QApplication.palette()
 	
+	def update(self, update_rect:QtCore.QRectF|None=None):
+		
+		if update_rect:
+			self.sig_update_rect_requested.emit(update_rect)
+		else:
+			self.sig_update_requested.emit()
 	
 	def paintOverlay(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRect, rect_dirty:QtCore.QRect|None=None):
 		"""Paint the overlay, with the given paintEvent"""
 		# Virtual method
-
-	def eventOverlay(self, event:QtCore.QEvent) -> bool:
-		"""Event handler for overlays"""
-		# Virtual method
-		return False
 
 	def widget(self) -> QtWidgets.QWidget:
 		"""The widget this overlay draws to"""
@@ -36,12 +38,14 @@ class BSAbstractOverlay(QtCore.QObject):
 
 		if self._palette != new_palette:
 			self._palette = new_palette
+			self.sig_update_requested.emit()
 	
 	@QtCore.Slot(QtGui.QFont)
 	def setFont(self, new_font:QtGui.QFont):
 
 		if self._font != new_font:
 			self._font = new_font
+			self.sig_update_requested.emit()
 	
 	def isEnabled(self) -> bool:
 		"""Overlay is enabled"""
@@ -55,6 +59,7 @@ class BSAbstractOverlay(QtCore.QObject):
 
 			self._is_enabled = is_enabled
 			self.sig_enabled_changed.emit(self._is_enabled)
+			self.sig_update_requested.emit()
 	
 	@QtCore.Slot()
 	def toggle(self):

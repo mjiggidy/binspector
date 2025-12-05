@@ -42,7 +42,9 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 			
 			overlay.setParent(self)
 			overlay.setPalette(self.parent().palette())
+			
 			overlay.sig_update_requested.connect(self.parent().update)
+			overlay.sig_update_rect_requested.connect(self.parent().update)
 			
 			logging.getLogger(__name__).debug("Installed parent %s on %s", overlay.parent(), overlay)
 			self.sig_overlay_installed.emit(overlay)
@@ -57,10 +59,12 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		
 		logging.getLogger(__name__).debug("Removed overlay %s", overlay)
 		
-		self.sig_overlay_removed(overlay)
+		overlay.disconnect(self)
+		self.disconnect(overlay)
+		self.sig_overlay_removed.emit(overlay)
 		overlay.deleteLater()
 
-	
+	# NOTE: May be able to take care of these via events?
 	@QtCore.Slot(QtGui.QFont)
 	def setFont(self, new_font:QtGui.QFont):
 
@@ -72,7 +76,6 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		
 		for overlay in self._overlays:
 			overlay.setPalette(new_palette)
-
 
 	def paintOverlays(self, painter:QtGui.QPainter, rect:QtCore.QRect):
 		"""Paint installed overlays"""
@@ -97,12 +100,9 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		if event.type() == QtCore.QEvent.Type.Paint:
 			return False
 		
-		for overlay in self._overlays:
+		for overlay in filter(lambda o: o.isEnabled(), self._overlays):
 
-			if not overlay.isEnabled():
-				continue
-
-			if overlay.eventFilter(watched, event):
+			if QtWidgets.QApplication.sendEvent(overlay, event):
 				return True
 		
 		return False
