@@ -525,7 +525,16 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self.update(self.handleRect(self.widget().rect()))
 		return True
 
-	
+	def keepHandleVisible(self, rect_scene:QtCore.QRect|QtCore.QRectF):
+		
+		handle_rect = self.handleRect(rect_scene)
+
+		if not rect_scene.contains(handle_rect.bottomRight().toPoint()):
+			self.setRulerPosition(
+				self.safePosition(handle_rect.topLeft(), rect_scene)
+			)
+
+
 	def event(self, event):
 		if event.type() == QtCore.QEvent.Type.MouseButtonPress and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
 			
@@ -535,11 +544,13 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and self._dragIsActive():
 			return self.endUserDragHandle()
 		
-		if event.type() == QtCore.QEvent.Type.MouseMove:
+		elif event.type() == QtCore.QEvent.Type.MouseMove:
 
 			self.setMouseCoordinates(event.position())
-
 			if self._dragIsActive():
 				return self.updateUserDragHandle(event.position())
+
+		elif event.type() == QtCore.QEvent.Type.Resize:
+			self.keepHandleVisible(self.widget().rect())
 
 		return super().event(event)
