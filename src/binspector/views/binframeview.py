@@ -413,13 +413,13 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		pen_boundary.setStyle(QtCore.Qt.PenStyle.SolidLine)
 		pen_boundary.setCosmetic(True)
 		pen_boundary.setWidth(1)
-		pen_boundary.setColor(self.parentWidget().palette().shadow().color())
+		pen_boundary.setColor(self.parentWidget().palette().window().color())
 
 		pen_division = QtGui.QPen()
 		pen_division.setStyle(QtCore.Qt.PenStyle.DashLine)
 		pen_division.setCosmetic(True)
 		pen_division.setWidth(1)
-		pen_division.setColor(self.parentWidget().palette().shadow().color())
+		pen_division.setColor(self.parentWidget().palette().window().color())
 
 		super().drawBackground(painter, rect)
 
@@ -478,7 +478,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 #		return super().setPalette(new_palette)
 	
 	def paintEvent(self, event):
-		"""Paint"""
+		"""Paint widget, then overlays"""
 
 		super().paintEvent(event)
 
