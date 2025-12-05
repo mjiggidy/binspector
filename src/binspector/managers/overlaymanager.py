@@ -41,6 +41,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 			self.installEventFilter(overlay)
 			
 			overlay.setParent(self)
+			overlay._setWidget(self.parent())
 			overlay.setPalette(self.parent().palette())
 			
 			overlay.sig_update_requested.connect(self.parent().update)

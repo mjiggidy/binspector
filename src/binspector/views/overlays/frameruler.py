@@ -1,8 +1,6 @@
 from __future__ import annotations
-import logging, dataclasses, typing
-from PySide6 import QtCore, QtGui, QtWidgets
-
-from ...managers import overlaymanager
+import dataclasses, typing
+from PySide6 import QtCore, QtGui
 from . import abstractoverlay
 
 DEFAULT_RULER_WIDTH         = 24   # px
@@ -84,7 +82,9 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			self._last_mouse_coords = mouse_coordinates
 			self.sig_mouse_coords_changed.emit(mouse_coordinates)
 
-			self.update()
+			# NOTE: Can do this more efficently, and should
+			for new_rect in self.activeRects(self.widget().rect()):
+				self.update(new_rect)
 	
 	def mouseCoordinates(self) -> QtCore.QPoint|QtCore.QPointF:
 		"""Last known mouse coordinates relative to the topLeft of the widget rect"""
@@ -110,12 +110,16 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	def setRulerPosition(self, ruler_position:QtCore.QPoint|QtCore.QPointF):
 		"""Set the offset of the ruler relative to the topLeft of the widget rect"""
 
+		for old_rect in self.activeRects(self.widget().rect()):
+			self.update(old_rect)
+
 		if self._ruler_position != ruler_position:
 			
 			self._ruler_position = ruler_position
 			self.sig_ruler_position_changed.emit(ruler_position)
 			
-			self.update()
+			for new_rect in self.activeRects(self.widget().rect()):
+				self.update(new_rect)
 
 	def rulerPosition(self) -> QtCore.QPoint|QtCore.QPointF:
 		"""The offset of the ruler relative to the topLeft of the widget rect"""
@@ -129,11 +133,16 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		orientations = set(orientations)
 
+		for old_rect in self.activeRects(self.widget().rect()):
+			self.update(old_rect)
+
 		if self._ruler_orientations != orientations:
 			
 			self._ruler_orientations = orientations
 			self.sig_ruler_orientations_changed.emit(orientations)
-			self.update()
+			
+			for new_rect in self.activeRects(self.widget().rect()):
+				self.update(new_rect)
 	
 	def rulerOrientations(self) -> set[QtCore.Qt.Orientation]:
 		"""Ruler orientations displayed"""
@@ -146,7 +155,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._ruler_ticks[orientation] = set(ruler_ticks)
 		self.sig_ruler_ticks_changed.emit(ruler_ticks)
 		
-		self.update()
+		self.update(self.rulerRect(self.widget().rect(), orientation))
 	
 	def ticks(self, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal) -> list[BSRulerTickInfo]:
 
@@ -160,7 +169,8 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		super().setFont(new_font)
 		self.setupDrawingTools()
 		
-		self.update()
+		for new_rect in self.activeRects(self.widget().rect()):
+			self.update(new_rect)
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, new_palette:QtGui.QPalette):
@@ -168,7 +178,8 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		super().setPalette(new_palette)
 		self.setupDrawingTools()
 		
-		self.update()
+		for new_rect in self.activeRects(self.widget().rect()):
+			self.update(new_rect)
 
 	@QtCore.Slot()
 	def setupDrawingTools(self):
@@ -203,11 +214,17 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	@QtCore.Slot(int)
 	def setRulerWidth(self, ruler_width:int):
 
+
 		if ruler_width != self._ruler_width:
+
+			for old_rect in self.activeRects(self.widget().rect()):
+				self.update(old_rect)
 
 			self._ruler_width = ruler_width
 			self.sig_ruler_width_changed.emit(ruler_width)
-			self.update()
+			
+			for new_rect in self.activeRects(self.widget().rect()):
+				self.update(new_rect)
 
 	def _dragIsActive(self) -> bool:
 		"""User is currently dragging"""
@@ -293,7 +310,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		pen = painter.pen()
 
-		pen.setWidthF(pen.widthF() * 3)
+		pen.setWidthF(pen.widthF() * 2)
 		pen.setCapStyle(QtCore.Qt.PenCapStyle.RoundCap)
 		pen.setJoinStyle(QtCore.Qt.PenJoinStyle.RoundJoin)
 		
@@ -302,17 +319,17 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		pen.setColor(col)
 		
 		painter.setPen(pen)
-
-		grad.setStart(rect_handle.bottomLeft())
-		grad.setFinalStop(rect_handle.topLeft())
 		
-		painter.setBrush(grad)
+		if not self._dragIsActive():
+			grad.setStart(rect_handle.bottomLeft())
+			grad.setFinalStop(rect_handle.topLeft())
+			painter.setBrush(grad)
 
 		rect_handle.adjust(
-			 self._ruler_stoke_width * 1,
-			 self._ruler_stoke_width * 1,
-			-self._ruler_stoke_width * 1,
-			-self._ruler_stoke_width * 1,
+			 self._ruler_stoke_width * 2,
+			 self._ruler_stoke_width * 2,
+			-self._ruler_stoke_width * 2,
+			-self._ruler_stoke_width * 2,
 		)
 
 		painter.drawRect(rect_handle)
@@ -450,33 +467,51 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		return ruler_rect
 	
+	def beginUserDragHandle(self, drag_start_position:QtCore.QPointF) -> bool:
+		
+		self._mouse_drag_start = drag_start_position - self.handleRect(self.widget().rect()).topLeft()
+		self.update(self.handleRect(self.widget().rect()))
+
+		return True
+	
+	def updateUserDragHandle(self, drag_update_position:QtCore.QPointF) -> bool:
+
+		if not self._dragIsActive():
+			return False
+		
+		# Mouse position relative to drag start, for proper offset from handle
+		mouse_rel = drag_update_position - self._mouse_drag_start
+
+		pos = self.safePosition(
+			mouse_rel, self.widget().rect()
+		)
+
+		# setRulerPosition calls update()
+		self.setRulerPosition(pos)
+
+		return True
+	
+	def endUserDragHandle(self) -> bool:
+
+		self._mouse_drag_start = QtCore.QPointF()
+		self.update(self.handleRect(self.widget().rect()))
+		return True
+
+	
 	def event(self, event):
 		if event.type() == QtCore.QEvent.Type.MouseButtonPress and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
 			
 			if self.handleRect(self.widget().rect()).contains(event.position()):
-
-				self._mouse_drag_start = event.position() - self.handleRect(self.widget().rect()).topLeft()
-				return True
+				return self.beginUserDragHandle(event.position())
 		
 		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and self._dragIsActive():
-			self._mouse_drag_start = QtCore.QPointF()
+			return self.endUserDragHandle()
 		
 		if event.type() == QtCore.QEvent.Type.MouseMove:
 
 			self.setMouseCoordinates(event.position())
-			#self.update()
 
 			if self._dragIsActive():
-
-				# Mouse position relative to drag start, for proper offset from handle
-				mouse_rel = event.position() - self._mouse_drag_start
-
-				pos = self.safePosition(
-					mouse_rel, self.widget().rect()
-				)
-
-				self.setRulerPosition(pos)
-
-				return True
+				return self.updateUserDragHandle(event.position())
 
 		return super().event(event)

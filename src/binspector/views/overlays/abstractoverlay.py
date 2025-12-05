@@ -1,6 +1,5 @@
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from ...managers import overlaymanager
 
 class BSAbstractOverlay(QtCore.QObject):
 	"""Abstract overlay for display over a widget"""
@@ -16,6 +15,7 @@ class BSAbstractOverlay(QtCore.QObject):
 		self._is_enabled:bool = True
 		self._font    = QtWidgets.QApplication.font()
 		self._palette = QtWidgets.QApplication.palette()
+		self._widget  = QtWidgets.QWidget()
 	
 	def update(self, update_rect:QtCore.QRectF|None=None):
 		
@@ -31,7 +31,11 @@ class BSAbstractOverlay(QtCore.QObject):
 	def widget(self) -> QtWidgets.QWidget:
 		"""The widget this overlay draws to"""
 
-		return self.parent().parent()
+		return self._widget
+	
+	def _setWidget(self, widget:QtWidgets.QWidget):
+	
+		self._widget = widget
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, new_palette:QtGui.QPalette):
