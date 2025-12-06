@@ -24,7 +24,7 @@ class BSAbstractOverlay(QtCore.QObject):
 		else:
 			self.sig_update_requested.emit()
 	
-	def paintOverlay(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRect, rect_dirty:QtCore.QRect|None=None):
+	def paintOverlay(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRect):
 		"""Paint the overlay, with the given paintEvent"""
 		# Virtual method
 

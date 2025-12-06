@@ -88,7 +88,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 			if not overlay.isEnabled():
 				continue
 			try:
-				overlay.paintOverlay(painter, rect, None)
+				overlay.paintOverlay(painter, rect)
 			except Exception as e:
 				logging.getLogger(__name__).error("Error painting %s: %s", overlay, e)
 			finally:
