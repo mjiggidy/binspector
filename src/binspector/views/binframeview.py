@@ -2,7 +2,7 @@ import logging, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..managers import eventfilters, overlaymanager
 from ..models import viewmodels, sceneitems
-from ..views.overlays import frameruler
+from ..views.overlays import frameruler, framemap
 
 GRID_DIVISIONS     = 3
 GRID_UNIT_SIZE     = QtCore.QSizeF(18,12)
@@ -183,6 +183,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+		
 		self.setScene(frame_scene or BSBinFrameScene())
 
 		self._current_zoom = 1.0
@@ -194,7 +195,12 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._overlay_manager = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
 		
 		self._overlay_ruler = frameruler.BSFrameRulerOverlay()
+		self._overlay_map   = framemap.BSFrameMapOverlay()
 		self._overlay_manager.installOverlay(self._overlay_ruler)
+		self._overlay_manager.installOverlay(self._overlay_map)
+
+
+		
 
 		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self.viewport())
 		self._pan_man      = eventfilters.BSPanEventFilter(parent=self.viewport())

@@ -215,7 +215,6 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	@QtCore.Slot(int)
 	def setRulerWidth(self, ruler_width:int):
 
-
 		if ruler_width != self._ruler_width:
 
 			for old_rect in self.activeRects(self.widget().rect()):
@@ -232,7 +231,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		return not self._mouse_drag_start.isNull()
 
-	def paintOverlay(self, painter, rect_canvas, rect_dirty):
+	def paintOverlay(self, painter, rect_canvas):
 		"""Do the paint"""
 
 		painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, USE_ANTIALIASING)

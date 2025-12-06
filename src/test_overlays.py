@@ -2,7 +2,7 @@ import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from binspector.views import binframeview
 from binspector.managers import overlaymanager
-from binspector.views.overlays import frameruler
+from binspector.views.overlays import frameruler, framemap
 
 class CoolFrameOverlayView(QtWidgets.QMainWindow):
 	
@@ -15,17 +15,14 @@ class CoolFrameOverlayView(QtWidgets.QMainWindow):
 		#self._over_ruler.setRulerOrientations([QtCore.Qt.Orientation.Vertical])
 		
 		self._frameview.setSceneRect(QtCore.QRectF(
-			QtCore.QPointF(-30000, -30000),
-			QtCore.QPointF(30000, 30000)
+			QtCore.QPointF(-10000, -30000),
+			QtCore.QPointF(10000, 30000)
 		))
 		
 		self._frameview.setZoom(4)
 		self._frameview.setZoomRange(range(4,16))
-		#self._frameview.overlayManager().installOverlay(self._over_ruler)
-		#self._frameview.sig_view_rect_changed.connect(self.updateRulerTicks)
 
-		#self._frameview.viewport().setMouseTracking(True)
-		#self._frameview.viewport().installEventFilter(self)
+		self._frameview._overlay_map.setSceneRect(self._frameview.sceneRect())
 		
 		self.setCentralWidget(self._frameview)
 		
