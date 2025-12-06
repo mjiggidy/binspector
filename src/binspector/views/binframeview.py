@@ -211,6 +211,9 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.viewport().installEventFilter(self._pinchy_boy)
 		self.viewport().installEventFilter(self._wheelzoom)
 
+		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
 		self._act_zoom_in  = QtGui.QAction("Zoom In")
 		self._act_zoom_in.triggered.connect(lambda: self.zoomIncrement())
 		self._act_zoom_in.setShortcut(QtGui.QKeySequence.StandardKey.ZoomIn)
