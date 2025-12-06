@@ -199,9 +199,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._overlay_manager.installOverlay(self._overlay_ruler)
 		self._overlay_manager.installOverlay(self._overlay_map)
 
-
-		
-
 		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self.viewport())
 		self._pan_man      = eventfilters.BSPanEventFilter(parent=self.viewport())
 		self._wheelzoom    = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)

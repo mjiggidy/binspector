@@ -81,12 +81,9 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 	def paintOverlays(self, painter:QtGui.QPainter, rect:QtCore.QRect):
 		"""Paint installed overlays"""
 
-		for overlay in self._overlays:
+		for overlay in filter(lambda o: o.isEnabled(), self._overlays):
 
 			painter.save()
-			
-			if not overlay.isEnabled():
-				continue
 			try:
 				overlay.paintOverlay(painter, rect)
 			except Exception as e:

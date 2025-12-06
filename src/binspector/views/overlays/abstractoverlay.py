@@ -57,7 +57,7 @@ class BSAbstractOverlay(QtCore.QObject):
 		return self._is_enabled
 	
 	@QtCore.Slot(bool)
-	def setIsEnabled(self, is_enabled:bool):
+	def setEnabled(self, is_enabled:bool):
 
 		if not self._is_enabled == is_enabled:
 
@@ -69,5 +69,5 @@ class BSAbstractOverlay(QtCore.QObject):
 	def toggle(self):
 		"""Toggle overlay enabled state"""
 
-		self.setIsEnabled(not self._is_enabled)
+		self.setEnabled(not self._is_enabled)
 	
