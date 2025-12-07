@@ -14,16 +14,17 @@ class CoolFrameOverlayView(QtWidgets.QMainWindow):
 		#self._over_ruler = frameruler.BSFrameRulerOverlay()
 		#self._over_ruler.setRulerOrientations([QtCore.Qt.Orientation.Vertical])
 		
-		self._frameview.setSceneRect(QtCore.QRectF(
-			QtCore.QPointF(-10000, -30000),
-			QtCore.QPointF(10000, 30000)
+		self._frameview.scene().setSceneRect(QtCore.QRectF(
+			QtCore.QPointF(-500, -500),
+			QtCore.QPointF(1000, 1000)
 		))
 		
 		self._frameview.setZoom(4)
 		self._frameview.setZoomRange(range(4,16))
 
-		self._frameview._overlay_map.setSceneRect(self._frameview.sceneRect())
-		
+		#self._frameview._overlay_map.setSceneRect(self._frameview.sceneRect())
+		#self._frameview.sig_view_rect_changed.connect(self._frameview._overlay_map.setVisibleRect)
+		self._frameview._overlay_map.setMapDisplayAlignment(QtCore.Qt.AlignmentFlag.AlignBottom|QtCore.Qt.AlignmentFlag.AlignLeft)
 		self.setCentralWidget(self._frameview)
 		
 		#self._over_ruler.setRulerSize(24)
