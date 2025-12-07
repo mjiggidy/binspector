@@ -2,308 +2,237 @@ from PySide6 import QtCore, QtGui
 from . import abstractoverlay
 
 DEFAULT_DISPLAY_SIZE      = QtCore.QSizeF(200, 300)
-DEFAULT_DISPLAY_MARGINS   = QtCore.QMarginsF(0, 0, 0, 0)
+DEFAULT_DISPLAY_MARGINS   = QtCore.QMarginsF(32, 32, 32, 32)
 DEFAULT_DISPLAY_ALIGNMENT = QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignRight
 DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(32,32)
 
-class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
+DEFAULT_KEY_DRAG_THUMBNAIL= QtCore.Qt.KeyboardModifier.AltModifier
+
+class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	"""A thumbnail map overlay thing"""
 
-	sig_map_display_alignment_changed = QtCore.Signal(QtCore.Qt.AlignmentFlag)
-	sig_display_position_changed      = QtCore.Signal(QtCore.QPointF)
-	sig_display_size_changed          = QtCore.Signal(QtCore.QSizeF)
-	sig_scene_rect_changed            = QtCore.Signal(QtCore.QRectF)
-	sig_visible_recticle_changed      = QtCore.Signal(QtCore.QRectF)
+	sig_thumbnail_alignment_changed = QtCore.Signal(QtCore.Qt.AlignmentFlag)
+	sig_thumbnail_position_changed  = QtCore.Signal(QtCore.QPointF)
+	sig_thumbnail_size_changed      = QtCore.Signal(QtCore.QSizeF)
+	sig_scene_rect_changed          = QtCore.Signal(QtCore.QRectF)
+	sig_view_reticle_changed        = QtCore.Signal(QtCore.QRectF)
 
 
 	def __init__(self,
 		*args,
-		display_size:   QtCore.QSize|QtCore.QSizeF|None = None,
-		display_align:  QtCore.Qt.AlignmentFlag|None    = None,
-		display_offset: QtCore.QPointF|None             = None,
-		display_margin: QtCore.QMarginsF|None           = None,
-		scene_rect:     QtCore.QRectF|None              = None,
-		view_rect:      QtCore.QRectF|None              = None,
+		thumbnail_size:   QtCore.QSize|QtCore.QSizeF|None = None,
+		thumbnail_align:  QtCore.Qt.AlignmentFlag|None    = None,
+		thumbnail_offset: QtCore.QPointF|None             = None,
+		display_margins:  QtCore.QMarginsF|None           = None,
+		scene_rect:       QtCore.QRectF|None              = None,
+		view_rect:        QtCore.QRectF|None              = None,
 		**kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._map_display_size    = display_size   or DEFAULT_DISPLAY_SIZE
-		self._map_display_offset  = display_offset or DEFAULT_DISPLAY_OFFSET
-		self._map_display_margins = display_margin or DEFAULT_DISPLAY_MARGINS
-		self._map_display_align   = display_align  or DEFAULT_DISPLAY_ALIGNMENT
+		# Metrics
+		self._thumb_display_size    = thumbnail_size   or DEFAULT_DISPLAY_SIZE
+		self._thumb_display_offset  = thumbnail_offset or DEFAULT_DISPLAY_OFFSET
+		self._thumb_display_margins = display_margins or DEFAULT_DISPLAY_MARGINS
+		self._thumb_display_align   = thumbnail_align  or DEFAULT_DISPLAY_ALIGNMENT
 
-		
+		# Source rects
 		self._rect_scene   = scene_rect or QtCore.QRectF(-500,-500,1000,1000)
-		self._rect_reticle = view_rect  or self._rect_scene
+		self._rect_reticle    = view_rect  or QtCore.QRectF(self._rect_scene)
 		
+		# Transforms
 		self._scene_to_display_transform = QtGui.QTransform()
 		"""Transform scene coordinate rects to viewport coordinate rects"""
 
-		self._mouse_drag_start   = QtCore.QPointF()
-
-		self._setupSceneToDisplayTransform()
+		# Mouse tracking
+		self._mouse_drag_offset   = QtCore.QPointF()
+		"""The intitial offset of the mouse from the topLeft corner of the thumbnail rect, when it was clicked"""
 	
-	def _setupSceneToDisplayTransform(self, rect_canvas:QtCore.QRectF|None = None):
-		"""Build the transform to map scene coordinates to thumbnail coordinates"""
-
-		rect_canvas = rect_canvas or self.safeCanvasRect()
+	def paintOverlay(self, painter, rect_canvas):
 		
-		old_rect = self.thumbnailDisplayRect(rect_canvas)
-		self.update(old_rect)
+		super().paintOverlay(painter, rect_canvas)
 		
-		transform = QtGui.QTransform()
+		self._draw_thumbnail_base(painter)
+		self._draw_user_reticle(painter)
 
-		if self._rect_scene.isNull():
+	# Drawing
 
-			self._scene_to_display_transform = transform
-			new_rect = self.thumbnailDisplayRect(self.safeCanvasRect())
-			
-			self.update(new_rect)
-			return
+	def _draw_thumbnail_base(self, painter:QtGui.QPainter):
+
+		pen_thumbnail = QtGui.QPen()
+		pen_thumbnail.setColor(self.widget().palette().windowText().color())
+		pen_thumbnail.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
+		pen_thumbnail.setWidthF(1)
+
+		brush_thumbnail = QtGui.QBrush()
+		brush_thumbnail.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+		col_thumbnail = self.widget().palette().window().color()
+		col_thumbnail.setAlphaF(0.75)
+		brush_thumbnail.setColor(col_thumbnail)
 		
-		# User offset
-		transform.translate(self._map_display_offset.x(), self._map_display_offset.y())
+		painter.setPen(pen_thumbnail)
+		painter.setBrush(brush_thumbnail)
+		painter.drawRect(self.finalThumbnailRect())
 
-		# Scale scene to view
-		scale_to_display = self._rect_scene.width() / self._map_display_size.width()
-		transform.scale(1/scale_to_display, 1/scale_to_display)
+
+	def _draw_user_reticle(self, painter:QtGui.QPainter):
+
+		painter.drawRect(self.finalReticleRect())
+
+	# Calculations	
+
+	def normalizedThumbnailRect(self) -> QtCore.QRectF:
+		"""Thumbnail rect normalized to `topLeft=(0,0)`, `size=displaySize`"""
+		return self._scene_to_display_transform.mapRect(self._rect_scene)
 	
-		# Put scene rect topLeft to 0,0
-		transform.translate(-self._rect_scene.left(), -self._rect_scene.top())
-		self._scene_to_display_transform = transform
-
-		new_rect = self.thumbnailDisplayRect(self.safeCanvasRect())
-		self.update(new_rect)
+	def normalizedReticleRect(self) -> QtCore.QRectF:
+		return self._scene_to_display_transform.mapRect(self._rect_reticle)
 	
-	def sceneRect(self) -> QtCore.QRectF:
-		"""The scene rect, in scene coordinates"""
-
-		return self._rect_scene
+	def finalThumbnailRect(self) -> QtCore.QRectF:
+		
+		return self.normalizedThumbnailRect().translated(self._thumb_display_offset)
 	
-	def safeCanvasRect(self, rect_canvas:QtCore.QRectF|None=None):
-		"""Get a safe canvas with margins applied"""
+	def finalReticleRect(self) -> QtCore.QRectF:
 
-		rect_canvas = rect_canvas or self.widget().rect()
-
-		return QtCore.QRectF(rect_canvas).marginsRemoved(self._map_display_margins)
+		return self.normalizedReticleRect().translated(self._thumb_display_offset)
 	
-	@QtCore.Slot(QtCore.QRectF)
-	def setVisibleRecticle(self, visible_rect:QtCore.QRectF):
-		"""Set the visible reticle. Relative to sceneRect!"""
+	# Properties
 
-		if self._rect_reticle != visible_rect:
-
-			old_rect = self.thumbnailDisplayRect()
-			self.update(old_rect)
-
-			self._rect_reticle = visible_rect
-			self.sig_visible_recticle_changed.emit(visible_rect)
-
-			self.update(visible_rect)
-
-	def viewRecticle(self) -> QtCore.QRectF:
-		"""The visible reticle, in scene coordinates"""
-
-		return self._rect_reticle
-	
 	@QtCore.Slot(QtCore.QRectF)
 	def setSceneRect(self, scene_rect:QtCore.QRectF):
 
-		if self._rect_scene != scene_rect:
+		if self._rect_scene == scene_rect:
+			return
+		
+		if not scene_rect.isValid():
+			return
+		
+		old_rect = self.normalizedThumbnailRect()
+		self.update(old_rect)
 
-			old_rect = self.thumbnailDisplayRect()
-			self.update(old_rect)
+		self._rect_scene = scene_rect
 
-			self._rect_scene = scene_rect
-			self.sig_scene_rect_changed.emit(scene_rect)
+		# Update transform:
+		# Get scene rect to display coords: 0,0 - scaled width,height using transform
+		transform = QtGui.QTransform()
+		transform.scale(self._thumb_display_size.width()/scene_rect.width(), self._thumb_display_size.width()/scene_rect.width())
+		transform.translate(-scene_rect.left(), -scene_rect.top())
+		self._scene_to_display_transform = transform
 
-			self._setupSceneToDisplayTransform()
+		self.sig_scene_rect_changed.emit(scene_rect)
 
-			self.update(self.thumbnailDisplayRect())
+		new_rect = self.normalizedThumbnailRect()
+		self.update(new_rect)
 	
 	def sceneRect(self) -> QtCore.QRectF:
-		"""The scene rect, in scene coordinates"""
-
 		return self._rect_scene
 	
-	def thumbnailDisplayRect(self, rect_canvas:QtCore.QRectF|None=None) -> QtCore.QRectF:
-		"""The scene rect, scaled and positioned to its display dimensions relative to the canvas"""
-
-		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
-
-		return self._scene_to_display_transform.mapRect(self._rect_scene)
-	
-	def reticleDisplayRect(self, rect_canvas:QtCore.QRectF|None=None) -> QtCore.QRectF:
-		"""The reticle rect, scaled and positioned to its display dimentions relative to the canvas"""
-
-		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
-
-		return self._scene_to_display_transform.mapRect(self._rect_reticle)
-	
 	@QtCore.Slot(QtCore.QSizeF)
-	def setDisplaySize(self, display_size:QtCore.QSizeF):
-		"""Size of the thumbnail map display rect thing, in widget coordinates"""
-
-		if not self._map_display_size == display_size:
-			
-			old_rect = self.thumbnailDisplayRect()
-			self.update(old_rect)
-			
-			self._map_display_size = display_size
-			self.sig_display_size_changed.emit(display_size)
-
-			self._setupSceneToDisplayTransform()
-
-			new_rect = self.thumbnailDisplayRect()
-			self.update(new_rect)
+	def setThumbnailSize(self, thumbnail_size:QtCore.QSizeF):
 		
-	def displaySize(self) -> QtCore.QSizeF:
-		"""Size of the thumbnail map display rect thing, in widget coordinates"""
+		if self._thumb_display_size == thumbnail_size:
+			return
+		
+		old_rect = self.normalizedThumbnailRect()
+		self.update(old_rect)
 
-		return self._map_display_size
+		self._thumb_display_size = thumbnail_size
+		self.sig_thumbnail_size_changed.emit(thumbnail_size)
 
-	@QtCore.Slot(QtCore.Qt.AlignmentFlag)
-	def setMapDisplayAlignment(self, display_align:QtCore.Qt.AlignmentFlag):
-		"""Anchored alignment in the parent widget"""
-
-		if not self._map_display_align == display_align:
-
-			old_rect = self.thumbnailDisplayRect()
-			self.update(old_rect)
-
-			self._map_display_align = display_align
-			self.sig_map_display_alignment_changed.emit(display_align)
-
-			new_rect = self.thumbnailDisplayRect()
-			self.update(self.thumbnailDisplayRect(new_rect))
-
-	def mapDisplayAlignment(self) -> QtCore.Qt.AlignmentFlag:
-		"""Alignment to the parent widget"""
-
-		return self._map_display_align
+		new_rect = self.normalizedThumbnailRect()
+		self.update(new_rect)
+	
+	def thumbnailSize(self) -> QtCore.QSizeF:
+		return self._thumb_display_size
 	
 	@QtCore.Slot(QtCore.QPointF)
-	def setDisplayPositionOffset(self, position_offset:QtCore.QPointF):
+	def setThumbnailOffset(self, offset:QtCore.QPointF):
 
-		if self._map_display_offset != position_offset:
-
-			old_rect = self.thumbnailDisplayRect()
-			self.update(old_rect)
-
-			self._map_display_offset = position_offset
-			self.sig_display_position_changed.emit(position_offset)
-
-			self._setupSceneToDisplayTransform()
-
-			new_rect = self.thumbnailDisplayRect()
-			self.update(new_rect)
-
-	def positionOffset(self) -> QtCore.QPointF:
-		"""Position offset from aligned anchor"""
-
-		return self._map_display_offset
-
-	def paintOverlay(self, painter, rect_canvas):
-		"""Do the paint"""
-
-		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
-
-		self._draw_frame(painter, rect_canvas)
-		self._draw_view_reticle(painter, rect_canvas)
-
-
-	############
-	# Draw Logic
-	############
-
-	def _draw_frame(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRectF|None=None):
-
-		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
-		rect_frame = self.thumbnailDisplayRect(rect_canvas)
-
-		brush = self._palette.window()
-		pen   = QtGui.QPen(self._palette.windowText().color())
-		pen.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
-		pen.setWidthF(3)
-
-		painter.setBrush(brush)
-		painter.setPen(pen)
-
-		#print("**DRAW FRAME:", rect_frame)
-
-		painter.drawRect(rect_frame)
-		#painter.drawRect(rect_canvas)
-	
-	def _draw_view_reticle(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRectF|None=None):
-
-		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
-#		
-		rect_reticle = self.reticleDisplayRect(rect_canvas)
-		painter.drawRect(rect_reticle)
-
-
-	#############
-	# Mouse Stuff
-	#############
-	
-	def _dragIsActive(self) -> bool:
-		"""User is currently dragging"""
-
-		return not self._mouse_drag_start.isNull()
-
-	def beginUserDragDisplayRect(self, drag_start_position:QtCore.QPointF) -> bool:
-		
-		# Start position relative to the top left corner of the display rect
-		self._mouse_drag_start = drag_start_position - self.thumbnailDisplayRect().topLeft()
-		self.update(self.thumbnailDisplayRect())
-
-		return True
-	
-	def updateUserDragDisplayRect(self, drag_update_position:QtCore.QPointF) -> bool:
-
-		if not self._dragIsActive():
+		if self._thumb_display_offset == offset:
 			return False
 		
-		#drag_update_position = drag_update_position - self._mouse_drag_start - self.thumbnailDisplayRect().topLeft()
-
-		#print(drag_update_position)
-		#drag_update_position -= self.thumbnailDisplayRect().topLeft() + self._mouse_drag_start
-
+		old_rect = self.finalThumbnailRect()
+		self.update(old_rect)
 		
-		# self.setDisplayPositionOffset calls update()
-		self.setDisplayPositionOffset(drag_update_position)
+		# Check bounds
+		canvas = QtCore.QRectF(self.widget().rect()).marginsRemoved(self._thumb_display_margins)
+		if not canvas.contains(offset):
+			offset = QtCore.QPointF(max(canvas.left(), offset.x()), max(canvas.top(), offset.y()))
 
-		return True
-	
-	def endUserDragDisplayRect(self) -> bool:
+		self._thumb_display_offset = offset
 
-		self._mouse_drag_start = QtCore.QPointF()
-		self.update(self.thumbnailDisplayRect())
-		return True
+		new_rect = self.finalThumbnailRect()
+		self.update(new_rect)
 	
+	@QtCore.Slot(QtCore.QRectF)
+	def setViewReticle(self, view_rect:QtCore.QRectF):
+
+		if self._rect_reticle == view_rect:
+			return
+		
+		old_rect = self.normalizedThumbnailRect()
+		self.update(old_rect)
+
+		self._rect_reticle = view_rect
+		self.sig_view_reticle_changed.emit(view_rect)
+
+		new_rect = self.normalizedThumbnailRect()
+		self.update(new_rect)
+
+	def viewReticle(self) -> QtCore.QRectF:
+
+		return self._rect_reticle
+	
+	# Events
+
 	def event(self, event):
-
-		if event.type() == QtCore.QEvent.Type.MouseButtonPress:
-			
-			if not self.thumbnailDisplayRect().contains(event.position()):
-				return False
-			
-			if event.buttons() & QtCore.Qt.MouseButton.LeftButton and event.modifiers() & QtCore.Qt.KeyboardModifier.AltModifier:
-				return self.beginUserDragDisplayRect(event.position())
-			
-			return True
 		
-		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and self._dragIsActive():
-			return self.endUserDragDisplayRect()
+		if event.type() == QtCore.QEvent.Type.MouseButtonPress:
+			return self._handleMouseButtonPress(event)
+		
+		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease:
+			return self._handleMouseButtonRelease(event)
 		
 		elif event.type() == QtCore.QEvent.Type.MouseMove:
-
-			if self._dragIsActive():
-				return self.updateUserDragDisplayRect(event.position())
-
-		elif event.type() == QtCore.QEvent.Type.Resize:
-			self.update(self.widget().rect())
-
+			return self._handleMouseMove(event)
+		
 		return super().event(event)
 	
+	def _draggingActive(self) -> bool:
+		"""Is dragging active?"""
+		return not self._mouse_drag_offset.isNull()
+	
+	def _handleMouseButtonPress(self, event:QtGui.QMouseEvent) -> bool:
+
+		if self._draggingActive():
+			return False
+
+		if not self.finalThumbnailRect().contains(event.position()):
+			return False
+		
+		elif not event.modifiers() & DEFAULT_KEY_DRAG_THUMBNAIL:
+			print("Normal drag")
+			return True
+		
+		self.widget().setCursor(QtCore.Qt.CursorShape.DragMoveCursor)
+		
+		self._mouse_drag_offset = event.position() - self.finalThumbnailRect().topLeft()
+		return True
+
+	def _handleMouseButtonRelease(self, event:QtGui.QMouseEvent):
+
+		if not self._draggingActive():
+			return False
+	
+		self.widget().unsetCursor()
+		self._mouse_drag_offset = QtCore.QPointF()
+		return True
+		
+	def _handleMouseMove(self, event:QtGui.QMouseEvent):
+		
+		if not self._draggingActive():
+			return False
+
+		self.setThumbnailOffset(event.position() - self._mouse_drag_offset)
+
+		return False
