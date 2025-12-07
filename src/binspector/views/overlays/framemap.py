@@ -13,7 +13,7 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 	sig_display_position_changed      = QtCore.Signal(QtCore.QPointF)
 	sig_display_size_changed          = QtCore.Signal(QtCore.QSizeF)
 	sig_scene_rect_changed            = QtCore.Signal(QtCore.QRectF)
-	sig_visible_rect_changed          = QtCore.Signal(QtCore.QRectF)
+	sig_visible_recticle_changed      = QtCore.Signal(QtCore.QRectF)
 
 
 	def __init__(self,
@@ -43,8 +43,6 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 		self._mouse_drag_start   = QtCore.QPointF()
 
 		self._setupSceneToDisplayTransform()
-		
-
 	
 	def _setupSceneToDisplayTransform(self, rect_canvas:QtCore.QRectF|None = None):
 		"""Build the transform to map scene coordinates to thumbnail coordinates"""
@@ -61,7 +59,9 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 		#"RECT CANVAS: ", rect_canvas)
 
 		# Scale to thumbnail display size
-		transform.scale(.1, .1)
+		rect_scene = QtCore.QRectF(self._rect_scene)
+		scale_factor = self._map_display_size.width() / rect_scene.width()
+		transform.scale(scale_factor, scale_factor)
 		
 		# Offset scene so topLeft point is (0,0)
 		transform.translate(rect_canvas.left() - self._rect_scene.left(), rect_canvas.top() - self._rect_scene.top())
@@ -71,8 +71,6 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 
 
 		# Offset for alignment
-
-
 		self._scene_to_display_transform = transform
 
 
@@ -98,7 +96,7 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 			self.update(old_rect)
 
 			self._rect_reticle = visible_rect
-			self.sig_visible_rect_changed.emit(visible_rect)
+			self.sig_visible_recticle_changed.emit(visible_rect)
 
 			self.update(visible_rect)
 
@@ -264,8 +262,12 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 
 		if not self._dragIsActive():
 			return False
+		
+		drag_update_position = drag_update_position - self._mouse_drag_start - self.thumbnailDisplayRect().topLeft()
 
-		drag_update_position -= self.thumbnailDisplayRect().topLeft() + self._mouse_drag_start
+		#print(drag_update_position)
+		#drag_update_position -= self.thumbnailDisplayRect().topLeft() + self._mouse_drag_start
+
 		
 		# self.setDisplayPositionOffset calls update()
 		self.setDisplayPositionOffset(drag_update_position)
