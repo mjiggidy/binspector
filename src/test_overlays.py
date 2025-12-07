@@ -13,11 +13,11 @@ class CoolFrameOverlayView(QtWidgets.QMainWindow):
 		self._frameview = binframeview.BSBinFrameView()
 		
 		self._frameview.scene().setSceneRect(QtCore.QRectF(
-			QtCore.QPointF(-1000, -1000),
-			QtCore.QPointF(1000, 1000)
+			QtCore.QPointF(-50, -10000),
+			QtCore.QSizeF(1000, 500)
 		))
 
-		self._frameview._overlay_map.setDisplaySize(
+		self._frameview._overlay_map.setThumbnailSize(
 			QtCore.QSizeF(300,400)
 		)
 		
