@@ -50,7 +50,6 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	@QtCore.Slot(object)
 	def setSelectionModel(self, selection_model:QtCore.QItemSelectionModel):
 
-
 		if self._selection_model != selection_model:
 
 			self._selection_model.disconnect(self)
@@ -175,6 +174,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	sig_zoom_range_changed      = QtCore.Signal(object)
 	sig_overlay_manager_changed = QtCore.Signal(object)
 	sig_view_rect_changed       = QtCore.Signal(object)
+	sig_scene_changed           = QtCore.Signal(object)
 
 	def __init__(self, *args, frame_scene:BSBinFrameScene|None=None, **kwargs):
 
@@ -184,7 +184,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
 		
-		self.setScene(frame_scene or BSBinFrameScene())
+		
 
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
@@ -249,11 +249,36 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.horizontalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
 		self.verticalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
 
+		
+		
+		self.setScene(frame_scene or BSBinFrameScene())
+		
+
+		
+
+	def setScene(self, scene:QtWidgets.QGraphicsScene):
+		
+		if not self.scene() == scene:
+			
+			#self.scene().sceneRectChanged.disconnect(self._overlay_map)
+			scene.sceneRectChanged.connect(self._overlay_map.setSceneRect)
+			
+			super().setScene(scene)
+
+			self._overlay_map.setSceneRect(scene.sceneRect())
+
+			self.sig_scene_changed.emit(scene)
+	
+
+	
+
 	@QtCore.Slot()
 	def handleVisibleSceneRectChanged(self):
 		"""Do necessary updates when user pans/zooms"""
 
 		self.updateRulerTicks()
+
+		self._overlay_map.setVisibleRecticle(self.visibleSceneRect())
 
 		self.sig_view_rect_changed.emit(self.visibleSceneRect())
 
