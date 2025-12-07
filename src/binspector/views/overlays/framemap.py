@@ -2,9 +2,9 @@ from PySide6 import QtCore, QtGui
 from . import abstractoverlay
 
 DEFAULT_DISPLAY_SIZE      = QtCore.QSizeF(200, 300)
-DEFAULT_DISPLAY_MARGINS   = QtCore.QMarginsF(50, 40, 26, 36)
+DEFAULT_DISPLAY_MARGINS   = QtCore.QMarginsF(0, 0, 0, 0)
 DEFAULT_DISPLAY_ALIGNMENT = QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignRight
-DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(50,50)
+DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(32,32)
 
 class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 	"""A thumbnail map overlay thing"""
@@ -47,44 +47,46 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def _setupSceneToDisplayTransform(self, rect_canvas:QtCore.QRectF|None = None):
 		"""Build the transform to map scene coordinates to thumbnail coordinates"""
 
-		if self._rect_scene.isNull():
-
-			self._scene_to_display_transform = QtGui.QTransform()
-			return
+		rect_canvas = rect_canvas or self.safeCanvasRect()
 		
-		rect_canvas = rect_canvas or self.widget().rect()
-
+		old_rect = self.thumbnailDisplayRect(rect_canvas)
+		self.update(old_rect)
+		
 		transform = QtGui.QTransform()
 
-		#"RECT CANVAS: ", rect_canvas)
+		if self._rect_scene.isNull():
 
-		# Scale to thumbnail display size
-		rect_scene = QtCore.QRectF(self._rect_scene)
-		scale_factor = self._map_display_size.width() / rect_scene.width()
-		transform.scale(scale_factor, scale_factor)
+			self._scene_to_display_transform = transform
+			new_rect = self.thumbnailDisplayRect(self.safeCanvasRect())
+			
+			self.update(new_rect)
+			return
 		
-		# Offset scene so topLeft point is (0,0)
-		transform.translate(rect_canvas.left() - self._rect_scene.left(), rect_canvas.top() - self._rect_scene.top())
-		
-		# NOTE: Preferring width for now I suppose
+		# User offset
+		transform.translate(self._map_display_offset.x(), self._map_display_offset.y())
 
-
-
-		# Offset for alignment
+		# Scale scene to view
+		scale_to_display = self._rect_scene.width() / self._map_display_size.width()
+		transform.scale(1/scale_to_display, 1/scale_to_display)
+	
+		# Put scene rect topLeft to 0,0
+		transform.translate(-self._rect_scene.left(), -self._rect_scene.top())
 		self._scene_to_display_transform = transform
 
-
-		#print("*******MAPPED", transform.mapRect(self._rect_scene))
-
-		# Offset for margins
-
-		# Offset for user position
-		transform.translate(self._map_display_offset.x(), self._map_display_offset.y())
+		new_rect = self.thumbnailDisplayRect(self.safeCanvasRect())
+		self.update(new_rect)
 	
 	def sceneRect(self) -> QtCore.QRectF:
 		"""The scene rect, in scene coordinates"""
 
 		return self._rect_scene
+	
+	def safeCanvasRect(self, rect_canvas:QtCore.QRectF|None=None):
+		"""Get a safe canvas with margins applied"""
+
+		rect_canvas = rect_canvas or self.widget().rect()
+
+		return QtCore.QRectF(rect_canvas).marginsRemoved(self._map_display_margins)
 	
 	@QtCore.Slot(QtCore.QRectF)
 	def setVisibleRecticle(self, visible_rect:QtCore.QRectF):
@@ -128,14 +130,14 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def thumbnailDisplayRect(self, rect_canvas:QtCore.QRectF|None=None) -> QtCore.QRectF:
 		"""The scene rect, scaled and positioned to its display dimensions relative to the canvas"""
 
-		rect_canvas = rect_canvas or self.widget().rect()
+		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
 
 		return self._scene_to_display_transform.mapRect(self._rect_scene)
 	
 	def reticleDisplayRect(self, rect_canvas:QtCore.QRectF|None=None) -> QtCore.QRectF:
 		"""The reticle rect, scaled and positioned to its display dimentions relative to the canvas"""
 
-		rect_canvas = rect_canvas or self.widget().rect()
+		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
 
 		return self._scene_to_display_transform.mapRect(self._rect_reticle)
 	
@@ -189,7 +191,7 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 			old_rect = self.thumbnailDisplayRect()
 			self.update(old_rect)
 
-			self._map_display_offset += position_offset
+			self._map_display_offset = position_offset
 			self.sig_display_position_changed.emit(position_offset)
 
 			self._setupSceneToDisplayTransform()
@@ -205,7 +207,7 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def paintOverlay(self, painter, rect_canvas):
 		"""Do the paint"""
 
-		rect_canvas = rect_canvas or self.widget().rect()
+		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
 
 		self._draw_frame(painter, rect_canvas)
 		self._draw_view_reticle(painter, rect_canvas)
@@ -217,7 +219,7 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 
 	def _draw_frame(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRectF|None=None):
 
-		rect_canvas = rect_canvas or self.widget().rect()
+		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
 		rect_frame = self.thumbnailDisplayRect(rect_canvas)
 
 		brush = self._palette.window()
@@ -235,7 +237,7 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 	
 	def _draw_view_reticle(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRectF|None=None):
 
-		rect_canvas = rect_canvas or self.widget().rect()
+		rect_canvas = rect_canvas or self.safeCanvasRect(self.widget().rect())
 #		
 		rect_reticle = self.reticleDisplayRect(rect_canvas)
 		painter.drawRect(rect_reticle)
@@ -263,7 +265,7 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 		if not self._dragIsActive():
 			return False
 		
-		drag_update_position = drag_update_position - self._mouse_drag_start - self.thumbnailDisplayRect().topLeft()
+		#drag_update_position = drag_update_position - self._mouse_drag_start - self.thumbnailDisplayRect().topLeft()
 
 		#print(drag_update_position)
 		#drag_update_position -= self.thumbnailDisplayRect().topLeft() + self._mouse_drag_start
@@ -284,7 +286,7 @@ class BSFrameMapOverlay(abstractoverlay.BSAbstractOverlay):
 
 		if event.type() == QtCore.QEvent.Type.MouseButtonPress:
 			
-			if not self.thumbnailDisplayRect(self.widget().rect()).contains(event.position()):
+			if not self.thumbnailDisplayRect().contains(event.position()):
 				return False
 			
 			if event.buttons() & QtCore.Qt.MouseButton.LeftButton and event.modifiers() & QtCore.Qt.KeyboardModifier.AltModifier:
