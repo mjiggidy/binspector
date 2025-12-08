@@ -1,7 +1,7 @@
 from PySide6 import QtCore, QtGui
 from . import abstractoverlay
 
-DEFAULT_DISPLAY_SIZE      = QtCore.QSizeF(200, 300)
+DEFAULT_DISPLAY_SIZE      = QtCore.QSizeF(100, 100)
 DEFAULT_DISPLAY_MARGINS   = QtCore.QMarginsF(32, 32, 32, 32)
 DEFAULT_DISPLAY_ALIGNMENT = QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignRight
 DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(32,32)
@@ -36,6 +36,9 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		self._thumb_display_margins = display_margins or DEFAULT_DISPLAY_MARGINS
 		self._thumb_display_align   = thumbnail_align  or DEFAULT_DISPLAY_ALIGNMENT
 
+		self._thumbnails_path       = QtGui.QPainterPath()
+		self._thumbnails_rects      = []
+
 		# Source rects
 		self._rect_scene   = scene_rect or QtCore.QRectF(-500,-500,1000,1000)
 		self._rect_reticle    = view_rect  or QtCore.QRectF(self._rect_scene)
@@ -54,6 +57,34 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		
 		self._draw_thumbnail_base(painter)
 		self._draw_user_reticle(painter)
+		
+		painter.drawPath(self._thumbnails_path.translated(self._thumb_display_offset))
+
+		#painter.drawPolygon(self._thumbnails.)
+
+	@QtCore.Slot(QtGui.QRegion)
+	def setThumbnailRects(self, thumb_rects:list[QtCore.QRectF]):
+
+		#print("Got", thumb_region)
+
+		self.update(self.finalThumbnailRect())
+
+		self._thumbnails_rects = thumb_rects
+
+		self.buildThumbnailsPath()
+		
+		self.update(self.finalThumbnailRect())
+
+	def buildThumbnailsPath(self):
+
+		self.update(self.finalThumbnailRect())
+
+		self._thumbnails_path = QtGui.QPainterPath()
+		for thumb in self._thumbnails_rects:
+			self._thumbnails_path.addRect(thumb)
+		self._thumbnails_path = self._scene_to_display_transform.map(self._thumbnails_path)
+
+		self.update(self.finalThumbnailRect())
 
 	# Drawing
 
@@ -122,6 +153,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		self.sig_scene_rect_changed.emit(scene_rect)
 
 		new_rect = self.normalizedThumbnailRect()
+		self.setSceneRect(self.sceneRect())
 		self.update(new_rect)
 	
 	def sceneRect(self) -> QtCore.QRectF:
