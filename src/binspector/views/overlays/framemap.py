@@ -316,7 +316,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 			self.update(self.finalReticleRect())
 			return True
 	
-		return True
+		return False
 		
 	def _handleMouseMove(self, event:QtGui.QMouseEvent):
 		
@@ -330,11 +330,13 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 			# Handle click/drag reticle
 			
 			self._mouse_reticle_offset = event.position() - self.finalThumbnailRect().topLeft()
-			return self._handleMouseDragReticle(event)
+			self._handleMouseDragReticle(event)
+			return True
 		
 		elif self.finalReticleRect().contains(event.position()):
 			# Just repaint on hover for effects
 			
 			self.update(self.finalThumbnailRect())
+			return False
 
 		return False
