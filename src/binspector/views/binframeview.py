@@ -251,6 +251,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
 
+		self._overlay_map.sig_view_reticle_panned.connect(self.centerOn)
+
 		
 
 		self.horizontalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
