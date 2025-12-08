@@ -13,7 +13,7 @@ class CoolFrameOverlayView(QtWidgets.QMainWindow):
 		self._frameview = binframeview.BSBinFrameView()
 		
 		self._frameview.scene().setSceneRect(QtCore.QRectF(
-			QtCore.QPointF(-50, -10000),
+			QtCore.QPointF(-100, -100),
 			QtCore.QSizeF(1000, 500)
 		))
 
@@ -24,9 +24,17 @@ class CoolFrameOverlayView(QtWidgets.QMainWindow):
 		self._frameview.setZoom(4)
 		self._frameview.setZoomRange(range(4,16))
 
+		self._frameview._overlay_map.sig_view_reticle_panned.connect(self.setCenterPoint)
+		#self._frameview.set
+
 		self.setCentralWidget(self._frameview)
 		
-		#self._over_ruler.setRulerSize(24)
+	@QtCore.Slot(object)
+	def setCenterPoint(self, center_point:QtCore.QPointF):
+
+		print(center_point)
+
+		self._frameview.centerOn(center_point)
 
 
 if __name__ == "__main__":
