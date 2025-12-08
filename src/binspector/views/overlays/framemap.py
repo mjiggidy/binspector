@@ -49,6 +49,8 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		# Transforms
 		self._scene_to_display_transform = QtGui.QTransform()
 		"""Transform scene coordinate rects to viewport coordinate rects"""
+		self._display_to_scene_transform = QtGui.QTransform()
+		"""Transform display coordinates to scene coordinates (inverted from scene-to-display)"""
 
 		# Mouse tracking
 		self._mouse_thumbnail_offset   = QtCore.QPointF()
@@ -62,9 +64,9 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		super().paintOverlay(painter, rect_canvas)
 		
 		self._draw_thumbnail_base(painter)
+		painter.drawPath(self._thumbnails_path.translated(self._thumb_display_offset))
 		self._draw_user_reticle(painter)
 		
-		painter.drawPath(self._thumbnails_path.translated(self._thumb_display_offset))
 
 		#painter.drawPolygon(self._thumbnails.)
 
@@ -114,6 +116,10 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 
 	def _draw_user_reticle(self, painter:QtGui.QPainter):
 
+		if self._dragReticleActive():
+			painter.setPen(self.widget().palette().accent().color().lighter())
+		elif self.finalReticleRect().contains(self.widget().mapFromGlobal(QtGui.QCursor.pos())):
+			painter.setPen(self.widget().palette().accent().color())
 		painter.drawRect(self.finalReticleRect())
 
 	# Calculations	
@@ -155,7 +161,12 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		transform = QtGui.QTransform()
 		transform.scale(self._thumb_display_size.width()/scene_rect.width(), self._thumb_display_size.width()/scene_rect.width())
 		transform.translate(-scene_rect.left(), -scene_rect.top())
-		self._scene_to_display_transform = transform
+		
+		self._scene_to_display_transform   = transform
+		self._display_to_scene_transform, was_it_tho = transform.inverted()
+
+		if not was_it_tho:
+			raise ValueError("Unable to invert display-to-scene transform")
 
 		self.sig_scene_rect_changed.emit(scene_rect)
 
@@ -247,47 +258,54 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 
 		return not self._mouse_reticle_offset.isNull()
 	
+	def _handleMouseDragReticle(self, event:QtGui.QMouseEvent) -> bool:
+		"""Mouse reticle was clicked/dragged"""
+
+		scene_pos = self._display_to_scene_transform.map(self._mouse_reticle_offset)
+		self.sig_view_reticle_panned.emit(scene_pos)
+
+		return True
+	
 	def _handleMouseButtonPress(self, event:QtGui.QMouseEvent) -> bool:
 
-		# Ignore weird mouse presses during active drags or outside of bounds
-		
 		if any((
 			self._dragThumbnailActive(),
 			self._dragReticleActive(),
 			not self.finalThumbnailRect().contains(event.position())
 		)):
+			# Ignore weird mouse presses during active drags or outside of bounds
 			return False
 		
-		# Begin alternative drag (move thumbnail)
 		if event.modifiers() & DEFAULT_KEY_DRAG_THUMBNAIL:
+			# Begin alternative drag (move thumbnail)
 			
 			self.widget().setCursor(QtCore.Qt.CursorShape.DragMoveCursor)
 			self._mouse_thumbnail_offset = event.position() - self.finalThumbnailRect().topLeft()
 			
 			return True
-		
-		# Begin normal drag
-		elif self.finalReticleRect().contains(event.position()):
 
-			self._mouse_reticle_offset = event.position() - self.finalReticleRect().topLeft()
-			return True
-		
-		return True
+		else:
+			# Begin normal click-to-center/drag of the reticle
+			
+			self._mouse_reticle_offset = event.position() - self.finalThumbnailRect().topLeft()
+			self.update(self.finalReticleRect())
+			return self._handleMouseDragReticle(event)
 
 	def _handleMouseButtonRelease(self, event:QtGui.QMouseEvent):
 
-		# End alternative drag
 		if self._dragThumbnailActive():
+			# End alternative drag
 			
 			self.widget().unsetCursor()
 			self._mouse_thumbnail_offset = QtCore.QPointF()
 			
 			return True
 		
-		# End reticle drag
 		if self._dragReticleActive():
+			# End reticle drag
 
 			self._mouse_reticle_offset = QtCore.QPointF()
+			self.update(self.finalReticleRect())
 			return True
 	
 		return True
@@ -295,24 +313,20 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def _handleMouseMove(self, event:QtGui.QMouseEvent):
 		
 		if self._dragThumbnailActive():
+			# Handle thumbnail drag
 			
 			self.setThumbnailOffset(event.position() - self._mouse_thumbnail_offset)
 			return True
 		
 		elif self._dragReticleActive():
+			# Handle click/drag reticle
 			
-			relative_pos_thumbnail = event.position() - self.finalThumbnailRect().topLeft()
+			self._mouse_reticle_offset = event.position() - self.finalThumbnailRect().topLeft()
+			return self._handleMouseDragReticle(event)
+		
+		elif self.finalReticleRect().contains(event.position()):
+			# Just repaint on hover for effects
 			
-			transform_inverted, was_it_tho = self._scene_to_display_transform.inverted()
-			if not was_it_tho:
-				raise ValueError("Well shit")
-			
-			scene_pos = transform_inverted.map(relative_pos_thumbnail)
-
-			#self._mouse_reticle_offset = event.position()
-
-			
-			self.sig_view_reticle_panned.emit(scene_pos)
-			return True
+			self.update(self.finalThumbnailRect())
 
 		return False
