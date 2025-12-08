@@ -1,7 +1,7 @@
 from PySide6 import QtCore, QtGui
 from . import abstractoverlay
 
-DEFAULT_DISPLAY_SIZE      = QtCore.QSizeF(100, 100)
+DEFAULT_DISPLAY_SIZE      = QtCore.QSizeF(150, 150)
 DEFAULT_DISPLAY_MARGINS   = QtCore.QMarginsF(32, 32, 32, 32)
 DEFAULT_DISPLAY_ALIGNMENT = QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignRight
 DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(32,32)
