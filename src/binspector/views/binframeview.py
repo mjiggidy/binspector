@@ -17,6 +17,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 	sig_bin_filter_model_changed   = QtCore.Signal(object)
 	sig_selection_model_changed    = QtCore.Signal(object)
+	sig_bin_item_added             = QtCore.Signal(object)
 
 	def __init__(self, *args, bin_filter_model:viewmodels.LBTimelineViewModel|None=None, **kwargs):
 		
@@ -148,7 +149,11 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 			self._bin_items.insert(row, bin_item)
 
+
 			self.addItem(bin_item)
+	
+			self.sig_bin_item_added.emit(bin_item)
+
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def removeBinItems(self, model_index:QtCore.QModelIndex, row_start:int, row_end:int):
@@ -195,7 +200,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._overlay_manager = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
 		
 		self._overlay_ruler = frameruler.BSFrameRulerOverlay()
-		self._overlay_map   = framemap.BSFrameMapOverlay()
+		self._overlay_map   = framemap.BSThumbnailMapOverlay()
 		self._overlay_manager.installOverlay(self._overlay_ruler)
 		self._overlay_manager.installOverlay(self._overlay_map)
 
@@ -246,6 +251,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
 
+		
+
 		self.horizontalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
 		self.verticalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
 
@@ -256,21 +263,37 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		
 
-	def setScene(self, scene:QtWidgets.QGraphicsScene):
+	def setScene(self, scene:BSBinFrameScene):
 		
 		if not self.scene() == scene:
 			
 			#self.scene().sceneRectChanged.disconnect(self._overlay_map)
+
+			if self.scene():
+				self.scene().disconnect(self)
+
+
 			scene.sceneRectChanged.connect(self._overlay_map.setSceneRect)
+			scene.sig_bin_item_added.connect(self.updateThumbnails)
 			
 			super().setScene(scene)
 
 			self._overlay_map.setSceneRect(scene.sceneRect())
 
-			self.sig_scene_changed.emit(scene)
-	
+			region = QtGui.QRegion()
 
-	
+			for item in scene.items():
+				#print(item.boundingRect())
+				region.united(item.sceneBoundingRect())
+			
+			#self._overlay_map.setThumbnails(region)
+
+			self.sig_scene_changed.emit(scene)
+
+	@QtCore.Slot()
+	def updateThumbnails(self):
+
+		self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()])
 
 	@QtCore.Slot()
 	def handleVisibleSceneRectChanged(self):
@@ -278,7 +301,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.updateRulerTicks()
 
-		self._overlay_map.setVisibleRecticle(self.visibleSceneRect())
+		self._overlay_map.setViewReticle(self.visibleSceneRect())
 
 		self.sig_view_rect_changed.emit(self.visibleSceneRect())
 
