@@ -222,8 +222,14 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._act_zoom_out.setShortcut(QtGui.QKeySequence.StandardKey.ZoomOut)
 		self._act_zoom_out.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ZoomOut))
 
+		self._act_toggle_ruler = QtGui.QAction("Toggle Ruler")
+		self._act_toggle_ruler.setCheckable(True)
+		self._act_toggle_ruler.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier| QtCore.Qt.Key.Key_R))
+		self._act_toggle_ruler.toggled.connect(self._overlay_ruler.setEnabled)
+
 		self.addAction(self._act_zoom_in)
 		self.addAction(self._act_zoom_out)
+		self.addAction(self._act_toggle_ruler)
 
 		self._zoom_animator = QtCore.QPropertyAnimation(parent=self)
 		self._zoom_animator.setTargetObject(self)
