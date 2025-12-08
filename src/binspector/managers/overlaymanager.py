@@ -25,8 +25,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		"""Hook manager into the parent widget event loop"""
 
 		self.parent().installEventFilter(self)
-
-	
+		
 	def overlays(self) -> list[abstractoverlay.BSAbstractOverlay]:
 		"""Get all installed overlays"""
 
@@ -46,6 +45,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 			
 			overlay.sig_update_requested.connect(self.parent().update)
 			overlay.sig_update_rect_requested.connect(self.parent().update)
+			overlay.sig_enabled_changed.connect(lambda e: overlay.blockSignals(not e))
 			
 			logging.getLogger(__name__).debug("Installed parent %s on %s", overlay.parent(), overlay)
 			self.sig_overlay_installed.emit(overlay)
@@ -94,11 +94,15 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
 		"""Foreward events to active overlays"""
 
-		# Ignore paint events -- must be handled via parent widget's paintEvent
 		if event.type() == QtCore.QEvent.Type.Paint:
+			# Ignore paint events -- must be handled via parent widget's paintEvent
 			return False
 		
-		for overlay in filter(lambda o: o.isEnabled(), self._overlays):
+		if event.type() == QtCore.QEvent.Type.Destroy:
+			print(" *** OH MY IT CLOSE ***")
+			return False
+		
+		for overlay in filter(lambda o: o.isEnabled(), reversed(list(self._overlays))):
 
 			if QtWidgets.QApplication.sendEvent(overlay, event):
 				return True

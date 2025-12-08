@@ -193,10 +193,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
-
-		# Install overlay manager on the viewport widget
 		
-		self.viewport().setMouseTracking(True)
+		#self.viewport().setMouseTracking(True)
+		
+		# Install overlay manager on the viewport widget
 		self._overlay_manager = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
 		
 		self._overlay_ruler = frameruler.BSFrameRulerOverlay()
@@ -204,14 +204,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._overlay_manager.installOverlay(self._overlay_ruler)
 		self._overlay_manager.installOverlay(self._overlay_map)
 
+		# NOTE: These install themselves as eventFilters now during __init__()
 		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self.viewport())
 		self._pan_man      = eventfilters.BSPanEventFilter(parent=self.viewport())
 		self._wheelzoom    = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
-
-		self.viewport().installEventFilter(self._overlay_manager)
-		self.viewport().installEventFilter(self._pan_man)
-		self.viewport().installEventFilter(self._pinchy_boy)
-		self.viewport().installEventFilter(self._wheelzoom)
 
 		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -257,8 +253,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.horizontalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
 		self.verticalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
-
-		
 		
 		self.setScene(frame_scene or BSBinFrameScene())
 		

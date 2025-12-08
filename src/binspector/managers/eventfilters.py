@@ -24,6 +24,8 @@ class BSPinchEventFilter(QtCore.QObject):
 		
 		self._accumulated_scale     = 0
 		self._tracked_gesture_count = 0
+
+		self.parent().installEventFilter(self)
 	
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent) -> bool:
 		"""Handle pinch events via `QtGui.QNativeGestureEvent` thingies"""
@@ -107,6 +109,8 @@ class BSPanEventFilter(QtCore.QObject):
 		self._panning_active = False
 		self._accumulated_pan = QtCore.QPoint(0,0)
 		self._last_start_pos  = QtCore.QPoint(0,0)
+
+		self.parent().installEventFilter(self)
 
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent) -> bool:
 		
@@ -218,6 +222,8 @@ class BSWheelZoomEventFilter(QtCore.QObject):
 		self._threshold_timer.setInterval(threshold_ms)
 		self._threshold_timer.setSingleShot(True)
 		self._threshold_timer.timeout.connect(self.reset)
+
+		self.parent().installEventFilter(self)
 
 	def eventFilter(self, watched:QtCore.QObject, event:QtCore.QEvent):
 		
