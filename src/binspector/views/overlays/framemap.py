@@ -240,6 +240,9 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		if event.type() == QtCore.QEvent.Type.MouseButtonPress:
 			return self._handleMouseButtonPress(event)
 		
+		if event.type() == QtCore.QEvent.Type.MouseButtonDblClick:
+			return self._handleMouseDoubleClick(event)
+		
 		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 			return self._handleMouseButtonRelease(event)
 		
@@ -257,6 +260,11 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		"""Is user dragging reticle?"""
 
 		return not self._mouse_reticle_offset.isNull()
+	
+	def _handleMouseDoubleClick(self, event:QtGui.QMouseEvent) -> bool:
+		"""Ignore double-clicks"""
+
+		return self.finalReticleRect().contains(event.position())
 	
 	def _handleMouseDragReticle(self, event:QtGui.QMouseEvent) -> bool:
 		"""Mouse reticle was clicked/dragged"""
