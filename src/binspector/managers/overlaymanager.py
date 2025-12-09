@@ -128,19 +128,6 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		
 		return overlay.isEnabled()
 
-	# NOTE: May be able to take care of these via events?
-	@QtCore.Slot(QtGui.QFont)
-	def setFont(self, new_font:QtGui.QFont):
-
-		for overlay in self._overlays:
-			overlay.setFont(new_font)
-	
-#	@QtCore.Slot(QtGui.QPalette)
-#	def setPalette(self, new_palette:QtGui.QPalette):
-#		
-#		for overlay in self._overlays:
-#			overlay.setPalette(new_palette)
-
 	def paintOverlays(self, painter:QtGui.QPainter, rect:QtCore.QRect):
 		"""Paint installed overlays"""
 
@@ -157,31 +144,27 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
 		"""Foreward events to active overlays"""
 
+		###
 		# Ignore paint events -- must be handled via parent widget's paintEvent
+		###
 		if event.type() == QtCore.QEvent.Type.Paint:
 			return False
 		
+		###
 		# Update widget info
-		
+		###
 		if event.type() in (QtCore.QEvent.Type.Resize, QtCore.QEvent.Type.Move):
-
-			self._updateWidgetInfo(
-				rect=QtCore.QRectF(watched.rect())
-			)
+			self._updateWidgetInfo(rect=QtCore.QRectF(watched.rect()))
 		
 		if event.type() == QtCore.QEvent.Type.FontChange:
-
-			self._updateWidgetInfo(
-				font = watched.font()
-			)
+			self._updateWidgetInfo(font = watched.font())
 		
 		if event.type() == QtCore.QEvent.Type.PaletteChange:
+			self._updateWidgetInfo(palette = watched.palette())
 
-			self._updateWidgetInfo(
-				palette = watched.palette()
-			)
-
+		###
 		# Pass event through to overlays
+		###
 		for overlay in filter(lambda o: o.isEnabled(), self._overlays):
 
 			if QtWidgets.QApplication.sendEvent(overlay, event):
