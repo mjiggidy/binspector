@@ -99,13 +99,13 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def _draw_thumbnail_base(self, painter:QtGui.QPainter):
 
 		pen_thumbnail = QtGui.QPen()
-		pen_thumbnail.setColor(self.widget().palette().windowText().color())
+		pen_thumbnail.setColor(self.palette().windowText().color())
 		pen_thumbnail.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
 		pen_thumbnail.setWidthF(1)
 
 		brush_thumbnail = QtGui.QBrush()
 		brush_thumbnail.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
-		col_thumbnail = self.widget().palette().window().color()
+		col_thumbnail = self.palette().window().color()
 		col_thumbnail.setAlphaF(0.75)
 		brush_thumbnail.setColor(col_thumbnail)
 		
@@ -117,9 +117,9 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def _draw_user_reticle(self, painter:QtGui.QPainter):
 
 		if self._dragReticleActive():
-			painter.setPen(self.widget().palette().accent().color().lighter())
-		elif self.finalReticleRect().contains(self.widget().mapFromGlobal(QtGui.QCursor.pos())):
-			painter.setPen(self.widget().palette().accent().color())
+			painter.setPen(self.palette().accent().color().lighter())
+#		elif self.finalReticleRect().contains(self.widget().mapFromGlobal(QtGui.QCursor.pos())):
+#			painter.setPen(self.palette().accent().color())
 		painter.drawRect(self.finalReticleRect())
 
 	# Calculations	
@@ -205,7 +205,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		self.update(old_rect)
 		
 		# Check bounds
-		canvas = QtCore.QRectF(self.widget().rect()).marginsRemoved(self._thumb_display_margins)
+		canvas = QtCore.QRectF(self.rect()).marginsRemoved(self._thumb_display_margins)
 		if not canvas.contains(offset):
 			# TODO: Based on orientation, set max to also query the opposite side
 			offset = QtCore.QPointF(max(canvas.left(), offset.x()), max(canvas.top(), offset.y()))
@@ -287,7 +287,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		if event.modifiers() & DEFAULT_KEY_DRAG_THUMBNAIL:
 			# Begin alternative drag (move thumbnail)
 			
-			self.widget().setCursor(QtCore.Qt.CursorShape.DragMoveCursor)
+			#self.widget().setCursor(QtCore.Qt.CursorShape.DragMoveCursor)
 			self._mouse_thumbnail_offset = event.position() - self.finalThumbnailRect().topLeft()
 			
 			return True
@@ -304,7 +304,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		if self._dragThumbnailActive():
 			# End alternative drag
 			
-			self.widget().unsetCursor()
+			#self.widget().unsetCursor()
 			self._mouse_thumbnail_offset = QtCore.QPointF()
 			
 			return True

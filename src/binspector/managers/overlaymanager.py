@@ -1,15 +1,26 @@
 from __future__ import annotations
-import logging
+import logging, dataclasses
 from typing import TYPE_CHECKING
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..overlays import abstractoverlay
+
+@dataclasses.dataclass(frozen=True)
+class BSOverlayParentWidgetInfo:
+	"""Widget info for overlays"""
+
+	font   :QtGui.QFont
+	palette:QtGui.QPalette
+	rect   :QtCore.QRectF
+
 		
 class BSGraphicsOverlayManager(QtCore.QObject):
 	"""Overlay manager for a widget"""
 
-	sig_overlay_installed  = QtCore.Signal(object)
-	sig_overlay_removed    = QtCore.Signal(object)
-	sig_overlay_toggled    = QtCore.Signal(bool)
+	sig_overlay_installed   = QtCore.Signal(object)
+	sig_overlay_removed     = QtCore.Signal(object)
+	sig_overlay_toggled     = QtCore.Signal(bool)
+
+	sig_widget_info_changed = QtCore.Signal(object)
 
 	def __init__(self, *args, parent:QtWidgets.QWidget, **kwargs):
 
@@ -20,6 +31,12 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 
 		self._overlays:set[abstractoverlay.BSAbstractOverlay] = set()
 
+		self._widget_info = BSOverlayParentWidgetInfo(
+			font    = self.parent().font(),
+			palette = self.parent().palette(),
+			rect    = self.parent().rect()
+		)
+
 		self._installOnParent()
 
 	def _installOnParent(self):
@@ -27,29 +44,45 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		
 		self.parent().setMouseTracking(True)
 		self.parent().installEventFilter(self)
+
+	def _updateWidgetInfo(self, *args, **kwargs):
+
+		self._widget_info = dataclasses.replace(self._widget_info, **kwargs)
+		self.sig_widget_info_changed.emit(self._widget_info)
+
+	def widgetInfo(self) -> BSOverlayParentWidgetInfo:
+
+		return self._widget_info
+	
+	@QtCore.Slot(object)
+	def installOverlay(self, overlay:abstractoverlay.BSAbstractOverlay):
+		"""Install a new overlay"""
+
+		if overlay in self._overlays:
+
+			logging.getLogger(__name__).debug(
+				"Skipping install %s: Already installed (%s)",
+				overlay, self._overlays
+			)
+			return
+
+		self._overlays.add(overlay)
+		self.installEventFilter(overlay)
+		
+		overlay.setParent(self)
+		#overlay._setWidget(self.parent())
+		#overlay.setPalette(self.parent().palette())
+		
+		overlay.sig_update_requested.connect(self.parent().update)
+		overlay.sig_update_rect_requested.connect(self.parent().update)
+		
+		logging.getLogger(__name__).debug("Installed parent %s on %s", overlay.parent(), overlay)
+		self.sig_overlay_installed.emit(overlay)
 		
 	def overlays(self) -> list[abstractoverlay.BSAbstractOverlay]:
 		"""Get all installed overlays"""
 
 		return list(self._overlays)
-	
-	def installOverlay(self, overlay:abstractoverlay.BSAbstractOverlay):
-		"""Install a new overlay"""
-
-		if overlay not in self._overlays:
-
-			self._overlays.add(overlay)
-			self.installEventFilter(overlay)
-			
-			overlay.setParent(self)
-			overlay._setWidget(self.parent())
-			#overlay.setPalette(self.parent().palette())
-			
-			overlay.sig_update_requested.connect(self.parent().update)
-			overlay.sig_update_rect_requested.connect(self.parent().update)
-			
-			logging.getLogger(__name__).debug("Installed parent %s on %s", overlay.parent(), overlay)
-			self.sig_overlay_installed.emit(overlay)
 
 	@QtCore.Slot()
 	def clear(self):
@@ -124,14 +157,31 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
 		"""Foreward events to active overlays"""
 
+		# Ignore paint events -- must be handled via parent widget's paintEvent
 		if event.type() == QtCore.QEvent.Type.Paint:
-			# Ignore paint events -- must be handled via parent widget's paintEvent
 			return False
 		
-		if event.type() == QtCore.QEvent.Type.Destroy:
-			print(" *** OH MY IT CLOSE ***")
-			return False
+		# Update widget info
 		
+		if event.type() in (QtCore.QEvent.Type.Resize, QtCore.QEvent.Type.Move):
+
+			self._updateWidgetInfo(
+				rect=QtCore.QRectF(watched.rect())
+			)
+		
+		if event.type() == QtCore.QEvent.Type.FontChange:
+
+			self._updateWidgetInfo(
+				font = watched.font()
+			)
+		
+		if event.type() == QtCore.QEvent.Type.PaletteChange:
+
+			self._updateWidgetInfo(
+				palette = watched.palette()
+			)
+
+		# Pass event through to overlays
 		for overlay in filter(lambda o: o.isEnabled(), self._overlays):
 
 			if QtWidgets.QApplication.sendEvent(overlay, event):

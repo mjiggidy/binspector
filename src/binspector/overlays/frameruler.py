@@ -40,6 +40,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._ruler_stoke_width  = DEFAULT_RULER_OUTLINE_WIDTH
 		self._ruler_width        = ruler_width
 		self._ruler_tick_size    = DEFAULT_TICK_SIZE
+		self._font_ruler_ticks_scale = DEFAULT_FONT_SCALE
 		
 		self._ruler_ticks:dict[QtCore.Qt.Orientation, list[BSRulerTickInfo]] = {
 			QtCore.Qt.Orientation.Horizontal: set(),
@@ -69,10 +70,8 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._brush_ruler_base  = QtGui.QLinearGradient()
 
 		# Fonts
-		self._font_mouse_coords = QtGui.QFont()
-		
-		self._font.setPointSizeF(self._font.pointSizeF() * DEFAULT_FONT_SCALE)
-		self.setFont(self._font)
+		self._font_mouse_coords = self.font()
+		self._font_ruler_ticks  = self.font()
 
 		self.setupDrawingTools()
 
@@ -95,7 +94,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			self.sig_mouse_coords_changed.emit(mouse_coordinates)
 
 			# NOTE: Can do this more efficently, and should
-			for new_rect in self.activeRects(self.widget().rect()):
+			for new_rect in self.activeRects(self.rect()):
 				self.update(new_rect)
 	
 	def mouseCoordinates(self) -> QtCore.QPoint|QtCore.QPointF:
@@ -122,7 +121,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	def setRulerPosition(self, ruler_position:QtCore.QPoint|QtCore.QPointF):
 		"""Set the offset of the ruler relative to the topLeft of the widget rect"""
 
-		for old_rect in self.activeRects(self.widget().rect()):
+		for old_rect in self.activeRects(self.rect()):
 			self.update(old_rect)
 
 		if self._ruler_position != ruler_position:
@@ -130,7 +129,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			self._ruler_position = ruler_position
 			self.sig_ruler_position_changed.emit(ruler_position)
 			
-			for new_rect in self.activeRects(self.widget().rect()):
+			for new_rect in self.activeRects(self.rect()):
 				self.update(new_rect)
 
 	def rulerPosition(self) -> QtCore.QPoint|QtCore.QPointF:
@@ -145,7 +144,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		orientations = set(orientations)
 
-		for old_rect in self.activeRects(self.widget().rect()):
+		for old_rect in self.activeRects(self.rect()):
 			self.update(old_rect)
 
 		if self._ruler_orientations != orientations:
@@ -153,7 +152,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			self._ruler_orientations = orientations
 			self.sig_ruler_orientations_changed.emit(orientations)
 			
-			for new_rect in self.activeRects(self.widget().rect()):
+			for new_rect in self.activeRects(self.rect()):
 				self.update(new_rect)
 	
 	def rulerOrientations(self) -> set[QtCore.Qt.Orientation]:
@@ -167,22 +166,11 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._ruler_ticks[orientation] = set(ruler_ticks)
 		self.sig_ruler_ticks_changed.emit(ruler_ticks)
 		
-		self.update(self.rulerRect(self.widget().rect(), orientation))
+		self.update(self.rulerRect(self.rect(), orientation))
 	
 	def ticks(self, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal) -> list[BSRulerTickInfo]:
 
 		return list(self._ruler_orientations[orientation])
-
-	@QtCore.Slot(QtGui.QFont)
-	def setFont(self, new_font:QtGui.QFont):
-
-		#new_font.setPointSizeF(new_font.pointSizeF() * 0.8)
-		
-		super().setFont(new_font)
-		self.setupDrawingTools()
-		
-		for new_rect in self.activeRects(self.widget().rect()):
-			self.update(new_rect)
 
 	@QtCore.Slot()
 	def setupDrawingTools(self):
@@ -207,7 +195,9 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._pen_ruler_ticks .setColor(self.palette().buttonText().color())
 		self._pen_ruler_ticks .setWidth(self._ruler_stoke_width)
 
-		self._font_ruler_ticks = self._font
+		tick_font = self.font()
+		tick_font.setPointSizeF(tick_font.pointSizeF() * self._font_ruler_ticks_scale)
+		self._font_ruler_ticks = tick_font
 
 	def rulerWidth(self) -> int:
 		"""Size of the ruler"""
@@ -219,13 +209,13 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		if ruler_width != self._ruler_width:
 
-			for old_rect in self.activeRects(self.widget().rect()):
+			for old_rect in self.activeRects(self.rect()):
 				self.update(old_rect)
 
 			self._ruler_width = ruler_width
 			self.sig_ruler_width_changed.emit(ruler_width)
 			
-			for new_rect in self.activeRects(self.widget().rect()):
+			for new_rect in self.activeRects(self.rect()):
 				self.update(new_rect)
 
 	def _dragIsActive(self) -> bool:
@@ -381,7 +371,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			if orientation == QtCore.Qt.Orientation.Horizontal:
 				
 				# Bottom Ticks
-				if ruler_rect.bottom() < self.widget().rect().bottom():
+				if ruler_rect.bottom() < self.rect().bottom():
 
 					tick_lines.append(QtCore.QLineF(
 						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.bottom() - self._ruler_tick_size),
@@ -389,7 +379,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 					))
 
 				# Top Ticks
-				if ruler_rect.top() > self.widget().rect().top():
+				if ruler_rect.top() > self.rect().top():
 					
 					tick_lines.append(QtCore.QLineF(
 						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.top() + self._ruler_tick_size),
@@ -406,7 +396,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			elif orientation == QtCore.Qt.Orientation.Vertical:
 
 				# Right ticks
-				if ruler_rect.right() < self.widget().rect().right():
+				if ruler_rect.right() < self.rect().right():
 
 					tick_lines.append(QtCore.QLineF(
 						QtCore.QPointF(ruler_rect.right() - self._ruler_tick_size, tick_info.ruler_offset),
@@ -414,8 +404,8 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 					))
 
 				# Left ticks
-				if ruler_rect.left() > self.widget().rect().left():
-					#print(ruler_rect.left(), self.widget().rect().left())
+				if ruler_rect.left() > self.rect().left():
+					#print(ruler_rect.left(), self.rect().left())
 					tick_lines.append(QtCore.QLineF(
 						QtCore.QPointF(ruler_rect.left() + self._ruler_tick_size, tick_info.ruler_offset),
 						QtCore.QPointF(ruler_rect.left(), tick_info.ruler_offset)
@@ -498,8 +488,8 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	
 	def beginUserDragHandle(self, drag_start_position:QtCore.QPointF) -> bool:
 		
-		self._mouse_drag_start = drag_start_position - self.handleRect(self.widget().rect()).topLeft()
-		self.update(self.handleRect(self.widget().rect()))
+		self._mouse_drag_start = drag_start_position - self.handleRect(self.rect()).topLeft()
+		self.update(self.handleRect(self.rect()))
 
 		return True
 	
@@ -512,7 +502,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		mouse_rel = drag_update_position - self._mouse_drag_start
 
 		pos = self.safePosition(
-			mouse_rel, self.widget().rect()
+			mouse_rel, self.rect()
 		)
 
 		# setRulerPosition calls update()
@@ -523,7 +513,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	def endUserDragHandle(self) -> bool:
 
 		self._mouse_drag_start = QtCore.QPointF()
-		self.update(self.handleRect(self.widget().rect()))
+		self.update(self.handleRect(self.rect()))
 		return True
 
 	def keepHandleVisible(self, rect_scene:QtCore.QRect|QtCore.QRectF):
@@ -539,7 +529,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	def event(self, event):
 		if event.type() == QtCore.QEvent.Type.MouseButtonPress and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
 			
-			if self.handleRect(self.widget().rect()).contains(event.position()):
+			if self.handleRect(self.rect()).contains(event.position()):
 				return self.beginUserDragHandle(event.position())
 		
 		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and self._dragIsActive():
@@ -552,13 +542,13 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 				return self.updateUserDragHandle(event.position())
 
 		elif event.type() == QtCore.QEvent.Type.Resize:
-			self.keepHandleVisible(self.widget().rect())
+			self.keepHandleVisible(self.rect())
 
 		elif event.type() == QtCore.QEvent.Type.PaletteChange:
 
 			self.setupDrawingTools()
 			
-			for new_rect in self.activeRects(self.widget().rect()):
+			for new_rect in self.activeRects(self.rect()):
 				self.update(new_rect)
 			
 			return True
