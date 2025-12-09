@@ -194,6 +194,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
 		
+		# NOTE: Since just the overlaymanager needs mouse tracking, OverlayManger sets it when it installs itself as the parent
 		#self.viewport().setMouseTracking(True)
 		
 		# Install overlay manager on the viewport widget
@@ -225,11 +226,21 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._act_toggle_ruler = QtGui.QAction("Toggle Ruler")
 		self._act_toggle_ruler.setCheckable(True)
 		self._act_toggle_ruler.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier| QtCore.Qt.Key.Key_R))
-		self._act_toggle_ruler.toggled.connect(self._overlay_ruler.setEnabled)
+		self._act_toggle_ruler.toggled.connect(self._overlay_ruler._setEnabled)
+
+		self._act_toggle_map  = QtGui.QAction("Toggle Bin Map")
+		self._act_toggle_map.setCheckable(True)
+		self._act_toggle_map.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_M))
+		self._act_toggle_map.toggled.connect(self._overlay_map._setEnabled)
 
 		self.addAction(self._act_zoom_in)
 		self.addAction(self._act_zoom_out)
+		
 		self.addAction(self._act_toggle_ruler)
+		self.addAction(self._act_toggle_map)
+
+		self._overlay_ruler._setEnabled(self._act_toggle_ruler.isChecked())
+		self._overlay_map._setEnabled(self._act_toggle_map.isChecked())
 
 		self._zoom_animator = QtCore.QPropertyAnimation(parent=self)
 		self._zoom_animator.setTargetObject(self)

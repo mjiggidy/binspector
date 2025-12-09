@@ -383,7 +383,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		super().setPalette(palette)
 		self.sig_bin_palette_changed.emit(palette)
 		self._binitems_list._palette_watcher.setPalette(palette)
-		self._binitems_frame.overlayManager().setPalette(palette)
 	
 	def topWidgetBar(self) -> BSBinContentsTopWidgetBar:
 		return self._section_top

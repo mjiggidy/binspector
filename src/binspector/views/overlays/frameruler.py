@@ -74,6 +74,17 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._font.setPointSizeF(self._font.pointSizeF() * DEFAULT_FONT_SCALE)
 		self.setFont(self._font)
 
+		self.setupDrawingTools()
+
+	@QtCore.Slot(bool)
+	def _setEnabled(self, is_enabled:bool):
+		"""Refresh drawing tools in re-enabled (probably missed PaletteChange events)"""
+
+		if is_enabled == True:
+			self.setupDrawingTools()
+		
+		super()._setEnabled(is_enabled)
+
 	@QtCore.Slot(object)
 	def setMouseCoordinates(self, mouse_coordinates:QtCore.QPoint|QtCore.QPointF):
 		"""Set the local mouse coordinates relative to the topLeft of the widget rect"""
@@ -173,36 +184,27 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		for new_rect in self.activeRects(self.widget().rect()):
 			self.update(new_rect)
 
-	@QtCore.Slot(QtGui.QPalette)
-	def setPalette(self, new_palette:QtGui.QPalette):
-
-		super().setPalette(new_palette)
-		self.setupDrawingTools()
-		
-		for new_rect in self.activeRects(self.widget().rect()):
-			self.update(new_rect)
-
 	@QtCore.Slot()
 	def setupDrawingTools(self):
 		"""Setup pens, brushes and fonts"""
 
-		self._pen_ruler_base  .setColor(self._palette.dark().color())
+		self._pen_ruler_base  .setColor(self.palette().dark().color())
 		self._pen_ruler_base  .setWidth(self._ruler_stoke_width)
 
-		# Dark mode?
-		if self._palette.window().color().value() > self._palette.windowText().color().value():
-			kewl_color = self._palette.button().color().lighter(105)
+		# Light mode?
+		if self.palette().window().color().value() > self.palette().windowText().color().value():
+			kewl_color = self.palette().button().color().lighter(105)
 		else:
-			kewl_color = self._palette.button().color().darker(105)
+			kewl_color = self.palette().button().color().darker(105)
 		kewl_color.setAlphaF(DEFAULT_FANCY_ALPHA)
 
-		self._brush_ruler_base.setColorAt(0.0, self._palette.light() .color())
-		self._brush_ruler_base.setColorAt(0.1, self._palette.button().color().darker(110))
-		self._brush_ruler_base.setColorAt(0.5, self._palette.button().color())
+		self._brush_ruler_base.setColorAt(0.0, self.palette().light() .color())
+		self._brush_ruler_base.setColorAt(0.1, self.palette().button().color().darker(110))
+		self._brush_ruler_base.setColorAt(0.5, self.palette().button().color())
 		self._brush_ruler_base.setColorAt(0.9, kewl_color)
-		self._brush_ruler_base.setColorAt(1.0, self._palette.dark()  .color())
+		self._brush_ruler_base.setColorAt(1.0, self.palette().dark()  .color())
 
-		self._pen_ruler_ticks .setColor(self._palette.buttonText().color())
+		self._pen_ruler_ticks .setColor(self.palette().buttonText().color())
 		self._pen_ruler_ticks .setWidth(self._ruler_stoke_width)
 
 		self._font_ruler_ticks = self._font
@@ -551,5 +553,14 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 
 		elif event.type() == QtCore.QEvent.Type.Resize:
 			self.keepHandleVisible(self.widget().rect())
+
+		elif event.type() == QtCore.QEvent.Type.PaletteChange:
+
+			self.setupDrawingTools()
+			
+			for new_rect in self.activeRects(self.widget().rect()):
+				self.update(new_rect)
+			
+			return True
 
 		return super().event(event)

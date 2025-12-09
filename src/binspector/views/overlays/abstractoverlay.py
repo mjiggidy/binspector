@@ -37,12 +37,17 @@ class BSAbstractOverlay(QtCore.QObject):
 	
 		self._widget = widget
 
-	@QtCore.Slot(QtGui.QPalette)
-	def setPalette(self, new_palette:QtGui.QPalette):
+#   NOTE: Not doin' me no palette for no now
+#	@QtCore.Slot(QtGui.QPalette)
+#	def setPalette(self, new_palette:QtGui.QPalette):
+#
+#		if self._palette != new_palette:
+#			self._palette = new_palette
+#			self.sig_update_requested.emit()
 
-		if self._palette != new_palette:
-			self._palette = new_palette
-			self.sig_update_requested.emit()
+	def palette(self) -> QtGui.QPalette:
+
+		return self.widget().palette()
 	
 	@QtCore.Slot(QtGui.QFont)
 	def setFont(self, new_font:QtGui.QFont):
@@ -57,17 +62,11 @@ class BSAbstractOverlay(QtCore.QObject):
 		return self._is_enabled
 	
 	@QtCore.Slot(bool)
-	def setEnabled(self, is_enabled:bool):
+	def _setEnabled(self, is_enabled:bool):
+		"""This should be set via the manager"""
 
 		if not self._is_enabled == is_enabled:
 
 			self._is_enabled = is_enabled
-			self.sig_enabled_changed.emit(self._is_enabled)
+			self.sig_enabled_changed.emit(is_enabled)
 			self.sig_update_requested.emit()
-	
-	@QtCore.Slot()
-	def toggle(self):
-		"""Toggle overlay enabled state"""
-
-		self.setEnabled(not self._is_enabled)
-	

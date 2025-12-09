@@ -9,6 +9,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 
 	sig_overlay_installed  = QtCore.Signal(object)
 	sig_overlay_removed    = QtCore.Signal(object)
+	sig_overlay_toggled    = QtCore.Signal(bool)
 
 	def __init__(self, *args, parent:QtWidgets.QWidget, **kwargs):
 
@@ -23,7 +24,8 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 
 	def _installOnParent(self):
 		"""Hook manager into the parent widget event loop"""
-
+		
+		self.parent().setMouseTracking(True)
 		self.parent().installEventFilter(self)
 		
 	def overlays(self) -> list[abstractoverlay.BSAbstractOverlay]:
@@ -41,14 +43,20 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 			
 			overlay.setParent(self)
 			overlay._setWidget(self.parent())
-			overlay.setPalette(self.parent().palette())
+			#overlay.setPalette(self.parent().palette())
 			
 			overlay.sig_update_requested.connect(self.parent().update)
 			overlay.sig_update_rect_requested.connect(self.parent().update)
-			overlay.sig_enabled_changed.connect(lambda e: overlay.blockSignals(not e))
 			
 			logging.getLogger(__name__).debug("Installed parent %s on %s", overlay.parent(), overlay)
 			self.sig_overlay_installed.emit(overlay)
+
+	@QtCore.Slot()
+	def clear(self):
+		"""Remove all overlays"""
+
+		for overlay in reversed(list(self._overlays)):
+			self.removeOverlay(overlay)
 
 	def removeOverlay(self, overlay:abstractoverlay.BSAbstractOverlay):
 		"""Remove an installed overlay"""
@@ -65,6 +73,28 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		self.sig_overlay_removed.emit(overlay)
 		overlay.deleteLater()
 
+	def setOverlayEnabled(self, overlay:abstractoverlay.BSAbstractOverlay, is_enabled:bool):
+
+		if not overlay in self._overlays:
+			raise ValueError(f"Overlay {overlay} does not belong to this manager")
+		
+		if overlay.isEnabled() == is_enabled:
+			return
+		
+		overlay._setEnabled(is_enabled)
+		overlay.blockSignals(not is_enabled)
+
+		logging.getLogger(__name__).debug("Overlay %s enabled=%s", overlay.isEnabled())
+		self.sig_overlay_toggled.emit(is_enabled)
+
+	def overlayEnabled(self, overlay:abstractoverlay.BSAbstractOverlay) -> bool:
+		"""Is the overlay enabled"""
+
+		if not overlay in self._overlays:
+			raise ValueError(f"Overlay {overlay} does not belong to this manager")
+		
+		return overlay.isEnabled()
+
 	# NOTE: May be able to take care of these via events?
 	@QtCore.Slot(QtGui.QFont)
 	def setFont(self, new_font:QtGui.QFont):
@@ -72,11 +102,11 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		for overlay in self._overlays:
 			overlay.setFont(new_font)
 	
-	@QtCore.Slot(QtGui.QPalette)
-	def setPalette(self, new_palette:QtGui.QPalette):
-		
-		for overlay in self._overlays:
-			overlay.setPalette(new_palette)
+#	@QtCore.Slot(QtGui.QPalette)
+#	def setPalette(self, new_palette:QtGui.QPalette):
+#		
+#		for overlay in self._overlays:
+#			overlay.setPalette(new_palette)
 
 	def paintOverlays(self, painter:QtGui.QPainter, rect:QtCore.QRect):
 		"""Paint installed overlays"""
@@ -102,7 +132,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 			print(" *** OH MY IT CLOSE ***")
 			return False
 		
-		for overlay in filter(lambda o: o.isEnabled(), reversed(list(self._overlays))):
+		for overlay in filter(lambda o: o.isEnabled(), self._overlays):
 
 			if QtWidgets.QApplication.sendEvent(overlay, event):
 				return True
