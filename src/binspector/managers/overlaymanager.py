@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..views.overlays import abstractoverlay
+from ..overlays import abstractoverlay
 		
 class BSGraphicsOverlayManager(QtCore.QObject):
 	"""Overlay manager for a widget"""

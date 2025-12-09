@@ -2,7 +2,7 @@ import logging, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..managers import eventfilters, overlaymanager
 from ..models import viewmodels, sceneitems
-from ..views.overlays import frameruler, framemap
+from ..overlays import frameruler, framemap
 
 GRID_DIVISIONS     = 3
 GRID_UNIT_SIZE     = QtCore.QSizeF(18,12)
