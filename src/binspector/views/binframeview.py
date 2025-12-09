@@ -458,9 +458,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	def setZoom(self, zoom_level:int|float):
 
 		if zoom_level != self._current_zoom:
-			
-			
-			logging.getLogger(__name__).debug("Setting zoom level to %s", zoom_level)
 
 			zoom_level = float(zoom_level) #/ float(4)
 			self._current_zoom = zoom_level
