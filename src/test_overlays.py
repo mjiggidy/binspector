@@ -2,7 +2,7 @@ import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from binspector.views import binframeview
 from binspector.managers import overlaymanager
-from binspector.views.overlays import frameruler, framemap
+from binspector.overlays import frameruler, framemap
 
 class CoolFrameOverlayView(QtWidgets.QMainWindow):
 	
