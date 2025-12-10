@@ -4,7 +4,7 @@ from . import abstractoverlay
 DEFAULT_DISPLAY_SIZE      = QtCore.QSizeF(150, 150)
 DEFAULT_DISPLAY_MARGINS   = QtCore.QMarginsF(32, 32, 32, 32)
 DEFAULT_DISPLAY_ALIGNMENT = QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignRight
-DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(32,32)
+DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(5000,32)
 
 DEFAULT_KEY_DRAG_THUMBNAIL= QtCore.Qt.KeyboardModifier.AltModifier
 
@@ -300,7 +300,18 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def _handleWidgetResize(self, resize_event:QtGui.QResizeEvent) -> bool:
 		"""Update positioning stuff"""
 
-		self.setThumbnailOffset()
+		new_offset = QtCore.QPointF(self._thumb_display_offset)
+
+		resize_diff = resize_event.size() - resize_event.oldSize()
+
+		# Offset for alternative anchors
+		if self._thumb_display_align & QtCore.Qt.AlignmentFlag.AlignRight:
+			new_offset.setX(new_offset.x() + resize_diff.width())
+
+		if self._thumb_display_align & QtCore.Qt.AlignmentFlag.AlignBottom:
+			new_offset.setY(new_offset.y() + resize_diff.height())
+
+		self.setThumbnailOffset(new_offset)
 
 		return False
 	
