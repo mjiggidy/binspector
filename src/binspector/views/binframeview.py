@@ -212,6 +212,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		self.setCornerWidget(QtWidgets.QSizeGrip(self))
 
 		self._act_zoom_in  = QtGui.QAction("Zoom In")
 		self._act_zoom_in.triggered.connect(lambda: self.zoomIncrement())

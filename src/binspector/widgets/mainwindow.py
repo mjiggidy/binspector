@@ -129,15 +129,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		#self._btn_toolbox_sifting.setAction(self._man_actions.showBinSiftSettings())
 #
 		# Apply Bin Settings Toggles
-		scrollbar_height = self._main_bincontents.listView().horizontalScrollBar().style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent)
-		#scrollbar_icon_size = round(scrollbar_height * 0.58)
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
 			
 			btn = buttons.BSPushButtonAction(act_toggle, show_text=False)
 			btn.setIconSize(QtCore.QSize(8,8))
-			btn.setFixedWidth(scrollbar_height)
 			
-			self._main_bincontents.listView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+			self._main_bincontents.addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
 		
 		
 		#self._btngrp_toolboxes = QtWidgets.QButtonGroup()

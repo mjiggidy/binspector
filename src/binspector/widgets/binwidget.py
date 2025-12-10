@@ -203,6 +203,20 @@ class BSScrollBarStyle(QtWidgets.QProxyStyle):
 		#print("YOOO", scale_factor)
 		self._scale_factor = scale_factor
 
+class BSBinStatsLabel(QtWidgets.QLabel):
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+		
+		f = self.font()
+		f.setPointSizeF(f.pointSizeF() * 0.8)
+		self.setFont(f)
+		self.setMinimumWidth(self.fontMetrics().averageCharWidth() * 32)	# Showing 999,999 of 999,999 items
+		self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+		self.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
+		self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
+
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
@@ -210,6 +224,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_bin_palette_changed = QtCore.Signal(QtGui.QPalette)
 	sig_bin_model_changed   = QtCore.Signal(object)
 	sig_focus_set_on_column = QtCore.Signal(int)	# Logical column index
+	sig_bin_stats_updated   = QtCore.Signal(str)
 
 	def __init__(self, *args, bin_model:viewmodels.LBTimelineViewModel|None=None, **kwargs):
 
@@ -241,7 +256,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_frame    = binframeview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
 
-		self._txt_binstats      = QtWidgets.QLabel()
+		self._binstats_list     = BSBinStatsLabel()
+		self._binstats_frame    = BSBinStatsLabel()
 
 		self._setupWidgets()
 		self._setupSignals()
@@ -272,7 +288,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# and segfaults on exit, which I really love.  I really love all of this.  I don't need money or a career.
 		base_style = QtWidgets.QStyleFactory.create(self._binitems_list.horizontalScrollBar().style().objectName())
 		self._proxystyle_hscroll = BSScrollBarStyle(base_style, scale_factor=1.25, parent=self)
-		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+
+		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 		self._binitems_frame.setZoomRange(avbutils.bins.THUMB_FRAME_MODE_RANGE)
 		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
@@ -280,14 +298,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# TODO: Necessary?
 		#logging.getLogger(__name__).error("Zoom range set to %s, confirm: %s", avbutils.bins.THUMB_FRAME_MODE_RANGE, self._binitems_frame.zoomRange())
 
-		f = self._txt_binstats.font()
-		f.setPointSizeF(f.pointSizeF() * 0.8)
-		self._txt_binstats.setFont(f)
-		self._txt_binstats.setMinimumWidth(self._txt_binstats.fontMetrics().averageCharWidth() * 32)	# Showing 999,999 of 999,999 items
-		self._txt_binstats.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-		self._txt_binstats.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
-		self._txt_binstats.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
-		self._binitems_list.addScrollBarWidget(self._txt_binstats, QtCore.Qt.AlignmentFlag.AlignLeft)
+		
+		
+		self._binitems_list .addScrollBarWidget(self._binstats_list,  QtCore.Qt.AlignmentFlag.AlignLeft)
+		self._binitems_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
+		
 
 	def _setupSignals(self):
 		
@@ -300,6 +315,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 
+		self.sig_bin_stats_updated.connect(self._binstats_list.setText)
+		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
 		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
 
 	def _setupActions(self):
@@ -477,7 +494,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			current_item_count=QtCore.QLocale.system().toString(count_visible),
 			total_item_count=QtCore.QLocale.system().toString(count_all)
 		)
-		self._txt_binstats.setText(info_text)
+		
+		self.sig_bin_stats_updated.emit(info_text)
 
 	@QtCore.Slot(object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int):
@@ -558,3 +576,14 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		#self.sig_focus_set_on_column.emit(-1)
 		
 		return False
+
+	def addScrollBarWidget(self, widget:QtWidgets.QWidget, alignment:QtCore.Qt.AlignmentFlag):
+
+		widget.setFixedWidth(
+			self._proxystyle_hscroll.pixelMetric(
+				QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent
+			)
+		)
+		
+		self._binitems_list.addScrollBarWidget(widget, alignment)
+		self._binitems_frame.addScrollBarWidget(widget, alignment)
