@@ -29,6 +29,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		display_margins:  QtCore.QMarginsF|None           = None,
 		scene_rect:       QtCore.QRectF|None              = None,
 		view_rect:        QtCore.QRectF|None              = None,
+		keep_in_view:     bool                            = True,
 		**kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -38,6 +39,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		self._thumb_display_offset  = thumbnail_offset or DEFAULT_DISPLAY_OFFSET
 		self._thumb_display_margins = display_margins  or DEFAULT_DISPLAY_MARGINS
 		self._thumb_display_align   = thumbnail_align  or DEFAULT_DISPLAY_ALIGNMENT
+		self._keep_thumb_in_view    = keep_in_view
 
 		self._thumbnails_path       = QtGui.QPainterPath()
 		self._thumbnails_rects      = []
@@ -133,7 +135,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		return self._scene_to_display_transform.mapRect(self._rect_reticle)
 	
 	def finalThumbnailRect(self) -> QtCore.QRectF:
-		
+
 		return self.normalizedThumbnailRect().translated(self._thumb_display_offset)
 	
 	def finalReticleRect(self) -> QtCore.QRectF:
@@ -195,25 +197,64 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def thumbnailSize(self) -> QtCore.QSizeF:
 		return self._thumb_display_size
 	
+	@QtCore.Slot()
 	@QtCore.Slot(QtCore.QPointF)
-	def setThumbnailOffset(self, offset:QtCore.QPointF):
-
-		if self._thumb_display_offset == offset:
-			return False
+	def setThumbnailOffset(self, proposed_offset:QtCore.QPointF|None=None):
+		"""Set (or recalculate) a safe thumbnail offset"""
+				
+		old_thumb_rect = self.finalThumbnailRect()
+		self.update(old_thumb_rect)
 		
-		old_rect = self.finalThumbnailRect()
-		self.update(old_rect)
+		proposed_offset = proposed_offset or self._thumb_display_offset
 		
 		# Check bounds
-		canvas = QtCore.QRectF(self.rect()).marginsRemoved(self._thumb_display_margins)
-		if not canvas.contains(offset):
-			# TODO: Based on orientation, set max to also query the opposite side
-			offset = QtCore.QPointF(max(canvas.left(), offset.x()), max(canvas.top(), offset.y()))
+		final_offset = self._getSafeOffset(proposed_offset) if self._keep_thumb_in_view else proposed_offset
 
-		self._thumb_display_offset = offset
+		if self._thumb_display_offset == final_offset:
+			return
+
+		self._thumb_display_offset = final_offset
 
 		new_rect = self.finalThumbnailRect()
 		self.update(new_rect)
+
+	def _getSafeOffset(self, proposed_offset:QtCore.QPointF) -> QtCore.QPointF:
+		"""Calculate a safe offset (visible, within margins) from a given one"""
+
+		safe_canvas = self.safeCanvas()
+
+		proposed_thumb_rect = self.finalThumbnailRect().translated(proposed_offset - self._thumb_display_offset)
+		#print(proposed_thumb_rect)
+
+		if safe_canvas.contains(proposed_thumb_rect):
+			return proposed_offset
+		
+		# Horizontal
+		if self._thumb_display_align & QtCore.Qt.AlignmentFlag.AlignLeft:
+			proposed_thumb_rect.moveRight(min(safe_canvas.right(), proposed_thumb_rect.right()))
+			proposed_thumb_rect.moveLeft(max(safe_canvas.left(), proposed_thumb_rect.left()))
+		else:
+			proposed_thumb_rect.moveLeft(max(safe_canvas.left(), proposed_thumb_rect.left()))
+			proposed_thumb_rect.moveRight(min(safe_canvas.right(), proposed_thumb_rect.right()))
+			#print(proposed_thumb_rect.right(), min(safe_canvas.right(), proposed_thumb_rect.right()))
+		
+		# Vertical
+		if self._thumb_display_align & QtCore.Qt.AlignmentFlag.AlignTop:
+			proposed_thumb_rect.moveBottom(min(safe_canvas.bottom(), proposed_thumb_rect.bottom()))
+			proposed_thumb_rect.moveTop(max(safe_canvas.top(), proposed_thumb_rect.top()))
+		else:
+			proposed_thumb_rect.moveTop(max(safe_canvas.top(), proposed_thumb_rect.top()))
+			proposed_thumb_rect.moveBottom(min(safe_canvas.bottom(), proposed_thumb_rect.bottom()))
+
+	#	print("vs", proposed_thumb_rect)
+		
+
+		return proposed_thumb_rect.topLeft()
+
+	def safeCanvas(self) -> QtCore.QRectF:
+		"""Safe canvas with margins removed"""
+
+		return QtCore.QRectF(self.rect()).marginsRemoved(self._thumb_display_margins)
 	
 	@QtCore.Slot(QtCore.QRectF)
 	def setViewReticle(self, view_rect:QtCore.QRectF):
@@ -233,7 +274,9 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	def viewReticle(self) -> QtCore.QRectF:
 		return self._rect_reticle
 	
+	###
 	# Events
+	###
 
 	def event(self, event):
 		
@@ -249,7 +292,17 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		elif event.type() == QtCore.QEvent.Type.MouseMove:
 			return self._handleMouseMove(event)
 		
+		elif event.type() == QtCore.QEvent.Type.Resize:
+			return self._handleWidgetResize(event)
+		
 		return super().event(event)
+	
+	def _handleWidgetResize(self, resize_event:QtGui.QResizeEvent) -> bool:
+		"""Update positioning stuff"""
+
+		self.setThumbnailOffset()
+
+		return False
 	
 	def _dragThumbnailActive(self) -> bool:
 		"""Is user dragging thumbnail?"""
