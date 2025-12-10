@@ -18,15 +18,13 @@ class BSAbstractOverlay(QtCore.QObject):
 
 		self._is_enabled:bool = True
 	
-	def update(self, update_rect:QtCore.QRectF|None=None):
-		
-		if update_rect:
-			self.sig_update_rect_requested.emit(update_rect)
-		else:
-			self.sig_update_requested.emit()
-	
 	def paintOverlay(self, painter:QtGui.QPainter, rect_canvas:QtCore.QRect):
 		"""Paint the overlay, with the given paintEvent"""
+		# Virtual method
+
+	@QtCore.Slot(object)
+	def updateWidgetInfo(self, widget_info:overlaymanager.BSOverlayParentWidgetInfo):
+		"""Parent info was updated.  Do stuff."""
 		# Virtual method
 
 	def _widgetInfo(self) -> overlaymanager.BSOverlayParentWidgetInfo|None:
@@ -60,6 +58,16 @@ class BSAbstractOverlay(QtCore.QObject):
 
 		return self._is_enabled
 	
+	def manager(self) -> overlaymanager.BSGraphicsOverlayManager:
+		"""
+		Return a reference to the manager
+
+		Note that, for now, the manager is also just the `parent()`.  But maybe not always!
+		Who knows!  I just don't want to lock that in with a bunch of calls to `parent()`.
+		"""
+
+		return self.parent()
+	
 	@QtCore.Slot(bool)
 	def _setEnabled(self, is_enabled:bool):
 		"""This should be set via the manager"""
@@ -68,4 +76,12 @@ class BSAbstractOverlay(QtCore.QObject):
 
 			self._is_enabled = is_enabled
 			self.sig_enabled_changed.emit(is_enabled)
+			self.sig_update_requested.emit()
+
+	def update(self, update_rect:QtCore.QRectF|None=None):
+		"""Request update, optionally for a particular `QRectF`"""
+		
+		if update_rect:
+			self.sig_update_rect_requested.emit(update_rect)
+		else:
 			self.sig_update_requested.emit()

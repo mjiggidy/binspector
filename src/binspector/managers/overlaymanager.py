@@ -51,6 +51,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		self.sig_widget_info_changed.emit(self._widget_info)
 
 	def widgetInfo(self) -> BSOverlayParentWidgetInfo:
+		"""Cached widget info"""
 
 		return self._widget_info
 	
@@ -66,14 +67,14 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 			)
 			return
 
+		overlay.setParent(self)
+
 		self._overlays.add(overlay)
 		self.installEventFilter(overlay)
-		
-		overlay.setParent(self)
-		#overlay._setWidget(self.parent())
-		#overlay.setPalette(self.parent().palette())
-		
-		overlay.sig_update_requested.connect(self.parent().update)
+
+		self.sig_widget_info_changed.connect(overlay.updateWidgetInfo)
+
+		overlay.sig_update_requested     .connect(self.parent().update)
 		overlay.sig_update_rect_requested.connect(self.parent().update)
 		
 		logging.getLogger(__name__).debug("Installed parent %s on %s", overlay.parent(), overlay)
@@ -102,8 +103,10 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		logging.getLogger(__name__).debug("Removed overlay %s", overlay)
 		
 		overlay.disconnect(self)
+
 		self.disconnect(overlay)
 		self.sig_overlay_removed.emit(overlay)
+
 		overlay.deleteLater()
 
 	def setOverlayEnabled(self, overlay:abstractoverlay.BSAbstractOverlay, is_enabled:bool):
