@@ -241,7 +241,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.addAction(self._act_toggle_map)
 
 		self._overlay_ruler._setEnabled(self._act_toggle_ruler.isChecked())
+		
 		self._overlay_map._setEnabled(self._act_toggle_map.isChecked())
+		self._overlay_map.sig_view_reticle_panned.connect(self.centerOn)
+		#self._overlay_map.setThumbnailOffset(QtCore.QPointF(48,48))
 
 		self._zoom_animator = QtCore.QPropertyAnimation(parent=self)
 		self._zoom_animator.setTargetObject(self)
@@ -265,7 +268,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
 
-		self._overlay_map.sig_view_reticle_panned.connect(self.centerOn)
+		#self._overlay_map.set
 
 		
 
@@ -273,6 +276,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.verticalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
 		
 		self.setScene(frame_scene or BSBinFrameScene())
+
+		#self._overlay_map.setThumbnailOffset(QtCore.QPointF(0,0), QtCore.Qt.AlignmentFlag.AlignBottom|QtCore.Qt.AlignmentFlag.AlignLeft)
 		
 
 		
@@ -286,22 +291,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			if self.scene():
 				self.scene().disconnect(self)
 
-
 			scene.sceneRectChanged.connect(self._overlay_map.setSceneRect)
 			scene.sig_bin_item_added.connect(self.updateThumbnails)
 			
 			super().setScene(scene)
-
-			self._overlay_map.setSceneRect(scene.sceneRect())
-
-			region = QtGui.QRegion()
-
-			for item in scene.items():
-				#print(item.boundingRect())
-				region.united(item.sceneBoundingRect())
-			
-			#self._overlay_map.setThumbnails(region)
-
 			self.sig_scene_changed.emit(scene)
 
 	@QtCore.Slot()

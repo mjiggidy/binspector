@@ -3,8 +3,8 @@ from . import abstractoverlay
 
 DEFAULT_DISPLAY_SIZE      = QtCore.QSizeF(150, 150)
 DEFAULT_DISPLAY_MARGINS   = QtCore.QMarginsF(32, 32, 32, 32)
-DEFAULT_DISPLAY_ALIGNMENT = QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignRight
-DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(5000,32)
+DEFAULT_DISPLAY_ALIGNMENT = QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignBottom
+DEFAULT_DISPLAY_OFFSET    = QtCore.QPointF(0,0)
 
 DEFAULT_KEY_DRAG_THUMBNAIL= QtCore.Qt.KeyboardModifier.AltModifier
 
@@ -61,13 +61,17 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		self._mouse_reticle_offset     = QtCore.QPointF()
 		"""The initial offset of the mouse from the topLeft corner of the user reticle, when it was clicked"""
 	
+		self.setThumbnailOffset(self._thumb_display_offset, self._thumb_display_align)
+
 	def paintOverlay(self, painter, rect_canvas):
 		
 		super().paintOverlay(painter, rect_canvas)
 		
 		self._draw_thumbnail_base(painter)
+		painter.drawText(self._thumb_display_offset, str(self._thumb_display_offset))
 		painter.drawPath(self._thumbnails_path.translated(self._thumb_display_offset))
 		self._draw_user_reticle(painter)
+		painter.drawRect(self.safeCanvas())
 		
 
 		#painter.drawPolygon(self._thumbnails.)
@@ -172,9 +176,18 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 
 		self.sig_scene_rect_changed.emit(scene_rect)
 
+		# Also probably recalc offset
 		new_rect = self.normalizedThumbnailRect()
-		self.setSceneRect(self.sceneRect())
-		self.update(new_rect)
+
+		new_offset = QtCore.QPointF(self._thumb_display_offset)
+		if self._thumb_display_align & QtCore.Qt.AlignmentFlag.AlignRight:
+			new_offset += QtCore.QPointF(old_rect.width() - new_rect.width(), 0)
+		if self._thumb_display_align & QtCore.Qt.AlignmentFlag.AlignBottom:
+			new_offset += QtCore.QPointF(0, old_rect.height() - new_rect.height())
+
+		self.setThumbnailOffset(new_offset)
+
+		#self.update(new_rect)
 	
 	def sceneRect(self) -> QtCore.QRectF:
 		return self._rect_scene
@@ -199,7 +212,10 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	
 	@QtCore.Slot()
 	@QtCore.Slot(QtCore.QPointF)
-	def setThumbnailOffset(self, proposed_offset:QtCore.QPointF|None=None):
+	def setThumbnailOffset(self,
+		proposed_offset:QtCore.QPointF|None=None,
+		coordinate_space:QtCore.Qt.AlignmentFlag=QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignLeft
+	):
 		"""Set (or recalculate) a safe thumbnail offset"""
 				
 		old_thumb_rect = self.finalThumbnailRect()
@@ -207,9 +223,15 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		
 		proposed_offset = proposed_offset or self._thumb_display_offset
 		
+		# Convert coordinates to TopLeft origin if not
+		if not coordinate_space & QtCore.Qt.AlignmentFlag.AlignLeft:
+			proposed_offset.setX(self.safeCanvas().right() - old_thumb_rect.width() + proposed_offset.x())
+			
+		if not coordinate_space & QtCore.Qt.AlignmentFlag.AlignTop:
+			proposed_offset.setY(self.safeCanvas().bottom() - old_thumb_rect.height() + proposed_offset.y())
+
 		# Check bounds
 		final_offset = self._getSafeOffset(proposed_offset) if self._keep_thumb_in_view else proposed_offset
-
 		if self._thumb_display_offset == final_offset:
 			return
 
