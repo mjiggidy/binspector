@@ -244,7 +244,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		
 		self._overlay_map._setEnabled(self._act_toggle_map.isChecked())
 		self._overlay_map.sig_view_reticle_panned.connect(self.centerOn)
-		#self._overlay_map.setThumbnailOffset(QtCore.QPointF(48,48))
+		self._overlay_map.setThumbnailOffset(self.viewport().rect().topRight())
 
 		self._zoom_animator = QtCore.QPropertyAnimation(parent=self)
 		self._zoom_animator.setTargetObject(self)
