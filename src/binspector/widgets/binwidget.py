@@ -586,4 +586,4 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		)
 		
 		self._binitems_list.addScrollBarWidget(widget, alignment)
-		self._binitems_frame.addScrollBarWidget(widget, alignment)
+		#self._binitems_frame.addScrollBarWidget(widget, alignment)
