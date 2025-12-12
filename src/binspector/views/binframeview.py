@@ -5,8 +5,8 @@ from ..models import viewmodels, sceneitems
 from ..overlays import frameruler, framemap
 from ..utils import stylewatcher
 
-GRID_DIVISIONS     = QtCore.QPoint(3,3) # 3 ticks along X and Y
-GRID_UNIT_SIZE     = QtCore.QSizeF(18,12)
+GRID_UNIT_SIZE     = QtCore.QSizeF(18,12) # 18x12 in scene units
+GRID_DIVISIONS     = QtCore.QPoint(3,3)   # 3 ticks along X and Y
 
 class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	"""Graphics scene based on a bin model"""
@@ -134,12 +134,9 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 			# Resolve source model to ensure we always have relevent columns available
 			proxy_row_index  = self._bin_filter_model.index(row, 0, parent_row_index)
-			#parent_row_index = self._bin_filter_model.mapToSource(proxy_row_index)
 			
-			bin_item_name = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemName)
+			bin_item_name   = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemName)
 			bin_item_coords = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSFrameCoordinates)
-
-			#bin_item_name = self._bin_filter_model.index(row, 2, parent_index).data(QtCore.Qt.ItemDataRole.DisplayRole)
 
 			bin_item = sceneitems.BSFrameModeItem()
 			bin_item.setName(str(bin_item_name))
@@ -150,14 +147,12 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 			self._bin_items.insert(row, bin_item)
 
-
 			self.addItem(bin_item)
 	
 			self.sig_bin_item_added.emit(bin_item)
-
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def removeBinItems(self, model_index:QtCore.QModelIndex, row_start:int, row_end:int):
+	def removeBinItems(self, parent_row_index:QtCore.QModelIndex, row_start:int, row_end:int):
 		
 		for row in range(row_end, row_start-1, -1):
 
@@ -205,7 +200,7 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 			unit_divisions = GRID_DIVISIONS,
 		)
 
-		self._watcher_style   = stylewatcher.BSWidgetStyleEventFilter()
+		self._watcher_style   = stylewatcher.BSWidgetStyleEventFilter(parent=self)
 		parent.installEventFilter(self._watcher_style)
 
 		self._pen_tick_major  = QtGui.QPen()
@@ -219,12 +214,13 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		self._pen_tick_minor.setCosmetic(True)
 		self.setMinorTickWidth(tick_width_minor)
 
-		
 		self.setPalette(parent.palette())
 		self._watcher_style.sig_palette_changed.connect(self.setPalette)
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
+
+#		logging.getLogger(__name__).debug("Setting palette...")
 
 		self._pen_tick_major.setColor(palette.alternateBase().color())
 		self._pen_tick_minor.setColor(palette.alternateBase().color())
@@ -312,40 +308,56 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		super().__init__(*args, **kwargs)
 
+		# QGraphics init
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+		self.setOptimizationFlags(
+			QtWidgets.QGraphicsView.OptimizationFlag.DontAdjustForAntialiasing |
+			QtWidgets.QGraphicsView.OptimizationFlag.DontSavePainterState
+		)
 
-		self._current_zoom = 1.0
-		self._zoom_range   = range(100)
-		
-		# NOTE: Since just the overlaymanager needs mouse tracking, OverlayManger sets it when it installs itself as the parent
-		#self.viewport().setMouseTracking(True)
-		
-		#self._watcher_style = stylewatcher.BSWidgetStyleEventFilter(parent=self)
-		#self.viewport().installEventFilter(self._watcher_style)
-
-
-		self._grid_info = BSBinFrameViewGridInfo(unit_size=GRID_UNIT_SIZE, unit_divisions=GRID_DIVISIONS)
-		self._background_painter = BSBinFrameBackgroundPainter(parent=self.viewport(),grid_info=self._grid_info)
-		
-		# Install overlay manager on the viewport widget
-		self._overlay_manager = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
-		
-		self._overlay_ruler = frameruler.BSFrameRulerOverlay()
-		self._overlay_map   = framemap.BSThumbnailMapOverlay()
-		self._overlay_manager.installOverlay(self._overlay_ruler)
-		self._overlay_manager.installOverlay(self._overlay_map)
-
-		# NOTE: These install themselves as eventFilters now during __init__()
-		self._pinchy_boy   = eventfilters.BSPinchEventFilter(parent=self.viewport())
-		self._pan_man      = eventfilters.BSPanEventFilter(parent=self.viewport())
-		self._wheelzoom    = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
-
-		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		# Scrollbar init
+		self.setVerticalScrollBarPolicy  (QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		self.setCornerWidget(QtWidgets.QSizeGrip(self))
 
+		self._current_zoom       = 1.0
+		self._zoom_range         = range(100)
+		self._grid_info          = BSBinFrameViewGridInfo(unit_size=GRID_UNIT_SIZE, unit_divisions=GRID_DIVISIONS)
+		
+		self._anim_zoom_adjust      = QtCore.QPropertyAnimation(parent=self)
+		self._timer_cursor_reset   = QtCore.QTimer()
+
+		# Zoomer
+		self._anim_zoom_adjust.setTargetObject(self)
+		self._anim_zoom_adjust.setPropertyName(QtCore.QByteArray.fromStdString("raw_zoom"))
+		self._anim_zoom_adjust.setDuration(300) #ms
+		self._anim_zoom_adjust.setEasingCurve(QtCore.QEasingCurve.Type.OutExpo)
+
+		# Cursor Resetter
+		self._timer_cursor_reset.setInterval(1_000)  # ms
+		self._timer_cursor_reset.setSingleShot(True)
+
+		
+		# Doers of things
+		# NOTE: Most of these fellers install themselves as eventFilters, enable mouse tracking on the widget, etc
+		self._background_painter = BSBinFrameBackgroundPainter(parent=self.viewport(),grid_info=self._grid_info)
+
+		self._overlay_manager    = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
+		self._overlay_ruler      = frameruler.BSFrameRulerOverlay()
+		self._overlay_map        = framemap.BSThumbnailMapOverlay()
+		
+		self._pinchy_boy         = eventfilters.BSPinchEventFilter(parent=self.viewport())
+		self._pan_man            = eventfilters.BSPanEventFilter(parent=self.viewport())
+		self._wheelzoom          = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
+		
+		self._overlay_manager.installOverlay(self._overlay_ruler)
+		self._overlay_manager.installOverlay(self._overlay_map)
+
+		self._overlay_map.setThumbnailOffset(self.viewport().rect().topRight())
+
+		# Actions
 		self._act_zoom_in  = QtGui.QAction("Zoom In")
 		self._act_zoom_in.triggered.connect(lambda: self.zoomIncrement())
 		self._act_zoom_in.setShortcut(QtGui.QKeySequence.StandardKey.ZoomIn)
@@ -359,75 +371,56 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._act_toggle_ruler = QtGui.QAction("Toggle Ruler")
 		self._act_toggle_ruler.setCheckable(True)
 		self._act_toggle_ruler.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier| QtCore.Qt.Key.Key_R))
+		self._act_toggle_ruler.setChecked(self._overlay_ruler.isEnabled())
 		self._act_toggle_ruler.toggled.connect(self._overlay_ruler._setEnabled)
 
 		self._act_toggle_map  = QtGui.QAction("Toggle Bin Map")
 		self._act_toggle_map.setCheckable(True)
 		self._act_toggle_map.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_M))
+		self._act_toggle_map.setChecked(self._overlay_map.isEnabled())
 		self._act_toggle_map.toggled.connect(self._overlay_map._setEnabled)
 
 		self.addAction(self._act_zoom_in)
 		self.addAction(self._act_zoom_out)
-		
 		self.addAction(self._act_toggle_ruler)
 		self.addAction(self._act_toggle_map)
 
-		self._overlay_ruler._setEnabled(self._act_toggle_ruler.isChecked())
-		
-		self._overlay_map._setEnabled(self._act_toggle_map.isChecked())
 		self._overlay_map.sig_view_reticle_panned.connect(self.centerOn)
-		self._overlay_map.setThumbnailOffset(self.viewport().rect().topRight())
-
-		self._zoom_animator = QtCore.QPropertyAnimation(parent=self)
-		self._zoom_animator.setTargetObject(self)
-		self._zoom_animator.setPropertyName(QtCore.QByteArray.fromStdString("raw_zoom"))
-		self._zoom_animator.setDuration(300) #ms
-		self._zoom_animator.setEasingCurve(QtCore.QEasingCurve.Type.OutExpo)
-
-		# Pan Hand Cursor Timer
-		self._pan_cursor_timer = QtCore.QTimer()
-		self._pan_cursor_timer.setInterval(1_000) # ms
-		self._pan_cursor_timer.setSingleShot(True)
-		self._pan_cursor_timer.timeout.connect(self.unsetCursor)
 
 		self._pan_man.sig_user_pan_started.connect(self.beginPan)
 		self._pan_man.sig_user_pan_moved.connect(self.panViewByDelta)
 		self._pan_man.sig_user_pan_finished.connect(self.finishPan)
 
-		self._pinchy_boy.sig_user_pinch_started .connect(self._zoom_animator.stop)
+		self._pinchy_boy.sig_user_pinch_started .connect(self._anim_zoom_adjust.stop)
 		self._pinchy_boy.sig_user_pinch_moved   .connect(self.zoomViewByDelta)
 		self._pinchy_boy.sig_user_pinch_finished.connect(self.userFinishedPinch)
 
 		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
 
-		#self._overlay_map.set
 
-		
+		self._timer_cursor_reset.timeout.connect(self.unsetCursor)
 
 		self.horizontalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
 		self.verticalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
 		
-		self.setScene(frame_scene or BSBinFrameScene())
-
-		#self._overlay_map.setThumbnailOffset(QtCore.QPointF(0,0), QtCore.Qt.AlignmentFlag.AlignBottom|QtCore.Qt.AlignmentFlag.AlignLeft)
 		
-
+		self.setScene(frame_scene or BSBinFrameScene())
 		
 
 	def setScene(self, scene:BSBinFrameScene):
+		"""Override of `super().setScene()` with signals and cool stuff"""
 		
-		if not self.scene() == scene:
-			
-			#self.scene().sceneRectChanged.disconnect(self._overlay_map)
+		if self.scene() == scene:
+			return
 
-			if self.scene():
-				self.scene().disconnect(self)
+		if self.scene():
+			self.scene().disconnect(self)
 
-			scene.sceneRectChanged.connect(self._overlay_map.setSceneRect)
-			scene.sig_bin_item_added.connect(self.updateThumbnails)
-			
-			super().setScene(scene)
-			self.sig_scene_changed.emit(scene)
+		scene.sceneRectChanged.connect(self._overlay_map.setSceneRect)
+		scene.sig_bin_item_added.connect(self.updateThumbnails)
+		
+		super().setScene(scene)
+		self.sig_scene_changed.emit(scene)
 
 	@QtCore.Slot()
 	def updateThumbnails(self):
@@ -501,20 +494,20 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	@QtCore.Slot()
 	def beginPan(self):
 
-		self._pan_cursor_timer.stop()
+		self._timer_cursor_reset.stop()
 		self.setCursor(QtCore.Qt.CursorShape.ClosedHandCursor)
 	
 	@QtCore.Slot(QtCore.QPoint)
 	def panViewByDelta(self, pan_delta:QtCore.QPoint):
 
-		self._pan_cursor_timer.stop()
+		self._timer_cursor_reset.stop()
 		self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - pan_delta.x())
 		self.verticalScrollBar()  .setValue(self.verticalScrollBar()  .value() - pan_delta.y())
 	
 	@QtCore.Slot()
 	def finishPan(self):
 
-		self._pan_cursor_timer.start()
+		self._timer_cursor_reset.start()
 		self.setCursor(QtCore.Qt.CursorShape.OpenHandCursor)
 
 	@QtCore.Slot(float)
@@ -545,10 +538,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			#print("EXACT")
 			return
 
-		self._zoom_animator.stop()
-		self._zoom_animator.setStartValue(start_val)
-		self._zoom_animator.setEndValue(end_val)
-		self._zoom_animator.start()
+		self._anim_zoom_adjust.stop()
+		self._anim_zoom_adjust.setStartValue(start_val)
+		self._anim_zoom_adjust.setEndValue(end_val)
+		self._anim_zoom_adjust.start()
 
 	@QtCore.Slot(object)
 	def setZoomRange(self, zoom_range:range):
@@ -662,6 +655,14 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		super().drawBackground(painter, rect)
 
 		self._background_painter.drawBackground(painter, rect)
+
+#	def drawForeground(self, painter, rect):
+		#  NOTE Just because I keep forgetting and trying it: drawForeground is not suitable for
+		#  drawing overlays because the painter is scaled to scene coords and it's a whole thing.
+	
+	def drawOverlays(self, painter:QtGui.QPainter, rect:QtCore.QRectF):
+
+		self._overlay_manager.paintOverlays(painter, self.viewport().rect())
 	
 	def paintEvent(self, event):
 		"""Paint widget, then overlays"""
@@ -670,12 +671,13 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		painter = QtGui.QPainter(self.viewport())
 		try:
-			self._overlay_manager.paintOverlays(painter, self.viewport().rect())
+			self.drawOverlays(painter, self.viewport().rect())
 		except Exception as e:
-			logging.getLogger(__name__).error(e)
+			logging.getLogger(__name__).error("Error drawing overlays: %s", e)
 		finally:
 			painter.end()
 	
 	def resizeEvent(self, event):
+
 		self.handleVisibleSceneRectChanged()
 		return super().resizeEvent(event)
