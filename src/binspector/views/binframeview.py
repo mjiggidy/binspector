@@ -1,8 +1,9 @@
-import logging, typing
+import logging, typing, dataclasses
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..managers import eventfilters, overlaymanager
 from ..models import viewmodels, sceneitems
 from ..overlays import frameruler, framemap
+from ..utils import stylewatcher
 
 GRID_DIVISIONS     = QtCore.QPoint(3,3) # 3 ticks along X and Y
 GRID_UNIT_SIZE     = QtCore.QSizeF(18,12)
@@ -170,7 +171,6 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		logging.getLogger(__name__).debug("Bin frame view cleared")
 		return super().clear()
 
-import dataclasses
 @dataclasses.dataclass(frozen=True)
 class BSBinFrameViewGridInfo:
 	"""Grid info for drawing a BSBinFrameView"""
@@ -186,21 +186,27 @@ class BSBinFrameViewGridInfo:
 			self.unit_size.height() / self.unit_divisions.y()
 		)
 
-class BSBinFrameBackgroundPainter:
+class BSBinFrameBackgroundPainter(QtCore.QObject):
+	"""Draw the background grid on a frame view"""
 
 	def __init__(self,
+		parent:QtWidgets.QWidget,
 		*args,
 		grid_info:BSBinFrameViewGridInfo|None=None,
 		tick_width_major:float=3,
 		tick_width_minor:float=1.5,
-		palette:QtGui.QPalette|None=None,
 		**kwargs
 	):
+		
+		super().__init__(parent, *args, **kwargs)
 
 		self._grid_unit_info = grid_info or BSBinFrameViewGridInfo(
 			unit_size      = GRID_UNIT_SIZE,
 			unit_divisions = GRID_DIVISIONS,
 		)
+
+		self._watcher_style   = stylewatcher.BSWidgetStyleEventFilter()
+		parent.installEventFilter(self._watcher_style)
 
 		self._pen_tick_major  = QtGui.QPen()
 		self._pen_tick_minor  = QtGui.QPen()
@@ -213,31 +219,43 @@ class BSBinFrameBackgroundPainter:
 		self._pen_tick_minor.setCosmetic(True)
 		self.setMinorTickWidth(tick_width_minor)
 
-		self.setPalette(palette or QtWidgets.QApplication.palette())
+		
+		self.setPalette(parent.palette())
+		self._watcher_style.sig_palette_changed.connect(self.setPalette)
 
+	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
 
 		self._pen_tick_major.setColor(palette.alternateBase().color())
 		self._pen_tick_minor.setColor(palette.alternateBase().color())
 
+	@QtCore.Slot(object)
 	def setGridInfo(self, grid_info:BSBinFrameViewGridInfo):
 		
 		self._grid_unit_info = grid_info
 
+	@QtCore.Slot(int)
+	@QtCore.Slot(float)
 	def setMajorTickWidth(self, tick_width_major:float):
 
-		self._pen_tick_major.setWidthF(tick_width_major)
+		self._pen_tick_major.setWidthF(float(tick_width_major))
 
+	@QtCore.Slot(int)
+	@QtCore.Slot(float)
 	def setMinorTickWidth(self, tick_width_minor:float):
 
-		self._pen_tick_minor.setWidthF(tick_width_minor)
+		self._pen_tick_minor.setWidthF(float(tick_width_minor))
 
-
-	
-	def drawBackground(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF, graphics_view:QtWidgets.QGraphicsView):
+	def drawBackground(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 
 		painter.save()
+
+		self._draw_horizontal_grid(painter, rect_scene)
+		self._draw_vertical_grid(painter, rect_scene)
 		
+		painter.restore()
+		
+	def _draw_horizontal_grid(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 		# Horizontal
 		# Align to grid divisions
 		range_scene_start = rect_scene.left() - (rect_scene.left()  % self._grid_unit_info.unit_size.width())
@@ -257,6 +275,8 @@ class BSBinFrameBackgroundPainter:
 			))
 
 			x_pos += self._grid_unit_info.unit_step.x()
+	
+	def _draw_vertical_grid(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 
 		# Vertical
 		# Align to grid divisions
@@ -277,8 +297,6 @@ class BSBinFrameBackgroundPainter:
 			))
 
 			y_pos += self._grid_unit_info.unit_step.y()
-		
-		painter.restore()
 
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
@@ -303,10 +321,13 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		
 		# NOTE: Since just the overlaymanager needs mouse tracking, OverlayManger sets it when it installs itself as the parent
 		#self.viewport().setMouseTracking(True)
-
 		
+		#self._watcher_style = stylewatcher.BSWidgetStyleEventFilter(parent=self)
+		#self.viewport().installEventFilter(self._watcher_style)
+
+
 		self._grid_info = BSBinFrameViewGridInfo(unit_size=GRID_UNIT_SIZE, unit_divisions=GRID_DIVISIONS)
-		self._background_painter = BSBinFrameBackgroundPainter(grid_info=self._grid_info, palette=self.viewport().palette())
+		self._background_painter = BSBinFrameBackgroundPainter(parent=self.viewport(),grid_info=self._grid_info)
 		
 		# Install overlay manager on the viewport widget
 		self._overlay_manager = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
@@ -640,7 +661,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		super().drawBackground(painter, rect)
 
-		self._background_painter.drawBackground(painter, rect, self.viewport())
+		self._background_painter.drawBackground(painter, rect)
 	
 	def paintEvent(self, event):
 		"""Paint widget, then overlays"""
@@ -658,12 +679,3 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	def resizeEvent(self, event):
 		self.handleVisibleSceneRectChanged()
 		return super().resizeEvent(event)
-	
-	def event(self, event):
-
-		# NOTE: DO THIS TO VIEWPORT INSTEAD
-
-		if event.type() == QtCore.QEvent.Type.PaletteChange:
-			self._background_painter.setPalette(self.palette())
-
-		return super().event(event)
