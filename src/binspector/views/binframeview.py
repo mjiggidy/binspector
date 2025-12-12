@@ -4,7 +4,7 @@ from ..managers import eventfilters, overlaymanager
 from ..models import viewmodels, sceneitems
 from ..overlays import frameruler, framemap
 
-GRID_DIVISIONS     = 3
+GRID_DIVISIONS     = QtCore.QPoint(3,3) # 3 ticks along X and Y
 GRID_UNIT_SIZE     = QtCore.QSizeF(18,12)
 
 class BSBinFrameScene(QtWidgets.QGraphicsScene):
@@ -170,6 +170,115 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		logging.getLogger(__name__).debug("Bin frame view cleared")
 		return super().clear()
 
+import dataclasses
+@dataclasses.dataclass(frozen=True)
+class BSBinFrameViewGridInfo:
+	"""Grid info for drawing a BSBinFrameView"""
+
+	unit_size       :QtCore.QSizeF
+	unit_divisions  :QtCore.QPointF
+
+	@property
+	def unit_step(self) -> QtCore.QPointF:
+
+		return QtCore.QPointF(
+			self.unit_size.width() / self.unit_divisions.x(),
+			self.unit_size.height() / self.unit_divisions.y()
+		)
+
+class BSBinFrameBackgroundPainter:
+
+	def __init__(self,
+		*args,
+		grid_info:BSBinFrameViewGridInfo|None=None,
+		tick_width_major:float=3,
+		tick_width_minor:float=1.5,
+		palette:QtGui.QPalette|None=None,
+		**kwargs
+	):
+
+		self._grid_unit_info = grid_info or BSBinFrameViewGridInfo(
+			unit_size      = GRID_UNIT_SIZE,
+			unit_divisions = GRID_DIVISIONS,
+		)
+
+		self._pen_tick_major  = QtGui.QPen()
+		self._pen_tick_minor  = QtGui.QPen()
+
+		self._pen_tick_major.setStyle(QtCore.Qt.PenStyle.SolidLine)
+		self._pen_tick_major.setCosmetic(True)
+		self.setMajorTickWidth(tick_width_major)
+
+		self._pen_tick_minor.setStyle(QtCore.Qt.PenStyle.DashLine)
+		self._pen_tick_minor.setCosmetic(True)
+		self.setMinorTickWidth(tick_width_minor)
+
+		self.setPalette(palette or QtWidgets.QApplication.palette())
+
+	def setPalette(self, palette:QtGui.QPalette):
+
+		self._pen_tick_major.setColor(palette.alternateBase().color())
+		self._pen_tick_minor.setColor(palette.alternateBase().color())
+
+	def setGridInfo(self, grid_info:BSBinFrameViewGridInfo):
+		
+		self._grid_unit_info = grid_info
+
+	def setMajorTickWidth(self, tick_width_major:float):
+
+		self._pen_tick_major.setWidthF(tick_width_major)
+
+	def setMinorTickWidth(self, tick_width_minor:float):
+
+		self._pen_tick_minor.setWidthF(tick_width_minor)
+
+
+	
+	def drawBackground(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF, graphics_view:QtWidgets.QGraphicsView):
+
+		painter.save()
+		
+		# Horizontal
+		# Align to grid divisions
+		range_scene_start = rect_scene.left() - (rect_scene.left()  % self._grid_unit_info.unit_size.width())
+		range_scene_end   = rect_scene.right()- (rect_scene.right() % self._grid_unit_info.unit_size.width()) + self._grid_unit_info.unit_size.width() # Overshoot by additional unit
+
+		x_pos = range_scene_start
+		while x_pos < range_scene_end:
+
+			if not x_pos % self._grid_unit_info.unit_size.width():
+				painter.setPen(self._pen_tick_major)
+			else:
+				painter.setPen(self._pen_tick_minor)
+
+			painter.drawLine(QtCore.QLineF(
+				QtCore.QPointF(x_pos, rect_scene.top()),
+				QtCore.QPointF(x_pos, rect_scene.bottom())
+			))
+
+			x_pos += self._grid_unit_info.unit_step.x()
+
+		# Vertical
+		# Align to grid divisions
+		range_scene_start = rect_scene.top() - (rect_scene.top()  % self._grid_unit_info.unit_size.height())
+		range_scene_end   = rect_scene.bottom()- (rect_scene.bottom() % self._grid_unit_info.unit_size.height()) + self._grid_unit_info.unit_size.height() # Overshoot by additional unit
+
+		y_pos = range_scene_start
+		while y_pos < range_scene_end:
+
+			if not y_pos % self._grid_unit_info.unit_size.height():
+				painter.setPen(self._pen_tick_major)
+			else:
+				painter.setPen(self._pen_tick_minor)
+
+			painter.drawLine(QtCore.QLineF(
+				QtCore.QPointF(rect_scene.left(), y_pos),
+				QtCore.QPointF(rect_scene.right(), y_pos)
+			))
+
+			y_pos += self._grid_unit_info.unit_step.y()
+		
+		painter.restore()
 
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
@@ -188,14 +297,16 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
-		
-		
 
 		self._current_zoom = 1.0
 		self._zoom_range   = range(100)
 		
 		# NOTE: Since just the overlaymanager needs mouse tracking, OverlayManger sets it when it installs itself as the parent
 		#self.viewport().setMouseTracking(True)
+
+		
+		self._grid_info = BSBinFrameViewGridInfo(unit_size=GRID_UNIT_SIZE, unit_divisions=GRID_DIVISIONS)
+		self._background_painter = BSBinFrameBackgroundPainter(grid_info=self._grid_info, palette=self.viewport().palette())
 		
 		# Install overlay manager on the viewport widget
 		self._overlay_manager = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
@@ -469,18 +580,20 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		rect_scene        = rect_scene or self.visibleSceneRect()
 		tick_orientations = tick_orientations or [QtCore.Qt.Orientation.Horizontal, QtCore.Qt.Orientation.Vertical]
 
+		# NOTE:  See Background drawing code for better coordinate alignment, gonna wanna roll that all in 
+
 		if QtCore.Qt.Orientation.Horizontal in tick_orientations:
 			
 			# Align to grid divisions
-			range_scene_start = rect_scene.left()  - rect_scene.left()  % GRID_UNIT_SIZE.width()
-			range_scene_end  = rect_scene.right()  - rect_scene.right() % GRID_UNIT_SIZE.width() + GRID_UNIT_SIZE.width()
-			range_scene_steps = (range_scene_end - range_scene_start) / GRID_UNIT_SIZE.width() + 1
+			range_scene_start = rect_scene.left()  - rect_scene.left()  % self._grid_info.unit_size.width()
+			range_scene_end  = rect_scene.right()  - rect_scene.right() % self._grid_info.unit_size.width() + self._grid_info.unit_size.width()
+			range_scene_steps = (range_scene_end - range_scene_start) / self._grid_info.unit_size.width() + 1
 
 			ticks = []
 			
 			for step in range(round(range_scene_steps)):
 
-				scene_x = range_scene_start + (GRID_UNIT_SIZE.width() * step)
+				scene_x = range_scene_start + (self._grid_info.unit_size.width() * step)
 				viewport_x = self.mapFromScene(scene_x, 0).x()
 
 				ticks.append(
@@ -495,15 +608,15 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		if QtCore.Qt.Orientation.Vertical in tick_orientations:
 
 			# Align to grid divisions
-			range_scene_start = rect_scene.top() - rect_scene.top() % GRID_UNIT_SIZE.height()
-			range_scene_end   = rect_scene.bottom() - rect_scene.bottom() % GRID_UNIT_SIZE.height() + GRID_UNIT_SIZE.height()
-			range_scene_steps = (range_scene_end - range_scene_start) / GRID_UNIT_SIZE.height() + 1
+			range_scene_start = rect_scene.top() - rect_scene.top() % self._grid_info.unit_size.height()
+			range_scene_end   = rect_scene.bottom() - rect_scene.bottom() % self._grid_info.unit_size.height() + self._grid_info.unit_size.height()
+			range_scene_steps = (range_scene_end - range_scene_start) / self._grid_info.unit_size.height() + 1
 
 			ticks = []
 
 			for step in range(round(range_scene_steps)):
 
-				scene_y = range_scene_start + (GRID_UNIT_SIZE.height() * step)
+				scene_y = range_scene_start + (self._grid_info.unit_size.height() * step)
 				viewport_y = self.mapFromScene(0, scene_y).y()
 
 				ticks.append(
@@ -525,58 +638,9 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	
 	def drawBackground(self, painter:QtGui.QPainter, rect:QtCore.QRectF):
 
-		pen_boundary = QtGui.QPen()
-		pen_boundary.setStyle(QtCore.Qt.PenStyle.SolidLine)
-		pen_boundary.setCosmetic(True)
-		pen_boundary.setWidth(1)
-		pen_boundary.setColor(self.parentWidget().palette().window().color())
-
-		pen_division = QtGui.QPen()
-		pen_division.setStyle(QtCore.Qt.PenStyle.DashLine)
-		pen_division.setCosmetic(True)
-		pen_division.setWidth(1)
-		pen_division.setColor(self.parentWidget().palette().window().color())
-
 		super().drawBackground(painter, rect)
 
-		painter.save()
-
-		# Setup stuff for ruler
-		
-		coord_font = self.font()
-		painter.setFont(coord_font)
-
-		for x in range(round(rect.left()), round(rect.right())+1):
-
-			if x % (GRID_UNIT_SIZE.width() // GRID_DIVISIONS):
-				continue
-
-			if x % (GRID_UNIT_SIZE.width()) == 0:
-				painter.setPen(pen_boundary)
-			else:
-				painter.setPen(pen_division)
-			
-			painter.drawLine(QtCore.QLine(
-				QtCore.QPoint(x, rect.top()),
-				QtCore.QPoint(x, rect.bottom())
-			))
-		
-		for y in range(int(rect.top()), int(rect.bottom())+1):
-			
-			if y % (GRID_UNIT_SIZE.height() // GRID_DIVISIONS):
-				continue
-
-			if y % (GRID_UNIT_SIZE.height()) == 0:
-				painter.setPen(pen_boundary)
-			else:
-				painter.setPen(pen_division)
-			
-			painter.drawLine(QtCore.QLine(
-				QtCore.QPoint(rect.left(), y),
-				QtCore.QPoint(rect.right(), y),
-			))
-			
-		painter.restore()
+		self._background_painter.drawBackground(painter, rect, self.viewport())
 	
 	def paintEvent(self, event):
 		"""Paint widget, then overlays"""
@@ -594,3 +658,12 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	def resizeEvent(self, event):
 		self.handleVisibleSceneRectChanged()
 		return super().resizeEvent(event)
+	
+	def event(self, event):
+
+		# NOTE: DO THIS TO VIEWPORT INSTEAD
+
+		if event.type() == QtCore.QEvent.Type.PaletteChange:
+			self._background_painter.setPalette(self.palette())
+
+		return super().event(event)
