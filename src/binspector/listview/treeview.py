@@ -7,9 +7,9 @@ from ..core   import icons
 from ..models import viewmodels
 from ..views  import treeview
 from ..utils import columnselect
-from ..views.delegates import binitems
-
 from ..res import icons_binitems
+
+from . import binitems
 
 class BSBinTreeView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
