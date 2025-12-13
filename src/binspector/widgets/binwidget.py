@@ -1,12 +1,13 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
-import avbutils, avb
+import avb, avbutils
+
 from ..listview import treeview
 from ..frameview import frameview
 from ..scriptview import scriptview
 from ..models import viewmodels
+
 from . import buttons, sliders
-#from ..managers import binproperties    ??
 
 class BSAbstractBinContentsWidgetBar(QtWidgets.QWidget):
 	"""Widget bar to display above/below"""
