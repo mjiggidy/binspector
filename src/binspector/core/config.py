@@ -28,3 +28,9 @@ class BSFrameViewConfig:
 
 	GRID_DIVISIONS     = QtCore.QPoint(3,3)   # 3 ticks along X and Y
 	"""Divisions per grid unit"""
+
+	DEFAULT_ITEM_FLAGS = \
+		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|\
+		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|\
+		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable
+	"""Default item flags"""

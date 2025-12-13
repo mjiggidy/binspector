@@ -2,15 +2,11 @@ import logging
 from PySide6 import QtCore, QtWidgets
 
 from ..models import viewmodels
+from ..core import config
 from . import sceneitems
 
 class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	"""Graphics scene based on a bin model"""
-
-	DEFAULT_ITEM_FLAGS = \
-		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|\
-		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|\
-		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable
 
 	sig_bin_filter_model_changed   = QtCore.Signal(object)
 	sig_selection_model_changed    = QtCore.Signal(object)
@@ -136,7 +132,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 			bin_item = sceneitems.BSFrameModeItem()
 			bin_item.setName(str(bin_item_name))
-			bin_item.setFlags(self.DEFAULT_ITEM_FLAGS)
+			bin_item.setFlags(config.BSFrameViewConfig.DEFAULT_ITEM_FLAGS)
 
 			x, y = bin_item_coords
 			bin_item.setPos(QtCore.QPoint(x, y))
