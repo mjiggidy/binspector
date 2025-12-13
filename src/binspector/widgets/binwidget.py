@@ -3,7 +3,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 import avbutils, avb
 from ..listview import treeview
 from ..frameview import frameview
-from ..views import binscriptview
+from ..scriptview import scriptview
 from ..models import viewmodels
 from . import buttons, sliders
 #from ..managers import binproperties    ??
@@ -256,7 +256,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._binitems_list     = treeview.BSBinTreeView()
 		self._binitems_frame    = frameview.BSBinFrameView()
-		self._binitems_script   = binscriptview.BSBinScriptView()
+		self._binitems_script   = scriptview.BSBinScriptView()
 
 		self._binstats_list     = BSBinStatsLabel()
 		self._binstats_frame    = BSBinStatsLabel()
@@ -376,7 +376,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 #		self._binitems_frame = frame_view
 #		self._setViewModeWidget(avbutils.BinDisplayModes.FRAME, self._binitems_frame)
 
-	def scriptView(self) -> binscriptview.BSBinScriptView:
+	def scriptView(self) -> scriptview.BSBinScriptView:
 		return self._binitems_script
 	
 #	def setScriptView(self, script_view:binscriptview.BSBinScriptView):
