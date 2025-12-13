@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtWidgets
 
-class LBTreeView(QtWidgets.QTreeView):
+class BSTreeViewBase(QtWidgets.QTreeView):
 	"""QTreeView with muh defaults"""
 
 	def __init__(self, *args, **kwargs):

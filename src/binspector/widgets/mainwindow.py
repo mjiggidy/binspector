@@ -56,7 +56,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
 		self._dock_appearance  = QtWidgets.QDockWidget(self.tr("Font & Colors"))
 
-		self._tool_binview     = treeview.LBTreeView()
+		self._tool_binview     = treeview.BSTreeViewBase()
 		self._dock_binview     = QtWidgets.QDockWidget(self.tr("Bin View Settings"))
 
 		self._btn_toolbox_bindisplay = buttons.BSPushButtonAction(show_text=False)

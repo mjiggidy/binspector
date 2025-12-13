@@ -80,7 +80,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 
 		self.layout().addLayout(lay_colors)
 
-		self._tree_column_widths = treeview.LBTreeView()
+		self._tree_column_widths = treeview.BSTreeViewBase()
 		self.layout().addWidget(QtWidgets.QLabel(self.tr("Column Widths")))
 		self.layout().addWidget(self._tree_column_widths)
 
@@ -273,7 +273,7 @@ class BSBinSiftSettingsView(QtWidgets.QWidget):
 
 		self._chk_sift_enabled = QtWidgets.QCheckBox(self.tr("Sift Enabled"))
 
-		self._tree_siftsettings = treeview.LBTreeView()
+		self._tree_siftsettings = treeview.BSTreeViewBase()
 
 		self.layout().addWidget(self._chk_sift_enabled)
 		self.layout().addWidget(self._tree_siftsettings)

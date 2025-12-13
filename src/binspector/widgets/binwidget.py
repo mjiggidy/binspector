@@ -1,8 +1,9 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 import avbutils, avb
-from ..views import bintreeview, binscriptview
+from ..listview import treeview
 from ..frameview import frameview
+from ..views import binscriptview
 from ..models import viewmodels
 from . import buttons, sliders
 #from ..managers import binproperties    ??
@@ -253,7 +254,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top       = BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
 		
-		self._binitems_list     = bintreeview.BSBinTreeView()
+		self._binitems_list     = treeview.BSBinTreeView()
 		self._binitems_frame    = frameview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
 
@@ -357,7 +358,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_filter_model.setSourceModel(self._bin_model)
 		self._binitems_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK
 
-	def listView(self) -> bintreeview.BSBinTreeView:
+	def listView(self) -> treeview.BSBinTreeView:
 		"""Get the main view"""
 
 		return self._binitems_list
