@@ -1,5 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 
+
 class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 	def __init__(self, *args, **kwargs):
@@ -10,8 +11,8 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 	def boundingRect(self) -> QtCore.QRectF:
 		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(18,12))
-	
-	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, /,	 widget:QtWidgets.QWidget = ...):
+
+	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, /,  widget:QtWidgets.QWidget = ...):
 
 		painter.save()
 
@@ -34,7 +35,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 		pen = QtGui.QPen()
 		pen.setStyle(QtCore.Qt.PenStyle.NoPen)
-		
+
 
 		painter.setBrush(brush)
 		painter.setPen(pen)
@@ -51,7 +52,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 			pen.setWidthF(0.25/self.scale())
 			pen.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
 			pen.setColor(self._clip_color)
-			
+
 			brush = QtGui.QBrush()
 			brush.setStyle(QtCore.Qt.BrushStyle.NoBrush)
 
@@ -61,14 +62,14 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 		font = QtWidgets.QApplication.font()
 		font.setPixelSize(1/self.scale())
-		
+
 		painter.setFont(font)
 		pen = QtGui.QPen()
 		painter.setPen(pen)
 		painter.drawText(self.boundingRect().adjusted(0.25,0.25,-0.25,-0.25), QtCore.Qt.AlignmentFlag.AlignCenter|QtCore.Qt.AlignmentFlag.AlignBottom, self._name)
 
 		painter.drawText(QtCore.QPoint(0,0) + QtCore.QPoint(0,1), f"({self.pos().x():.1f},{self.pos().y():.1f})")
-		
+
 		if self.isSelected():
 			brush = QtGui.QBrush()
 			brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
@@ -83,12 +84,12 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 			painter.setPen(pen)
 			painter.drawRect(self.boundingRect())
 
-		
+
 		painter.restore()
 
 	def setName(self, name:str):
 		self._name = name
-	
+
 	def setClipColor(self, color:QtGui.QColor):
 
 		self._clip_color = color

@@ -1,10 +1,11 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 import avbutils, avb
-from ..views import bintreeview, binframeview, binscriptview
-from ..models import sceneitems, viewmodels
+from ..views import bintreeview, binscriptview
+from ..frameview import frameview
+from ..models import viewmodels
 from . import buttons, sliders
-from ..managers import binproperties
+#from ..managers import binproperties    ??
 
 class BSAbstractBinContentsWidgetBar(QtWidgets.QWidget):
 	"""Widget bar to display above/below"""
@@ -253,7 +254,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_main      = QtWidgets.QStackedWidget()
 		
 		self._binitems_list     = bintreeview.BSBinTreeView()
-		self._binitems_frame    = binframeview.BSBinFrameView()
+		self._binitems_frame    = frameview.BSBinFrameView()
 		self._binitems_script   = binscriptview.BSBinScriptView()
 
 		self._binstats_list     = BSBinStatsLabel()
@@ -366,7 +367,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 #		self._binitems_list = treeview
 #		self._setViewModeWidget(avbutils.BinDisplayModes.LIST, self._binitems_list)
 
-	def frameView(self) -> binframeview.BSBinFrameView:
+	def frameView(self) -> frameview.BSBinFrameView:
 		return self._binitems_frame
 	
 #	def setFrameView(self, frame_view:binframeview.BSBinFrameView):
