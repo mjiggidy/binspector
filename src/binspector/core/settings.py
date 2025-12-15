@@ -222,3 +222,15 @@ class BSSettingsManager:
 
 		logging.getLogger(__name__).debug("Returning list_item_padding: %s", padding)
 		return padding
+	
+	@QtCore.Slot(bool)
+	def setShowFrameRuler(self, show_ruler:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/show_frame_ruler", show_ruler)
+		logging.getLogger(__name__).debug("Set show_frame_ruler: %s", show_ruler)
+	
+	def showFrameRuler(self) -> bool:
+		
+		use_system = self.settings("bs").value("BinSettingsToggles/show_frame_ruler", False, bool)
+		logging.getLogger(__name__).debug("Returning show_frame_ruler: %s", use_system)
+		return use_system
