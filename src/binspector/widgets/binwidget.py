@@ -272,6 +272,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.layout().addWidget(self._section_top)
 
+
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._binitems_list)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
@@ -297,15 +298,36 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._binitems_frame.setZoomRange(avbutils.bins.THUMB_FRAME_MODE_RANGE)
 		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
-		self._section_top._sld_frame_scale.setRange(self._binitems_frame.zoomRange().start, self._binitems_frame.zoomRange().stop)
-		# TODO: Necessary?
-		#logging.getLogger(__name__).error("Zoom range set to %s, confirm: %s", avbutils.bins.THUMB_FRAME_MODE_RANGE, self._binitems_frame.zoomRange())
 
-		
-		
+		self._section_top._sld_frame_scale.setRange(self._binitems_frame.zoomRange().start, self._binitems_frame.zoomRange().stop)
+
 		self._binitems_list .addScrollBarWidget(self._binstats_list,  QtCore.Qt.AlignmentFlag.AlignLeft)
 		self._binitems_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
-		
+
+		btn = buttons.BSPushButtonAction(self._binitems_frame.actions().act_toggle_grid, show_text=False)
+		btn.setIconSize(QtCore.QSize(8,8))
+		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		self._binitems_frame.addScrollBarWidget(
+			btn,
+			QtCore.Qt.AlignmentFlag.AlignLeft
+		)
+
+		btn = buttons.BSPushButtonAction(self._binitems_frame.actions().act_toggle_map, show_text=False)
+		btn.setIconSize(QtCore.QSize(8,8))
+		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+
+		self._binitems_frame.addScrollBarWidget(
+			btn,
+			QtCore.Qt.AlignmentFlag.AlignLeft
+		)
+
+		btn = buttons.BSPushButtonAction(self._binitems_frame.actions().act_toggle_ruler, show_text=False)
+		btn.setIconSize(QtCore.QSize(8,8))
+		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		self._binitems_frame.addScrollBarWidget(
+			btn,
+			QtCore.Qt.AlignmentFlag.AlignLeft
+		)
 
 	def _setupSignals(self):
 		
@@ -427,7 +449,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._use_bin_appearance = is_enabled
 		self.setPalette(self._bin_palette if is_enabled else self._default_palette)
-		self._binitems_list.setFont(self._bin_font if is_enabled else self._default_font)
+		self.setFont(self._bin_font if is_enabled else self._default_font)
 
 	@QtCore.Slot(object)
 	def setUseSystemAppearance(self, use_system:bool):

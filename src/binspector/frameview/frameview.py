@@ -7,6 +7,7 @@ from ..overlays import framemap, frameruler
 
 from .painters import BSBinFrameBackgroundPainter
 from .framescene import BSBinFrameScene
+from .actions import BSFrameViewActions
 
 
 @dataclasses.dataclass(frozen=True)
@@ -56,8 +57,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._zoom_range         = range(100)
 		self._grid_info          = BSBinFrameViewGridInfo(unit_size=BSFrameViewConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewConfig.GRID_DIVISIONS)
 
-		self._anim_zoom_adjust      = QtCore.QPropertyAnimation(parent=self)
-		self._timer_cursor_reset   = QtCore.QTimer()
+		self._anim_zoom_adjust   = QtCore.QPropertyAnimation(parent=self)
+		self._timer_cursor_reset = QtCore.QTimer()
 
 		# Zoomer
 		self._anim_zoom_adjust.setTargetObject(self)
@@ -69,11 +70,16 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._timer_cursor_reset.setInterval(1_000)  # ms
 		self._timer_cursor_reset.setSingleShot(True)
 
+		# Actions
+		self._actions = BSFrameViewActions(self)
+
+		# Background Painter
+		# NOTE: Watches the QGraphicsView for palette changes (`parent=self`), NOT the viewport().
+		# Viewport doesn't fire paletteChange events here.  Dunno. Maybe a TODO in disguise lol
+		self._background_painter = BSBinFrameBackgroundPainter(parent=self, grid_info=self._grid_info)
 
 		# Doers of things
 		# NOTE: Most of these fellers install themselves as eventFilters, enable mouse tracking on the widget, etc
-		self._background_painter = BSBinFrameBackgroundPainter(parent=self.viewport(),grid_info=self._grid_info)
-
 		self._overlay_manager    = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
 		self._overlay_ruler      = frameruler.BSFrameRulerOverlay()
 		self._overlay_map        = framemap.BSThumbnailMapOverlay()
@@ -82,70 +88,58 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._pan_man            = eventfilters.BSPanEventFilter(parent=self.viewport())
 		self._wheelzoom          = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
 
+		self._overlay_map.setThumbnailOffset(self.viewport().rect().topRight())
+
+		self._overlay_map._setEnabled(False)
+		self._overlay_ruler._setEnabled(False)
+		self._background_painter.setEnabled(False)
+
 		self._overlay_manager.installOverlay(self._overlay_ruler)
 		self._overlay_manager.installOverlay(self._overlay_map)
 
-		self._overlay_map.setThumbnailOffset(self.viewport().rect().topRight())
-
 		# Actions
-		self._act_zoom_in  = QtGui.QAction("Zoom In")
-		self._act_zoom_in.triggered.connect(lambda: self.zoomIncrement())
-		self._act_zoom_in.setShortcut(QtGui.QKeySequence.StandardKey.ZoomIn)
-		self._act_zoom_in.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ZoomIn))
 
-		self._act_zoom_out  = QtGui.QAction("Zoom Out")
-		self._act_zoom_out.triggered.connect(lambda: self.zoomDecrement())
-		self._act_zoom_out.setShortcut(QtGui.QKeySequence.StandardKey.ZoomOut)
-		self._act_zoom_out.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ZoomOut))
+		self.addActions(self._actions.navigationActions().actions())
+		self.addActions(self._actions.overlayActions().actions())
 
-		self._act_toggle_ruler = QtGui.QAction("Toggle Ruler")
-		self._act_toggle_ruler.setCheckable(True)
-		self._act_toggle_ruler.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier| QtCore.Qt.Key.Key_R))
-		self._act_toggle_ruler.setChecked(self._overlay_ruler.isEnabled())
-		self._act_toggle_ruler.toggled.connect(self._overlay_ruler._setEnabled)
+		self._actions.act_toggle_grid               .setChecked(self._background_painter.isEnabled())
+		self._actions.act_toggle_ruler              .setChecked(self._overlay_ruler.isEnabled())
+		self._actions.act_toggle_map                .setChecked(self._overlay_map.isEnabled())
+		
+		self._actions.act_zoom_in.triggered         .connect(lambda: self.zoomIncrement())
+		self._actions.act_zoom_out.triggered        .connect(lambda: self.zoomDecrement())
+		self._actions.act_toggle_ruler.toggled      .connect(self._overlay_ruler._setEnabled)
+		self._actions.act_toggle_map.toggled        .connect(self._overlay_map._setEnabled)
+		self._actions.act_toggle_grid.toggled       .connect(self._background_painter.setEnabled)
 
-		self._act_toggle_map  = QtGui.QAction("Toggle Bin Map")
-		self._act_toggle_map.setCheckable(True)
-		self._act_toggle_map.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_M))
-		self._act_toggle_map.setChecked(self._overlay_map.isEnabled())
-		self._act_toggle_map.toggled.connect(self._overlay_map._setEnabled)
-
-		self._act_toggle_grid = QtGui.QAction("Toggle Background Grid")
-		self._act_toggle_grid.setCheckable(True)
-		self._act_toggle_grid.setChecked(self._background_painter.isEnabled())
-		self._act_toggle_grid.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_G))
-		self._act_toggle_grid.toggled.connect(self._background_painter.setEnabled)
-
-		self.addAction(self._act_zoom_in)
-		self.addAction(self._act_zoom_out)
-		self.addAction(self._act_toggle_ruler)
-		self.addAction(self._act_toggle_map)
-		self.addAction(self._act_toggle_grid)
-
-		self._overlay_map.sig_view_reticle_panned.connect(self.centerOn)
-
+		# Manager signals
+		
+		self._overlay_map.sig_view_reticle_panned   .connect(self.centerOn)
 		self._background_painter.sig_enabled_changed.connect(self.viewport().update)
 		self._background_painter.sig_enabled_changed.connect(print)
 
-		self._pan_man.sig_user_pan_started.connect(self.beginPan)
-		self._pan_man.sig_user_pan_moved.connect(self.panViewByDelta)
-		self._pan_man.sig_user_pan_finished.connect(self.finishPan)
+		self._pan_man.sig_user_pan_started          .connect(self.beginPan)
+		self._pan_man.sig_user_pan_moved            .connect(self.panViewByDelta)
+		self._pan_man.sig_user_pan_finished         .connect(self.finishPan)
 
-		self._pinchy_boy.sig_user_pinch_started .connect(self._anim_zoom_adjust.stop)
-		self._pinchy_boy.sig_user_pinch_moved   .connect(self.zoomViewByDelta)
-		self._pinchy_boy.sig_user_pinch_finished.connect(self.userFinishedPinch)
+		self._pinchy_boy.sig_user_pinch_started     .connect(self._anim_zoom_adjust.stop)
+		self._pinchy_boy.sig_user_pinch_moved       .connect(self.zoomViewByDelta)
+		self._pinchy_boy.sig_user_pinch_finished    .connect(self.userFinishedPinch)
 
-		self._wheelzoom.sig_user_zoomed.connect(self.zoomByWheel)
+		self._wheelzoom.sig_user_zoomed             .connect(self.zoomByWheel)
+		self._timer_cursor_reset.timeout            .connect(self.unsetCursor)
 
+		# Misc signals
 
-		self._timer_cursor_reset.timeout.connect(self.unsetCursor)
-
-		self.horizontalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
-		self.verticalScrollBar().valueChanged.connect(self.handleVisibleSceneRectChanged)
-
+		self.horizontalScrollBar().valueChanged     .connect(self.handleVisibleSceneRectChanged)
+		self.verticalScrollBar().valueChanged       .connect(self.handleVisibleSceneRectChanged)
 
 		self.setScene(frame_scene or BSBinFrameScene())
 
+	def actions(self) -> BSFrameViewActions:
+		"""Get the actions manager for the frame view"""
+
+		return self._actions
 
 	def setScene(self, scene:BSBinFrameScene):
 		"""Override of `super().setScene()` with signals and cool stuff"""
