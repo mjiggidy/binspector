@@ -9,9 +9,14 @@ class BSWidgetStyleEventFilter(QtCore.QObject):
 	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent) -> bool:
 
 		if event.type() == QtCore.QEvent.Type.PaletteChange:
+			print("From PALETTE CHANGE")
+			self.sig_palette_changed.emit(watched.palette())
+
+		elif event.type() == QtCore.QEvent.Type.ApplicationPaletteChange:
+			print("From APPLICATION PALETTE CHANGE")
 			self.sig_palette_changed.emit(watched.palette())
 		
 		elif event.type() == QtCore.QEvent.Type.FontChange:
 			self.sig_font_changed.emit(watched.font())
 
-		return super().eventFilter(watched, event)
+		return False
