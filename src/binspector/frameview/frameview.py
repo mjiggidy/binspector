@@ -110,12 +110,22 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._act_toggle_map.setChecked(self._overlay_map.isEnabled())
 		self._act_toggle_map.toggled.connect(self._overlay_map._setEnabled)
 
+		self._act_toggle_grid = QtGui.QAction("Toggle Background Grid")
+		self._act_toggle_grid.setCheckable(True)
+		self._act_toggle_grid.setChecked(self._background_painter.isEnabled())
+		self._act_toggle_grid.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_G))
+		self._act_toggle_grid.toggled.connect(self._background_painter.setEnabled)
+
 		self.addAction(self._act_zoom_in)
 		self.addAction(self._act_zoom_out)
 		self.addAction(self._act_toggle_ruler)
 		self.addAction(self._act_toggle_map)
+		self.addAction(self._act_toggle_grid)
 
 		self._overlay_map.sig_view_reticle_panned.connect(self.centerOn)
+
+		self._background_painter.sig_enabled_changed.connect(self.viewport().update)
+		self._background_painter.sig_enabled_changed.connect(print)
 
 		self._pan_man.sig_user_pan_started.connect(self.beginPan)
 		self._pan_man.sig_user_pan_moved.connect(self.panViewByDelta)

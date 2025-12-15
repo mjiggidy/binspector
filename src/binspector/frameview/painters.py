@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 
 class BSBinFrameBackgroundPainter(QtCore.QObject):
 	"""Draw the background grid on a frame view"""
+	
+	sig_enabled_changed = QtCore.Signal(bool)
 
 	def __init__(self,
 		parent:QtWidgets.QWidget,
@@ -21,6 +23,8 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 	):
 
 		super().__init__(parent, *args, **kwargs)
+
+		self._is_enabled = True
 
 		self._grid_unit_info = grid_info or BSBinFrameViewGridInfo(
 			unit_size      = BSFrameViewConfig.GRID_UNIT_SIZE,
@@ -43,6 +47,18 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 		self.setPalette(parent.palette())
 		self._watcher_style.sig_palette_changed.connect(self.setPalette)
+
+	@QtCore.Slot(bool)
+	def setEnabled(self, is_enabled):
+
+		if self._is_enabled == is_enabled:
+			return
+		
+		self._is_enabled = is_enabled
+		self.sig_enabled_changed.emit(is_enabled)
+	
+	def isEnabled(self) -> bool:
+		return self._is_enabled
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
@@ -70,6 +86,9 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		self._pen_tick_minor.setWidthF(float(tick_width_minor))
 
 	def drawBackground(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
+
+		if not self._is_enabled:
+			return
 
 		painter.save()
 
