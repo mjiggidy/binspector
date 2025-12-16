@@ -7,6 +7,9 @@ from ..frameview import frameview
 from ..scriptview import scriptview
 from ..models import viewmodels
 
+from ..core import icons
+from ..res import icons_gui
+
 from . import buttons, sliders
 
 class BSAbstractBinContentsWidgetBar(QtWidgets.QWidget):
@@ -58,16 +61,16 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 			self.layout().setContentsMargins(*[4]*4)
 
 		self._btngrp_file         = QtWidgets.QButtonGroup()
-		self._btn_open            = buttons.BSPushButtonAction()
-		self._btn_reload          = buttons.BSPushButtonAction(show_text=False)
-		self._btn_stop            = buttons.BSPushButtonAction(show_text=False)
+		self._btn_open            = buttons.BSActionPushButton()
+		self._btn_reload          = buttons.BSActionPushButton(show_text=False)
+		self._btn_stop            = buttons.BSActionPushButton(show_text=False)
 
 		self._prg_loading         = QtWidgets.QProgressBar()
 
 		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
-		self._btn_viewmode_list   = buttons.BSPushButtonAction(show_text=False)
-		self._btn_viewmode_frame  = buttons.BSPushButtonAction(show_text=False)
-		self._btn_viewmode_script = buttons.BSPushButtonAction(show_text=False)
+		self._btn_viewmode_list   = buttons.BSActionPushButton(show_text=False)
+		self._btn_viewmode_frame  = buttons.BSActionPushButton(show_text=False)
+		self._btn_viewmode_script = buttons.BSActionPushButton(show_text=False)
 
 		self._mode_controls       = QtWidgets.QStackedWidget()
 		self._cmb_binviews        = QtWidgets.QComboBox()
@@ -304,7 +307,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list .addScrollBarWidget(self._binstats_list,  QtCore.Qt.AlignmentFlag.AlignLeft)
 		self._binitems_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-		btn = buttons.BSPushButtonAction(self._binitems_frame.actions().act_toggle_grid, show_text=False)
+		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_grid, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
 		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 		self._binitems_frame.addScrollBarWidget(
@@ -312,7 +315,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			QtCore.Qt.AlignmentFlag.AlignLeft
 		)
 
-		btn = buttons.BSPushButtonAction(self._binitems_frame.actions().act_toggle_map, show_text=False)
+		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_map, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
 		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 
@@ -321,7 +324,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			QtCore.Qt.AlignmentFlag.AlignLeft
 		)
 
-		btn = buttons.BSPushButtonAction(self._binitems_frame.actions().act_toggle_ruler, show_text=False)
+		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_ruler, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
 		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 		self._binitems_frame.addScrollBarWidget(

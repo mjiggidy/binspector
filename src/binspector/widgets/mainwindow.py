@@ -59,10 +59,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_binview     = treeview.BSTreeViewBase()
 		self._dock_binview     = QtWidgets.QDockWidget(self.tr("Bin View Settings"))
 
-		self._btn_toolbox_bindisplay = buttons.BSPushButtonAction(show_text=False)
-		self._btn_toolbox_appearance = buttons.BSPushButtonAction(show_text=False)
-		self._btn_toolbox_sifting    = buttons.BSPushButtonAction(show_text=False)
-		self._btn_toolbox_binview    = buttons.BSPushButtonAction(show_text=False)
+		self._btn_toolbox_bindisplay = buttons.BSActionPushButton(show_text=False)
+		self._btn_toolbox_appearance = buttons.BSActionPushButton(show_text=False)
+		self._btn_toolbox_sifting    = buttons.BSActionPushButton(show_text=False)
+		self._btn_toolbox_binview    = buttons.BSActionPushButton(show_text=False)
 
 
 		
@@ -131,7 +131,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Apply Bin Settings Toggles
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
 			
-			btn = buttons.BSPushButtonAction(act_toggle, show_text=False)
+			btn = buttons.BSActionPushButton(act_toggle, show_text=False)
 			btn.setIconSize(QtCore.QSize(8,8))
 			
 			self._main_bincontents.addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)

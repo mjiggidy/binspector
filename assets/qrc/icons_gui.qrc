@@ -11,5 +11,7 @@
 	<file alias="toggle_columns.svg">../icons/toggle_columns_v02_themed.svg</file>
 	<file alias="toggle_appearance.svg">../icons/toggle_appearance_v02_themed.svg</file>
 
+	<file alias="toggle_frame_ruler.svg">../icons/toggle_frame_ruler_v01_themed.svg</file>
+
 </qresource>
 </RCC>
