@@ -37,7 +37,7 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 
 		super().__init__(*args, **kwargs)
 
-		self._palette_watcher       = icons.BSPaletteWatcherForSomeReason() #NOTE: Use my utils.StyleWatcher here?
+		#self._palette_watcher       = icons.BSPaletteWatcherForSomeReason() #NOTE: Use my utils.StyleWatcher here?
 		self._column_select_watcher = columnselect.BSColumnSelectWatcher()
 
 		self.setModel(viewmodels.LBSortFilterProxyModel())
@@ -222,20 +222,20 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 
 		# Clip color chips
 		clip_color_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[51]
-		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
+		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor())))
 		for color in avbutils.get_default_clip_colors():
 
 			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
-			icon = QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=icon_color, palette_watcher=self._palette_watcher))
+			icon = QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=icon_color))
 			clip_color_delegate.iconProvider().addIcon(icon_color.toTuple(), icon)
 
 		# Marker icons
 		marker_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[132]
-		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor(), palette_watcher=self._palette_watcher)))
+		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor())))
 		for marker_color in avbutils.MarkerColors:
 
 			marker_color = QtGui.QColor(marker_color.value)
-			icon = QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=marker_color, palette_watcher=self._palette_watcher))
+			icon = QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=marker_color))
 			marker_delegate.iconProvider().addIcon(marker_color.toTuple(), icon)
 
 		# Bin item type icons
@@ -247,7 +247,6 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 				QtGui.QIcon(
 					icons.BSPalettedSvgIconEngine(
 					":/icons/binitems/item_masterclip.svg",
-					palette_watcher=self._palette_watcher
 					)
 				)
 			)

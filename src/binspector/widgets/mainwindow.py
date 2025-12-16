@@ -269,7 +269,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Bin Contents Toolbars
 		self._main_bincontents.topWidgetBar().searchBox().textChanged.connect(self._main_bincontents.listView().model().setSearchText)
 
-		self._main_bincontents.sig_bin_palette_changed.connect(self._man_actions._palette_watcher.setPalette)
+		#self._main_bincontents.sig_bin_palette_changed.connect(self._man_actions._palette_watcher.setPalette)
 
 		# Bin View Modes
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
