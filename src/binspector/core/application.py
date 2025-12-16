@@ -205,6 +205,12 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.binContentsWidget().frameView()._overlay_ruler._setEnabled(self._man_settings.showFrameRuler())
 		window.binContentsWidget().frameView()._overlay_ruler.sig_enabled_changed.connect(self._man_settings.setShowFrameRuler)
 
+		window.binContentsWidget().frameView()._overlay_map._setEnabled(self._man_settings.showFrameMap())
+		window.binContentsWidget().frameView()._overlay_map.sig_enabled_changed.connect(self._man_settings.setShowFrameMap)
+
+		window.binContentsWidget().frameView()._background_painter.setEnabled(self._man_settings.showFrameGrid())
+		window.binContentsWidget().frameView()._background_painter.sig_enabled_changed.connect(self._man_settings.setShowFrameGrid)
+
 		window.setMobQueueSize(self._man_settings.mobQueueSize())
 		window.setUseAnimation(self._man_settings.useFancyProgressBar())
 		window.binContentsWidget().setBottomScrollbarScaleFactor(self._man_settings.bottomScrollbarScale())
