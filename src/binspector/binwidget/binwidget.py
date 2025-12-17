@@ -2,6 +2,7 @@
 The big fella
 """
 
+
 import logging
 import avb, avbutils
 
@@ -16,6 +17,12 @@ from ..scriptview import scriptview
 from ..models import viewmodels
 from ..widgets import buttons
 
+DEFAULT_FRAME_ZOOM_RANGE  = avbutils.bins.THUMB_FRAME_MODE_RANGE
+DEFAULT_FRAME_ZOOM_START  = DEFAULT_FRAME_ZOOM_RANGE.start
+
+DEFAULT_SCRIPT_ZOOM_RANGE = avbutils.bins.THUMB_SCRIPT_MODE_RANGE
+DEFAULT_SCRIPT_ZOOM_START = avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start
+
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
@@ -25,7 +32,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_focus_set_on_column = QtCore.Signal(int)	# Logical column index
 	sig_bin_stats_updated   = QtCore.Signal(str)
 
-	def __init__(self, *args, bin_model:viewmodels.LBTimelineViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_model:viewmodels.BSBinItemViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -35,8 +42,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
 		
-		self._bin_model         = bin_model or viewmodels.LBTimelineViewModel()
-		self._bin_filter_model  = viewmodels.LBSortFilterProxyModel()
+		self._bin_model         = bin_model or viewmodels.BSBinItemViewModel()
+		self._bin_filter_model  = viewmodels.BSBinViewProxyModel()
 		self._selection_model   = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 		
 		self._scene_frame       = QtWidgets.QGraphicsScene()
@@ -66,12 +73,19 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	def _setupWidgets(self):
 
+		# Top Tool Bar
+		self._section_top._sld_frame_scale .setRange(DEFAULT_FRAME_ZOOM_RANGE.start, DEFAULT_FRAME_ZOOM_RANGE.stop)
+		self._section_top._sld_script_scale.setRange(DEFAULT_SCRIPT_ZOOM_RANGE.start, DEFAULT_SCRIPT_ZOOM_RANGE.stop)
+
 		self.layout().addWidget(self._section_top)
 
-
+		# Main List, Frame, and Script views
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._binitems_list)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
+
+		self._binitems_frame.setZoomRange(DEFAULT_FRAME_ZOOM_RANGE)
+		self._binitems_frame.setZoom(DEFAULT_FRAME_ZOOM_START)
 		
 		self.layout().addWidget(self._section_main)
 
@@ -84,18 +98,17 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 
 		# Adjust scrollbar height for macOS rounded corner junk
+
 		# NOTE: `base_style` junk copies a new instance of the hbar base style, otherwise it goes out of scope
 		# and segfaults on exit, which I really love.  I really love all of this.  I don't need money or a career.
-		base_style = QtWidgets.QStyleFactory.create(self._binitems_list.horizontalScrollBar().style().objectName())
-		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(base_style, scale_factor=1.25, parent=self)
+		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(
+			QtWidgets.QStyleFactory.create(QtWidgets.QApplication.style().name()),
+			scale_factor=1,
+			parent=self
+		)
 
 		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-
-		self._binitems_frame.setZoomRange(avbutils.bins.THUMB_FRAME_MODE_RANGE)
-		self._binitems_frame.setZoom(self._section_top._sld_frame_scale.minimum())
-
-		self._section_top._sld_frame_scale.setRange(self._binitems_frame.zoomRange().start, self._binitems_frame.zoomRange().stop)
 
 		self._binitems_list .addScrollBarWidget(self._binstats_list,  QtCore.Qt.AlignmentFlag.AlignLeft)
 		self._binitems_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
@@ -156,7 +169,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.addAction(self._act_autofit_columns)
 
 	@QtCore.Slot(object)
-	def setBinModel(self, bin_model:viewmodels.LBTimelineViewModel):
+	def setBinModel(self, bin_model:viewmodels.BSBinItemViewModel):
 		"""Set the bin item model for the bin"""
 
 		if self._bin_model == bin_model:
@@ -168,7 +181,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		logging.getLogger(__name__).debug("Set bin model=%s", self._bin_model)
 		self.sig_bin_model_changed.emit(bin_model)
 	
-	def binModel(self) -> viewmodels.LBTimelineViewModel:
+	def binModel(self) -> viewmodels.BSBinItemViewModel:
 		return self._bin_model
 	
 	def _setupBinModel(self):
@@ -213,8 +226,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setBottomScrollbarScaleFactor(self, scale_factor:int|float):
 
 		self._proxystyle_hscroll.setScrollbarScaleFactor(scale_factor)
-		self._binitems_list.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
+		# .update()/.polish() doesn't work. Need to re-set each time?
+		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+	
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette) -> None:
 		
@@ -324,16 +340,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int):
 
 		self.setBinViewName(bin_view.name)
-
-
-		#self.frameView().translate(500, 500)
-		#self.frameView().setSceneRect(QtCore.QRect(QtCore.QPoint(-2500, -2500), QtCore.QSize(5000, 5000)))
-		#self.frameView().centerOn(0,0)
-		#print("***********", self.frameView().sceneRect())
-		#print("***********", self.frameView().viewport().rect())
 		self.frameView().setZoom(frame_scale)
 		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
-		#self.frameView().centerOn(QtCore.QPointF(0,0))
 
 	
 	@QtCore.Slot(object)
@@ -409,4 +417,3 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		)
 		
 		self._binitems_list.addScrollBarWidget(widget, alignment)
-		#self._binitems_frame.addScrollBarWidget(widget, alignment)
