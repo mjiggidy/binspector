@@ -48,6 +48,7 @@ class MyKewlPaletteViewer(QtWidgets.QWidget):
 if __name__ == "__main__":
 
 	app = QtWidgets.QApplication()
+	app.setStyle("Fusion")
 
 	wnd = MyKewlPaletteViewer()
 	wnd.show()
