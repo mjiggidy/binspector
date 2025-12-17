@@ -11,8 +11,8 @@ class BSBinItemDataRoles(enum.IntEnum):
 	BSFrameCoordinates = enum.auto()
 	BSFrameThumbnail   = enum.auto()
 
-class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
-	"""QSortFilterProxyModel that implements natural sorting and such"""
+class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
+	"""QSortFilterProxyModel that implements bin view settings and filters"""
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -237,7 +237,7 @@ class LBSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 			self.invalidateRowsFilter()
 			
 		
-class LBTimelineViewModel(QtCore.QAbstractItemModel):
+class BSBinItemViewModel(QtCore.QAbstractItemModel):
 	"""A view model for timelines"""
 
 

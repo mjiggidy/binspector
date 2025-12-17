@@ -40,7 +40,7 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 		#self._palette_watcher       = icons.BSPaletteWatcherForSomeReason() #NOTE: Use my utils.StyleWatcher here?
 		self._column_select_watcher = columnselect.BSColumnSelectWatcher()
 
-		self.setModel(viewmodels.LBSortFilterProxyModel())
+		self.setModel(viewmodels.BSBinViewProxyModel())
 
 		self.setSelectionBehavior(BSListViewConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSListViewConfig.DEFAULT_SELECTION_MODE)

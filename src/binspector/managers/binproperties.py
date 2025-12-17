@@ -348,7 +348,7 @@ class BSBinItemsManager(QtCore.QObject):
 
 		super().__init__(*args, **kwargs)
 
-		self._view_model = viewmodels.LBTimelineViewModel()
+		self._view_model = viewmodels.BSBinItemViewModel()
 
 #		self._frame_scene = QtWidgets.QGraphicsScene()
 		
@@ -356,7 +356,7 @@ class BSBinItemsManager(QtCore.QObject):
 		self._view_model.rowsRemoved  .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.modelReset   .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 
-	def viewModel(self) -> viewmodels.LBTimelineViewModel:
+	def viewModel(self) -> viewmodels.BSBinItemViewModel:
 		"""Return the internal view model"""
 		return self._view_model
 	

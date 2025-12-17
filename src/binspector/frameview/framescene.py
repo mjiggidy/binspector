@@ -12,11 +12,11 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	sig_selection_model_changed    = QtCore.Signal(object)
 	sig_bin_item_added             = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_filter_model:viewmodels.LBTimelineViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_filter_model:viewmodels.BSBinItemViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._bin_filter_model = bin_filter_model or viewmodels.LBSortFilterProxyModel()
+		self._bin_filter_model = bin_filter_model or viewmodels.BSBinViewProxyModel()
 		self._selection_model  = QtCore.QItemSelectionModel()
 
 		self._bin_items:list[sceneitems.BSFrameModeItem] = list()
@@ -93,11 +93,11 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 		self.blockSignals(False)
 
-	def binFilterModel(self) -> viewmodels.LBSortFilterProxyModel:
+	def binFilterModel(self) -> viewmodels.BSBinViewProxyModel:
 		return self._bin_filter_model
 
 	@QtCore.Slot(object)
-	def setBinFilterModel(self, bin_model:viewmodels.LBSortFilterProxyModel):
+	def setBinFilterModel(self, bin_model:viewmodels.BSBinViewProxyModel):
 
 		if not self._bin_filter_model == bin_model:
 
