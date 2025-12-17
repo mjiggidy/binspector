@@ -1,7 +1,10 @@
-from PySide6 import QtCore, QtWidgets, QtGui
 from os import PathLike
+
+from PySide6 import QtCore, QtWidgets
+
+from ..binwidget import binwidget
 from ..managers import actions, binproperties
-from ..widgets import binwidget, siftwidget, menus, toolboxes, buttons, about
+from ..widgets import siftwidget, menus, toolboxes, buttons, about
 from ..views import treeview
 from ..core import binloader
 

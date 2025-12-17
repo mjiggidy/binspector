@@ -1,227 +1,20 @@
+"""
+The big fella
+"""
+
 import logging
-from PySide6 import QtCore, QtGui, QtWidgets
 import avb, avbutils
+
+from PySide6 import QtCore, QtGui, QtWidgets
+
+from . import proxystyles, scrollwidgets, widgetbars
 
 from ..listview import treeview
 from ..frameview import frameview
 from ..scriptview import scriptview
+
 from ..models import viewmodels
-
-from ..core import icons
-from ..res import icons_gui
-
-from . import buttons, sliders
-
-class BSAbstractBinContentsWidgetBar(QtWidgets.QWidget):
-	"""Widget bar to display above/below"""
-
-	# TODO: I don't know lol might want this later
-
-	def __init__(self, *args, **kwargs):
-		
-		super().__init__(*args, **kwargs)
-		
-		self.setSizePolicy(
-			self.sizePolicy().horizontalPolicy(),
-			QtWidgets.QSizePolicy.Policy.Maximum
-		)
-
-	def addWidget(self, widget:QtWidgets.QWidget):
-		"""
-		Add a widget to the layout.
-		Doing this while I decide if this is a QToolBar or not.
-		"""
-		
-		if isinstance(self, QtWidgets.QToolBar):
-			super().addWidget(widget)
-		else:
-			self.layout().addWidget(widget)
-		
-class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
-	"""Default top widget bar"""
-
-	sig_search_text_changed = QtCore.Signal(object)
-	"""Search text has changed"""
-
-	sig_binview_selected = QtCore.Signal(object)
-	"""User changed the binview"""
-
-	sig_frame_scale_changed  = QtCore.Signal(int)
-	"""User changed frame thumb scale slider"""
-
-	sig_script_scale_changed = QtCore.Signal(int)
-	"""User changed script thumb scale slider"""
-	
-	def __init__(self, *args, **kwargs):
-
-		super().__init__(*args, **kwargs)
-
-		if not isinstance(self, QtWidgets.QToolBar):
-			self.setLayout(QtWidgets.QHBoxLayout())
-			self.layout().setContentsMargins(*[4]*4)
-
-		self._btngrp_file         = QtWidgets.QButtonGroup()
-		self._btn_open            = buttons.BSActionPushButton()
-		self._btn_reload          = buttons.BSActionPushButton(show_text=False)
-		self._btn_stop            = buttons.BSActionPushButton(show_text=False)
-
-		self._prg_loading         = QtWidgets.QProgressBar()
-
-		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
-		self._btn_viewmode_list   = buttons.BSActionPushButton(show_text=False)
-		self._btn_viewmode_frame  = buttons.BSActionPushButton(show_text=False)
-		self._btn_viewmode_script = buttons.BSActionPushButton(show_text=False)
-
-		self._mode_controls       = QtWidgets.QStackedWidget()
-		self._cmb_binviews        = QtWidgets.QComboBox()
-		self._sld_frame_scale     = sliders.ViewModeSlider()
-		self._sld_script_scale    = sliders.ViewModeSlider()
-		
-		self._txt_search          = QtWidgets.QLineEdit()
-
-		self._setupWidgets()
-		self._setupSignals()
-
-	def _setupWidgets(self):
-
-		self._btngrp_file.addButton(self._btn_open)
-		self._btngrp_file.addButton(self._btn_reload)
-		self._btngrp_file.addButton(self._btn_stop)
-		self.addWidget(buttons.BSPushButtonActionBar(self._btngrp_file))
-
-		self.addWidget(self._prg_loading)
-
-		self._cmb_binviews.setSizePolicy(self._cmb_binviews.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
-		self._cmb_binviews.setMinimumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 24)
-		self._cmb_binviews.setMaximumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 32)
-		self._cmb_binviews.addItem("")
-		self._cmb_binviews.insertSeparator(1)
-
-		#self._sld_frame_scale.setRange(
-		#	avbutils.bins.THUMB_FRAME_MODE_RANGE.start,
-		#	avbutils.bins.THUMB_FRAME_MODE_RANGE.stop,
-		#)
-
-		self._sld_script_scale.setRange(
-			avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start,
-			avbutils.bins.THUMB_SCRIPT_MODE_RANGE.stop,
-		)
-		
-		self._mode_controls.addWidget(self._cmb_binviews)
-		self._mode_controls.addWidget(self._sld_frame_scale)
-		self._mode_controls.addWidget(self._sld_script_scale)
-		self._mode_controls.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, QtWidgets.QSizePolicy.Policy.MinimumExpanding)
-		#self._mode_controls.setCurrentIndex(1)
-		self.addWidget(self._mode_controls)
-
-		self._btn_viewmode_list  .setIconSize(QtCore.QSize(16,16))
-		self._btn_viewmode_frame .setIconSize(QtCore.QSize(16,16))
-		self._btn_viewmode_script.setIconSize(QtCore.QSize(16,16))
-
-		self._btngrp_viewmode.setExclusive(True)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_list)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_frame)
-		self._btngrp_viewmode.addButton(self._btn_viewmode_script)
-		self.addWidget(buttons.BSPushButtonActionBar(self._btngrp_viewmode))
-
-		self._txt_search.setSizePolicy(self.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
-		self._txt_search.setMinimumWidth(self._txt_search.fontMetrics().averageCharWidth() * 24)
-		self._txt_search.setMaximumWidth(self._txt_search.fontMetrics().averageCharWidth() * 32)
-		self._txt_search.setPlaceholderText("Find in bin")
-		self._txt_search.setClearButtonEnabled(True)
-		self.addWidget(self._txt_search)
-
-	def _setupSignals(self):
-
-		self._sld_frame_scale.sliderMoved.connect(self.sig_frame_scale_changed)
-		self._sld_frame_scale.valueChanged.connect(lambda s: self._sld_frame_scale.setToolTip(str(s)))
-		#self._sld_frame_scale.valueChanged.connect(print)
-		self._sld_script_scale.sliderMoved.connect(self.sig_script_scale_changed)
-
-		#self._txt_search.textEdited.connect(self.sig_search_text_changed)
-	
-	def setOpenBinAction(self, action:QtGui.QAction):
-		"""Set the action for Open Bin"""
-
-		self._btn_open.setAction(action)
-
-	def setReloadBinAction(self, action:QtGui.QAction):
-		"""Set the action for Reload Bin"""
-
-		self._btn_reload.setAction(action)
-
-	def setStopLoadAction(self, action:QtGui.QAction):
-		"""Set the action for Stop Load"""
-
-		self._btn_stop.setAction(action)
-
-	def setViewModeListAction(self, action:QtGui.QAction):
-		"""Set the action for view mode: list"""
-
-		self._btn_viewmode_list.setAction(action)
-	
-	def setViewModeFrameAction(self, action:QtGui.QAction):
-		"""Set the action for iew mode: frame"""
-
-		self._btn_viewmode_frame.setAction(action)
-
-	def setViewModeScriptAction(self, action:QtGui.QAction):
-		"""Set the action for iew mode: script"""
-
-		self._btn_viewmode_script.setAction(action)
-
-	def searchBox(self) -> QtWidgets.QLineEdit:
-		"""Return the search box"""
-
-		return self._txt_search
-	
-	def binViewSelector(self) -> QtWidgets.QComboBox:
-
-		return self._cmb_binviews
-	
-	def progressBar(self) -> QtWidgets.QProgressBar:
-
-		return self._prg_loading
-	
-	@QtCore.Slot(object)
-	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
-
-		self._mode_controls.setCurrentIndex(int(view_mode))
-
-class BSScrollBarStyle(QtWidgets.QProxyStyle):
-	"""Modify scrollbar height"""
-
-	def __init__(self, *args, scale_factor:int|float=1.25, **kwargs):
-
-		super().__init__(*args, **kwargs)
-		self._scale_factor = scale_factor
-	
-	def pixelMetric(self, metric:QtWidgets.QStyle.PixelMetric, option:QtWidgets.QStyleOption=None, widget:QtWidgets.QWidget=None):
-
-		if metric == QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent:
-			return round(self.baseStyle().pixelMetric(metric, option, widget) * self._scale_factor)
-		else:
-			return self.baseStyle().pixelMetric(metric, option, widget)
-	
-	@QtCore.Slot(int)
-	@QtCore.Slot(float)
-	def setScrollbarScaleFactor(self, scale_factor:float|int):
-		#print("YOOO", scale_factor)
-		self._scale_factor = scale_factor
-
-class BSBinStatsLabel(QtWidgets.QLabel):
-
-	def __init__(self, *args, **kwargs):
-
-		super().__init__(*args, **kwargs)
-		
-		f = self.font()
-		f.setPointSizeF(f.pointSizeF() * 0.8)
-		self.setFont(f)
-		self.setMinimumWidth(self.fontMetrics().averageCharWidth() * 32)	# Showing 999,999 of 999,999 items
-		self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-		self.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
-		self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
+from ..widgets import buttons
 
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
@@ -255,15 +48,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_font          = self.font()
 		self._use_bin_appearance= True
 
-		self._section_top       = BSBinContentsTopWidgetBar()
+		self._section_top       = widgetbars.BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
 		
 		self._binitems_list     = treeview.BSBinTreeView()
 		self._binitems_frame    = frameview.BSBinFrameView()
 		self._binitems_script   = scriptview.BSBinScriptView()
 
-		self._binstats_list     = BSBinStatsLabel()
-		self._binstats_frame    = BSBinStatsLabel()
+		self._binstats_list     = scrollwidgets.BSBinStatsLabel()
+		self._binstats_frame    = scrollwidgets.BSBinStatsLabel()
 
 		self._setupWidgets()
 		self._setupSignals()
@@ -294,7 +87,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# NOTE: `base_style` junk copies a new instance of the hbar base style, otherwise it goes out of scope
 		# and segfaults on exit, which I really love.  I really love all of this.  I don't need money or a career.
 		base_style = QtWidgets.QStyleFactory.create(self._binitems_list.horizontalScrollBar().style().objectName())
-		self._proxystyle_hscroll = BSScrollBarStyle(base_style, scale_factor=1.25, parent=self)
+		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(base_style, scale_factor=1.25, parent=self)
 
 		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
@@ -309,7 +102,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_grid, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		btn.setFixedWidth(proxystyles.BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 		self._binitems_frame.addScrollBarWidget(
 			btn,
 			QtCore.Qt.AlignmentFlag.AlignLeft
@@ -317,7 +110,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_map, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		btn.setFixedWidth(proxystyles.BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 
 		self._binitems_frame.addScrollBarWidget(
 			btn,
@@ -326,7 +119,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_ruler, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		btn.setFixedWidth(proxystyles.BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 		self._binitems_frame.addScrollBarWidget(
 			btn,
 			QtCore.Qt.AlignmentFlag.AlignLeft
@@ -431,10 +224,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# TODO: Re-wire with styleWatcher
 		# self._binitems_list._palette_watcher.setPalette(palette)
 	
-	def topWidgetBar(self) -> BSBinContentsTopWidgetBar:
+	def topWidgetBar(self) -> widgetbars.BSBinContentsTopWidgetBar:
 		return self._section_top
 	
-	def setTopWidgetBar(self, toolbar:BSBinContentsTopWidgetBar):
+	def setTopWidgetBar(self, toolbar:widgetbars.BSBinContentsTopWidgetBar):
 		self._section_top = toolbar
 	
 #	def bottomWidgetBar(self) -> BSBinContentsBottomWidgetBar:
