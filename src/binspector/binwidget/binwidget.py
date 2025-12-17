@@ -16,6 +16,7 @@ from ..scriptview import scriptview
 
 from ..models import viewmodels
 from ..widgets import buttons
+from ..utils import palettes
 
 DEFAULT_FRAME_ZOOM_RANGE  = avbutils.bins.THUMB_FRAME_MODE_RANGE
 DEFAULT_FRAME_ZOOM_START  = DEFAULT_FRAME_ZOOM_RANGE.start
@@ -145,7 +146,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
 		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
 
-		self._section_top.sig_frame_scale_changed.connect(self._binitems_frame.setZoom)
+		self._section_top.sig_frame_scale_changed  .connect(self._binitems_frame.setZoom)
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 
@@ -246,12 +247,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setTopWidgetBar(self, toolbar:widgetbars.BSBinContentsTopWidgetBar):
 		self._section_top = toolbar
 	
-#	def bottomWidgetBar(self) -> BSBinContentsBottomWidgetBar:
-#		return self._section_bottom
-#	
-#	def setBottomWidgetBar(self, widget:BSBinContentsBottomWidgetBar):
-#		self._section_bottom = widget
-	
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
 
@@ -282,28 +277,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
 	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
 
-		VARIATION     = 110  # Must be >100 to  have effect
-		VARIATION_MID = 105  # Must be >100 to  have effect
-
-		palette = self.palette()
-
-		palette.setColor(QtGui.QPalette.ColorRole.Text,            fg_color)
-		palette.setColor(QtGui.QPalette.ColorRole.ButtonText,      fg_color)
-		palette.setColor(QtGui.QPalette.ColorRole.Base,            bg_color)
-		palette.setColor(QtGui.QPalette.ColorRole.AlternateBase,   bg_color.darker(VARIATION))
-		palette.setColor(QtGui.QPalette.ColorRole.Button,          bg_color.darker(VARIATION))
-
-		palette.setColor(QtGui.QPalette.ColorRole.WindowText,      fg_color)
-		palette.setColor(QtGui.QPalette.ColorRole.PlaceholderText, bg_color.lighter(VARIATION).lighter(VARIATION).lighter(VARIATION))
-		palette.setColor(QtGui.QPalette.ColorRole.Window,          bg_color.darker(VARIATION).darker(VARIATION))
-
-
-		# Fusion scrollbar uses these colors per https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPalette.html
-		# Although it... like... doesn't? lol
-		palette.setColor(QtGui.QPalette.ColorRole.Light,    palette.color(QtGui.QPalette.ColorRole.Button).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION).lighter(VARIATION))      # Lighter than Button color
-		palette.setColor(QtGui.QPalette.ColorRole.Midlight, palette.color(QtGui.QPalette.ColorRole.Button).lighter(VARIATION_MID))  # Between Button and Light
-		palette.setColor(QtGui.QPalette.ColorRole.Mid,      palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION_MID))   # Between Button and Dark
-		palette.setColor(QtGui.QPalette.ColorRole.Dark,     palette.color(QtGui.QPalette.ColorRole.Button).darker(VARIATION))       # Darker than Button
+		palette = palettes.prep_palette(self.palette(), fg_color, bg_color)
 
 		self._bin_palette = palette
 
