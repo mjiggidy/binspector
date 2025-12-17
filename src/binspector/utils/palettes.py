@@ -1,5 +1,10 @@
 from PySide6 import QtGui
 
+def is_dark_mode(palette:QtGui.QPalette) -> bool:
+	"""Determine if a palette is "dark" or not"""
+
+	return palette.window().color().lightness() < palette.windowText().color().lightness()
+
 def prep_palette(base_palette:QtGui.QPalette, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
 	VARIATION     = 110  # Must be >100 to  have effect
 	VARIATION_MID = 105  # Must be >100 to  have effect
