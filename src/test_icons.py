@@ -1,0 +1,67 @@
+import sys
+
+from PySide6 import QtCore, QtGui, QtWidgets
+
+from binspector.widgets import buttons, binwidget
+from binspector.core import icons
+from binspector.res import icons_gui
+
+class MyKewlTestWindow(QtWidgets.QWidget):
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self.setLayout(QtWidgets.QHBoxLayout())
+
+		self._scroll = QtWidgets.QScrollArea()
+		self._scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
+		self._scroll.addScrollBarWidget(
+			binwidget.BSBinStatsLabel("Showing 12 of 14,000"), QtCore.Qt.AlignmentFlag.AlignLeft
+		)
+		
+		self.layout().addWidget(self._scroll)
+
+		
+
+	def addButton(self, button:buttons.BSPalettedActionPushButton):
+
+		self._scroll.addScrollBarWidget(button, QtCore.Qt.AlignmentFlag.AlignLeft)
+
+
+if __name__ == "__main__":
+
+	app = QtWidgets.QApplication()
+	app.setStyle("Fusion")
+
+	wnd = MyKewlTestWindow()
+	wnd.show()
+
+	
+	#act.setIcon(QtGui.QIcon(":/icons/gui/toggle_frame_ruler.svg"))
+	#act.setCheckable(True)
+
+	for svg in [
+		":/icons/gui/toggle_frame_ruler.svg",
+		":/icons/gui/toggle_frame_grid.svg",
+		":/icons/gui/toggle_frame_map.svg",
+		":/icons/gui/toggle_frame_showall.svg",
+		":/icons/gui/toggle_appearance.svg",
+	]:
+	
+		butt = buttons.BSPalettedActionPushButton(QtGui.QAction(checkable=True), show_text=False, icon_engine=icons.BSPalettedSvgIconEngine(svg))
+		butt.setFixedWidth(16)
+		butt.setIconSize(QtCore.QSize(8,8))
+		#butt.setFixedSize(QtCore.QSize(16,16))
+
+		wnd.addButton(
+			butt
+		)
+
+
+
+
+
+
+	sys.exit(app.exec())
