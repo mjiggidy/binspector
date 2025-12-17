@@ -72,7 +72,7 @@ class BSPalettedActionPushButton(BSActionPushButton):
 		# Using show_icon=False so Action doesn't set it? I feel this is all hacky
 		# This whole paletted icon engine thing is ugh
 		# Thanks for reading my blog post
-		super().__init__(action, show_text, show_tooltip, show_icon=False)
+		super().__init__(action, show_text, show_icon=False, show_tooltip=show_tooltip)
 
 		self._icon_engine   = icons.BSAbstractPalettedIconEngine(parent=self)
 		self._style_watcher = stylewatcher.BSWidgetStyleEventFilter(parent=self)
@@ -93,12 +93,12 @@ class BSPalettedActionPushButton(BSActionPushButton):
 		if self._icon_engine == icon_engine:
 			return
 		
-		self._style_watcher.disconnect(self._icon_engine)
+		#self._style_watcher.disconnect(self._icon_engine)
 		
 		self._icon_engine = icon_engine
 		self._icon_engine.setPalette(self.palette())
 
-		self._style_watcher.sig_palette_changed.connect(self._icon_engine.setPalette)
+		self._style_watcher.sig_palette_changed.connect(lambda pal: self._icon_engine.setPalette(pal))
 
 		self.setIcon(
 			QtGui.QIcon(self._icon_engine)
