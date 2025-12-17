@@ -2,7 +2,8 @@ import sys
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from binspector.widgets import buttons, binwidget
+from binspector.binwidget import scrollwidgets
+from binspector.widgets import buttons
 from binspector.core import icons
 from binspector.res import icons_gui
 
@@ -18,7 +19,7 @@ class MyKewlTestWindow(QtWidgets.QWidget):
 		self._scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
 		self._scroll.addScrollBarWidget(
-			binwidget.BSBinStatsLabel("Showing 12 of 14,000"), QtCore.Qt.AlignmentFlag.AlignLeft
+			scrollwidgets.BSBinStatsLabel("Showing 12 of 14,000"), QtCore.Qt.AlignmentFlag.AlignLeft
 		)
 		
 		self.layout().addWidget(self._scroll)
@@ -36,6 +37,7 @@ if __name__ == "__main__":
 	app.setStyle("Fusion")
 
 	wnd = MyKewlTestWindow()
+	wnd.setMinimumSize(QtCore.QSize(400, 100))
 	wnd.show()
 
 	
