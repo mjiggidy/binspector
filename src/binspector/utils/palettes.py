@@ -1,3 +1,7 @@
+"""
+Lil' `QtGui.QPalette` utilities fer yas
+"""
+
 from PySide6 import QtGui
 
 def is_dark_mode(palette:QtGui.QPalette) -> bool:
@@ -5,11 +9,15 @@ def is_dark_mode(palette:QtGui.QPalette) -> bool:
 
 	return palette.window().color().lightness() < palette.windowText().color().lightness()
 
-def prep_palette(base_palette:QtGui.QPalette, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
+def build_palette(fg_color:QtGui.QColor, bg_color:QtGui.QColor, base_palette:QtGui.QPalette|None=None) -> QtGui.QPalette:
+	"""Build a `QtGui.QPalette` from given foreground and background colors"""
+
 	VARIATION     = 110  # Must be >100 to  have effect
 	VARIATION_MID = 105  # Must be >100 to  have effect
 
-	palette = QtGui.QPalette(base_palette)
+	palette = QtGui.QPalette(base_palette) if base_palette else QtGui.QGuiApplication.palette()
+
+	# 4ME: https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPalette.html#PySide6.QtGui.QPalette.ColorRole
 
 	palette.setColor(QtGui.QPalette.ColorRole.Text,            fg_color)
 	palette.setColor(QtGui.QPalette.ColorRole.ButtonText,      fg_color)

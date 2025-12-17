@@ -277,7 +277,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
 	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
 
-		palette = palettes.prep_palette(self.palette(), fg_color, bg_color)
+		palette = palettes.build_palette(fg_color, bg_color, self.palette())
 
 		self._bin_palette = palette
 
