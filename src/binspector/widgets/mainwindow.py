@@ -28,6 +28,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._settings         = QtCore.QSettings()
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
+		
 		# Define managers
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
@@ -194,12 +195,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		self._man_appearance.sig_font_changed                .connect(self._tool_appearance.setBinFont)
+		self._man_appearance.sig_font_changed                .connect(self._main_bincontents.setBinFont)
 		self._man_appearance.sig_palette_changed             .connect(self._tool_appearance.setBinPalette)
+		self._man_appearance.sig_palette_changed             .connect(self._main_bincontents.setBinColors)
 		self._man_appearance.sig_window_rect_changed         .connect(self._tool_appearance.setBinRect)
 		self._man_appearance.sig_was_iconic_changed          .connect(self._tool_appearance.setWasIconic)
 
-		self._man_appearance.sig_palette_changed             .connect(self._main_bincontents.setBinColors)
-		self._man_appearance.sig_font_changed                .connect(self._main_bincontents.setBinFont)
 		self._tool_appearance.sig_font_changed               .connect(self._man_appearance.sig_font_changed)
 		self._tool_appearance.sig_palette_changed            .connect(self._main_bincontents.setBinColors)
 
