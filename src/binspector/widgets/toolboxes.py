@@ -84,8 +84,6 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 		self.layout().addWidget(QtWidgets.QLabel(self.tr("Column Widths")))
 		self.layout().addWidget(self._tree_column_widths)
 
-		
-
 		self._cmb_fonts.currentFontChanged.connect(self.sig_font_changed)
 		self._spn_size.valueChanged.connect(lambda: self.sig_font_changed.emit(self.binFont()))
 
@@ -118,7 +116,6 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	
 	@QtCore.Slot(QtCore.QRect)
 	def setBinRect(self, rect:QtCore.QRect):
-		#print(rect)
 		
 		self._spn_geo_x.setValue(rect.x())
 		self._spn_geo_y.setValue(rect.y())
@@ -129,7 +126,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	def setBinFont(self, font:QtGui.QFont):
 
 		self._cmb_fonts.setCurrentFont(font)
-		self._spn_size.setValue(font.pixelSize())
+		self._spn_size.setValue(font.pointSize())
 
 	@QtCore.Slot(QtGui.QColor)
 	def setBinForegroundColor(self, color:QtGui.QColor):
@@ -160,14 +157,17 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
 
 		self.blockSignals(True)
+
 		self.setBinForegroundColor(fg_color)
 		self.setBinBackgroundColor(bg_color)
+
 		self.blockSignals(False)
+		
 		self.sig_colors_changed.emit(*self.binPalette())
 	
 	def binFont(self) -> QtGui.QFont:
 		font = self._cmb_fonts.currentFont()
-		font.setPixelSize(self._spn_size.value())
+		font.setPointSizeF(self._spn_size.value())
 		return font
 	
 	def binPalette(self) -> tuple[QtGui.QColor, QtGui.QColor]:

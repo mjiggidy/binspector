@@ -69,8 +69,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btn_toolbox_binview    = buttons.BSActionPushButton(show_text=False)
 
 
-		
-		
 		# The rest
 		
 		self.setMenuBar(menus.BinWindowMenuBar(self._man_actions))
@@ -194,17 +192,18 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.listView().model().setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
-		# Appearance
+		# Appearance to binwidget
 		self._man_appearance.sig_font_changed                .connect(self._bin_widget.setBinFont)
 		self._man_appearance.sig_palette_changed             .connect(self._bin_widget.setBinPalette)
 		
+		# Appearance to toolbox
 		self._man_appearance.sig_bin_font_changed            .connect(self._tool_appearance.setBinFont)
 		self._man_appearance.sig_bin_colors_changed          .connect(self._tool_appearance.setBinColors)
 		self._man_appearance.sig_window_rect_changed         .connect(self._tool_appearance.setBinRect)
 		self._man_appearance.sig_was_iconic_changed          .connect(self._tool_appearance.setWasIconic)
 
-	#	self._tool_appearance.sig_font_changed               .connect(self._man_appearance.sig_font_changed)
-	#	self._tool_appearance.sig_colors_changed             .connect(self._man_appearance.sig_bin_colors_changed)
+		self._tool_appearance.sig_font_changed               .connect(self._man_appearance.setBinFont)
+		self._tool_appearance.sig_colors_changed             .connect(self._man_appearance.setBinColors)
 		#self._tool_appearance.sig_colors_changed             .connect(self._bin_widget.setBinColors)
 
 		# Bin loader signals
@@ -283,7 +282,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def siftSettingsManager(self) -> binproperties.BSBinSiftSettingsManager:
 		return self._man_siftsettings
 	
-	def appearanceManager(self) -> binspector.managers.appearance.BSBinAppearanceSettingsManager:
+	def appearanceManager(self) -> appearance.BSBinAppearanceSettingsManager:
 		return self._man_appearance
 	
 	def sortingManager(self) -> binproperties.BSBinSortingPropertiesManager:
