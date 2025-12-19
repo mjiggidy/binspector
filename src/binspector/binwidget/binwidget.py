@@ -2,7 +2,6 @@
 The big fella
 """
 
-
 import logging
 import avb, avbutils
 
@@ -66,6 +65,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binstats_list     = scrollwidgets.BSBinStatsLabel()
 		self._binstats_frame    = scrollwidgets.BSBinStatsLabel()
 
+		# Create proxy style from application style for potential horizontal scrollbar height mods
+		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(
+			QtWidgets.QStyleFactory.create(QtWidgets.QApplication.style().name()),  # I feel like this is weird
+			scale_factor=1,
+			parent=self
+		)
+
 		self._setupWidgets()
 		self._setupSignals()
 		self._setupActions()
@@ -97,17 +103,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.setSelectionModel(self._selection_model)
 		self._binitems_frame.scene().setSelectionModel(self._selection_model)
 		
-
 		# Adjust scrollbar height for macOS rounded corner junk
-
-		# NOTE: `base_style` junk copies a new instance of the hbar base style, otherwise it goes out of scope
-		# and segfaults on exit, which I really love.  I really love all of this.  I don't need money or a career.
-		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(
-			QtWidgets.QStyleFactory.create(QtWidgets.QApplication.style().name()),
-			scale_factor=1,
-			parent=self
-		)
-
 		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 

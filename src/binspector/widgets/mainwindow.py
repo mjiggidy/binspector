@@ -110,27 +110,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.setViewModeListAction(self._man_actions.viewBinAsList())
 		topbar.setViewModeFrameAction(self._man_actions.viewBinAsFrame())
 		topbar.setViewModeScriptAction(self._man_actions.viewBinAsScript())
-		
-		pol = topbar.progressBar().sizePolicy()
-		pol.setRetainSizeWhenHidden(True)
-		topbar.progressBar().setSizePolicy(pol)
-		topbar.progressBar().setRange(0,0)
-		topbar.progressBar().setHidden(True)
 
 		self._anim_progress.setTargetObject(topbar.progressBar())
 		self._anim_progress.setPropertyName(QtCore.QByteArray.fromStdString("value"))
 		self._anim_progress.setEasingCurve(QtCore.QEasingCurve.Type.Linear)
-		#self._anim_progress.setDuration(2_000)
 
 		grp = QtWidgets.QSizeGrip(self._main_bincontents.listView())
 		self._main_bincontents.listView().setCornerWidget(grp)
 		
-		# Toolbox Visibility Toggles (TODO: GONE FOR NOW?)
-		#self._btn_toolbox_binview.setAction(self._man_actions.showBinViewSettings())
-		#self._btn_toolbox_bindisplay.setAction(self._man_actions.showBinDisplaySettings())
-		#self._btn_toolbox_appearance.setAction(self._man_actions.showBinAppearanceSettings())
-		#self._btn_toolbox_sifting.setAction(self._man_actions.showBinSiftSettings())
-#
 		# Apply Bin Settings Toggles
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
 			
@@ -138,22 +125,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			btn.setIconSize(QtCore.QSize(8,8))
 			
 			self._main_bincontents.addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
-		
-		
-		#self._btngrp_toolboxes = QtWidgets.QButtonGroup()
-		#self._btngrp_toolboxes.setExclusive(False)
-		#self._btngrp_toolboxes.addButton(self._btn_toolbox_binview)
-		#self._btngrp_toolboxes.addButton(self._btn_toolbox_bindisplay)
-		#self._btngrp_toolboxes.addButton(self._btn_toolbox_appearance)
-		#self._btngrp_toolboxes.addButton(self._btn_toolbox_sifting)
-		#
-		#for btn in self._btngrp_toolboxes.buttons():
-		#	btn.setIconSize(QtCore.QSize(8,8))
-
-		#btn_toggles = buttons.BSPushButtonActionBar(self._btngrp_toolboxes)
-		#btn_toggles.setSizePolicy(QtWidgets.QSizePolicy.Policy.Maximum, btn_toggles.sizePolicy().verticalPolicy())
-		#btn_toggles.setFixedWidth(64)
-		#self._main_bincontents.listView().addScrollBarWidget(btn_toggles, QtCore.Qt.AlignmentFlag.AlignLeft)
 		
 	def setupDock(self):
 		"""Add and prepare the dock"""
@@ -177,9 +148,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._man_actions._act_reloadcurrent.setVisible(False)
 		self._man_actions._act_reloadcurrent.setEnabled(False)
-		self._man_actions._act_stopcurrent.setVisible(False)
-		self._man_actions._act_stopcurrent.setEnabled(False)
-
+		self._man_actions._act_stopcurrent  .setVisible(False)
+		self._man_actions._act_stopcurrent  .setEnabled(False)
 		
 	def setupSignals(self):
 		"""Connect signals and slots"""

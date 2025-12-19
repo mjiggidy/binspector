@@ -95,6 +95,12 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 		self.addWidget(buttons.BSPushButtonActionBar(self._btngrp_file))
 
+		pol = self._prg_loading.sizePolicy()
+		pol.setRetainSizeWhenHidden(True)
+		self._prg_loading.setSizePolicy(pol)
+		self._prg_loading.setRange(0,0)
+		self._prg_loading.setHidden(True)
+
 		self.addWidget(self._prg_loading)
 
 		self._cmb_binviews.setSizePolicy(self._cmb_binviews.sizePolicy().horizontalPolicy(), QtWidgets.QSizePolicy.Policy.MinimumExpanding)
@@ -102,16 +108,6 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		self._cmb_binviews.setMaximumWidth(self._cmb_binviews.fontMetrics().averageCharWidth() * 32)
 		self._cmb_binviews.addItem("")
 		self._cmb_binviews.insertSeparator(1)
-
-		#self._sld_frame_scale.setRange(
-		#	avbutils.bins.THUMB_FRAME_MODE_RANGE.start,
-		#	avbutils.bins.THUMB_FRAME_MODE_RANGE.stop,
-		#)
-
-		#self._sld_script_scale.setRange(
-		#	avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start,
-		#	avbutils.bins.THUMB_SCRIPT_MODE_RANGE.stop,
-		#)
 
 		# View Mode-Specific Controls
 		self._mode_controls.addWidget(self._cmb_binviews)
