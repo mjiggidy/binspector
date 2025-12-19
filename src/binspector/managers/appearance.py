@@ -64,7 +64,7 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 		# I could be wrong, but I have a suspicion that these mac_* properties are 
 		# specifically for frame view even though mac_font_size seems global
 		bin_font = QtWidgets.QApplication.font()
-		bin_font.setPixelSize(mac_font_size)
+		bin_font.setPointSizeF(mac_font_size) # NOTE: Setting PointSize sets PixelSize to -1 and vice versa!
 		if isinstance(mac_font_family, str) and QtGui.QFontDatabase.hasFamily(mac_font_family):
 			bin_font.setFamily(mac_font_family)
 
