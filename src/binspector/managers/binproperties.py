@@ -1,6 +1,6 @@
 import logging, typing
 import avb, avbutils
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore
 from ..models import viewmodelitems, viewmodels
 from ..core import binparser
 from . import base
@@ -183,101 +183,6 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 		
 		self.sig_bin_display_changed.emit(bin_display)
 		
-class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
-
-	sig_font_changed           = QtCore.Signal(QtGui.QFont)
-	sig_palette_changed        = QtCore.Signal(QtGui.QColor, QtGui.QColor)
-	sig_column_widths_changed  = QtCore.Signal(object)
-	sig_window_rect_changed    = QtCore.Signal(object)
-	sig_was_iconic_changed     = QtCore.Signal(object)
-	sig_bin_appearance_toggled = QtCore.Signal(object)
-	sig_system_appearance_toggled = QtCore.Signal(object)
-
-	def __init__(self, *args, **kwargs):
-		
-		super().__init__(*args, **kwargs)
-
-		self._use_bin_appearance = True
-
-		self.sig_bin_appearance_toggled.connect(lambda use_bin: self.sig_system_appearance_toggled.emit(not use_bin))
-
-	@QtCore.Slot(object, object, object, object, object, object, object)
-	def setAppearanceSettings(self,
-		bin_font:str|int,
-		mac_font_size:int,
-		foreground_color:list[int],
-		background_color:list[int],
-		column_widths:dict[str,int],
-		window_rect:list[int],
-		was_iconic:bool
-	):
-		
-		font = QtWidgets.QApplication.font()
-		
-		# JUST A NOTE:
-		# I could be wrong, but I have a suspicion that these mac_* properties are 
-		# specifically for frame view even though mac_font_size seems global
-		font.setPixelSize(mac_font_size)
-
-		if isinstance(bin_font, str) and QtGui.QFontDatabase.hasFamily(bin_font):
-			font.setFamily(bin_font)
-
-		# NOTE: mac_font int not a font index, at least not one we can make use of
-		#elif isinstance(bin_font, int) and len(QtGui.QFontDatabase.families()) > bin_font:
-		#	font.setFamily(QtGui.QFontDatabase.families()[bin_font])
-		
-		self.sig_font_changed.emit(font)
-		
-		self.setColumnWidths(column_widths)
-		self.setWindowRect(window_rect)
-
-		self.sig_was_iconic_changed.emit(was_iconic)
-		self.sig_column_widths_changed.emit(column_widths)
-		self.sig_palette_changed.emit(
-			QtGui.QColor.fromRgba64(*foreground_color),
-			QtGui.QColor.fromRgba64(*background_color),
-		)
-
-	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
-	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
-		
-		self.sig_palette_changed.emit(fg_color, bg_color)
-
-	@QtCore.Slot(object)
-	def setWindowRect(self, window_rect:list[int]):
-
-		self.sig_window_rect_changed.emit(QtCore.QRect(
-			QtCore.QPoint(*window_rect[:2]),
-			QtCore.QPoint(*window_rect[2:])
-		))
-
-	
-	@QtCore.Slot(object)
-	def setColumnWidths(self, column_widths:dict[str,int]):
-		"""Display column width settings"""
-
-		self.viewModel().clear()
-
-		for col, width in column_widths.items():
-			self.addRow({
-				self.tr("Width"):  width,
-				self.tr("Column"): col,
-			}, add_new_headers=True)
-	
-	@QtCore.Slot(object)
-	def setEnableBinAppearance(self, is_enabled:bool):
-
-		if not self._use_bin_appearance == is_enabled:
-			self._use_bin_appearance = is_enabled
-			self.sig_bin_appearance_toggled.emit(is_enabled)
-	
-	@QtCore.Slot(object)
-	def setUseSystemAppearance(self, use_system:bool):
-
-		self.setEnableBinAppearance(not use_system)
-		
-
-
 class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 	"""Bin sorting"""
 

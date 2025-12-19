@@ -28,6 +28,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	sig_view_mode_changed   = QtCore.Signal(object)
 	sig_bin_palette_changed = QtCore.Signal(QtGui.QPalette)
+	sig_bin_font_changed    = QtCore.Signal(QtGui.QFont)
 	sig_bin_model_changed   = QtCore.Signal(object)
 	sig_focus_set_on_column = QtCore.Signal(int)	# Logical column index
 	sig_bin_stats_updated   = QtCore.Signal(str)
@@ -187,146 +188,23 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_filter_model.setSourceModel(self._bin_model)
 		self._binitems_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK
 
+	###
+	# View Mode Widgets
+	###
+
 	def listView(self) -> treeview.BSBinTreeView:
-		"""Get the main view"""
+		"""List View Mode widget"""
 
 		return self._binitems_list
 	
-#	def setListView(self, treeview:bintreeview.BSBinTreeView):
-#
-#		self._binitems_list = treeview
-#		self._setViewModeWidget(avbutils.BinDisplayModes.LIST, self._binitems_list)
-
 	def frameView(self) -> frameview.BSBinFrameView:
+		"""Frame View Mode widget"""
+
 		return self._binitems_frame
-	
-#	def setFrameView(self, frame_view:binframeview.BSBinFrameView):
-#
-#		self._binitems_frame = frame_view
-#		self._setViewModeWidget(avbutils.BinDisplayModes.FRAME, self._binitems_frame)
 
 	def scriptView(self) -> scriptview.BSBinScriptView:
+		"""Script View Mode widget"""
 		return self._binitems_script
-	
-#	def setScriptView(self, script_view:binscriptview.BSBinScriptView):
-#
-#		self._binitems_script = script_view
-#		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
-
-	@QtCore.Slot(object)
-	def setItemPadding(self, padding:QtCore.QMargins):
-
-		self._binitems_list.setItemPadding(padding)
-	
-	@QtCore.Slot(int)
-	@QtCore.Slot(float)
-	def setBottomScrollbarScaleFactor(self, scale_factor:int|float):
-
-		self._proxystyle_hscroll.setScrollbarScaleFactor(scale_factor)
-
-		# .update()/.polish() doesn't work. Need to re-set each time?
-		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-	
-	@QtCore.Slot(QtGui.QPalette)
-	def setPalette(self, palette:QtGui.QPalette) -> None:
-		
-		super().setPalette(palette)
-		self.sig_bin_palette_changed.emit(palette)
-		
-		# TODO: Re-wire with styleWatcher
-		# self._binitems_list._palette_watcher.setPalette(palette)
-	
-	def topWidgetBar(self) -> widgetbars.BSBinContentsTopWidgetBar:
-		return self._section_top
-	
-	def setTopWidgetBar(self, toolbar:widgetbars.BSBinContentsTopWidgetBar):
-		self._section_top = toolbar
-	
-	@QtCore.Slot(object)
-	def setBinViewEnabled(self, is_enabled:bool):
-
-		# TODO: Do I need to emit a confirmation signal here?
-		self._bin_filter_model.setBinViewEnabled(is_enabled)
-
-	@QtCore.Slot(object)
-	def setBinAppearanceEnabled(self, is_enabled:bool):
-		
-		self._use_bin_appearance = is_enabled
-		self.setPalette(self._bin_palette if is_enabled else self._default_palette)
-		self.setFont(self._bin_font if is_enabled else self._default_font)
-
-	@QtCore.Slot(object)
-	def setUseSystemAppearance(self, use_system:bool):
-
-		self.setBinAppearanceEnabled(not use_system)
-
-	@QtCore.Slot(object)
-	def setBinFiltersEnabled(self, is_enabled:bool):
-
-		self._bin_filter_model.setBinFiltersEnabled(is_enabled)
-
-	@QtCore.Slot(object)
-	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
-		pass
-
-	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
-	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
-
-		palette = palettes.build_palette(fg_color, bg_color, self.palette())
-
-		self._bin_palette = palette
-
-		if self._use_bin_appearance:
-			self.setPalette(self._bin_palette)
-			
-		
-		#else:
-		#	self.setPalette(self._default_palette)
-	
-	@QtCore.Slot(QtGui.QFont)
-	def setBinFont(self, bin_font:QtGui.QFont):
-		
-		self._bin_font = bin_font
-		
-		if self._use_bin_appearance:
-			self._binitems_list.setFont(bin_font)
-			self._binitems_frame.setFont(bin_font)
-
-	@QtCore.Slot()
-	def updateBinStats(self):
-
-		count_visible = self._bin_filter_model.rowCount()
-		count_all     = self._bin_filter_model.sourceModel().rowCount()
-
-		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
-			current_item_count=QtCore.QLocale.system().toString(count_visible),
-			total_item_count=QtCore.QLocale.system().toString(count_all)
-		)
-		
-		self.sig_bin_stats_updated.emit(info_text)
-
-	@QtCore.Slot(object, object, object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int):
-
-		self.setBinViewName(bin_view.name)
-		self.frameView().setZoom(frame_scale)
-		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
-
-	
-	@QtCore.Slot(object)
-	def setBinViewName(self, bin_view_name:str):
-		"""Set the name of the current bin view"""
-
-		# TODO: Faking this for now, will need a model I guess
-		if bin_view_name not in (
-			self.topWidgetBar().binViewSelector().itemText(idx)
-			for idx in range(self.topWidgetBar().binViewSelector().count())
-		):
-			self.topWidgetBar().binViewSelector().addItem(bin_view_name)
-
-		self.topWidgetBar().binViewSelector().setItemText(0, bin_view_name)
-		self.topWidgetBar().binViewSelector().setCurrentIndex(0)
 	
 	@QtCore.Slot(object)
 	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
@@ -343,6 +221,75 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		return avbutils.BinDisplayModes(self._section_main.currentIndex())
 	
+#	def setListView(self, treeview:bintreeview.BSBinTreeView):
+#
+#		self._binitems_list = treeview
+#		self._setViewModeWidget(avbutils.BinDisplayModes.LIST, self._binitems_list)
+
+	
+#	def setFrameView(self, frame_view:binframeview.BSBinFrameView):
+#
+#		self._binitems_frame = frame_view
+#		self._setViewModeWidget(avbutils.BinDisplayModes.FRAME, self._binitems_frame)
+
+	
+#	def setScriptView(self, script_view:binscriptview.BSBinScriptView):
+#
+#		self._binitems_script = script_view
+#		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
+
+	
+#	def setTopWidgetBar(self, toolbar:widgetbars.BSBinContentsTopWidgetBar):
+#		self._section_top = toolbar	
+
+#	@QtCore.Slot(object)
+#	def setBinAppearanceEnabled(self, is_enabled:bool):
+#		
+#		self._use_bin_appearance = is_enabled
+#		self.setPalette(self._bin_palette if is_enabled else self._default_palette)
+#		self.setFont(self._bin_font if is_enabled else self._default_font)
+#
+#	@QtCore.Slot(object)
+#	def setUseSystemAppearance(self, use_system:bool):
+#
+#		self.setBinAppearanceEnabled(not use_system)
+
+	###
+	# Bin Views and Filters
+	###
+
+	@QtCore.Slot(object, object, object)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int):
+
+		self.setBinViewName(bin_view.name)
+		self.frameView().setZoom(frame_scale)
+		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
+
+	@QtCore.Slot(object)
+	def setBinViewEnabled(self, is_enabled:bool):
+
+		# TODO: Do I need to emit a confirmation signal here?
+		self._bin_filter_model.setBinViewEnabled(is_enabled)
+
+	@QtCore.Slot(object)
+	def setBinViewName(self, bin_view_name:str):
+		"""Set the name of the current bin view"""
+
+		# TODO: Faking this for now, will need a model I guess
+		if bin_view_name not in (
+			self.topWidgetBar().binViewSelector().itemText(idx)
+			for idx in range(self.topWidgetBar().binViewSelector().count())
+		):
+			self.topWidgetBar().binViewSelector().addItem(bin_view_name)
+
+		self.topWidgetBar().binViewSelector().setItemText(0, bin_view_name)
+		self.topWidgetBar().binViewSelector().setCurrentIndex(0)
+	
+	@QtCore.Slot(object)
+	def setBinFiltersEnabled(self, is_enabled:bool):
+
+		self._bin_filter_model.setBinFiltersEnabled(is_enabled)
+
 	@QtCore.Slot(bool)
 	def setSiftEnabled(self, is_enabled:bool):
 
@@ -352,6 +299,48 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setSiftOptions(self, sift_options:avbutils.bins.BinSiftOption):
 
 		self._bin_filter_model.setSiftOptions(sift_options)
+
+#	@QtCore.Slot(object)
+#	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
+#		pass
+
+	###
+	# Bin Appearance
+	###
+
+	@QtCore.Slot(QtGui.QPalette)
+	def setBinPalette(self, palette:QtGui.QPalette):
+
+		if self._bin_palette == palette:
+			return
+		
+		self.setPalette(palette)
+		self._bin_palette = palette
+		self.sig_bin_palette_changed.emit(palette)
+	
+	@QtCore.Slot(QtGui.QFont)
+	def setBinFont(self, bin_font:QtGui.QFont):
+		"""Set the font for the bin."""
+		
+		if self._bin_font == bin_font:
+			return
+		
+		self._bin_font = bin_font # TODO: Neeeded?
+		
+		self._binitems_list   .setFont(bin_font)
+		self._binitems_frame  .setFont(bin_font)
+		self._binitems_script .setFont(bin_font)
+		
+		self.sig_bin_font_changed.emit(bin_font)
+
+	###
+	# Misc
+	###
+
+	@QtCore.Slot(object)
+	def setItemPadding(self, padding:QtCore.QMargins):
+
+		self._binitems_list.setItemPadding(padding)
 
 	@QtCore.Slot(str)
 	def focusBinColumn(self, focus_field_name:str) -> bool:
@@ -378,6 +367,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		return False
 
+	###
+	# Scrollbar widgets
+	###
+
 	def addScrollBarWidget(self, widget:QtWidgets.QWidget, alignment:QtCore.Qt.AlignmentFlag):
 
 		widget.setFixedWidth(
@@ -387,3 +380,29 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		)
 		
 		self._binitems_list.addScrollBarWidget(widget, alignment)
+	
+	@QtCore.Slot(int)
+	@QtCore.Slot(float)
+	def setBottomScrollbarScaleFactor(self, scale_factor:int|float):
+
+		self._proxystyle_hscroll.setScrollbarScaleFactor(scale_factor)
+
+		# .update()/.polish() doesn't work. Need to re-set each time?
+		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+	
+	def topWidgetBar(self) -> widgetbars.BSBinContentsTopWidgetBar:
+		return self._section_top
+
+	@QtCore.Slot()
+	def updateBinStats(self):
+
+		count_visible = self._bin_filter_model.rowCount()
+		count_all     = self._bin_filter_model.sourceModel().rowCount()
+
+		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
+			current_item_count=QtCore.QLocale.system().toString(count_visible),
+			total_item_count=QtCore.QLocale.system().toString(count_all)
+		)
+		
+		self.sig_bin_stats_updated.emit(info_text)

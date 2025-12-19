@@ -3,7 +3,7 @@ from os import PathLike
 from PySide6 import QtCore, QtWidgets
 
 from ..binwidget import binwidget
-from ..managers import actions, binproperties
+from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about
 from ..views import treeview
 from ..core import binloader
@@ -32,7 +32,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Define managers
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
-		self._man_appearance   = binproperties.BSBinAppearanceSettingsManager()
+		self._man_appearance   = appearance.BSBinAppearanceSettingsManager()
 		self._man_sorting      = binproperties.BSBinSortingPropertiesManager()
 		self._man_binitems     = binproperties.BSBinItemsManager()
 		self._man_bindisplay   = binproperties.BSBinDisplaySettingsManager()
@@ -195,15 +195,17 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		# Appearance
-		self._man_appearance.sig_font_changed                .connect(self._tool_appearance.setBinFont)
 		self._man_appearance.sig_font_changed                .connect(self._bin_widget.setBinFont)
-		self._man_appearance.sig_palette_changed             .connect(self._tool_appearance.setBinPalette)
-		self._man_appearance.sig_palette_changed             .connect(self._bin_widget.setBinColors)
+		self._man_appearance.sig_palette_changed             .connect(self._bin_widget.setBinPalette)
+		
+		self._man_appearance.sig_bin_font_changed            .connect(self._tool_appearance.setBinFont)
+		self._man_appearance.sig_bin_colors_changed          .connect(self._tool_appearance.setBinColors)
 		self._man_appearance.sig_window_rect_changed         .connect(self._tool_appearance.setBinRect)
 		self._man_appearance.sig_was_iconic_changed          .connect(self._tool_appearance.setWasIconic)
 
-		self._tool_appearance.sig_font_changed               .connect(self._man_appearance.sig_font_changed)
-		self._tool_appearance.sig_palette_changed            .connect(self._bin_widget.setBinColors)
+	#	self._tool_appearance.sig_font_changed               .connect(self._man_appearance.sig_font_changed)
+	#	self._tool_appearance.sig_colors_changed             .connect(self._man_appearance.sig_bin_colors_changed)
+		#self._tool_appearance.sig_colors_changed             .connect(self._bin_widget.setBinColors)
 
 		# Bin loader signals
 		self._sigs_binloader.sig_begin_loading               .connect(self.prepareForBinLoading)
@@ -263,8 +265,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview.sig_focus_bin_column                  .connect(self._bin_widget.focusBinColumn)
 
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
-		self._man_appearance.sig_system_appearance_toggled      .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
-		self._man_appearance.sig_system_appearance_toggled      .connect(self._bin_widget.setUseSystemAppearance)
+		self._man_appearance.sig_use_system_appearance_toggled      .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
+		#self._man_appearance.sig_system_appearance_toggled      .connect(self._bin_widget.setUseSystemAppearance)
 		
 		self._tool_binview.activated                            .connect(self._man_binview.requestFocusColumn)
 
@@ -281,7 +283,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def siftSettingsManager(self) -> binproperties.BSBinSiftSettingsManager:
 		return self._man_siftsettings
 	
-	def appearanceManager(self) -> binproperties.BSBinAppearanceSettingsManager:
+	def appearanceManager(self) -> binspector.managers.appearance.BSBinAppearanceSettingsManager:
 		return self._man_appearance
 	
 	def sortingManager(self) -> binproperties.BSBinSortingPropertiesManager:

@@ -199,7 +199,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.binViewManager().sig_all_items_toggled.connect(self._man_settings.setAllItemsVisible)
 
 		window.appearanceManager().setUseSystemAppearance(self._man_settings.useSystemAppearance())
-		window.appearanceManager().sig_system_appearance_toggled.connect(self._man_settings.setUseSystemAppearance)
+		window.appearanceManager().sig_use_system_appearance_toggled.connect(self._man_settings.setUseSystemAppearance)
 		#window.appearanceManager().sig_bin_appearance_toggled.connect(self._man_settings.setUseSystemAppearance)
 
 		window.binContentsWidget().frameView()._overlay_ruler._setEnabled(self._man_settings.showFrameRuler())
