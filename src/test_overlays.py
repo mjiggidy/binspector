@@ -1,7 +1,7 @@
 import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from binspector.frameview import frameview
-from binspector.managers import overlaymanager
+from binspector.overlays import manager
 from binspector.overlays import frameruler, framemap
 
 

@@ -2,8 +2,8 @@ import typing, dataclasses, logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core.config import BSFrameViewConfig
-from ..managers import eventfilters, overlaymanager
-from ..overlays import framemap, frameruler
+from ..managers import eventfilters
+from ..overlays import framemap, frameruler, manager
 
 from .painters import BSBinFrameBackgroundPainter
 from .framescene import BSBinFrameScene
@@ -80,7 +80,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		# Doers of things
 		# NOTE: Most of these fellers install themselves as eventFilters, enable mouse tracking on the widget, etc
-		self._overlay_manager    = overlaymanager.BSGraphicsOverlayManager(parent=self.viewport())
+		self._overlay_manager    = manager.BSGraphicsOverlayManager(parent=self.viewport())
 		self._overlay_ruler      = frameruler.BSFrameRulerOverlay()
 		self._overlay_map        = framemap.BSThumbnailMapOverlay()
 
@@ -176,12 +176,12 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		super().setTransform(matrix, combine)
 		self.handleVisibleSceneRectChanged()
 
-	def overlayManager(self) -> overlaymanager.BSGraphicsOverlayManager:
+	def overlayManager(self) -> manager.BSGraphicsOverlayManager:
 
 		return self._overlay_manager
 
 	@QtCore.Slot(object)
-	def setOverlayManager(self, overlay_manager:overlaymanager.BSGraphicsOverlayManager):
+	def setOverlayManager(self, overlay_manager:manager.BSGraphicsOverlayManager):
 
 		if self._overlay_manager != overlay_manager:
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging, dataclasses
 from typing import TYPE_CHECKING
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..overlays import abstractoverlay
+from . import abstractoverlay
 
 @dataclasses.dataclass(frozen=True)
 class BSOverlayParentWidgetInfo:

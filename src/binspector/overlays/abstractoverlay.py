@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from PySide6 import QtCore, QtGui, QtWidgets
 
 if TYPE_CHECKING:
-	from ..managers import overlaymanager
+	from . import manager
 
 class BSAbstractOverlay(QtCore.QObject):
 	"""Abstract overlay for display over a widget"""
@@ -23,11 +23,11 @@ class BSAbstractOverlay(QtCore.QObject):
 		# Virtual method
 
 	@QtCore.Slot(object)
-	def updateWidgetInfo(self, widget_info:overlaymanager.BSOverlayParentWidgetInfo):
+	def updateWidgetInfo(self, widget_info:manager.BSOverlayParentWidgetInfo):
 		"""Parent info was updated.  Do stuff."""
 		# Virtual method
 
-	def _widgetInfo(self) -> overlaymanager.BSOverlayParentWidgetInfo|None:
+	def _widgetInfo(self) -> manager.BSOverlayParentWidgetInfo|None:
 		"""Overlay's parent widget info"""
 		
 		# NOTE TO SELF: Preferring not to acces this directly from overlays
@@ -58,7 +58,7 @@ class BSAbstractOverlay(QtCore.QObject):
 
 		return self._is_enabled
 	
-	def manager(self) -> overlaymanager.BSGraphicsOverlayManager:
+	def manager(self) -> manager.BSGraphicsOverlayManager:
 		"""
 		Return a reference to the manager
 
