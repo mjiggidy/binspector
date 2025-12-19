@@ -28,7 +28,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._settings         = QtCore.QSettings()
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
-		
+
 		# Define managers
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
@@ -49,7 +49,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._time_last_load   = QtCore.QElapsedTimer()
 
 		# Define widgets
-		self._main_bincontents = binwidget.BSBinContentsWidget()
+		self._bin_widget = binwidget.BSBinContentsWidget()
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView()
 		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
@@ -83,7 +83,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def setupWidgets(self):
 		"""Configure general widget placement and config"""
 		
-		self.setCentralWidget(self._main_bincontents)
+		self.setCentralWidget(self._bin_widget)
 
 		self._dock_bindisplay.setWidget(self._tool_bindisplay)
 		self._dock_sifting.setWidget(self._tool_sifting)
@@ -95,14 +95,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_appearance.hide()
 		self._dock_binview.hide()
 
-		self._main_bincontents.setBinModel(self._man_binitems.viewModel())
+		self._bin_widget.setBinModel(self._man_binitems.viewModel())
 		
 		self._tool_binview.setModel(self._man_binview.viewModel())
 
 		#self._main_bincontents.frameView().setScene(self._man_binitems.frameScene())
 
 		# Top binbarboy
-		topbar = self._main_bincontents.topWidgetBar()
+		topbar = self._bin_widget.topWidgetBar()
 		
 		topbar.setOpenBinAction(self._man_actions.fileBrowserAction())
 		topbar.setReloadBinAction(self._man_actions._act_reloadcurrent)
@@ -116,8 +116,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._anim_progress.setPropertyName(QtCore.QByteArray.fromStdString("value"))
 		self._anim_progress.setEasingCurve(QtCore.QEasingCurve.Type.Linear)
 
-		grp = QtWidgets.QSizeGrip(self._main_bincontents.listView())
-		self._main_bincontents.listView().setCornerWidget(grp)
+		grp = QtWidgets.QSizeGrip(self._bin_widget.listView())
+		self._bin_widget.listView().setCornerWidget(grp)
 		
 		# Apply Bin Settings Toggles
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
@@ -125,7 +125,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			btn = buttons.BSActionPushButton(act_toggle, show_text=False)
 			btn.setIconSize(QtCore.QSize(8,8))
 			
-			self._main_bincontents.addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+			self._bin_widget.addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
 		
 	def setupDock(self):
 		"""Add and prepare the dock"""
@@ -191,26 +191,27 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
-		self._man_bindisplay.sig_bin_display_changed         .connect(self._main_bincontents.listView().model().setBinDisplayItemTypes)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.listView().model().setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
+		# Appearance
 		self._man_appearance.sig_font_changed                .connect(self._tool_appearance.setBinFont)
-		self._man_appearance.sig_font_changed                .connect(self._main_bincontents.setBinFont)
+		self._man_appearance.sig_font_changed                .connect(self._bin_widget.setBinFont)
 		self._man_appearance.sig_palette_changed             .connect(self._tool_appearance.setBinPalette)
-		self._man_appearance.sig_palette_changed             .connect(self._main_bincontents.setBinColors)
+		self._man_appearance.sig_palette_changed             .connect(self._bin_widget.setBinColors)
 		self._man_appearance.sig_window_rect_changed         .connect(self._tool_appearance.setBinRect)
 		self._man_appearance.sig_was_iconic_changed          .connect(self._tool_appearance.setWasIconic)
 
 		self._tool_appearance.sig_font_changed               .connect(self._man_appearance.sig_font_changed)
-		self._tool_appearance.sig_palette_changed            .connect(self._main_bincontents.setBinColors)
+		self._tool_appearance.sig_palette_changed            .connect(self._bin_widget.setBinColors)
 
 		# Bin loader signals
 		self._sigs_binloader.sig_begin_loading               .connect(self.prepareForBinLoading)
 		self._sigs_binloader.sig_done_loading                .connect(self.cleanupAfterBinLoading)
 		self._sigs_binloader.sig_got_exception               .connect(self.binLoadException)
 		self._sigs_binloader.sig_aborted_loading             .connect(self.cleanupPartialBin)
-		self._sigs_binloader.sig_got_mob_count               .connect(self._main_bincontents.topWidgetBar().progressBar().setMaximum)
-		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setFormat(self.tr("Loading %v of %m mobs", "%v=current_count; %m=total_count")))
+		self._sigs_binloader.sig_got_mob_count               .connect(self._bin_widget.topWidgetBar().progressBar().setMaximum)
+		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading %v of %m mobs", "%v=current_count; %m=total_count")))
 		#self._sigs_binloader.sig_got_mob_count               .connect(lambda: self.updateLoadingBar([]))
  
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
@@ -228,42 +229,42 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_siftsettings.sig_bin_view_changed          .connect(self._tool_sifting.setBinView)
 		self._man_siftsettings.sig_sift_settings_changed     .connect(self._tool_sifting.setSiftOptions)
 		self._man_siftsettings.sig_sift_enabled              .connect(self._tool_sifting.setSiftEnabled)
-		self._man_siftsettings.sig_sift_enabled              .connect(self._main_bincontents.setSiftEnabled)
-		self._man_siftsettings.sig_sift_settings_changed     .connect(self._main_bincontents.setSiftOptions)
+		self._man_siftsettings.sig_sift_enabled              .connect(self._bin_widget.setSiftEnabled)
+		self._man_siftsettings.sig_sift_settings_changed     .connect(self._bin_widget.setSiftOptions)
 		self._tool_sifting.sig_options_set                   .connect(self._man_siftsettings.setSiftSettings)
 
 		# Inter-manager relations
 		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
-		self._man_binview.sig_bin_view_changed               .connect(self._main_bincontents.setBinView)
+		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 
 		# Update display counts -- Not where where to put this
-		self._man_binitems.sig_mob_count_changed             .connect(self._main_bincontents.updateBinStats)
+		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
 
 		# Bin Contents Toolbars
-		self._main_bincontents.topWidgetBar().searchBox().textChanged.connect(self._main_bincontents.listView().model().setSearchText)
+		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.listView().model().setSearchText)
 
 		#self._main_bincontents.sig_bin_palette_changed.connect(self._man_actions._palette_watcher.setPalette)
 
 		# Bin View Modes
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
-		self._man_viewmode.sig_view_mode_changed                .connect(self._main_bincontents.setViewMode)
+		self._man_viewmode.sig_view_mode_changed                .connect(self._bin_widget.setViewMode)
 		self._man_viewmode.sig_view_mode_changed                .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
 		self._man_actions._actgrp_view_mode.triggered           .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
 
 		# Bin Settings Toggles
 		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._man_binview.setAllColumnsVisible)
 		self._man_binview.sig_all_columns_toggled               .connect(self._man_actions._act_toggle_show_all_columns.setChecked)
-		self._man_binview.sig_view_mode_toggled                 .connect(self._main_bincontents.setBinViewEnabled)
+		self._man_binview.sig_view_mode_toggled                 .connect(self._bin_widget.setBinViewEnabled)
 		
 		self._man_actions._act_toggle_show_all_items.toggled    .connect(self._man_binview.setAllItemsVisible)
 		self._man_binview.sig_all_items_toggled                 .connect(self._man_actions._act_toggle_show_all_items.setChecked)
-		self._man_binview.sig_bin_filters_toggled               .connect(self._main_bincontents.setBinFiltersEnabled)
-		self._man_binview.sig_focus_bin_column                  .connect(self._main_bincontents.focusBinColumn)
+		self._man_binview.sig_bin_filters_toggled               .connect(self._bin_widget.setBinFiltersEnabled)
+		self._man_binview.sig_focus_bin_column                  .connect(self._bin_widget.focusBinColumn)
 
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
 		self._man_appearance.sig_system_appearance_toggled      .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
-		self._man_appearance.sig_system_appearance_toggled      .connect(self._main_bincontents.setUseSystemAppearance)
+		self._man_appearance.sig_system_appearance_toggled      .connect(self._bin_widget.setUseSystemAppearance)
 		
 		self._tool_binview.activated                            .connect(self._man_binview.requestFocusColumn)
 
@@ -293,7 +294,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		return self._sigs_binloader
 	
 	def binContentsWidget(self) -> binwidget.BSBinContentsWidget:
-		return self._main_bincontents
+		return self._bin_widget
 
 	@QtCore.Slot(int)
 	def setMobQueueSize(self, queue_size:int):
@@ -334,11 +335,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		self._man_binitems.viewModel().clear()
 		
-		self._main_bincontents.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
-		self._main_bincontents.topWidgetBar().progressBar().show()
+		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
+		self._bin_widget.topWidgetBar().progressBar().show()
 
-		self._main_bincontents.listView().setSortingEnabled(False)
-		self._main_bincontents.listView().model().setDynamicSortFilter(False)
+		self._bin_widget.listView().setSortingEnabled(False)
+		self._bin_widget.listView().model().setDynamicSortFilter(False)
 		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
@@ -368,7 +369,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			#logging.getLogger(__name__).debug("Restart animation: start=%s, end=%s, duration=%s", self._anim_progress.startValue(), self._anim_progress.endValue(), self._anim_progress.duration())
 			self._anim_progress.start()
 		else:
-			self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + len(mobs_list))
+			self._bin_widget.topWidgetBar().progressBar().setValue(self._bin_widget.topWidgetBar().progressBar().value() + len(mobs_list))
 	
 	@QtCore.Slot()
 	def cleanupAfterBinLoading(self):
@@ -385,23 +386,23 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._time_last_chunk.invalidate()
 
 
-		self._main_bincontents.topWidgetBar().progressBar().setMaximum(0)
-		self._main_bincontents.topWidgetBar().progressBar().setValue(0)
-		self._main_bincontents.topWidgetBar().progressBar().hide()
+		self._bin_widget.topWidgetBar().progressBar().setMaximum(0)
+		self._bin_widget.topWidgetBar().progressBar().setValue(0)
+		self._bin_widget.topWidgetBar().progressBar().hide()
 
 		# Enabling sorting also performs a sort... sooo
 		# Set invalid sort column first, per the docs
 		# TODO: Set as stored sort column if available from the bin
-		self._main_bincontents.listView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
-		self._main_bincontents.listView().setSortingEnabled(True)
-		self._main_bincontents.listView().model().setDynamicSortFilter(True)
+		self._bin_widget.listView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
+		self._bin_widget.listView().setSortingEnabled(True)
+		self._bin_widget.listView().model().setDynamicSortFilter(True)
 		
 		if self._man_binview.defaultSortColumns():
 			last_col = self._man_binview.defaultSortColumns()[-1]
 			direction, column_name = QtCore.Qt.SortOrder(last_col[0]), last_col[1]
-			if column_name in self._main_bincontents.listView().columnDisplayNames():
-				self._main_bincontents.listView().header().setSortIndicator(
-					self._main_bincontents.listView().columnDisplayNames().index(column_name),
+			if column_name in self._bin_widget.listView().columnDisplayNames():
+				self._bin_widget.listView().header().setSortIndicator(
+					self._bin_widget.listView().columnDisplayNames().index(column_name),
 					direction
 				)
 		
