@@ -202,9 +202,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_appearance.sig_window_rect_changed         .connect(self._tool_appearance.setBinRect)
 		self._man_appearance.sig_was_iconic_changed          .connect(self._tool_appearance.setWasIconic)
 
+		# Toolbox to Appearance
 		self._tool_appearance.sig_font_changed               .connect(self._man_appearance.setBinFont)
 		self._tool_appearance.sig_colors_changed             .connect(self._man_appearance.setBinColors)
-		#self._tool_appearance.sig_colors_changed             .connect(self._bin_widget.setBinColors)
 
 		# Bin loader signals
 		self._sigs_binloader.sig_begin_loading               .connect(self.prepareForBinLoading)

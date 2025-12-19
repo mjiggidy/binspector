@@ -94,6 +94,8 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
 		"""Build a bin palette based on foreground and background colors"""
 
+		#print("Got:", fg_color, bg_color)
+
 		# NOTE: This was kinda old, want to base everything off setBinPalette/QPalette
 
 		from ..utils import palettes
