@@ -15,13 +15,9 @@ from ..scriptview import scriptview
 
 from ..models import viewmodels
 from ..widgets import buttons
-from ..utils import palettes
 
-DEFAULT_FRAME_ZOOM_RANGE  = avbutils.bins.THUMB_FRAME_MODE_RANGE
-DEFAULT_FRAME_ZOOM_START  = DEFAULT_FRAME_ZOOM_RANGE.start
+from ..core.config import BSFrameViewConfig, BSScriptViewConfig
 
-DEFAULT_SCRIPT_ZOOM_RANGE = avbutils.bins.THUMB_SCRIPT_MODE_RANGE
-DEFAULT_SCRIPT_ZOOM_START = avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start
 
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
@@ -68,8 +64,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(
-			QtWidgets.QStyleFactory.create(QtWidgets.QApplication.style().name()),  # I feel like this is weird
-			scale_factor=1,
+			scale_factor=1.5,
 			parent=self
 		)
 
@@ -82,8 +77,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def _setupWidgets(self):
 
 		# Top Tool Bar
-		self._section_top._sld_frame_scale .setRange(DEFAULT_FRAME_ZOOM_RANGE.start, DEFAULT_FRAME_ZOOM_RANGE.stop)
-		self._section_top._sld_script_scale.setRange(DEFAULT_SCRIPT_ZOOM_RANGE.start, DEFAULT_SCRIPT_ZOOM_RANGE.stop)
+		self._section_top._sld_frame_scale .setRange(BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE.start, BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE.stop)
+		self._section_top._sld_script_scale.setRange(BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_RANGE.start, BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_RANGE.stop)
 
 		self.layout().addWidget(self._section_top)
 
@@ -92,8 +87,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
 
-		self._binitems_frame.setZoomRange(DEFAULT_FRAME_ZOOM_RANGE)
-		self._binitems_frame.setZoom(DEFAULT_FRAME_ZOOM_START)
+		self._binitems_frame.setZoomRange(BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE)
+		self._binitems_frame.setZoom(BSFrameViewConfig.DEFAULT_FRAME_ZOOM_START)
 		
 		self.layout().addWidget(self._section_main)
 
@@ -113,7 +108,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_grid, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(proxystyles.BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		btn.setFixedWidth(self._proxystyle_hscroll.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 		self._binitems_frame.addScrollBarWidget(
 			btn,
 			QtCore.Qt.AlignmentFlag.AlignLeft
@@ -121,7 +116,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_map, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(proxystyles.BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		btn.setFixedWidth(self._proxystyle_hscroll.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 
 		self._binitems_frame.addScrollBarWidget(
 			btn,
@@ -130,7 +125,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_ruler, show_text=False)
 		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(proxystyles.BSScrollBarStyle().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		btn.setFixedWidth(self._proxystyle_hscroll.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
 		self._binitems_frame.addScrollBarWidget(
 			btn,
 			QtCore.Qt.AlignmentFlag.AlignLeft

@@ -1,3 +1,4 @@
+import avbutils
 from PySide6 import QtCore, QtWidgets
 
 class BSListViewConfig:
@@ -34,3 +35,13 @@ class BSFrameViewConfig:
 		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|\
 		QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable
 	"""Default item flags"""
+
+	DEFAULT_FRAME_ZOOM_RANGE  = avbutils.bins.THUMB_FRAME_MODE_RANGE
+	DEFAULT_FRAME_ZOOM_START  = DEFAULT_FRAME_ZOOM_RANGE.start
+
+
+class BSScriptViewConfig:
+	"""Bin Script View Mode Config"""
+
+	DEFAULT_SCRIPT_ZOOM_RANGE = avbutils.bins.THUMB_SCRIPT_MODE_RANGE
+	DEFAULT_SCRIPT_ZOOM_START = avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start
