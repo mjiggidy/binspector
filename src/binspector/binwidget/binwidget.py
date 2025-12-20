@@ -106,31 +106,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list .addScrollBarWidget(self._binstats_list,  QtCore.Qt.AlignmentFlag.AlignLeft)
 		self._binitems_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_grid, show_text=False)
-		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(self._proxystyle_hscroll.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
-		self._binitems_frame.addScrollBarWidget(
-			btn,
-			QtCore.Qt.AlignmentFlag.AlignLeft
-		)
-
-		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_map, show_text=False)
-		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(self._proxystyle_hscroll.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
-
-		self._binitems_frame.addScrollBarWidget(
-			btn,
-			QtCore.Qt.AlignmentFlag.AlignLeft
-		)
-
-		btn = buttons.BSActionPushButton(self._binitems_frame.actions().act_toggle_ruler, show_text=False)
-		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedWidth(self._proxystyle_hscroll.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
-		self._binitems_frame.addScrollBarWidget(
-			btn,
-			QtCore.Qt.AlignmentFlag.AlignLeft
-		)
-
 	def _setupSignals(self):
 		
 		self._bin_filter_model.rowsInserted  .connect(self.updateBinStats)
@@ -366,15 +341,17 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	# Scrollbar widgets
 	###
 
-	def addScrollBarWidget(self, widget:QtWidgets.QWidget, alignment:QtCore.Qt.AlignmentFlag):
+	def addScrollBarWidget(self, widget:QtWidgets.QWidget, view_mode:avbutils.bins.BinDisplayModes):
+
+		scroll_area:QtWidgets.QScrollArea = self._section_main.widget(view_mode).scrollArea()
+
+		scroll_area.addScrollBarWidget(widget, QtCore.Qt.AlignmentFlag.AlignLeft)
 
 		widget.setFixedWidth(
 			self._proxystyle_hscroll.pixelMetric(
 				QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent
 			)
 		)
-		
-		self._binitems_list.addScrollBarWidget(widget, alignment)
 	
 	@QtCore.Slot(int)
 	@QtCore.Slot(float)
@@ -385,6 +362,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# .update()/.polish() doesn't work. Need to re-set each time?
 		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+	
+	def scrollbarScaler(self) -> proxystyles.BSScrollBarStyle:
+		"""The scaler for the horizontal scroll bar"""
+
+		return self._proxystyle_hscroll
 	
 	def topWidgetBar(self) -> widgetbars.BSBinContentsTopWidgetBar:
 		return self._section_top

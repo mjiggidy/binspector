@@ -102,21 +102,28 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.addActions(self._actions.navigationActions().actions())
 		self.addActions(self._actions.overlayActions().actions())
 
-		self._actions.act_toggle_grid               .setChecked(self._background_painter.isEnabled())
-		self._actions.act_toggle_ruler              .setChecked(self._overlay_ruler.isEnabled())
-		self._actions.act_toggle_map                .setChecked(self._overlay_map.isEnabled())
+		#self._actions.act_toggle_grid               .setChecked(self._background_painter.isEnabled())
+		#self._actions.act_toggle_ruler              .setChecked(self._overlay_ruler.isEnabled())
+		#self._actions.act_toggle_map                .setChecked(self._overlay_map.isEnabled())
 		
 		self._actions.act_zoom_in.triggered         .connect(lambda: self.zoomIncrement())
 		self._actions.act_zoom_out.triggered        .connect(lambda: self.zoomDecrement())
+		
+		# Action to Overlay
 		self._actions.act_toggle_ruler.toggled      .connect(self._overlay_ruler._setEnabled)
 		self._actions.act_toggle_map.toggled        .connect(self._overlay_map._setEnabled)
 		self._actions.act_toggle_grid.toggled       .connect(self._background_painter.setEnabled)
+
+		# Overlay to Action
+		self._overlay_map.sig_enabled_changed       .connect(self._actions.act_toggle_map.setChecked)
+		self._overlay_ruler.sig_enabled_changed     .connect(self._actions.act_toggle_ruler.setChecked)
+		self._background_painter.sig_enabled_changed.connect(self._actions.act_toggle_grid.setChecked)
+
 
 		# Manager signals
 		
 		self._overlay_map.sig_view_reticle_panned   .connect(self.centerOn)
 		self._background_painter.sig_enabled_changed.connect(self.viewport().update)
-		self._background_painter.sig_enabled_changed.connect(print)
 
 		self._pan_man.sig_user_pan_started          .connect(self.beginPan)
 		self._pan_man.sig_user_pan_moved            .connect(self.panViewByDelta)

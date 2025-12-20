@@ -122,8 +122,52 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			
 			btn = buttons.BSActionPushButton(act_toggle, show_text=False)
 			btn.setIconSize(QtCore.QSize(8,8))
+			btn.setFixedSize(QtCore.QSize(
+				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
+			))
+			self._bin_widget.scrollbarScaler().sig_size_changed.connect(
+				lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
+			)
 			
-			self._bin_widget.addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+			self._bin_widget.listView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+
+		# Frame View Toggles
+		btn = buttons.BSActionPushButton(self._man_actions._act_toggle_sys_appearance, show_text=False)
+		btn.setIconSize(QtCore.QSize(8,8))
+		btn.setFixedSize(QtCore.QSize(
+			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
+		))
+		self._bin_widget.scrollbarScaler().sig_size_changed.connect(
+			lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
+		)
+
+		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+
+		btn = buttons.BSActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False)
+		btn.setIconSize(QtCore.QSize(8,8))
+		btn.setFixedSize(QtCore.QSize(
+			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
+		))
+		self._bin_widget.scrollbarScaler().sig_size_changed.connect(
+			lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
+		)
+
+		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+
+		for act_toggle in self._bin_widget.frameView().actions().overlayActions().actions(): #lol
+
+			btn = buttons.BSActionPushButton(act_toggle, show_text=False)
+			btn.setIconSize(QtCore.QSize(8,8))
+			btn.setFixedSize(QtCore.QSize(
+				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
+			))
+			self._bin_widget.scrollbarScaler().sig_size_changed.connect(
+				lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
+			)
+			
+			self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)			
+
+
 		
 	def setupDock(self):
 		"""Add and prepare the dock"""
