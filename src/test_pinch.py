@@ -4,7 +4,7 @@ Quick n sloppy test of some trackpad event filters here
 
 import sys
 from PySide6 import QtCore, QtGui, QtWidgets
-from binspector.managers import eventfilters
+from binspector.utils import gestures
 
 class MichaelsCoolVisualizerOfThePinch(QtWidgets.QWidget):
 
@@ -176,8 +176,8 @@ class MichaelsCoolTestWindowHahaOk(QtWidgets.QWidget):
 
 		super().__init__(*args, **kwargs)
 
-		self._pinch_event_filter = eventfilters.BSPinchEventFilter(parent=self)
-		self._pan_event_filter = eventfilters.BSPanEventFilter(parent=self)
+		self._pinch_event_filter = gestures.BSPinchEventFilter(parent=self)
+		self._pan_event_filter = gestures.BSPanEventFilter(parent=self)
 		self._visualizer = MichaelsCoolVisualizerOfThePinch()
 
 

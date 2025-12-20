@@ -1,10 +1,11 @@
 """
-Event filters to handle particular system events 
+Event filters to handle particular user gestures
 in a good and nice way that is good and nice
 """
 
 import logging
 from PySide6 import QtCore, QtGui
+
 
 class BSPinchEventFilter(QtCore.QObject):
 	"""Handle if the user gets pinchy"""
@@ -89,6 +90,7 @@ class BSPinchEventFilter(QtCore.QObject):
 		self._accumulated_scale = 0
 		
 		logging.getLogger(__name__).debug("Pinch reset")
+
 
 class BSPanEventFilter(QtCore.QObject):
 	"""Handle user panning via mouse wheel or multitouch trackpad"""
@@ -178,7 +180,6 @@ class BSPanEventFilter(QtCore.QObject):
 		
 		self.sig_user_pan_started.emit()
 
-
 	def reportPanChanged(self, pan_event:QtGui.QMouseEvent, pan_delta:QtCore.QPoint):
 		"""User is panning around"""
 
@@ -203,7 +204,9 @@ class BSPanEventFilter(QtCore.QObject):
 
 		self.sig_user_pan_finished.emit()
 
+
 class BSWheelZoomEventFilter(QtCore.QObject):
+	"""Handle user zoom by scroll wheel"""
 
 	sig_user_zoomed = QtCore.Signal(int, QtCore.Qt.Orientation)
 	sig_zoom_reset  = QtCore.Signal()

@@ -2,7 +2,7 @@ import typing, dataclasses, logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core.config import BSFrameViewConfig
-from ..managers import eventfilters
+from ..utils import gestures
 from ..overlays import framemap, frameruler, manager
 
 from .painters import BSBinFrameBackgroundPainter
@@ -84,9 +84,9 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._overlay_ruler      = frameruler.BSFrameRulerOverlay()
 		self._overlay_map        = framemap.BSThumbnailMapOverlay()
 
-		self._pinchy_boy         = eventfilters.BSPinchEventFilter(parent=self.viewport())
-		self._pan_man            = eventfilters.BSPanEventFilter(parent=self.viewport())
-		self._wheelzoom          = eventfilters.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
+		self._pinchy_boy         = gestures.BSPinchEventFilter(parent=self.viewport())
+		self._pan_man            = gestures.BSPanEventFilter(parent=self.viewport())
+		self._wheelzoom          = gestures.BSWheelZoomEventFilter(parent=self.viewport(), modifier_keys=QtCore.Qt.KeyboardModifier.AltModifier)
 
 		self._overlay_map.setThumbnailOffset(self.viewport().rect().topRight())
 
