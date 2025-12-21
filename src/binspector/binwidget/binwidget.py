@@ -63,10 +63,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binstats_frame    = scrollwidgets.BSBinStatsLabel()
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
-		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(
-			scale_factor=1.5,
-			parent=self
-		)
+		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)
 
 		self._setupWidgets()
 		self._setupSignals()
