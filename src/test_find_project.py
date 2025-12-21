@@ -1,10 +1,13 @@
 """
-Just thinkin' bout project details here
+Just thinkin' bout project details and attics here
 """
 
 from __future__ import annotations
 import sys, pathlib, dataclasses, typing
 from os import PathLike
+
+REJECT_DOT_FILES = lambda p: not p.stem.startswith(".")
+"""Lambda for `filter()` to reject resource forks"""
 
 def mount_point_from_path(file_path:PathLike) -> pathlib.Path:
 
@@ -25,6 +28,7 @@ def mount_point_from_path(file_path:PathLike) -> pathlib.Path:
 class BSAvidProjectInfo:
 
 	name             :str
+	project_file_path:pathlib.Path
 	base_project_dir :pathlib.Path
 	base_attic_dir   :pathlib.Path|None = None
 
@@ -50,6 +54,10 @@ class BSAvidProjectInfo:
 			base_project_dir = base_project_dir,
 			base_attic_dir = base_attic_dir
 		)
+	
+	@property
+	def has_attic(self) -> bool:
+		return self.base_attic_dir is not None
 
 def avp_path_from_avb_path(avb_path:PathLike) -> pathlib.Path|None:
 
@@ -57,8 +65,7 @@ def avp_path_from_avb_path(avb_path:PathLike) -> pathlib.Path|None:
 
 	while True:
 
-		test_paths = list(filter(lambda p: not p.stem.startswith("."), test_dir.glob("*.avp", case_sensitive=True)))
-		print(test_dir, test_paths)
+		test_paths = list(filter(lambda p: not p.stem.startswith("."), test_dir.glob("*.avp", case_sensitive=False)))
 
 		if len(test_paths) == 1:
 			return test_paths[0]
@@ -74,16 +81,33 @@ def main(bin_paths:list[PathLike]):
 
 	for avb_path in bin_paths:
 
-		if not pathlib.Path(avb_path).is_file():
+		avb_path = pathlib.Path(avb_path)
+
+		if not avb_path.is_file():
 			print("Skip ", avb_path, ": Not a file", file=sys.stderr)
 			continue
 
 		avp_path = avp_path_from_avb_path(avb_path)
 
-		if avp_path:
-			print(BSAvidProjectInfo.from_avp(avp_path))
-		else:
-			print("Nope")
+		if not avp_path:
+			sys.exit("Nope")
+		
+		project_info = BSAvidProjectInfo.from_avp(avp_path)
+
+		print(project_info)
+
+		if not project_info.has_attic:
+			sys.exit("Project has no attic")
+
+		bin_attic_path = project_info.base_attic_dir / "Bins" / avb_path.stem
+
+		if not bin_attic_path.is_dir():
+			print(f"Bin has no attic entries")
+
+		for attic_path in filter(REJECT_DOT_FILES, bin_attic_path.rglob("*.avb", case_sensitive=False)):
+			print(attic_path)
+		
+
 
 if __name__ == "__main__":
 
