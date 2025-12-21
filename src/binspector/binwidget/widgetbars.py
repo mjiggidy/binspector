@@ -5,7 +5,7 @@ Widget bar for the top o' the bin widget
 import avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from binspector.widgets import buttons, sliders
+from ..widgets import buttons, sliders
 
 # I Think I Overthought This: The Module
 #
@@ -72,9 +72,9 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		self._prg_loading         = QtWidgets.QProgressBar()
 
 		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
-		self._btn_viewmode_list   = buttons.BSActionPushButton(show_text=False)
-		self._btn_viewmode_frame  = buttons.BSActionPushButton(show_text=False)
-		self._btn_viewmode_script = buttons.BSActionPushButton(show_text=False)
+		self._btn_viewmode_list   = buttons.BSPalettedActionPushButton(show_text=False)
+		self._btn_viewmode_frame  = buttons.BSPalettedActionPushButton(show_text=False)
+		self._btn_viewmode_script = buttons.BSPalettedActionPushButton(show_text=False)
 
 		# View Mode-Specific Controls
 		self._mode_controls       = QtWidgets.QStackedWidget()
