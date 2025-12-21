@@ -94,7 +94,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		# NOTE: Set AFTER `view.setModel()`.  Got me good.
 		self._binitems_list.setSelectionModel(self._selection_model)
-		self._binitems_frame.scene().setSelectionModel(self._selection_model)
+		# NOTE: Disabled for now 
+#		self._binitems_frame.scene().setSelectionModel(self._selection_model)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
 		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
