@@ -1,7 +1,16 @@
+from __future__ import annotations
 import weakref, logging, typing
 from os import PathLike
 from PySide6 import QtCore, QtGui, QtSvg
 from ..utils import drawing
+
+PROPERTY_ICON_PALETTED = "icon_paletted"
+
+def getPalettedIconEngine(action:QtGui.QAction) -> BSAbstractPalettedIconEngine|None:
+
+	path_icon = action.property(PROPERTY_ICON_PALETTED)
+	return BSPalettedSvgIconEngine(path_icon) if path_icon else None
+
 
 #class BSPaletteWatcherForSomeReason(QtCore.QObject):
 #	"""Watch for palette changes ugh"""

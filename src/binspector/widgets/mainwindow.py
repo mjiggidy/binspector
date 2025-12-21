@@ -6,7 +6,7 @@ from ..binwidget import binwidget
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about
 from ..views import treeview
-from ..core import binloader
+from ..core import binloader, icons
 
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
@@ -107,8 +107,13 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.setStopLoadAction(self._man_actions._act_stopcurrent)
 		
 		topbar.setViewModeListAction(self._man_actions.viewBinAsList())
+		topbar._btn_viewmode_list.setIconEngine(icons.getPalettedIconEngine(self._man_actions._act_view_list))
+
 		topbar.setViewModeFrameAction(self._man_actions.viewBinAsFrame())
+		topbar._btn_viewmode_frame.setIconEngine(icons.getPalettedIconEngine(self._man_actions._act_view_frame))
+
 		topbar.setViewModeScriptAction(self._man_actions.viewBinAsScript())
+		topbar._btn_viewmode_script.setIconEngine(icons.getPalettedIconEngine(self._man_actions._act_view_script))
 
 		self._anim_progress.setTargetObject(topbar.progressBar())
 		self._anim_progress.setPropertyName(QtCore.QByteArray.fromStdString("value"))
@@ -120,7 +125,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Apply Bin Settings Toggles
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
 			
-			btn = buttons.BSActionPushButton(act_toggle, show_text=False)
+			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icons.getPalettedIconEngine(act_toggle))
 			btn.setIconSize(QtCore.QSize(8,8))
 			btn.setFixedSize(QtCore.QSize(
 				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
@@ -132,7 +137,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			self._bin_widget.listView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
 
 		# Frame View Toggles
-		btn = buttons.BSActionPushButton(self._man_actions._act_toggle_sys_appearance, show_text=False)
+		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_sys_appearance, show_text=False, icon_engine=icons.getPalettedIconEngine(self._man_actions._act_toggle_sys_appearance))
 		btn.setIconSize(QtCore.QSize(8,8))
 		btn.setFixedSize(QtCore.QSize(
 			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
@@ -143,7 +148,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-		btn = buttons.BSActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False)
+		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False, icon_engine=icons.getPalettedIconEngine(self._man_actions._act_toggle_show_all_items))
 		btn.setIconSize(QtCore.QSize(8,8))
 		btn.setFixedSize(QtCore.QSize(
 			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
@@ -156,7 +161,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		for act_toggle in self._bin_widget.frameView().actions().overlayActions().actions(): #lol
 
-			btn = buttons.BSActionPushButton(act_toggle, show_text=False)
+			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icons.getPalettedIconEngine(act_toggle))
 			btn.setIconSize(QtCore.QSize(8,8))
 			btn.setFixedSize(QtCore.QSize(
 				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
@@ -308,8 +313,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview.sig_focus_bin_column                  .connect(self._bin_widget.focusBinColumn)
 
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
-		self._man_appearance.sig_use_system_appearance_toggled      .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
-		#self._man_appearance.sig_system_appearance_toggled      .connect(self._bin_widget.setUseSystemAppearance)
+		self._man_appearance.sig_use_system_appearance_toggled  .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
 		
 		self._tool_binview.activated                            .connect(self._man_binview.requestFocusColumn)
 

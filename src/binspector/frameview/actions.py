@@ -1,4 +1,5 @@
 from PySide6 import QtCore, QtGui
+#from ..res import icons_gui
 
 class BSFrameViewActions(QtCore.QObject):
 	
@@ -26,14 +27,17 @@ class BSFrameViewActions(QtCore.QObject):
 		self.act_toggle_ruler = QtGui.QAction("Toggle Ruler")
 		self.act_toggle_ruler.setCheckable(True)
 		self.act_toggle_ruler.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier| QtCore.Qt.Key.Key_R))
+		self.act_toggle_ruler.setProperty("icon_paletted", ":/icons/gui/toggle_frame_ruler.svg")
 
 		self.act_toggle_map  = QtGui.QAction("Toggle Bin Map")
 		self.act_toggle_map.setCheckable(True)
 		self.act_toggle_map.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_M))
+		self.act_toggle_map.setProperty("icon_paletted", ":/icons/gui/toggle_frame_map.svg")
 
 		self.act_toggle_grid = QtGui.QAction("Toggle Background Grid")
 		self.act_toggle_grid.setCheckable(True)
 		self.act_toggle_grid.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_G))
+		self.act_toggle_grid.setProperty("icon_paletted", ":/icons/gui/toggle_frame_grid.svg")
 
 		self._actgrp_overlays = QtGui.QActionGroup(self)
 		self._actgrp_overlays.setExclusive(False)

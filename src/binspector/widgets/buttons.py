@@ -65,7 +65,7 @@ class BSPalettedActionPushButton(BSActionPushButton):
 			#show_icon:bool=True,
 			show_tooltip:bool=True,
 			*args,
-			icon_engine:icons.BSAbstractPalettedIconEngine,
+			icon_engine:icons.BSAbstractPalettedIconEngine|None=None,
 			**kwargs
 		):
 
