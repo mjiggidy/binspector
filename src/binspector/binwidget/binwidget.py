@@ -233,6 +233,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.frameView().setZoom(frame_scale)
 		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
 
+		#print("Okay haha...")
+
+		for col in range(self.listView().header().count()):
+			self.listView().setColumnWidthFromBinView(col, True)
+
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
 

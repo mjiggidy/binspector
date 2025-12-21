@@ -243,18 +243,18 @@ class BSSettingsManager:
 	
 	def showFrameMap(self) -> bool:
 		
-		show_map = self.settings("bs").value("BinSettingsToggles/show_map", False, bool)
-		logging.getLogger(__name__).debug("Returning show_frame_ruler: %s", show_map)
+		show_map = self.settings("bs").value("BinSettingsToggles/show_frame_map", False, bool)
+		logging.getLogger(__name__).debug("Returning show_frame_map: %s", show_map)
 		return show_map
 	
 	@QtCore.Slot(bool)
 	def setShowFrameGrid(self, show_grid:bool):
 
-		self.settings("bs").setValue("BinSettingsToggles/show_grid", show_grid)
-		logging.getLogger(__name__).debug("Set show_frame_map: %s", show_grid)
+		self.settings("bs").setValue("BinSettingsToggles/show_frame_grid", show_grid)
+		logging.getLogger(__name__).debug("Set show_frame_grid: %s", show_grid)
 	
 	def showFrameGrid(self) -> bool:
 		
-		show_grid = self.settings("bs").value("BinSettingsToggles/show_grid", False, bool)
-		logging.getLogger(__name__).debug("Returning show_grid: %s", show_grid)
+		show_grid = self.settings("bs").value("BinSettingsToggles/show_frame_grid", False, bool)
+		logging.getLogger(__name__).debug("Returning show_frame_grid: %s", show_grid)
 		return show_grid
