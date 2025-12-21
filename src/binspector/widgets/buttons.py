@@ -1,6 +1,8 @@
 from PySide6 import QtCore, QtGui, QtWidgets
+from ..utils import stylewatcher
+from ..core import icons
 
-class BSPushButtonAction(QtWidgets.QPushButton):
+class BSActionPushButton(QtWidgets.QPushButton):
 	"""A QPushButton bound to a QAction"""
 
 	def __init__(self, action:QtGui.QAction|None=None, show_text:bool=True, show_icon:bool=True, show_tooltip:bool=True, *args, **kwargs):
@@ -22,12 +24,17 @@ class BSPushButtonAction(QtWidgets.QPushButton):
 		# Disconnect previous action
 		if self._action:
 
-			self._action.enabledChanged.disconnect(self.setEnabled)
-			self._action.visibleChanged.disconnect(self.setVisible)
-			self._action.checkableChanged.disconnect(self.setCheckable)
-			self._action.toggled.disconnect(self.setChecked)
+			#self._action.enabledChanged.disconnect(self.setEnabled)
+			#self._action.visibleChanged.disconnect(self.setVisible)
+			#self._action.checkableChanged.disconnect(self.setCheckable)
+			#self._action.toggled.disconnect(self.setChecked)
+#
+			#self.clicked.disconnect(self._action.trigger)
 
-			self.clicked.disconnect(self._action.trigger)
+			# NOTE: Can I just do this instead?
+			self._action.disconnect(self)
+			self.disconnect(self._action)
+
 		
 		# Set new action
 		self._action = action
@@ -48,6 +55,54 @@ class BSPushButtonAction(QtWidgets.QPushButton):
 		self._action.toggled.connect(self.setChecked)
 
 		self.clicked.connect(self._action.trigger)
+
+class BSPalettedActionPushButton(BSActionPushButton):
+	"""Perhaps a terrible idea"""
+
+	def __init__(self,
+			action:QtGui.QAction|None=None,
+			show_text:bool=True,
+			#show_icon:bool=True,
+			show_tooltip:bool=True,
+			*args,
+			icon_engine:icons.BSAbstractPalettedIconEngine|None=None,
+			**kwargs
+		):
+
+		# Using show_icon=False so Action doesn't set it? I feel this is all hacky
+		# This whole paletted icon engine thing is ugh
+		# Thanks for reading my blog post
+		super().__init__(action, show_text, show_icon=False, show_tooltip=show_tooltip)
+
+		self._icon_engine   = icons.BSAbstractPalettedIconEngine(parent=self)
+		self._style_watcher = stylewatcher.BSWidgetStyleEventFilter(parent=self)
+
+		self.installEventFilter(self._style_watcher)
+
+		if icon_engine:
+			self.setIconEngine(icon_engine)
+	
+	@QtCore.Slot(object)
+	def setIcon(self, icon:QtGui.QIcon):
+		"""Should not be used directly. Set things through IconEngine"""
+
+		return super().setIcon(icon)
+
+	def setIconEngine(self, icon_engine:icons.BSAbstractPalettedIconEngine):
+
+		if self._icon_engine == icon_engine:
+			return
+		
+		#self._style_watcher.disconnect(self._icon_engine)
+		
+		self._icon_engine = icon_engine
+		self._icon_engine.setPalette(self.palette())
+
+		self._style_watcher.sig_palette_changed.connect(lambda pal: self._icon_engine.setPalette(pal))
+
+		self.setIcon(
+			QtGui.QIcon(self._icon_engine)
+		)
 
 class BSPushButtonActionBar(QtWidgets.QWidget):
 	"""Unified button bar for a given button group"""

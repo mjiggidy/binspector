@@ -1,3 +1,0 @@
-"""
-Item delegates for views
-"""

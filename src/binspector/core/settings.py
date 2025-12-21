@@ -222,3 +222,39 @@ class BSSettingsManager:
 
 		logging.getLogger(__name__).debug("Returning list_item_padding: %s", padding)
 		return padding
+	
+	@QtCore.Slot(bool)
+	def setShowFrameRuler(self, show_ruler:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/show_frame_ruler", show_ruler)
+		logging.getLogger(__name__).debug("Set show_frame_ruler: %s", show_ruler)
+	
+	def showFrameRuler(self) -> bool:
+		
+		show_ruler = self.settings("bs").value("BinSettingsToggles/show_frame_ruler", False, bool)
+		logging.getLogger(__name__).debug("Returning show_frame_ruler: %s", show_ruler)
+		return show_ruler
+	
+	@QtCore.Slot(bool)
+	def setShowFrameMap(self, show_map:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/show_frame_map", show_map)
+		logging.getLogger(__name__).debug("Set show_frame_map: %s", show_map)
+	
+	def showFrameMap(self) -> bool:
+		
+		show_map = self.settings("bs").value("BinSettingsToggles/show_frame_map", False, bool)
+		logging.getLogger(__name__).debug("Returning show_frame_map: %s", show_map)
+		return show_map
+	
+	@QtCore.Slot(bool)
+	def setShowFrameGrid(self, show_grid:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/show_frame_grid", show_grid)
+		logging.getLogger(__name__).debug("Set show_frame_grid: %s", show_grid)
+	
+	def showFrameGrid(self) -> bool:
+		
+		show_grid = self.settings("bs").value("BinSettingsToggles/show_frame_grid", False, bool)
+		logging.getLogger(__name__).debug("Returning show_frame_grid: %s", show_grid)
+		return show_grid

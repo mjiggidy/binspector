@@ -16,19 +16,19 @@ class BSBinViewLoader(QtCore.QRunnable):
 		"""Signals emitted by `BSBinViewLoader`"""
 
 		# Status signals
-		sig_begin_loading     = QtCore.Signal(str)
-		sig_done_loading      = QtCore.Signal()
-		sig_aborted_loading   = QtCore.Signal(object)
-		sig_got_exception     = QtCore.Signal(object)
+		sig_begin_loading               = QtCore.Signal(str)
+		sig_done_loading                = QtCore.Signal()
+		sig_aborted_loading             = QtCore.Signal(object)
+		sig_got_exception               = QtCore.Signal(object)
 
-		sig_got_mob_count     = QtCore.Signal(int)
+		sig_got_mob_count               = QtCore.Signal(int)
 
-		sig_got_display_mode  = QtCore.Signal(object)
-		sig_got_view_settings = QtCore.Signal(object, object, object)
-		sig_got_mob           = QtCore.Signal() # For progress bar
-		sig_got_mobs          = QtCore.Signal(object)
-		sig_got_sort_settings = QtCore.Signal(object)
-		sig_got_sift_settings = QtCore.Signal(bool, object)
+		sig_got_display_mode            = QtCore.Signal(object)
+		sig_got_view_settings           = QtCore.Signal(object, object, object)
+		sig_got_mob                     = QtCore.Signal() # For progress bar
+		sig_got_mobs                    = QtCore.Signal(object)
+		sig_got_sort_settings           = QtCore.Signal(object)
+		sig_got_sift_settings           = QtCore.Signal(bool, object)
 		sig_got_bin_display_settings    = QtCore.Signal(object)
 		sig_got_bin_appearance_settings = QtCore.Signal(object, object, object, object, object, object, object)
 
@@ -80,7 +80,14 @@ class BSBinViewLoader(QtCore.QRunnable):
 				return
 
 			logging.getLogger(__name__).debug("Begin display flags")
-			self._signals.sig_got_bin_display_settings.emit(binparser.bin_display_flags_from_bin(bin_handle.content))
+			try:
+				opts = binparser.bin_display_flags_from_bin(bin_handle.content)
+			except ValueError as e:
+				logging.getLogger(__name__).error("Could not parse Bin Display Settings: %s.  Using defaults instead.", e)
+				import avbutils
+				opts = avbutils.BinDisplayItemTypes.default_items()
+			finally:
+				self._signals.sig_got_bin_display_settings.emit(opts)
 			logging.getLogger(__name__).debug("End display flags")
 			
 			logging.getLogger(__name__).debug("Begin view settings")

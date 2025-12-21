@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="8"
+   height="8"
+   viewBox="0 0 8 8"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1">
+    <rect
+       style="fill:{Light};stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1"
+       width="1"
+       height="6"
+       x="0"
+       y="1" />
+    <rect
+       style="fill:{Light};stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect2"
+       width="8"
+       height="1"
+       x="0"
+       y="7" />
+    <rect
+       style="fill:{Light};stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect3"
+       width="1"
+       height="3"
+       x="2"
+       y="4" />
+    <rect
+       style="fill:{Light};stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect3-2"
+       width="1"
+       height="3"
+       x="6"
+       y="4" />
+    <rect
+       style="fill:{Light};stroke-width:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect4"
+       width="1"
+       height="6"
+       x="4"
+       y="1" />
+    <rect
+       style="fill:{Dark};stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1"
+       id="rect5"
+       width="1"
+       height="5"
+       x="1"
+       y="2" />
+    <rect
+       style="fill:{Dark};fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect6"
+       width="1"
+       height="2"
+       x="3"
+       y="5" />
+    <rect
+       style="fill:{Dark};fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect7"
+       width="1"
+       height="2"
+       x="7"
+       y="5" />
+    <rect
+       style="fill:{Dark};fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect8"
+       width="1"
+       height="5"
+       x="5"
+       y="2" />
+  </g>
+</svg>

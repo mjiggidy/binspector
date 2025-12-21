@@ -85,6 +85,130 @@ H 10 Z M 1,4 H 5\
 1 H 6 Z m 0,2 h \
 9 v 1 H 6 Z\x22 />\x0a\
   </g>\x0a</svg>\
+\x00\x00\x07\x9e\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22UTF\
+-8\x22 standalone=\x22\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   width=\x22\
+8\x22\x0a   height=\x228\x22\
+\x0a   viewBox=\x220 0\
+ 8 8\x22\x0a   version\
+=\x221.1\x22\x0a   id=\x22sv\
+g1\x22\x0a   inkscape:\
+version=\x221.4.2 (\
+ebf0e940, 2025-0\
+5-08)\x22\x0a   sodipo\
+di:docname=\x22togg\
+le_frame_ruler_v\
+04_themed.svg\x22\x0a \
+  xmlns:inkscape\
+=\x22http://www.ink\
+scape.org/namesp\
+aces/inkscape\x22\x0a \
+  xmlns:sodipodi\
+=\x22http://sodipod\
+i.sourceforge.ne\
+t/DTD/sodipodi-0\
+.dtd\x22\x0a   xmlns=\x22\
+http://www.w3.or\
+g/2000/svg\x22\x0a   x\
+mlns:svg=\x22http:/\
+/www.w3.org/2000\
+/svg\x22>\x0a  <sodipo\
+di:namedview\x0a   \
+  id=\x22namedview1\
+\x22\x0a     pagecolor\
+=\x22#ffffff\x22\x0a     \
+bordercolor=\x22#00\
+0000\x22\x0a     borde\
+ropacity=\x220.25\x22\x0a\
+     inkscape:sh\
+owpageshadow=\x222\x22\
+\x0a     inkscape:p\
+ageopacity=\x220.0\x22\
+\x0a     inkscape:p\
+agecheckerboard=\
+\x22true\x22\x0a     inks\
+cape:deskcolor=\x22\
+#d1d1d1\x22\x0a     in\
+kscape:document-\
+units=\x22px\x22\x0a     \
+inkscape:clip-to\
+-page=\x22false\x22\x0a  \
+   showgrid=\x22tru\
+e\x22\x0a     inkscape\
+:zoom=\x2224.384613\
+\x22\x0a     inkscape:\
+cx=\x224.4290225\x22\x0a \
+    inkscape:cy=\
+\x223.7113568\x22\x0a    \
+ inkscape:curren\
+t-layer=\x22svg1\x22>\x0a\
+    <inkscape:gr\
+id\x0a       id=\x22gr\
+id1\x22\x0a       unit\
+s=\x22px\x22\x0a       or\
+iginx=\x220\x22\x0a      \
+ originy=\x220\x22\x0a   \
+    spacingx=\x221\x22\
+\x0a       spacingy\
+=\x221\x22\x0a       empc\
+olor=\x22#0099e5\x22\x0a \
+      empopacity\
+=\x220.30196078\x22\x0a  \
+     color=\x22#009\
+9e5\x22\x0a       opac\
+ity=\x220.14901961\x22\
+\x0a       empspaci\
+ng=\x222\x22\x0a       en\
+abled=\x22true\x22\x0a   \
+    visible=\x22tru\
+e\x22 />\x0a  </sodipo\
+di:namedview>\x0a  \
+<defs\x0a     id=\x22d\
+efs1\x22 />\x0a  <g\x0a  \
+   inkscape:labe\
+l=\x22Layer 1\x22\x0a    \
+ inkscape:groupm\
+ode=\x22layer\x22\x0a    \
+ id=\x22layer1\x22>\x0a  \
+  <path\x0a       i\
+d=\x22rect17\x22\x0a     \
+  style=\x22display\
+:inline;stroke-o\
+pacity:0.795367;\
+paint-order:mark\
+ers fill stroke;\
+fill:{Light}\x22\x0a  \
+     d=\x22M 1,1 H \
+2 V 8 H 1 Z M 1,\
+1 H 8 V 2 H 1 Z\x22\
+ />\x0a    <path\x0a  \
+     id=\x22rect15\x22\
+\x0a       style=\x22f\
+ill:{Dark};strok\
+e-opacity:0.7953\
+67;paint-order:m\
+arkers fill stro\
+ke\x22\x0a       d=\x22M \
+1,1 H 2 V 2 H 1 \
+Z M 7,1 H 8 V 2 \
+H 7 Z M 1,5 H 2 \
+V 6 H 1 Z M 1,7 \
+H 2 V 8 H 1 Z M \
+1,3 H 2 V 4 H 1 \
+Z M 5,1 H 6 V 2 \
+H 5 Z M 3,1 H 4 \
+V 2 H 3 Z M 0,1 \
+H 0.99999994 V 8\
+ H 0 Z M 0,0 H 8\
+ V 1 H 0 Z\x22 />\x0a \
+ </g>\x0a</svg>\x0a\
 \x00\x00\x01\x89\
 \x00\
 \x00\x08\x15x\xda\xd5U\xcbn\xc20\x10\xbc\xe7+\xb6\
@@ -140,6 +264,123 @@ I\xa5\xb7\xd3\x8eI[\xf5\xe4?\xd5\xdf\xd8i\xdco\
 \xa5\xe4\xb1\xfc\x0e\xda.`|\xd7\xb7\x1b\x0fZ\x1b>\
 |\xb0\x0b\xde\xderz\xf3\xf7,\xf23\xfb_\xe3\x1e\
 \xff\xc4\xfb\x05FHj\xaa\
+\x00\x00\x07.\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22UTF\
+-8\x22 standalone=\x22\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   width=\x22\
+8\x22\x0a   height=\x228\x22\
+\x0a   viewBox=\x220 0\
+ 8 8\x22\x0a   version\
+=\x221.1\x22\x0a   id=\x22sv\
+g1\x22\x0a   inkscape:\
+version=\x221.4.2 (\
+ebf0e940, 2025-0\
+5-08)\x22\x0a   sodipo\
+di:docname=\x22togg\
+le_frame_grid_v0\
+1_themed.svg\x22\x0a  \
+ xmlns:inkscape=\
+\x22http://www.inks\
+cape.org/namespa\
+ces/inkscape\x22\x0a  \
+ xmlns:sodipodi=\
+\x22http://sodipodi\
+.sourceforge.net\
+/DTD/sodipodi-0.\
+dtd\x22\x0a   xmlns=\x22h\
+ttp://www.w3.org\
+/2000/svg\x22\x0a   xm\
+lns:svg=\x22http://\
+www.w3.org/2000/\
+svg\x22>\x0a  <sodipod\
+i:namedview\x0a    \
+ id=\x22namedview1\x22\
+\x0a     pagecolor=\
+\x22#ffffff\x22\x0a     b\
+ordercolor=\x22#000\
+000\x22\x0a     border\
+opacity=\x220.25\x22\x0a \
+    inkscape:sho\
+wpageshadow=\x222\x22\x0a\
+     inkscape:pa\
+geopacity=\x220.0\x22\x0a\
+     inkscape:pa\
+gecheckerboard=\x22\
+true\x22\x0a     inksc\
+ape:deskcolor=\x22#\
+d1d1d1\x22\x0a     ink\
+scape:document-u\
+nits=\x22px\x22\x0a     i\
+nkscape:clip-to-\
+page=\x22false\x22\x0a   \
+  showgrid=\x22true\
+\x22\x0a     inkscape:\
+zoom=\x2235.662397\x22\
+\x0a     inkscape:c\
+x=\x225.832474\x22\x0a   \
+  inkscape:cy=\x221\
+.0515278\x22\x0a     i\
+nkscape:current-\
+layer=\x22svg1\x22>\x0a  \
+  <inkscape:grid\
+\x0a       id=\x22grid\
+1\x22\x0a       units=\
+\x22px\x22\x0a       orig\
+inx=\x220\x22\x0a       o\
+riginy=\x220\x22\x0a     \
+  spacingx=\x221\x22\x0a \
+      spacingy=\x22\
+1\x22\x0a       empcol\
+or=\x22#0099e5\x22\x0a   \
+    empopacity=\x22\
+0.30196078\x22\x0a    \
+   color=\x22#0099e\
+5\x22\x0a       opacit\
+y=\x220.14901961\x22\x0a \
+      empspacing\
+=\x222\x22\x0a       enab\
+led=\x22true\x22\x0a     \
+  visible=\x22true\x22\
+ />\x0a  </sodipodi\
+:namedview>\x0a  <d\
+efs\x0a     id=\x22def\
+s1\x22 />\x0a  <rect\x0a \
+    style=\x22fill:\
+{Light};fill-opa\
+city:1;stroke-op\
+acity:0.795367;p\
+aint-order:marke\
+rs fill stroke\x22\x0a\
+     id=\x22rect33\x22\
+\x0a     width=\x228\x22\x0a\
+     height=\x228\x22\x0a\
+     x=\x220\x22\x0a     \
+y=\x220\x22 />\x0a  <g\x0a  \
+   inkscape:labe\
+l=\x22Layer 1\x22\x0a    \
+ inkscape:groupm\
+ode=\x22layer\x22\x0a    \
+ id=\x22layer1\x22 />\x0a\
+  <path\x0a     id=\
+\x22rect32\x22\x0a     st\
+yle=\x22fill:{Dark}\
+;stroke-opacity:\
+0.795367;paint-o\
+rder:markers fil\
+l stroke\x22\x0a     d\
+=\x22M 5,0 H 6 V 7.\
+9999995 H 5 Z M \
+0,5 H 8 V 6 H 0 \
+Z M 0,2 H 8 V 3 \
+H 0 Z M 2,0 H 3 \
+V 7.9999995 H 2 \
+Z\x22 />\x0a</svg>\x0a\
 \x00\x00\x04J\
 <\
 ?xml version=\x221.\
@@ -211,6 +452,201 @@ h 3 v 2 h -3 c 0\
  Z m 0,3 h 3 v 2\
  H 1 Z\x22 />\x0a  </g\
 >\x0a</svg>\x0a\
+\x00\x00\x077\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22UTF\
+-8\x22 standalone=\x22\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   width=\x22\
+8\x22\x0a   height=\x228\x22\
+\x0a   viewBox=\x220 0\
+ 8 8\x22\x0a   version\
+=\x221.1\x22\x0a   id=\x22sv\
+g1\x22\x0a   inkscape:\
+version=\x221.4.2 (\
+ebf0e940, 2025-0\
+5-08)\x22\x0a   sodipo\
+di:docname=\x22togg\
+le_frame_map_v01\
+_themed.svg\x22\x0a   \
+xmlns:inkscape=\x22\
+http://www.inksc\
+ape.org/namespac\
+es/inkscape\x22\x0a   \
+xmlns:sodipodi=\x22\
+http://sodipodi.\
+sourceforge.net/\
+DTD/sodipodi-0.d\
+td\x22\x0a   xmlns=\x22ht\
+tp://www.w3.org/\
+2000/svg\x22\x0a   xml\
+ns:svg=\x22http://w\
+ww.w3.org/2000/s\
+vg\x22>\x0a  <sodipodi\
+:namedview\x0a     \
+id=\x22namedview1\x22\x0a\
+     pagecolor=\x22\
+#ffffff\x22\x0a     bo\
+rdercolor=\x22#0000\
+00\x22\x0a     bordero\
+pacity=\x220.25\x22\x0a  \
+   inkscape:show\
+pageshadow=\x222\x22\x0a \
+    inkscape:pag\
+eopacity=\x220.0\x22\x0a \
+    inkscape:pag\
+echeckerboard=\x22t\
+rue\x22\x0a     inksca\
+pe:deskcolor=\x22#d\
+1d1d1\x22\x0a     inks\
+cape:document-un\
+its=\x22px\x22\x0a     in\
+kscape:clip-to-p\
+age=\x22false\x22\x0a    \
+ showgrid=\x22true\x22\
+\x0a     inkscape:z\
+oom=\x2235.662397\x22\x0a\
+     inkscape:cx\
+=\x225.832474\x22\x0a    \
+ inkscape:cy=\x221.\
+0515278\x22\x0a     in\
+kscape:current-l\
+ayer=\x22svg1\x22>\x0a   \
+ <inkscape:grid\x0a\
+       id=\x22grid1\
+\x22\x0a       units=\x22\
+px\x22\x0a       origi\
+nx=\x220\x22\x0a       or\
+iginy=\x220\x22\x0a      \
+ spacingx=\x221\x22\x0a  \
+     spacingy=\x221\
+\x22\x0a       empcolo\
+r=\x22#0099e5\x22\x0a    \
+   empopacity=\x220\
+.30196078\x22\x0a     \
+  color=\x22#0099e5\
+\x22\x0a       opacity\
+=\x220.14901961\x22\x0a  \
+     empspacing=\
+\x222\x22\x0a       enabl\
+ed=\x22true\x22\x0a      \
+ visible=\x22true\x22 \
+/>\x0a  </sodipodi:\
+namedview>\x0a  <de\
+fs\x0a     id=\x22defs\
+1\x22 />\x0a  <g\x0a     \
+inkscape:label=\x22\
+Layer 1\x22\x0a     in\
+kscape:groupmode\
+=\x22layer\x22\x0a     id\
+=\x22layer1\x22 />\x0a  <\
+path\x0a     id=\x22re\
+ct33\x22\x0a     style\
+=\x22fill:{Dark};fi\
+ll-opacity:1;str\
+oke-opacity:0.79\
+5367;paint-order\
+:markers fill st\
+roke\x22\x0a     d=\x22M \
+0 0 L 0 8 L 8 8 \
+L 8 0 L 0 0 z M \
+1 1 L 7 1 L 7 7 \
+L 1 7 L 1 1 z \x22 \
+/>\x0a  <path\x0a     \
+id=\x22rect34\x22\x0a    \
+ style=\x22fill:{Bu\
+ttonText};fill-o\
+pacity:1;stroke-\
+opacity:0.795367\
+;paint-order:mar\
+kers fill stroke\
+\x22\x0a     d=\x22M 3 0 \
+L 3 5 L 8 5 L 8 \
+0 L 3 0 z M 4 1 \
+L 7 1 L 7 4 L 4 \
+4 L 4 1 z \x22 />\x0a<\
+/svg>\x0a\
+\x00\x00\x04\xae\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22UTF\
+-8\x22 standalone=\x22\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   width=\x22\
+8\x22\x0a   height=\x228\x22\
+\x0a   viewBox=\x220 0\
+ 8 8\x22\x0a   version\
+=\x221.1\x22\x0a   id=\x22sv\
+g1\x22\x0a   xmlns=\x22ht\
+tp://www.w3.org/\
+2000/svg\x22\x0a   xml\
+ns:svg=\x22http://w\
+ww.w3.org/2000/s\
+vg\x22>\x0a  <defs\x0a   \
+  id=\x22defs1\x22 />\x0a\
+  <g\x0a     id=\x22la\
+yer1\x22 />\x0a  <path\
+\x0a     id=\x22rect36\
+\x22\x0a     style=\x22fi\
+ll:{Dark};fill-o\
+pacity:1;stroke-\
+width:0.999995;s\
+troke-opacity:0.\
+795367;paint-ord\
+er:markers fill \
+stroke\x22\x0a     d=\x22\
+M 0 0 L 0 3.5 L \
+3.5 3.5 L 3.5 0 \
+L 0 0 z M 1 1 L \
+2.5 1 L 2.5 2.5 \
+L 1 2.5 L 1 1 z \
+\x22 />\x0a  <path\x0a   \
+  id=\x22rect36-6\x22\x0a\
+     style=\x22fill\
+:{Dark};fill-opa\
+city:1;stroke-wi\
+dth:0.999995;str\
+oke-opacity:0.79\
+5367;paint-order\
+:markers fill st\
+roke\x22\x0a     d=\x22M \
+4.5,0 V 3.5 H 8 \
+V 0 Z M 5.5,1 H \
+7 V 2.5 H 5.5 Z\x22\
+ />\x0a  <path\x0a    \
+ id=\x22rect36-4\x22\x0a \
+    style=\x22fill:\
+{Dark};fill-opac\
+ity:1;stroke-wid\
+th:0.999995;stro\
+ke-opacity:0.795\
+367;paint-order:\
+markers fill str\
+oke\x22\x0a     d=\x22M 0\
+,4.5 V 8 H 3.5 V\
+ 4.5 Z M 1,5.5 H\
+ 2.5 V 7 H 1 Z\x22 \
+/>\x0a  <path\x0a     \
+id=\x22rect36-6-1\x22\x0a\
+     style=\x22fill\
+:{Dark};fill-opa\
+city:1;stroke-wi\
+dth:0.999995;str\
+oke-opacity:0.79\
+5367;paint-order\
+:markers fill st\
+roke\x22\x0a     d=\x22M \
+4.5,4.5 V 8 H 8 \
+V 4.5 Z M 5.5,5.\
+5 H 7 V 7 H 5.5 \
+Z\x22 />\x0a</svg>\x0a\
 \x00\x00\x02\x84\
 <\
 ?xml version=\x221.\
@@ -274,6 +710,11 @@ qt_resource_name = b"\
 \x09\xdb\x9c\x07\
 \x00v\
 \x00i\x00e\x00w\x00_\x00s\x00c\x00r\x00i\x00p\x00t\x00.\x00s\x00v\x00g\
+\x00\x16\
+\x0a#Q'\
+\x00t\
+\x00o\x00g\x00g\x00l\x00e\x00_\x00f\x00r\x00a\x00m\x00e\x00_\x00r\x00u\x00l\x00e\
+\x00r\x00.\x00s\x00v\x00g\
 \x00\x12\
 \x0c:\x1a\xc7\
 \x00t\
@@ -283,10 +724,25 @@ qt_resource_name = b"\
 \x0d\x22\xda\x87\
 \x00t\
 \x00o\x00g\x00g\x00l\x00e\x00_\x00r\x00o\x00w\x00s\x00.\x00s\x00v\x00g\
+\x00\x15\
+\x0fy<\x87\
+\x00t\
+\x00o\x00g\x00g\x00l\x00e\x00_\x00f\x00r\x00a\x00m\x00e\x00_\x00g\x00r\x00i\x00d\
+\x00.\x00s\x00v\x00g\
 \x00\x0d\
 \x09^\xf7G\
 \x00v\
 \x00i\x00e\x00w\x00_\x00l\x00i\x00s\x00t\x00.\x00s\x00v\x00g\
+\x00\x14\
+\x0f\xfb\xbcG\
+\x00t\
+\x00o\x00g\x00g\x00l\x00e\x00_\x00f\x00r\x00a\x00m\x00e\x00_\x00m\x00a\x00p\x00.\
+\x00s\x00v\x00g\
+\x00\x18\
+\x02$F\xa7\
+\x00t\
+\x00o\x00g\x00g\x00l\x00e\x00_\x00f\x00r\x00a\x00m\x00e\x00_\x00s\x00h\x00o\x00w\
+\x00a\x00l\x00l\x00.\x00s\x00v\x00g\
 \x00\x0e\
 \x0b\xae\xfe\xe7\
 \x00v\
@@ -298,20 +754,28 @@ qt_resource_struct = b"\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x02\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\x10\x00\x02\x00\x00\x00\x06\x00\x00\x00\x03\
+\x00\x00\x00\x10\x00\x02\x00\x00\x00\x0a\x00\x00\x00\x03\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\xbe\x00\x00\x00\x00\x00\x01\x00\x00\x07\xdb\
+\x00\x00\x01n\x00\x00\x00\x00\x00\x01\x00\x00\x228\
+\x00\x00\x01\x9b-Z\x00\xd0\
+\x00\x00\x01 \x00\x00\x00\x00\x00\x01\x00\x00\x16\xaf\
 \x00\x00\x01\x9aoq\xd9n\
 \x00\x00\x00L\x00\x00\x00\x00\x00\x01\x00\x00\x01\x8f\
 \x00\x00\x01\x9aoq\xd9o\
-\x00\x00\x00\xde\x00\x00\x00\x00\x00\x01\x00\x00\x0c)\
+\x00\x00\x00p\x00\x00\x00\x00\x00\x01\x00\x00\x04\xb1\
+\x00\x00\x01\x9b-Z\x00\xd1\
+\x00\x00\x01\xa4\x00\x00\x00\x00\x00\x01\x00\x00&\xea\
 \x00\x00\x01\x9aoq\xd9m\
-\x00\x00\x00p\x00\x01\x00\x00\x00\x01\x00\x00\x04\xb1\
+\x00\x00\x00\xa2\x00\x01\x00\x00\x00\x01\x00\x00\x0cS\
 \x00\x00\x01\x9aoq\xd9m\
-\x00\x00\x00\x9a\x00\x01\x00\x00\x00\x01\x00\x00\x06>\
+\x00\x00\x00\xcc\x00\x01\x00\x00\x00\x01\x00\x00\x0d\xe0\
 \x00\x00\x01\x9aoq\xd9m\
 \x00\x00\x00\x1c\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\
 \x00\x00\x01\x9aoq\xd9l\
+\x00\x00\x00\xf0\x00\x00\x00\x00\x00\x01\x00\x00\x0f}\
+\x00\x00\x01\x9b-Z\x00\xd0\
+\x00\x00\x01@\x00\x00\x00\x00\x00\x01\x00\x00\x1a\xfd\
+\x00\x00\x01\x9b-Z\x00\xd1\
 "
 
 def qInitResources():

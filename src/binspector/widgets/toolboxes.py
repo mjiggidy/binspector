@@ -10,7 +10,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	"""Fonts, colors, and dimensions"""
 
 	sig_font_changed = QtCore.Signal(QtGui.QFont)
-	sig_palette_changed = QtCore.Signal(QtGui.QColor, QtGui.QColor)
+	sig_colors_changed = QtCore.Signal(QtGui.QColor, QtGui.QColor)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -40,7 +40,6 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 		self._spn_geo_h.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
 		#self._spn_geo_h.setMinimum(-9999)
 
-		self.layout().addWidget(QtWidgets.QLabel(self.tr("Window Geometry")))
 		
 		lay_geo= QtWidgets.QGridLayout()
 		lay_geo.addWidget(QtWidgets.QLabel(self.tr("X:")), 0, 0, QtCore.Qt.AlignmentFlag.AlignRight)
@@ -56,10 +55,8 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 		lay_geo.addWidget(self._spn_geo_h, 1, 4)
 		#lay_geo_dimensions.addStretch()
 
-		self.layout().addLayout(lay_geo)
 
 		self._chk_was_iconic = QtWidgets.QCheckBox(self.tr("Was Iconic"))
-		self.layout().addWidget(self._chk_was_iconic)
 
 		lay_fonts = QtWidgets.QHBoxLayout()
 		self._cmb_fonts = QtWidgets.QFontComboBox()
@@ -80,11 +77,12 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 
 		self.layout().addLayout(lay_colors)
 
-		self._tree_column_widths = treeview.LBTreeView()
-		self.layout().addWidget(QtWidgets.QLabel(self.tr("Column Widths")))
-		self.layout().addWidget(self._tree_column_widths)
-
-		
+		self.layout().addWidget(QtWidgets.QLabel(self.tr("Window Geometry")))
+		self.layout().addLayout(lay_geo)
+		self.layout().addWidget(self._chk_was_iconic)
+#		self._tree_column_widths = treeview.BSTreeViewBase()
+#		self.layout().addWidget(QtWidgets.QLabel(self.tr("Column Widths")))
+#		self.layout().addWidget(self._tree_column_widths)
 
 		self._cmb_fonts.currentFontChanged.connect(self.sig_font_changed)
 		self._spn_size.valueChanged.connect(lambda: self.sig_font_changed.emit(self.binFont()))
@@ -101,7 +99,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	@QtCore.Slot()
 	def bgColorPickerRequested(self):
 		
-		_,bg_color = self.binPalette()
+		_,bg_color = self.binColors()
 		new_color = QtWidgets.QColorDialog.getColor(bg_color, self._btn_bg_color, self.tr("Choose a background color"))
 		
 		if new_color.isValid():
@@ -110,7 +108,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	@QtCore.Slot()
 	def fgColorPickerRequested(self):
 		
-		fg_color,_ = self.binPalette()
+		fg_color,_ = self.binColors()
 		new_color = QtWidgets.QColorDialog.getColor(fg_color, self._btn_fg_color, self.tr("Choose a text color"))
 
 		if new_color.isValid():
@@ -118,7 +116,6 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	
 	@QtCore.Slot(QtCore.QRect)
 	def setBinRect(self, rect:QtCore.QRect):
-		#print(rect)
 		
 		self._spn_geo_x.setValue(rect.x())
 		self._spn_geo_y.setValue(rect.y())
@@ -129,48 +126,59 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	def setBinFont(self, font:QtGui.QFont):
 
 		self._cmb_fonts.setCurrentFont(font)
-		self._spn_size.setValue(font.pixelSize())
+		self._spn_size.setValue(font.pointSize())
+	
+	def binFont(self) -> QtGui.QFont:
+		font = self._cmb_fonts.currentFont()
+		font.setPointSizeF(self._spn_size.value())
+		return font
 
 	@QtCore.Slot(QtGui.QColor)
 	def setBinForegroundColor(self, color:QtGui.QColor):
 		
 		fg = self._btn_fg_color.palette()
+		
+		if fg.color(QtGui.QPalette.ColorRole.Button) == color:
+			return
+		
 		fg.setColor(QtGui.QPalette.ColorRole.Button, color)
 		
 		self._btn_fg_color.setPalette(fg)
 		self._btn_fg_color.setText(self._format_color_text(fg.color(QtGui.QPalette.ColorRole.Button)))
-		self.sig_palette_changed.emit(*self.binPalette())
+		self.sig_colors_changed.emit(*self.binColors())
 
 	@QtCore.Slot(QtGui.QColor)
 	def setBinBackgroundColor(self, color:QtGui.QColor):
 		
 		bg = self._btn_bg_color.palette()
+
+		if bg.color(QtGui.QPalette.ColorRole.Button) == color:
+			return
+
 		bg.setColor(QtGui.QPalette.ColorRole.Button, color)
 		
 		self._btn_bg_color.setPalette(bg)
 		self._btn_bg_color.setText(self._format_color_text(bg.color(QtGui.QPalette.ColorRole.Button)))
 
-		self.sig_palette_changed.emit(*self.binPalette())
+		self.sig_colors_changed.emit(*self.binColors())
 	
 	@staticmethod
 	def _format_color_text(color:QtGui.QColor) -> str:
 		return f"R: {color.red()}  G: {color.green()}  B: {color.blue()}"
 
 	@QtCore.Slot(QtGui.QColor,QtGui.QColor)
-	def setBinPalette(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
+	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
 
 		self.blockSignals(True)
+
 		self.setBinForegroundColor(fg_color)
 		self.setBinBackgroundColor(bg_color)
+
 		self.blockSignals(False)
-		self.sig_palette_changed.emit(*self.binPalette())
+		
+		#self.sig_colors_changed.emit(*self.binColors())
 	
-	def binFont(self) -> QtGui.QFont:
-		font = self._cmb_fonts.currentFont()
-		font.setPixelSize(self._spn_size.value())
-		return font
-	
-	def binPalette(self) -> tuple[QtGui.QColor, QtGui.QColor]:
+	def binColors(self) -> tuple[QtGui.QColor, QtGui.QColor]:
 		"""Returns a tuple of `(fg_color:QtGui.QColor, bg_color:QtGui.QColor)`.  Weird notation lol"""
 
 		return (
@@ -273,7 +281,7 @@ class BSBinSiftSettingsView(QtWidgets.QWidget):
 
 		self._chk_sift_enabled = QtWidgets.QCheckBox(self.tr("Sift Enabled"))
 
-		self._tree_siftsettings = treeview.LBTreeView()
+		self._tree_siftsettings = treeview.BSTreeViewBase()
 
 		self.layout().addWidget(self._chk_sift_enabled)
 		self.layout().addWidget(self._tree_siftsettings)

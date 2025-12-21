@@ -8,9 +8,9 @@ class LBAbstractPresenter(QtCore.QObject):
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
-		self._view_model = viewmodels.LBTimelineViewModel()
+		self._view_model = viewmodels.BSBinItemViewModel()
 	
-	def viewModel(self) -> viewmodels.LBTimelineViewModel:
+	def viewModel(self) -> viewmodels.BSBinItemViewModel:
 		"""Return the internal view model"""
 		return self._view_model
 	

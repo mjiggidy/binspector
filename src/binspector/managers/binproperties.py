@@ -1,9 +1,11 @@
-import logging
+import logging, typing
 import avb, avbutils
-from PySide6 import QtCore, QtGui, QtWidgets
-from ..models import viewmodelitems
+from PySide6 import QtCore
+from ..models import viewmodelitems, viewmodels
 from ..core import binparser
 from . import base
+
+TEMP_POSITION_OFFSET_THING = 10
 
 class BSBinViewModeManager(QtCore.QObject):
 	"""Manage them viewmodes"""
@@ -181,101 +183,6 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 		
 		self.sig_bin_display_changed.emit(bin_display)
 		
-class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
-
-	sig_font_changed           = QtCore.Signal(QtGui.QFont)
-	sig_palette_changed        = QtCore.Signal(QtGui.QColor, QtGui.QColor)
-	sig_column_widths_changed  = QtCore.Signal(object)
-	sig_window_rect_changed    = QtCore.Signal(object)
-	sig_was_iconic_changed     = QtCore.Signal(object)
-	sig_bin_appearance_toggled = QtCore.Signal(object)
-	sig_system_appearance_toggled = QtCore.Signal(object)
-
-	def __init__(self, *args, **kwargs):
-		
-		super().__init__(*args, **kwargs)
-
-		self._use_bin_appearance = True
-
-		self.sig_bin_appearance_toggled.connect(lambda use_bin: self.sig_system_appearance_toggled.emit(not use_bin))
-
-	@QtCore.Slot(object, object, object, object, object, object, object)
-	def setAppearanceSettings(self,
-		bin_font:str|int,
-		mac_font_size:int,
-		foreground_color:list[int],
-		background_color:list[int],
-		column_widths:dict[str,int],
-		window_rect:list[int],
-		was_iconic:bool
-	):
-		
-		font = QtWidgets.QApplication.font()
-		
-		# JUST A NOTE:
-		# I could be wrong, but I have a suspicion that these mac_* properties are 
-		# specifically for frame view even though mac_font_size seems global
-		font.setPixelSize(mac_font_size)
-
-		if isinstance(bin_font, str) and QtGui.QFontDatabase.hasFamily(bin_font):
-			font.setFamily(bin_font)
-
-		# NOTE: mac_font int not a font index, at least not one we can make use of
-		#elif isinstance(bin_font, int) and len(QtGui.QFontDatabase.families()) > bin_font:
-		#	font.setFamily(QtGui.QFontDatabase.families()[bin_font])
-		
-		self.sig_font_changed.emit(font)
-		
-		self.setColumnWidths(column_widths)
-		self.setWindowRect(window_rect)
-
-		self.sig_was_iconic_changed.emit(was_iconic)
-		self.sig_column_widths_changed.emit(column_widths)
-		self.sig_palette_changed.emit(
-			QtGui.QColor.fromRgba64(*foreground_color),
-			QtGui.QColor.fromRgba64(*background_color),
-		)
-
-	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
-	def setBinColors(self, fg_color:QtGui.QColor, bg_color:QtGui.QColor):
-		
-		self.sig_palette_changed.emit(fg_color, bg_color)
-
-	@QtCore.Slot(object)
-	def setWindowRect(self, window_rect:list[int]):
-
-		self.sig_window_rect_changed.emit(QtCore.QRect(
-			QtCore.QPoint(*window_rect[:2]),
-			QtCore.QPoint(*window_rect[2:])
-		))
-
-	
-	@QtCore.Slot(object)
-	def setColumnWidths(self, column_widths:dict[str,int]):
-		"""Display column width settings"""
-
-		self.viewModel().clear()
-
-		for col, width in column_widths.items():
-			self.addRow({
-				self.tr("Width"):  width,
-				self.tr("Column"): col,
-			}, add_new_headers=True)
-	
-	@QtCore.Slot(object)
-	def setEnableBinAppearance(self, is_enabled:bool):
-
-		if not self._use_bin_appearance == is_enabled:
-			self._use_bin_appearance = is_enabled
-			self.sig_bin_appearance_toggled.emit(is_enabled)
-	
-	@QtCore.Slot(object)
-	def setUseSystemAppearance(self, use_system:bool):
-
-		self.setEnableBinAppearance(not use_system)
-		
-
-
 class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 	"""Bin sorting"""
 
@@ -332,7 +239,7 @@ class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 		self.sig_sift_settings_changed.emit(sift_settings)		
 		self.sig_sift_enabled.emit(sift_enabled)
 
-class BSBinItemsManager(base.LBItemDefinitionView):
+class BSBinItemsManager(QtCore.QObject):
 	
 	sig_mob_added = QtCore.Signal(object)
 	"""A mob was added to the bin items"""
@@ -342,21 +249,44 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 
 	sig_bin_view_changed = QtCore.Signal(object, object)
 
-	def __init__(self):
+	def __init__(self, *args, **kwargs):
 
-		super().__init__()
+		super().__init__(*args, **kwargs)
 
-		self._frame_scene = QtWidgets.QGraphicsScene()
+		self._view_model = viewmodels.BSBinItemViewModel()
+
+#		self._frame_scene = QtWidgets.QGraphicsScene()
 		
 		self._view_model.rowsInserted .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.rowsRemoved  .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 		self._view_model.modelReset   .connect(lambda: self.sig_mob_count_changed.emit(self._view_model.rowCount()))
 
+	def viewModel(self) -> viewmodels.BSBinItemViewModel:
+		"""Return the internal view model"""
+		return self._view_model
+	
+	@QtCore.Slot(object)
+	def addRow(self, row_data:dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any], add_new_headers:bool=False):
+		
+		return self.addRows([row_data], add_new_headers)
+
+	@QtCore.Slot(object)
+	def addRows(self, row_data_list:list[dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any]], add_new_headers:bool=False):
+		#print("I HAVE HERE:", row_data_list)
+		pass
+	
+	def addHeader(self, header_data:viewmodelitems.LBAbstractViewHeaderItem):
+		self._view_model.addHeader(header_data)
+
+	def _buildViewHeader(self, term:typing.Any) -> viewmodelitems.LBAbstractViewHeaderItem:
+		if isinstance(term, viewmodelitems.LBAbstractViewHeaderItem):
+			return term
+		return viewmodelitems.LBAbstractViewHeaderItem(field_name=str(term), display_name=str(term).replace("_", " ").title())
+
 	@QtCore.Slot(object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int]):
 
 		self.viewModel().clear()
-		self.frameScene().clear()
 
 		for column in bin_view.columns:
 
@@ -375,143 +305,41 @@ class BSBinItemsManager(base.LBItemDefinitionView):
 	
 	@QtCore.Slot(object)
 	def addMob(self, mob_info:binparser.BinItemInfo):
+		"""Add a single mob (convience method for `self.addMobs(mob_info_list:list[binparser.BinItemInfo])`)"""
 
-		self.addRow(mob_info.column_data)
-		#print(mob_info.coordinates)
-		
-		#self._frame_scale = 11
-		self._frame_scale = 1
-		
-		TEMP_POSITION_OFFSET_THING = 10
-
-		item_rect = BSFrameModeItem()
-		item_rect.setPos(mob_info.coordinates[0]/TEMP_POSITION_OFFSET_THING, mob_info.coordinates[1]/TEMP_POSITION_OFFSET_THING)
-		item_rect.setScale(self._frame_scale)
-		item_rect.setName(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Name")))
-		item_rect.setClipColor(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Color")).raw_data())
-		item_rect.setSelected(True)
-		item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
-
-		
-		self._frame_scene.addItem(
-			item_rect
-		)
-
+		self.addMobs([mob_info])
 		#self.sig_mob_added.emit(mob_info)
 	
 	@QtCore.Slot(object)
 	def addMobs(self, mob_info_list:list[binparser.BinItemInfo]):
+		"""Given a `list[binparser.BinItemInfo]` of parsed mobs, add their viewitems to the model"""
 
-		self.addRows([m.column_data for m in mob_info_list])
+		# NOTE: ViewItems are currently determined in BinParser but then double-checked here
+		# Figure out where to actually do that.  I think probably here instead.
+
+		mobs_viewitems = []
+		mobs_framepositions = []
 
 		for mob_info in mob_info_list:
-			
-			self._frame_scale = 1
+
+			mobs_framepositions.append(mob_info.frame_coordinates)
+
+			mob_viewitems = dict()
+
+			for field_id, mob_viewitem in mob_info.view_items.items():
+
+				if field_id == 40 and isinstance(mob_viewitem, dict): # User column
+
+					mob_viewitem = {
+						str(user_col_name): viewmodelitems.get_viewitem_for_item(user_col_data)
+						for user_col_name, user_col_data in mob_viewitem.items()
+					}
+				
+				else:
+					mob_viewitem = viewmodelitems.get_viewitem_for_item(mob_viewitem)
+					
+				mob_viewitems[field_id] = mob_viewitem
+
+			mobs_viewitems.append(mob_viewitems)
 		
-			TEMP_POSITION_OFFSET_THING = 10
-
-			item_rect = BSFrameModeItem()
-			item_rect.setPos(mob_info.coordinates[0]/TEMP_POSITION_OFFSET_THING, mob_info.coordinates[1]/TEMP_POSITION_OFFSET_THING)
-			item_rect.setScale(self._frame_scale)
-			item_rect.setName(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Name")))
-			item_rect.setClipColor(mob_info.column_data.get(avbutils.BIN_COLUMN_ROLES.get("Color")).raw_data())
-			item_rect.setSelected(True)
-			item_rect.setFlags(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable|QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsFocusable)
-
-			
-			self._frame_scene.addItem(
-				item_rect
-			)
-
-
-
-		#self.sig_mob_added.emit(mob_info_list)
-
-		# ALSO Add Frame Items
-
-	def frameScene(self) -> QtWidgets.QGraphicsScene:
-		return self._frame_scene
-	
-class BSFrameModeItem(QtWidgets.QGraphicsItem):
-
-	def boundingRect(self) -> QtCore.QRectF:
-		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(18,12))
-	
-	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, /,	 widget:QtWidgets.QWidget = ...):
-
-		painter.save()
-
-		pen = QtGui.QPen()
-		pen.setWidth(4)
-		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-		pen.setJoinStyle(QtCore.Qt.PenJoinStyle.RoundJoin)
-		pen.setCosmetic(True)
-
-		brush = QtGui.QBrush()
-		brush.setColor(option.palette.color(QtGui.QPalette.ColorRole.Dark))
-		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
-
-		painter.setPen(pen)
-		painter.setBrush(brush)
-		painter.drawRect(self.boundingRect())
-
-		brush = QtGui.QBrush()
-		brush.setColor(option.palette.color(QtGui.QPalette.ColorRole.Button))
-		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
-		pen = QtGui.QPen()
-		pen.setStyle(QtCore.Qt.PenStyle.NoPen)
-		
-
-		painter.setBrush(brush)
-		painter.setPen(pen)
-
-		clip_preview_rect = self.boundingRect().adjusted(0, 0, 0, -1).adjusted(.5,.5,-.5,-.5)
-
-		painter.drawRect(clip_preview_rect)
-
-		if self._clip_color.isValid():
-			pass
-
-			pen = QtGui.QPen()
-			pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-			pen.setWidthF(0.25/self.scale())
-			pen.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
-			pen.setColor(self._clip_color)
-			
-			brush = QtGui.QBrush()
-			brush.setStyle(QtCore.Qt.BrushStyle.NoBrush)
-
-			painter.setPen(pen)
-			painter.setBrush(brush)
-			painter.drawRect(self.boundingRect().adjusted(.25,.25,-.25,-.25))
-
-		font = QtWidgets.QApplication.font()
-		font.setPixelSize(1/self.scale())
-		
-		painter.setFont(font)
-		pen = QtGui.QPen()
-		painter.setPen(pen)
-		painter.drawText(self.boundingRect().adjusted(0.25,0.25,-0.25,-0.25), QtCore.Qt.AlignmentFlag.AlignCenter|QtCore.Qt.AlignmentFlag.AlignBottom, self._name)
-
-		if self.isSelected():
-			brush = QtGui.QBrush()
-			brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
-			color_highlight:QtGui.QColor = option.palette.color(QtGui.QPalette.ColorRole.Highlight)
-			color_highlight.setAlphaF(0.5)
-			brush.setColor(color_highlight)
-
-			pen = QtGui.QPen()
-			pen.setStyle(QtCore.Qt.PenStyle.NoPen)
-
-			painter.setBrush(brush)
-			painter.setPen(pen)
-			painter.drawRect(self.boundingRect())
-		
-		painter.restore()
-
-	def setName(self, name:str):
-		self._name = name
-	
-	def setClipColor(self, color:QtGui.QColor):
-
-		self._clip_color = color
+		self._view_model.addBinItems(mobs_viewitems, mobs_framepositions)

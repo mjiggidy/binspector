@@ -1,38 +1,47 @@
+from __future__ import annotations
 import weakref, logging, typing
 from os import PathLike
 from PySide6 import QtCore, QtGui, QtSvg
 from ..utils import drawing
 
-class BSPaletteWatcherForSomeReason(QtCore.QObject):
-	"""Watch for palette changes ugh"""
+PROPERTY_ICON_PALETTED = "icon_paletted"
 
-	sig_palette_changed = QtCore.Signal(QtGui.QPalette)
-	"""Oh look the palette changed"""
+def getPalettedIconEngine(action:QtGui.QAction) -> BSAbstractPalettedIconEngine|None:
 
-	def __init__(self, *args, **kwargs):
-		
-		super().__init__(*args, **kwargs)
+	path_icon = action.property(PROPERTY_ICON_PALETTED)
+	return BSPalettedSvgIconEngine(path_icon) if path_icon else None
 
-		self._icon_engines:set[weakref.ReferenceType["BSPalettedSvgIconEngine"]] = set()
 
-	def addIconEngine(self, paletted_engine:"BSPalettedSvgIconEngine"):
-		self._icon_engines.add(weakref.ref(paletted_engine))
-	
-	@QtCore.Slot(QtGui.QPalette)
-	def setPalette(self, palette:QtGui.QPalette):
-
-		# NOTE: Kinda hate this, but need to copy the set to allow the discard during iteration
-		for icon_engine in self._icon_engines.copy():
-
-			if not icon_engine():
-
-				logging.getLogger(__name__).debug("Discarding stale weakref: %s", icon_engine)
-				self._icon_engines.discard(icon_engine)
-
-			else:
-				icon_engine().setPalette(palette)
-
-		self.sig_palette_changed.emit(palette)
+#class BSPaletteWatcherForSomeReason(QtCore.QObject):
+#	"""Watch for palette changes ugh"""
+#
+#	sig_palette_changed = QtCore.Signal(QtGui.QPalette)
+#	"""Oh look the palette changed"""
+#
+#	def __init__(self, *args, **kwargs):
+#		
+#		super().__init__(*args, **kwargs)
+#
+#		self._icon_engines:set[weakref.ReferenceType["BSPalettedSvgIconEngine"]] = set()
+#
+#	def addIconEngine(self, paletted_engine:"BSPalettedSvgIconEngine"):
+#		self._icon_engines.add(weakref.ref(paletted_engine))
+#	
+#	@QtCore.Slot(QtGui.QPalette)
+#	def setPalette(self, palette:QtGui.QPalette):
+#
+#		# NOTE: Kinda hate this, but need to copy the set to allow the discard during iteration
+#		for icon_engine in self._icon_engines.copy():
+#
+#			if not icon_engine():
+#
+#				logging.getLogger(__name__).debug("Discarding stale weakref: %s", icon_engine)
+#				self._icon_engines.discard(icon_engine)
+#
+#			else:
+#				icon_engine().setPalette(palette)
+#
+#		self.sig_palette_changed.emit(palette)
 
 class BSIconProvider:
 	"""Provide icons based on lookup"""
@@ -57,15 +66,12 @@ class BSIconProvider:
 	
 class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 
-	def __init__(self, palette_watcher:BSPaletteWatcherForSomeReason, *args, **kwargs):
+	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._palette = QtGui.QPalette()
+		self._palette = QtGui.QGuiApplication.palette()
 		self._cache:dict[int,QtGui.QPixmap] = dict()
-		
-		self._palette_watcher = palette_watcher
-		self._palette_watcher.addIconEngine(self)
 
 	def setPalette(self, palette:QtGui.QPalette):
 		self._palette = palette
@@ -106,9 +112,9 @@ class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 	
 class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 
-	def __init__(self, clip_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, border_width:int=1, **kwargs):
+	def __init__(self, clip_color:QtGui.QColor, *args, border_width:int=1, **kwargs):
 
-		super().__init__(palette_watcher, *args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		self._clip_color   = clip_color
 		self._border_width = border_width
@@ -127,13 +133,13 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 	def clone(self) -> "BSPalettedClipColorIconEngine":
 		
 		logging.getLogger(__name__).debug("I do be clonin haha look")
-		return self.__class__(self._clip_color, self._palette_watcher)
+		return self.__class__(self._clip_color, border_width=self._border_width)
 	
 class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
 
-	def __init__(self, marker_color:QtGui.QColor, palette_watcher:BSPaletteWatcherForSomeReason, *args, border_width:int=1, **kwargs):
+	def __init__(self, marker_color:QtGui.QColor, *args, border_width:int=1, **kwargs):
 
-		super().__init__(palette_watcher, *args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		self._marker_color   = marker_color
 		self._border_width = border_width
@@ -159,13 +165,13 @@ class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
 	def clone(self) -> "BSPalettedClipColorIconEngine":
 		
 		logging.getLogger(__name__).debug("I do be clonin haha look")
-		return self.__class__(self._marker_color, self._palette_watcher)
+		return self.__class__(self._marker_color, border_width=self._border_width)
 
 class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	
-	def __init__(self, svg_path:PathLike, palette_watcher:BSPaletteWatcherForSomeReason, *args, **kwargs):
+	def __init__(self, svg_path:PathLike, *args, **kwargs):
 
-		super().__init__(palette_watcher, *args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		self._svg_path     = svg_path
 		self._svg_template = self._svgStringFromPath(svg_path)
@@ -178,7 +184,7 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	
 	def clone(self) -> "BSPalettedSvgIconEngine":
 		logging.getLogger(__name__).debug("I do be clonin haha look")
-		return self.__class__(self._svg_path, self._palette_watcher)
+		return self.__class__(self._svg_path)
 	
 	def paint(self, painter:QtGui.QPainter, rect:QtCore.QRect, mode:QtGui.QIcon.Mode, state:QtGui.QIcon.State):
 		
