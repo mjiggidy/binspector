@@ -148,7 +148,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False, icon_engine=icons.getPalettedIconEngine(self._man_actions._act_toggle_show_all_items))
+		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False, icon_engine=icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_frame_showall.svg"))
 		btn.setIconSize(QtCore.QSize(8,8))
 		btn.setFixedSize(QtCore.QSize(
 			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
