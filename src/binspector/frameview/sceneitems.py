@@ -10,7 +10,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 		self._clip_color = QtGui.QColor()
 
 	def boundingRect(self) -> QtCore.QRectF:
-		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(18,12))
+		return QtCore.QRectF(QtCore.QPoint(0,0),QtCore.QSize(16,12))
 
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, /,  widget:QtWidgets.QWidget = ...):
 
