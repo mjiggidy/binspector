@@ -5,7 +5,7 @@ from ..core.config import BSFrameViewConfig
 from ..utils import gestures
 from ..overlays import framemap, frameruler, manager
 
-from .painters import BSBinFrameBackgroundPainter
+from . import painters
 from .framescene import BSBinFrameScene
 from .actions import BSFrameViewActions
 
@@ -76,7 +76,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# Background Painter
 		# NOTE: Watches the QGraphicsView for palette changes (`parent=self`), NOT the viewport().
 		# Viewport doesn't fire paletteChange events here.  Dunno. Maybe a TODO in disguise lol
-		self._background_painter = BSBinFrameBackgroundPainter(parent=self, grid_info=self._grid_info)
+		self._background_painter = painters.BSBinFrameBackgroundPainter(parent=self, grid_info=self._grid_info)
+		self._item_brushes       = painters.BSFrameItemBrushManager(parent=self)
 
 		# Doers of things
 		# NOTE: Most of these fellers install themselves as eventFilters, enable mouse tracking on the widget, etc
@@ -141,7 +142,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.horizontalScrollBar().valueChanged     .connect(self.handleVisibleSceneRectChanged)
 		self.verticalScrollBar().valueChanged       .connect(self.handleVisibleSceneRectChanged)
 
-		self.setScene(frame_scene or BSBinFrameScene())
+		self.setScene(frame_scene or BSBinFrameScene(brushes_manager=self._item_brushes))
 
 	def actions(self) -> BSFrameViewActions:
 		"""Get the actions manager for the frame view"""

@@ -3,7 +3,7 @@ from PySide6 import QtCore, QtWidgets
 
 from ..models import viewmodels
 from ..core import config
-from . import sceneitems
+from . import sceneitems, painters
 
 class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	"""Graphics scene based on a bin model"""
@@ -12,12 +12,13 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	sig_selection_model_changed    = QtCore.Signal(object)
 	sig_bin_item_added             = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_filter_model:viewmodels.BSBinItemViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_filter_model:viewmodels.BSBinItemViewModel|None=None, brushes_manager:painters.BSFrameItemBrushManager, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		self._bin_filter_model = bin_filter_model or viewmodels.BSBinViewProxyModel()
 		self._selection_model  = QtCore.QItemSelectionModel()
+		self._brushes_manager  = brushes_manager
 
 		self._bin_items:list[sceneitems.BSFrameModeItem] = list()
 
@@ -130,7 +131,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			bin_item_name   = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemName)
 			bin_item_coords = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSFrameCoordinates)
 
-			bin_item = sceneitems.BSFrameModeItem()
+			bin_item = sceneitems.BSFrameModeItem(brush_manager=self._brushes_manager)
 			bin_item.setName(str(bin_item_name))
 			bin_item.setFlags(config.BSFrameViewConfig.DEFAULT_ITEM_FLAGS)
 

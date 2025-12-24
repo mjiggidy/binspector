@@ -8,6 +8,74 @@ from ..utils import stylewatcher
 if TYPE_CHECKING:
 	from ..frameview.frameview import BSBinFrameViewGridInfo
 
+class BSFrameItemBrushManager(QtCore.QObject):
+	"""Pens, brushes and fonts for frame items"""
+
+	def __init__(self, parent:QtCore.QObject, *args, **kwargs):
+
+		super().__init__(parent=parent, *args, **kwargs)
+
+		self._watcher_style = stylewatcher.BSWidgetStyleEventFilter(parent=self)
+
+		self._palette = parent.palette() \
+		  if isinstance(parent, QtWidgets.QWidget) \
+		  else QtWidgets.QApplication.palette()
+
+		self.pen_none       = QtGui.QPen()
+		self.pen_label      = QtGui.QPen()
+		self.pen_selected   = QtGui.QPen()
+
+
+		self.brush_base     = QtGui.QBrush()
+		self.brush_thumb    = QtGui.QBrush()
+		self.brush_selected = QtGui.QBrush()
+
+		self.font_label     = QtGui.QFont()
+
+		# Initial setup
+
+		self.brush_base     .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+		self.brush_thumb    .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+		self.brush_selected .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+		
+		self.pen_none       .setStyle(QtCore.Qt.PenStyle.NoPen)
+		self.pen_label      .setCosmetic(True)
+		self.pen_selected   .setStyle(QtCore.Qt.PenStyle.SolidLine)
+		self.pen_selected   .setCosmetic(True)
+		self.pen_selected   .setWidthF(1)
+
+		parent.installEventFilter(self._watcher_style)
+		self._watcher_style.sig_font_changed.connect(self.setFont)
+		self._watcher_style.sig_palette_changed.connect(self.setPalette)
+
+	@QtCore.Slot(QtGui.QPalette)
+	def setPalette(self, palette:QtGui.QPalette):
+
+		color_base = palette.shadow().color()
+		color_base.setAlphaF(0.5)
+		self.brush_base.setColor(color_base)
+
+		color_thumb = palette.dark().color()
+		self.brush_thumb.setColor(color_thumb)
+
+		color_label = palette.windowText().color()
+		self.pen_label.setColor(color_label)
+
+		color_selected = palette.highlight().color()
+		color_selected.setAlphaF(0.5)
+		self.brush_selected.setColor(color_selected)
+
+		color_selected = palette.highlightedText().color()
+		self.pen_selected.setColor(color_selected)
+
+	@QtCore.Slot(QtGui.QFont)
+	def setFont(self, font:QtGui.QFont):
+
+		self.font_label = font
+		self.font_label.setPointSizeF(1.25)
+		self.font_label.setKerning(True)
+		self.font_label.setFixedPitch(False)
+
 class BSBinFrameBackgroundPainter(QtCore.QObject):
 	"""Draw the background grid on a frame view"""
 	
