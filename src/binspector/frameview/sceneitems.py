@@ -89,9 +89,6 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 		painter.save()
 
-		if option.state & QtWidgets.QStyle.StateFlag.State_Sunken:
-			painter.scale(1.5,1.5)
-
 		self._draw_base(painter, option, widget)
 		self._draw_thumb(painter, option, widget)
 
@@ -174,7 +171,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 	def _draw_base(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, *args,  widget:QtWidgets.QWidget = ...):
 		
-		painter.setPen(self._brushes.pen_none)
+		painter.setPen(self._brushes.pen_default)
 		painter.setBrush(self._brushes.brush_base)
 		painter.drawRect(self.activeRect())
 
@@ -186,11 +183,8 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 
 	def _draw_label(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, *args,  widget:QtWidgets.QWidget = ...):
 		
-		if self.isSelected():
-			painter.setPen(self._brushes.pen_selected)
-		else:
-			painter.setPen(self._brushes.pen_label)
 		painter.setFont(self._brushes.font_label)
+		painter.setPen(self._brushes.pen_selected) if self.isSelected() else painter.setPen(self._brushes.pen_label)	
 		painter.drawText(self.labelRect(), self._name, o=QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignLeft)
 
 	def _draw_selection(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, *args,  widget:QtWidgets.QWidget = ...):

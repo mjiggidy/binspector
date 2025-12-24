@@ -21,16 +21,18 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		  if isinstance(parent, QtWidgets.QWidget) \
 		  else QtWidgets.QApplication.palette()
 
+		self.font_label     = parent.font() \
+		  if isinstance(parent, QtWidgets.QWidget) \
+		  else QtGui.QFont()
+		
 		self.pen_none       = QtGui.QPen()
 		self.pen_label      = QtGui.QPen()
+		self.pen_default    = QtGui.QPen()
 		self.pen_selected   = QtGui.QPen()
-
 
 		self.brush_base     = QtGui.QBrush()
 		self.brush_thumb    = QtGui.QBrush()
 		self.brush_selected = QtGui.QBrush()
-
-		self.font_label     = QtGui.QFont()
 
 		# Initial setup
 
@@ -40,6 +42,9 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		
 		self.pen_none       .setStyle(QtCore.Qt.PenStyle.NoPen)
 		self.pen_label      .setCosmetic(True)
+		self.pen_default    .setStyle(QtCore.Qt.PenStyle.SolidLine)
+		self.pen_default    .setCosmetic(True)
+		self.pen_default    .setWidthF(1)
 		self.pen_selected   .setStyle(QtCore.Qt.PenStyle.SolidLine)
 		self.pen_selected   .setCosmetic(True)
 		self.pen_selected   .setWidthF(1)
@@ -67,6 +72,9 @@ class BSFrameItemBrushManager(QtCore.QObject):
 
 		color_selected = palette.highlightedText().color()
 		self.pen_selected.setColor(color_selected)
+
+		color_default = palette.windowText().color()
+		self.pen_default.setColor(color_default)
 
 	@QtCore.Slot(QtGui.QFont)
 	def setFont(self, font:QtGui.QFont):
