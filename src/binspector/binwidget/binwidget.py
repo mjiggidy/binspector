@@ -43,7 +43,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_filter_model  = viewmodels.BSBinViewProxyModel()
 		self._selection_model   = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 		
-		self._scene_frame       = QtWidgets.QGraphicsScene()
+		#self._scene_frame       = QtWidgets.QGraphicsScene()
 
 		# Save initial palette for later togglin'
 		self._default_palette   = self.palette()
