@@ -305,10 +305,10 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 			return self._frame_locations[index.row()]
 		
 		elif role == BSBinItemDataRoles.BSClipColor:
-			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Color"]).data(QtCore.Qt.ItemDataRole.UserRole)
+			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Color"]).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
 		elif role == BSBinItemDataRoles.BSItemType:
-			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES[""]).data(QtCore.Qt.ItemDataRole.UserRole)
+			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES[""]).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 
 		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+1)
 
