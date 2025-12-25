@@ -1,4 +1,5 @@
 import typing, dataclasses, logging
+
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core.config import BSFrameViewConfig
@@ -8,6 +9,13 @@ from ..overlays import framemap, frameruler, manager
 from . import painters
 from .framescene import BSBinFrameScene
 from .actions import BSFrameViewActions
+
+DEFAULT_FRAME_VIEW_MARGINS = QtCore.QMarginsF(
+	BSFrameViewConfig.GRID_UNIT_SIZE.width(),
+	BSFrameViewConfig.GRID_UNIT_SIZE.height(),
+	BSFrameViewConfig.GRID_UNIT_SIZE.width(),
+	BSFrameViewConfig.GRID_UNIT_SIZE.height(),
+)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -158,16 +166,30 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		if self.scene():
 			self.scene().disconnect(self)
 
-		scene.sceneRectChanged.connect(self._overlay_map.setSceneRect)
-		scene.sig_bin_item_added.connect(self.updateThumbnails)
+		scene.changed.connect(self.updateViewableSceneRect)
+		#self.sceneRect.connect(lambda: self._overlay_map.setSceneRect)
+		#scene.sig_bin_item_added.connect(self.updateThumbnails)
 
 		super().setScene(scene)
+#		self.setSceneRect(
+#			scene.itemsBoundingRect().marginsAdded(DEFAULT_FRAME_VIEW_MARGINS)
+#		)
 		self.sig_scene_changed.emit(scene)
 
 	@QtCore.Slot()
-	def updateThumbnails(self):
+	def updateViewableSceneRect(self):
+		
+		self.setSceneRect(self.scene().itemsBoundingRect().marginsAdded(DEFAULT_FRAME_VIEW_MARGINS))
+		self._overlay_map.setSceneRect(self.sceneRect())
+		self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()]) # NOTE: Too expensive lol
+		#self.updateThumbnails()
 
-		self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()])
+
+
+	#@QtCore.Slot()
+	#def updateThumbnails(self):
+	#	self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()])
+
 
 	@QtCore.Slot()
 	def handleVisibleSceneRectChanged(self):
@@ -423,3 +445,14 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.handleVisibleSceneRectChanged()
 		return super().resizeEvent(event)
+	
+	def mousePressEvent(self, event:QtGui.QMouseEvent):
+
+		if event.buttons() & QtCore.Qt.MouseButton.LeftButton:
+			
+			# Handle super() first so items are selected
+			ret = super().mousePressEvent(event)
+			self.scene().raiseItemsToTop(self.scene().selectedItems())
+			return ret
+		
+		return super().mousePressEvent(event)
