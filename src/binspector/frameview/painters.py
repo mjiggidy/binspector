@@ -27,9 +27,11 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		
 		self.pen_none       = QtGui.QPen()
 		self.pen_label      = QtGui.QPen()
-		self.pen_default    = QtGui.QPen()
+		self.pen_base       = QtGui.QPen()
 		self.pen_selected   = QtGui.QPen()
+		self.pen_clip_color = QtGui.QPen()
 
+		self.brush_none     = QtGui.QBrush()
 		self.brush_base     = QtGui.QBrush()
 		self.brush_thumb    = QtGui.QBrush()
 		self.brush_selected = QtGui.QBrush()
@@ -41,13 +43,20 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		self.brush_selected .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 		
 		self.pen_none       .setStyle(QtCore.Qt.PenStyle.NoPen)
+		
 		self.pen_label      .setCosmetic(True)
-		self.pen_default    .setStyle(QtCore.Qt.PenStyle.SolidLine)
-		self.pen_default    .setCosmetic(True)
-		self.pen_default    .setWidthF(1)
+		
+		self.pen_base       .setStyle(QtCore.Qt.PenStyle.SolidLine)
+		self.pen_base       .setCosmetic(True)
+		self.pen_base       .setWidthF(1)
+		
 		self.pen_selected   .setStyle(QtCore.Qt.PenStyle.SolidLine)
 		self.pen_selected   .setCosmetic(True)
 		self.pen_selected   .setWidthF(1)
+
+		self.pen_clip_color .setStyle(QtCore.Qt.PenStyle.SolidLine)
+		self.pen_clip_color .setCosmetic(True)
+		self.pen_clip_color .setWidthF(4)
 
 		parent.installEventFilter(self._watcher_style)
 		self._watcher_style.sig_font_changed.connect(self.setFont)
@@ -74,7 +83,7 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		self.pen_selected.setColor(color_selected)
 
 		color_default = palette.windowText().color()
-		self.pen_default.setColor(color_default)
+		self.pen_base.setColor(color_default)
 
 	@QtCore.Slot(QtGui.QFont)
 	def setFont(self, font:QtGui.QFont):

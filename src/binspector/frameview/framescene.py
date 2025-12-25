@@ -130,9 +130,15 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 			bin_item_name   = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemName)
 			bin_item_coords = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSFrameCoordinates)
+			bin_item_color  = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSClipColor)
+			bin_item_type   = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemType)
+
+			#print(bin_item_color)
 
 			bin_item = sceneitems.BSFrameModeItem(brush_manager=self._brushes_manager)
 			bin_item.setName(str(bin_item_name))
+			bin_item.setClipColor(bin_item_color)
+			bin_item.setClipType(bin_item_type)
 			bin_item.setFlags(config.BSFrameViewConfig.DEFAULT_ITEM_FLAGS)
 
 			x, y = bin_item_coords
