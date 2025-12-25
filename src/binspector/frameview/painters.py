@@ -38,6 +38,10 @@ class BSFrameItemBrushManager(QtCore.QObject):
 
 		# Initial setup
 
+		# TODO: Testing for linux
+		self.font_label.setHintingPreference(QtGui.QFont.HintingPreference.PreferFullHinting)
+		self.font_label.setKerning(False)
+
 		self.brush_base     .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 		self.brush_thumb    .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 		self.brush_selected .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
