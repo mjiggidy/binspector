@@ -25,6 +25,9 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		  if isinstance(parent, QtWidgets.QWidget) \
 		  else QtGui.QFont()
 		
+		self.font_metrics   = QtGui.QFontMetricsF(self.font_label)
+		self.options_label  = QtGui.QTextOption()
+		
 		self.pen_none       = QtGui.QPen()
 		self.pen_label      = QtGui.QPen()
 		self.pen_base       = QtGui.QPen()
@@ -39,8 +42,12 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		# Initial setup
 
 		# TODO: Testing for linux
-		self.font_label.setHintingPreference(QtGui.QFont.HintingPreference.PreferFullHinting)
-		self.font_label.setKerning(False)
+		self.font_label     .setHintingPreference(QtGui.QFont.HintingPreference.PreferFullHinting)
+		self.font_label     .setKerning(True)
+
+		self.options_label  .setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignTop)
+		self.options_label  .setUseDesignMetrics(True)
+		self.options_label  .setWrapMode(QtGui.QTextOption.WrapMode.NoWrap)
 
 		self.brush_base     .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 		self.brush_thumb    .setStyle(QtCore.Qt.BrushStyle.SolidPattern)
@@ -95,7 +102,16 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		self.font_label = font
 		self.font_label.setPointSizeF(1.25)
 		self.font_label.setKerning(True)
-		self.font_label.setFixedPitch(False)
+		#self.font_label.setHintingPreference(QtGui.QFont.HintingPreference.PreferFullHinting)
+		
+		# A value of 100 will keep the spacing unchanged; a value of 200 will 
+		# enlarge the spacing after a character by the width of the character itself.
+		# https://doc.qt.io/qtforpython-6/PySide6/QtGui/QFont.html#PySide6.QtGui.QFont.SpacingType
+		#self.font_label.setLetterSpacing(QtGui.QFont.SpacingType.PercentageSpacing, 90)
+
+		temp_font = QtGui.QFont(self.font_label)
+		temp_font.setBold(True)
+		self.font_metrics = QtGui.QFontMetricsF(temp_font)
 
 class BSBinFrameBackgroundPainter(QtCore.QObject):
 	"""Draw the background grid on a frame view"""

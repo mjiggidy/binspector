@@ -17,7 +17,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 		self._item_margins = QtCore.QMarginsF(*[0.1]*4)
 		self._thumb_size   = QtCore.QSizeF(16,9)
 
-		self._label_margins = QtCore.QMarginsF(*[0.6]*4)
+		self._label_margins = QtCore.QMarginsF(*[0.8]*4)
 
 		self._brushes      = brush_manager
 		
@@ -119,19 +119,24 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 		painter.drawRect(self.thumbRect())
 
 	def _draw_label(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, widget:QtWidgets.QWidget):
-
-		painter.setFont(self._brushes.font_label)
 		
-		text_offset = QtCore.QPointF(
-			0,
-			painter.fontMetrics().lineSpacing() + painter.fontMetrics().lineSpacing()/2
-		)
+		font_name = QtGui.QFont(self._brushes.font_label)
+		font_name.setBold(True)
 
-		line_2_rect = self.labelRect().translated(text_offset)
+		font_type = QtGui.QFont(self._brushes.font_label)
+		
+		
+		text_line_height = QtCore.QPointF(0, self._brushes.font_metrics.lineSpacing())
+		line_2_rect = self.labelRect().translated(text_line_height)
+
+		text_formatted = self._brushes.font_metrics.elidedText(self._name, QtGui.Qt.TextElideMode.ElideMiddle, self.labelRect().width())
 		
 		painter.setPen(self._brushes.pen_selected) if self.isSelected() else painter.setPen(self._brushes.pen_label)	
-		painter.drawText(self.labelRect(), self._name, o=QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignLeft)
-		painter.drawText(line_2_rect, str(self._clip_type), o=QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignLeft)
+		painter.setFont(font_name)
+		painter.drawText(self.labelRect(),  text_formatted, o=self._brushes.options_label)
+		
+		painter.setFont(font_type)
+		painter.drawText(line_2_rect, str(self._clip_type), o=self._brushes.options_label)
 
 	def _draw_selection(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionGraphicsItem, widget:QtWidgets.QWidget):
 
@@ -157,6 +162,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 			return
 		
 		self._name = name
+		self.setToolTip(self._name)
 		self.update(self.labelRect())
 
 	@QtCore.Slot(QtGui.QColor)
