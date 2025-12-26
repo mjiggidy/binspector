@@ -67,17 +67,17 @@ def draw_marker_tick(
 
 def draw_clip_color_chip(
 	painter      :QtGui.QPainter,
-	canvas       :QtCore.QRect,
+	canvas       :QtCore.QRectF,
 	clip_color   :QtGui.QColor,
 	*,
 	border_color :QtGui.QColor|None=None,
-	border_width :int=2,
+	border_width :float=2,
 	shadow_color :QtGui.QColor|None=None,
 	shadow_alpha :float=0.25
 ):
 	
-	border_color = border_color or QtGui.QPalette().buttonText()
-	shadow_color = shadow_color or QtGui.QPalette().shadow()
+	border_color = border_color or QtGui.QGuiApplication().palette().buttonText().color()
+	shadow_color = shadow_color or QtGui.QGuiApplication().palette().shadow().color()
 	
 	# No border and no clip color?
 	if not clip_color.isValid() and (border_width==0 or not border_color.isValid()):
