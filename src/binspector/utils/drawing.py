@@ -84,8 +84,8 @@ def draw_clip_color_chip(
 		raise ValueError("Nothing to draw")
 	
 	# Calculate margins for stroke and shadow
-	margins = QtCore.QMargins(*([border_width * 2] * 4))
-	active_rect = canvas.marginsRemoved(margins)
+	margins = QtCore.QMarginsF(*([border_width * 2] * 4))
+	active_rect = QtCore.QRectF(canvas).marginsRemoved(margins)
 
 	# Pen and brush initial values
 	pen = painter.pen()
@@ -101,7 +101,7 @@ def draw_clip_color_chip(
 	# Draw shadow first I guess
 	if shadow_color.isValid() and border_width > 0:
 
-		shadow_offset = QtCore.QPoint(border_width,border_width)
+		shadow_offset = QtCore.QPointF(border_width,border_width)
 		active_rect.translate(shadow_offset)
 		
 		shadow_color.setAlphaF(shadow_alpha)
