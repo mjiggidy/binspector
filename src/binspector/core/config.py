@@ -39,6 +39,8 @@ class BSFrameViewConfig:
 	DEFAULT_FRAME_ZOOM_RANGE  = avbutils.bins.THUMB_FRAME_MODE_RANGE
 	DEFAULT_FRAME_ZOOM_START  = DEFAULT_FRAME_ZOOM_RANGE.start
 
+	DEFAULT_ITEM_MARGINS = QtCore.QMarginsF(*[0.25]*4)
+
 
 class BSScriptViewConfig:
 	"""Bin Script View Mode Config"""

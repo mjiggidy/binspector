@@ -14,7 +14,7 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 		self._clip_type    = avbutils.bins.BinDisplayItemTypes(0)
 		
 		self._item_size    = BSFrameViewConfig.GRID_UNIT_SIZE
-		self._item_margins = QtCore.QMarginsF(*[0.1]*4)
+		self._item_margins = BSFrameViewConfig.DEFAULT_ITEM_MARGINS
 		self._thumb_size   = QtCore.QSizeF(16,9)
 
 		self._label_margins = QtCore.QMarginsF(*[0.8]*4)
