@@ -34,10 +34,10 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 			self.sizeHintChanged.emit(QtCore.QModelIndex())
 			
 
-	def activeRectFromRect(self, rect:QtCore.QRect) -> QtCore.QRect:
+	def activeRectFromRect(self, rect:QtCore.QRectF) -> QtCore.QRectF:
 		"""The active area without padding and such"""
 
-		return rect.marginsRemoved(self._padding)
+		return QtCore.QRectF(rect).marginsRemoved(self._padding)
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
@@ -54,7 +54,7 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		style.drawControl(QtWidgets.QStyle.ControlElement.CE_ItemViewItem, kewl_options, painter)
 
 		# Pull in rect adjusted for padding; text for paint
-		kewl_options.rect = self.activeRectFromRect(option.rect)
+		kewl_options.rect = self.activeRectFromRect(option.rect).toRect()
 		kewl_options.text = option.text
 
 		fm = QtGui.QFontMetrics(kewl_options.font)
@@ -144,7 +144,7 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 
 			icon.paint(
 				painter,
-				canvas_active,
+				canvas_active.toRect(),
 				mode=QtGui.QIcon.Mode.Selected if opt_styled.state & QtWidgets.QStyle.StateFlag.State_Selected else QtGui.QIcon.Mode.Active,
 				state=QtGui.QIcon.State.On     if opt_styled.state & QtWidgets.QStyle.StateFlag.State_On       else QtGui.QIcon.State.Off,
 			)
