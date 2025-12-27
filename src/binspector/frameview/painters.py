@@ -227,13 +227,13 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 	def drawBackground(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 
-		if not self._is_enabled:
-			return
 
 		painter.save()
 
-		self._draw_horizontal_grid(painter, rect_scene)
-		self._draw_vertical_grid(painter, rect_scene)
+		if self._is_enabled:
+			
+			self._draw_horizontal_grid(painter, rect_scene)
+			self._draw_vertical_grid(painter, rect_scene)
 
 		if self._active_grid_unit:
 			self._draw_active_grid_unit(painter, rect_scene)

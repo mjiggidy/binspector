@@ -37,13 +37,36 @@ class BSFrameGridSnapper(QtCore.QObject):
 	"""Return the coordinates of the nearest grid unit"""
 
 	sig_active_grid_unit_changed = QtCore.Signal(object)
+	sig_active_grid_unit_chosen  = QtCore.Signal(object)
+	sig_enabled_changed          = QtCore.Signal(bool)
 
-	def __init__(self, frame_view:BSBinFrameView):
+	def __init__(self, frame_view:BSBinFrameView, *args, is_enabled:bool=True, **kwargs):
 
 		super().__init__(parent=frame_view.viewport())
 
-		self._frameview = frame_view
+		self._frameview  = frame_view
+		self._is_enabled = is_enabled
+
+		# TODO: Probably not the responsibility of the grid snapper...
+		self._key = QtCore.Qt.Key.Key_Option
+
 		frame_view.viewport().installEventFilter(self)
+	
+	@QtCore.Slot(bool)
+	def setEnabled(self, is_enabled:bool):
+
+		if self._is_enabled == is_enabled:
+			return
+		
+		if not is_enabled:
+			self.sig_active_grid_unit_changed.emit(None)
+		
+		self._is_enabled = is_enabled
+		self.sig_enabled_changed.emit(is_enabled)
+
+	def isEnabled(self) -> bool:
+
+		return self._is_enabled
 
 	def _nearestGridUnitFromViewport(self, viewport_position:QtCore.QPointF) -> QtCore.QPointF:
 
@@ -65,6 +88,10 @@ class BSFrameGridSnapper(QtCore.QObject):
 
 	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
 
+		if not self._is_enabled:
+			return super().eventFilter(watched, event)
+
+
 		if event.type() == QtCore.QEvent.Type.MouseMove and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
 
 			self.sig_active_grid_unit_changed.emit(
@@ -78,6 +105,10 @@ class BSFrameGridSnapper(QtCore.QObject):
 			)
 		
 		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and event.button() & QtCore.Qt.MouseButton.LeftButton:
+			
+			self.sig_active_grid_unit_chosen.emit(
+				self._nearestGridUnitFromViewport(event.position())
+			)
 
 			self.sig_active_grid_unit_changed.emit(None)
 
@@ -177,8 +208,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._overlay_map.sig_enabled_changed       .connect(self._actions.act_toggle_map.setChecked)
 		self._overlay_ruler.sig_enabled_changed     .connect(self._actions.act_toggle_ruler.setChecked)
 		self._background_painter.sig_enabled_changed.connect(self._actions.act_toggle_grid.setChecked)
+		self._background_painter.sig_enabled_changed.connect(self._grid_snapper.setEnabled)
 
-		self._grid_snapper.sig_active_grid_unit_changed.connect(self._background_painter.setActiveGridUnit)
+		self._grid_snapper.sig_active_grid_unit_changed.connect(self.setActiveGridUnit)
+		self._grid_snapper.sig_active_grid_unit_chosen .connect(self.snapSelectedToGridUnit)
 
 		# Manager signals
 		
@@ -202,6 +235,30 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.verticalScrollBar().valueChanged       .connect(self.processViewRectChanges)
 
 		self.setScene(frame_scene or BSBinFrameScene(brushes_manager=self._item_brushes))
+
+	@QtCore.Slot(QtCore.QPointF)
+	def snapSelectedToGridUnit(self, unit_coordinates:QtCore.QPointF):
+		"""Snap the current selection to a given coordinate"""
+
+		if not self.scene().mouseGrabberItem():
+			return
+		
+		delta_coords = unit_coordinates - self.scene().mouseGrabberItem().scenePos()
+		
+		for item in self.scene().selectedItems():
+
+			item.moveBy(delta_coords.x(), delta_coords.y())
+
+	@QtCore.Slot()
+	@QtCore.Slot(QtCore.QPointF)
+	def setActiveGridUnit(self, unit_coordinates:QtCore.QPointF|None=None):
+		"""Set the currently-active grid unit for snappings to gridsings"""
+
+		if not self.scene().mouseGrabberItem():
+			return
+
+		self._background_painter.setActiveGridUnit(unit_coordinates)
+		self.viewport().update()
 
 	def actions(self) -> BSFrameViewActions:
 		"""Get the actions manager for the frame view"""
