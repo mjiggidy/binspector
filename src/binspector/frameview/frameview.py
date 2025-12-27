@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing, dataclasses, logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
@@ -5,9 +6,16 @@ from ..core.config import BSFrameViewConfig
 from ..utils import gestures
 from ..overlays import framemap, frameruler, manager
 
-from .painters import BSBinFrameBackgroundPainter
+from . import painters
 from .framescene import BSBinFrameScene
 from .actions import BSFrameViewActions
+
+DEFAULT_FRAME_VIEW_MARGINS = QtCore.QMarginsF(
+	BSFrameViewConfig.GRID_UNIT_SIZE.width(),
+	BSFrameViewConfig.GRID_UNIT_SIZE.height(),
+	BSFrameViewConfig.GRID_UNIT_SIZE.width(),
+	BSFrameViewConfig.GRID_UNIT_SIZE.height(),
+)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -25,6 +33,87 @@ class BSBinFrameViewGridInfo:
 			self.unit_size.height() / self.unit_divisions.y()
 		)
 
+class BSFrameGridSnapper(QtCore.QObject):
+	"""Return the coordinates of the nearest grid unit"""
+
+	sig_active_grid_unit_changed = QtCore.Signal(object)
+	sig_active_grid_unit_chosen  = QtCore.Signal(object)
+	sig_enabled_changed          = QtCore.Signal(bool)
+
+	def __init__(self, frame_view:BSBinFrameView, *args, is_enabled:bool=True, **kwargs):
+
+		super().__init__(parent=frame_view.viewport())
+
+		self._frameview  = frame_view
+		self._is_enabled = is_enabled
+
+		# TODO: Probably not the responsibility of the grid snapper...
+		self._key = QtCore.Qt.Key.Key_Option
+
+		frame_view.viewport().installEventFilter(self)
+	
+	@QtCore.Slot(bool)
+	def setEnabled(self, is_enabled:bool):
+
+		if self._is_enabled == is_enabled:
+			return
+		
+		if not is_enabled:
+			self.sig_active_grid_unit_changed.emit(None)
+		
+		self._is_enabled = is_enabled
+		self.sig_enabled_changed.emit(is_enabled)
+
+	def isEnabled(self) -> bool:
+
+		return self._is_enabled
+
+	def _nearestGridUnitFromViewport(self, viewport_position:QtCore.QPointF) -> QtCore.QPointF:
+
+		if isinstance(viewport_position, QtCore.QPointF):
+			viewport_position = viewport_position.toPoint()
+
+		return self._nearestGridUnitFromScene(
+			self._frameview.mapToScene(viewport_position)
+		)
+	
+	def _nearestGridUnitFromScene(self, scene_position:QtCore.QPointF) -> QtCore.QPointF:
+
+		grid_unit = self._frameview._grid_info.unit_size
+
+		return QtCore.QPointF(
+			scene_position.x() - scene_position.x() % grid_unit.width(),
+			scene_position.y() - scene_position.y() % grid_unit.height()
+		)
+
+	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
+
+		if not self._is_enabled:
+			return super().eventFilter(watched, event)
+
+
+		if event.type() == QtCore.QEvent.Type.MouseMove and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
+
+			self.sig_active_grid_unit_changed.emit(
+				self._nearestGridUnitFromViewport(event.position())
+			)
+
+		elif event.type() == QtCore.QEvent.Type.MouseButtonPress and event.button() & QtCore.Qt.MouseButton.LeftButton:
+			
+			self.sig_active_grid_unit_changed.emit(
+				self._nearestGridUnitFromViewport(event.position())
+			)
+		
+		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and event.button() & QtCore.Qt.MouseButton.LeftButton:
+			
+			self.sig_active_grid_unit_chosen.emit(
+				self._nearestGridUnitFromViewport(event.position())
+			)
+
+			self.sig_active_grid_unit_changed.emit(None)
+
+		return super().eventFilter(watched, event)
+
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
@@ -33,9 +122,11 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	sig_zoom_range_changed      = QtCore.Signal(object)
 	sig_overlay_manager_changed = QtCore.Signal(object)
 	sig_view_rect_changed       = QtCore.Signal(object)
+	sig_scene_rect_changed      = QtCore.Signal(object)
+	sig_scene_margins_changed   = QtCore.Signal(object)
 	sig_scene_changed           = QtCore.Signal(object)
 
-	def __init__(self, *args, frame_scene:BSBinFrameScene|None=None, **kwargs):
+	def __init__(self, *args, frame_scene:BSBinFrameScene|None=None, margins:QtCore.QMarginsF|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -56,6 +147,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._current_zoom       = 1.0
 		self._zoom_range         = range(100)
 		self._grid_info          = BSBinFrameViewGridInfo(unit_size=BSFrameViewConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewConfig.GRID_DIVISIONS)
+		self._scene_rect_margins = margins or DEFAULT_FRAME_VIEW_MARGINS
 
 		self._anim_zoom_adjust   = QtCore.QPropertyAnimation(parent=self)
 		self._timer_cursor_reset = QtCore.QTimer()
@@ -76,7 +168,9 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# Background Painter
 		# NOTE: Watches the QGraphicsView for palette changes (`parent=self`), NOT the viewport().
 		# Viewport doesn't fire paletteChange events here.  Dunno. Maybe a TODO in disguise lol
-		self._background_painter = BSBinFrameBackgroundPainter(parent=self, grid_info=self._grid_info)
+		self._background_painter = painters.BSBinFrameBackgroundPainter(parent=self, grid_info=self._grid_info)
+		self._item_brushes       = painters.BSFrameItemBrushManager(parent=self)
+		self._grid_snapper       = BSFrameGridSnapper(frame_view=self)
 
 		# Doers of things
 		# NOTE: Most of these fellers install themselves as eventFilters, enable mouse tracking on the widget, etc
@@ -101,10 +195,6 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.addActions(self._actions.navigationActions().actions())
 		self.addActions(self._actions.overlayActions().actions())
-
-		#self._actions.act_toggle_grid               .setChecked(self._background_painter.isEnabled())
-		#self._actions.act_toggle_ruler              .setChecked(self._overlay_ruler.isEnabled())
-		#self._actions.act_toggle_map                .setChecked(self._overlay_map.isEnabled())
 		
 		self._actions.act_zoom_in.triggered         .connect(lambda: self.zoomIncrement())
 		self._actions.act_zoom_out.triggered        .connect(lambda: self.zoomDecrement())
@@ -118,7 +208,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._overlay_map.sig_enabled_changed       .connect(self._actions.act_toggle_map.setChecked)
 		self._overlay_ruler.sig_enabled_changed     .connect(self._actions.act_toggle_ruler.setChecked)
 		self._background_painter.sig_enabled_changed.connect(self._actions.act_toggle_grid.setChecked)
+		self._background_painter.sig_enabled_changed.connect(self._grid_snapper.setEnabled)
 
+		self._grid_snapper.sig_active_grid_unit_changed.connect(self.setActiveGridUnit)
+		self._grid_snapper.sig_active_grid_unit_chosen .connect(self.snapSelectedToGridUnit)
 
 		# Manager signals
 		
@@ -138,10 +231,34 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		# Misc signals
 
-		self.horizontalScrollBar().valueChanged     .connect(self.handleVisibleSceneRectChanged)
-		self.verticalScrollBar().valueChanged       .connect(self.handleVisibleSceneRectChanged)
+		self.horizontalScrollBar().valueChanged     .connect(self.processViewRectChanges)
+		self.verticalScrollBar().valueChanged       .connect(self.processViewRectChanges)
 
-		self.setScene(frame_scene or BSBinFrameScene())
+		self.setScene(frame_scene or BSBinFrameScene(brushes_manager=self._item_brushes))
+
+	@QtCore.Slot(QtCore.QPointF)
+	def snapSelectedToGridUnit(self, unit_coordinates:QtCore.QPointF):
+		"""Snap the current selection to a given coordinate"""
+
+		if not self.scene().mouseGrabberItem():
+			return
+		
+		delta_coords = unit_coordinates - self.scene().mouseGrabberItem().scenePos()
+		
+		for item in self.scene().selectedItems():
+
+			item.moveBy(delta_coords.x(), delta_coords.y())
+
+	@QtCore.Slot()
+	@QtCore.Slot(QtCore.QPointF)
+	def setActiveGridUnit(self, unit_coordinates:QtCore.QPointF|None=None):
+		"""Set the currently-active grid unit for snappings to gridsings"""
+
+		if not self.scene().mouseGrabberItem():
+			return
+
+		self._background_painter.setActiveGridUnit(unit_coordinates)
+		self.viewport().update()
 
 	def actions(self) -> BSFrameViewActions:
 		"""Get the actions manager for the frame view"""
@@ -157,31 +274,63 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		if self.scene():
 			self.scene().disconnect(self)
 
-		scene.sceneRectChanged.connect(self._overlay_map.setSceneRect)
-		scene.sig_bin_item_added.connect(self.updateThumbnails)
+		scene.changed.connect(self.processActiveSceneRectChanges)
+		#self.sceneRect.connect(lambda: self._overlay_map.setSceneRect)
+		#scene.sig_bin_item_added.connect(self.updateThumbnails)
 
 		super().setScene(scene)
+#		self.setSceneRect(
+#			scene.itemsBoundingRect().marginsAdded(DEFAULT_FRAME_VIEW_MARGINS)
+#		)
 		self.sig_scene_changed.emit(scene)
 
 	@QtCore.Slot()
-	def updateThumbnails(self):
+	def processActiveSceneRectChanges(self):
+		"""
+		Update stuff with the latest active scene rect.
+		"Active" as in "the part of the scene we can scroll around in" rather 
+		than "visible rect" being the part currently drawn in the viewport
+		"""
+		
+		# Base the active scene rect on the item bounding box, plus margins
+		padded_scene_rect = self.scene().itemsBoundingRect().marginsAdded(DEFAULT_FRAME_VIEW_MARGINS)
 
-		self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()])
+		if self.sceneRect() == padded_scene_rect:
+			return
+		
+		self.setSceneRect(padded_scene_rect)
+		self._overlay_map.setSceneRect(padded_scene_rect)
+		self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()]) # NOTE: Too expensive lol
+		self.sig_scene_rect_changed.emit(padded_scene_rect)
 
 	@QtCore.Slot()
-	def handleVisibleSceneRectChanged(self):
+	def processViewRectChanges(self):
 		"""Do necessary updates when user pans/zooms"""
 
 		self.updateRulerTicks()
 
 		self._overlay_map.setViewReticle(self.visibleSceneRect())
-
 		self.sig_view_rect_changed.emit(self.visibleSceneRect())
 
 	def setTransform(self, matrix:QtGui.QTransform, *args, combine:bool=False, **kwargs) -> None:
 
 		super().setTransform(matrix, combine)
-		self.handleVisibleSceneRectChanged()
+		self.processViewRectChanges()
+
+	def activeSceneRectMargins(self) -> QtCore.QMarginsF:
+
+		return self._scene_rect_margins
+	
+	@QtCore.Slot(QtCore.QMarginsF)
+	def setActiveSceneRectMargins(self, margins:QtCore.QRectF):
+
+		if self._scene_rect_margins == margins:
+			return
+		
+		self._scene_rect_margins = margins
+		self.sig_scene_margins_changed.emit(margins)
+		self.scene().update(self.visibleSceneRect())
+
 
 	def overlayManager(self) -> manager.BSGraphicsOverlayManager:
 
@@ -328,7 +477,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 			self.sig_zoom_level_changed.emit(zoom_level)
 
-			self.handleVisibleSceneRectChanged()
+			self.processViewRectChanges()
 
 	def updateRulerTicks(self, rect_scene:QtCore.QRect|None=None, tick_orientations:typing.Iterable[QtCore.Qt.Orientation]|None=None):
 
@@ -420,5 +569,16 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 	def resizeEvent(self, event):
 
-		self.handleVisibleSceneRectChanged()
+		self.processViewRectChanges()
 		return super().resizeEvent(event)
+	
+	def mousePressEvent(self, event:QtGui.QMouseEvent):
+
+		if event.buttons() & QtCore.Qt.MouseButton.LeftButton:
+			
+			# Handle super() first so items are selected
+			ret = super().mousePressEvent(event)
+			self.scene().raiseItemsToTop(self.scene().selectedItems())
+			return ret
+		
+		return super().mousePressEvent(event)

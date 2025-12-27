@@ -16,10 +16,10 @@ def bin_view_setting_from_bin(bin_content:avb.bin.Bin) -> avb.bin.BinViewSetting
 	
 	return bin_view
 
-def bin_frame_view_scale_from_bin(bin_conent:avb.bin.Bin) -> int:
+def bin_frame_view_scale_from_bin(bin_content:avb.bin.Bin) -> int:
 	"""Get the Frame view mode scale"""
 
-	return bin_conent.mac_image_scale
+	return bin_content.mac_image_scale
 
 def bin_column_widths_from_bin(bin_content:avb.bin.Bin) -> dict[str, int]:
 	"""Decode bin column widths"""
@@ -89,7 +89,21 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		comp:avb.trackgroups.Composition = bin_item.mob
 
 		# Get frame scale to normalize frame coords below
-		frame_scale = bin_frame_view_scale_from_bin(bin_item.root.content)
+
+		# NOTE BOUD DIS:
+		
+		# The bin seems to store x,y coords of the THUMBNAIL specifically
+		# (not the whole "item" with padding, margins, outline, label, etc)
+		# These coordinates are stored PREMULTIPLEID by the zoom factor
+
+		# I'm preferring to normalize these coordinates to zoom=1.0 and top-left
+		# coordinates refer to the top-left of the item proper
+
+		# This is still very TODO
+
+		frame_scale_x = bin_frame_view_scale_from_bin(bin_item.root.content)
+		frame_scale_y = 74 + ((frame_scale_x - avbutils.bins.THUMB_FRAME_MODE_RANGE.start) * 10)
+		mob_coords= ((bin_item.x-16) / frame_scale_x, (bin_item.y-16) / frame_scale_y * 14) 	# Y Unit * 14 height?
 		
 		# Initial data model info
 		mob_id    = comp.mob_id
@@ -97,7 +111,6 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		mob_tracks= avbutils.timeline.get_tracks_from_composition(comp)
 		mob_name  = comp.name
 		mob_color = avbutils.compositions.composition_clip_color(comp)
-		mob_coords= (bin_item.x / frame_scale, bin_item.y / frame_scale)
 		mob_frame = bin_item.keyframe
 
 		# Prep defaults

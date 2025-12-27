@@ -11,8 +11,8 @@ def draw_marker_tick(
 	shadow_color :QtGui.QColor|None=None,
 	shadow_alpha :float=0.25
 ):
-	border_color = border_color or QtGui.QPalette().buttonText().color()
-	shadow_color = shadow_color or QtGui.QPalette().shadow().color()
+	border_color = border_color or QtGui.QGuiApplication.palette().buttonText().color()
+	shadow_color = shadow_color or QtGui.QGuiApplication.palette().shadow().color()
 	
 	painter.save()
 	painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
@@ -67,25 +67,28 @@ def draw_marker_tick(
 
 def draw_clip_color_chip(
 	painter      :QtGui.QPainter,
-	canvas       :QtCore.QRect,
+	canvas       :QtCore.QRectF,
 	clip_color   :QtGui.QColor,
 	*,
 	border_color :QtGui.QColor|None=None,
-	border_width :int=2,
+	border_width :float=2,
 	shadow_color :QtGui.QColor|None=None,
-	shadow_alpha :float=0.25
+	shadow_alpha :float=0.25,
+	shadow_offset:QtCore.QPointF|None=None,
+	margins      :QtCore.QMarginsF|None=None,
 ):
 	
-	border_color = border_color or QtGui.QPalette().buttonText()
-	shadow_color = shadow_color or QtGui.QPalette().shadow()
+	border_color  = border_color or QtGui.QGuiApplication.palette().buttonText().color()
+	shadow_color  = shadow_color or QtGui.QGuiApplication.palette().shadow().color()
+	shadow_offset = shadow_offset or QtCore.QPointF(border_width,border_width)
 	
 	# No border and no clip color?
 	if not clip_color.isValid() and (border_width==0 or not border_color.isValid()):
 		raise ValueError("Nothing to draw")
 	
 	# Calculate margins for stroke and shadow
-	margins = QtCore.QMargins(*([border_width * 2] * 4))
-	active_rect = canvas.marginsRemoved(margins)
+	margins = margins or QtCore.QMarginsF(*([border_width * 2] * 4))
+	active_rect = QtCore.QRectF(canvas).marginsRemoved(margins)
 
 	# Pen and brush initial values
 	pen = painter.pen()
@@ -101,7 +104,7 @@ def draw_clip_color_chip(
 	# Draw shadow first I guess
 	if shadow_color.isValid() and border_width > 0:
 
-		shadow_offset = QtCore.QPoint(border_width,border_width)
+		
 		active_rect.translate(shadow_offset)
 		
 		shadow_color.setAlphaF(shadow_alpha)
