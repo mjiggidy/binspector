@@ -118,7 +118,8 @@ class BSFrameItemBrushManager(QtCore.QObject):
 class BSBinFrameBackgroundPainter(QtCore.QObject):
 	"""Draw the background grid on a frame view"""
 	
-	sig_enabled_changed = QtCore.Signal(bool)
+	sig_enabled_changed          = QtCore.Signal(bool)
+	sig_active_grid_unit_changed = QtCore.Signal(object)
 
 	def __init__(self,
 		parent:QtWidgets.QWidget,
@@ -138,11 +139,19 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 			unit_divisions = BSFrameViewConfig.GRID_DIVISIONS,
 		)
 
+		self._active_grid_unit = QtCore.QRectF()
+		"""Rect for highlighting a particular cell"""
+		
 		self._watcher_style   = stylewatcher.BSWidgetStyleEventFilter(parent=self)
 		parent.installEventFilter(self._watcher_style)
 
-		self._pen_tick_major  = QtGui.QPen()
-		self._pen_tick_minor  = QtGui.QPen()
+		self._pen_nopen         = QtGui.QPen()
+		self._pen_tick_major    = QtGui.QPen()
+		self._pen_tick_minor    = QtGui.QPen()
+
+		self._brush_active_grid = QtGui.QBrush()
+
+		self._pen_nopen.setStyle(QtCore.Qt.PenStyle.NoPen)
 
 		self._pen_tick_major.setStyle(QtCore.Qt.PenStyle.SolidLine)
 		self._pen_tick_major.setCosmetic(True)
@@ -151,6 +160,8 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		self._pen_tick_minor.setStyle(QtCore.Qt.PenStyle.DashLine)
 		self._pen_tick_minor.setCosmetic(True)
 		self.setMinorTickWidth(tick_width_minor)
+
+		self._brush_active_grid.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 
 		self.setPalette(parent.palette())
 		self._watcher_style.sig_palette_changed.connect(self.setPalette)
@@ -174,11 +185,33 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 		self._pen_tick_major.setColor(palette.alternateBase().color())
 		self._pen_tick_minor.setColor(palette.alternateBase().color())
+		
+		active_grid_unit_color = palette.accent().color()
+		active_grid_unit_color.setAlphaF(0.1)
+		self._brush_active_grid.setColor(active_grid_unit_color)
 
 	@QtCore.Slot(object)
 	def setGridInfo(self, grid_info:BSBinFrameViewGridInfo):
 
 		self._grid_unit_info = grid_info
+
+	@QtCore.Slot()
+	@QtCore.Slot(QtCore.QPointF)
+	def setActiveGridUnit(self, grid_unit:QtCore.QPointF|None=None):
+
+		if (self._active_grid_unit is None and grid_unit is None):
+			return
+		
+		elif self._active_grid_unit and (self._active_grid_unit.topLeft() == grid_unit):
+			return
+		
+		if grid_unit is None:
+			self._active_grid_unit = None
+
+		else:
+			self._active_grid_unit = QtCore.QRectF(grid_unit, self._grid_unit_info.unit_size)
+			
+		self.sig_active_grid_unit_changed.emit(grid_unit)
 
 	@QtCore.Slot(int)
 	@QtCore.Slot(float)
@@ -201,6 +234,9 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 		self._draw_horizontal_grid(painter, rect_scene)
 		self._draw_vertical_grid(painter, rect_scene)
+
+		if self._active_grid_unit:
+			self._draw_active_grid_unit(painter, rect_scene)
 
 		painter.restore()
 
@@ -246,3 +282,10 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 			))
 
 			y_pos += self._grid_unit_info.unit_step.y()
+	
+	def _draw_active_grid_unit(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
+
+		painter.setPen(self._pen_nopen)
+		painter.setBrush(self._brush_active_grid)
+
+		painter.drawRect(self._active_grid_unit)
