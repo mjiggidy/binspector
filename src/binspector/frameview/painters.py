@@ -62,10 +62,12 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		self.pen_base       .setWidthF(1)
 		
 		self.pen_selected   .setStyle(QtCore.Qt.PenStyle.SolidLine)
+		self.pen_selected   .setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
 		self.pen_selected   .setCosmetic(True)
 		self.pen_selected   .setWidthF(1)
 
 		self.pen_clip_color .setStyle(QtCore.Qt.PenStyle.SolidLine)
+		self.pen_clip_color .setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
 		self.pen_clip_color .setCosmetic(True)
 		self.pen_clip_color .setWidthF(4)
 
