@@ -243,8 +243,8 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 	def _draw_horizontal_grid(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 		# Horizontal
 		# Align to grid divisions
-		range_scene_start = rect_scene.left() - (rect_scene.left()  % self._grid_unit_info.unit_size.width())
-		range_scene_end   = rect_scene.right()- (rect_scene.right() % self._grid_unit_info.unit_size.width()) + self._grid_unit_info.unit_size.width() # Overshoot by additional unit
+		range_scene_start = self._grid_unit_info.snapToGrid(rect_scene.topLeft()).x() - self._grid_unit_info.unit_size.width()
+		range_scene_end   = self._grid_unit_info.snapToGrid(rect_scene.topRight()).x() + self._grid_unit_info.unit_size.width()
 
 		x_pos = range_scene_start
 		while x_pos < range_scene_end:
