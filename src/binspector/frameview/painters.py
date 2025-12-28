@@ -6,7 +6,7 @@ from ..core.config import BSFrameViewConfig
 from ..utils import stylewatcher
 
 if TYPE_CHECKING:
-	from ..frameview.frameview import BSBinFrameViewGridInfo
+	from .grid import BSBinFrameViewGridInfo
 
 class BSFrameItemBrushManager(QtCore.QObject):
 	"""Pens, brushes and fonts for frame items"""

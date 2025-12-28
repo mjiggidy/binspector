@@ -1,12 +1,12 @@
 from __future__ import annotations
-import typing, dataclasses, logging
+import typing, logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core.config import BSFrameViewConfig
 from ..utils import gestures
 from ..overlays import framemap, frameruler, manager
 
-from . import painters
+from . import grid, painters
 from .framescene import BSBinFrameScene
 from .actions import BSFrameViewActions
 
@@ -16,103 +16,6 @@ DEFAULT_FRAME_VIEW_MARGINS = QtCore.QMarginsF(
 	BSFrameViewConfig.GRID_UNIT_SIZE.width(),
 	BSFrameViewConfig.GRID_UNIT_SIZE.height(),
 )
-
-
-@dataclasses.dataclass(frozen=True)
-class BSBinFrameViewGridInfo:
-	"""Grid info for drawing a BSBinFrameView"""
-
-	unit_size       :QtCore.QSizeF
-	unit_divisions  :QtCore.QPointF
-
-	@property
-	def unit_step(self) -> QtCore.QPointF:
-
-		return QtCore.QPointF(
-			self.unit_size.width() / self.unit_divisions.x(),
-			self.unit_size.height() / self.unit_divisions.y()
-		)
-
-class BSFrameGridSnapper(QtCore.QObject):
-	"""Return the coordinates of the nearest grid unit"""
-
-	sig_active_grid_unit_changed = QtCore.Signal(object)
-	sig_active_grid_unit_chosen  = QtCore.Signal(object)
-	sig_enabled_changed          = QtCore.Signal(bool)
-
-	def __init__(self, frame_view:BSBinFrameView, *args, is_enabled:bool=True, **kwargs):
-
-		super().__init__(parent=frame_view.viewport())
-
-		self._frameview  = frame_view
-		self._is_enabled = is_enabled
-
-		# TODO: Probably not the responsibility of the grid snapper...
-		self._key = QtCore.Qt.Key.Key_Option
-
-		frame_view.viewport().installEventFilter(self)
-	
-	@QtCore.Slot(bool)
-	def setEnabled(self, is_enabled:bool):
-
-		if self._is_enabled == is_enabled:
-			return
-		
-		if not is_enabled:
-			self.sig_active_grid_unit_changed.emit(None)
-		
-		self._is_enabled = is_enabled
-		self.sig_enabled_changed.emit(is_enabled)
-
-	def isEnabled(self) -> bool:
-
-		return self._is_enabled
-
-	def _nearestGridUnitFromViewport(self, viewport_position:QtCore.QPointF) -> QtCore.QPointF:
-
-		if isinstance(viewport_position, QtCore.QPointF):
-			viewport_position = viewport_position.toPoint()
-
-		return self._nearestGridUnitFromScene(
-			self._frameview.mapToScene(viewport_position)
-		)
-	
-	def _nearestGridUnitFromScene(self, scene_position:QtCore.QPointF) -> QtCore.QPointF:
-
-		grid_unit = self._frameview._grid_info.unit_size
-
-		return QtCore.QPointF(
-			scene_position.x() - scene_position.x() % grid_unit.width(),
-			scene_position.y() - scene_position.y() % grid_unit.height()
-		)
-
-	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
-
-		if not self._is_enabled:
-			return super().eventFilter(watched, event)
-
-
-		if event.type() == QtCore.QEvent.Type.MouseMove and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
-
-			self.sig_active_grid_unit_changed.emit(
-				self._nearestGridUnitFromViewport(event.position())
-			)
-
-		elif event.type() == QtCore.QEvent.Type.MouseButtonPress and event.button() & QtCore.Qt.MouseButton.LeftButton:
-			
-			self.sig_active_grid_unit_changed.emit(
-				self._nearestGridUnitFromViewport(event.position())
-			)
-		
-		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and event.button() & QtCore.Qt.MouseButton.LeftButton:
-			
-			self.sig_active_grid_unit_chosen.emit(
-				self._nearestGridUnitFromViewport(event.position())
-			)
-
-			self.sig_active_grid_unit_changed.emit(None)
-
-		return super().eventFilter(watched, event)
 
 
 class BSBinFrameView(QtWidgets.QGraphicsView):
@@ -146,7 +49,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._current_zoom       = 1.0
 		self._zoom_range         = range(100)
-		self._grid_info          = BSBinFrameViewGridInfo(unit_size=BSFrameViewConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewConfig.GRID_DIVISIONS)
+		self._grid_info          = grid.BSBinFrameViewGridInfo(unit_size=BSFrameViewConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewConfig.GRID_DIVISIONS)
 		self._scene_rect_margins = margins or DEFAULT_FRAME_VIEW_MARGINS
 
 		self._anim_zoom_adjust   = QtCore.QPropertyAnimation(parent=self)
@@ -170,7 +73,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# Viewport doesn't fire paletteChange events here.  Dunno. Maybe a TODO in disguise lol
 		self._background_painter = painters.BSBinFrameBackgroundPainter(parent=self, grid_info=self._grid_info)
 		self._item_brushes       = painters.BSFrameItemBrushManager(parent=self)
-		self._grid_snapper       = BSFrameGridSnapper(frame_view=self)
+		self._grid_snapper       = grid.BSFrameGridSnapper(frame_view=self)
 
 		# Doers of things
 		# NOTE: Most of these fellers install themselves as eventFilters, enable mouse tracking on the widget, etc
