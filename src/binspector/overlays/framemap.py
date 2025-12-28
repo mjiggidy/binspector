@@ -62,6 +62,14 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	
 		self.setThumbnailOffset(self._thumb_display_offset, self._thumb_display_align)
 
+	def enabledChanged(self, is_enabled):
+		
+		# Update relative offset based on the latest window size
+		if is_enabled:
+			self.setThumbnailOffset()
+
+		return super().enabledChanged(is_enabled)
+
 	def paintOverlay(self, painter, rect_canvas):
 		
 		super().paintOverlay(painter, rect_canvas)
@@ -227,7 +235,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 	@QtCore.Slot(QtCore.QPointF)
 	def setThumbnailOffset(self,
 		proposed_offset:QtCore.QPointF|None=None,
-		coordinate_space:QtCore.Qt.AlignmentFlag=QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignLeft
+		coordinate_space:QtCore.Qt.AlignmentFlag|None=None
 	):
 		"""Set (or recalculate) a safe thumbnail offset"""
 				
@@ -235,6 +243,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		self.update(old_thumb_rect)
 		
 		proposed_offset = proposed_offset or self._thumb_display_offset
+		coordinate_space = coordinate_space or self._thumb_display_align
 		proposed_offset = self._normalizeCoordinates(proposed_offset, coordinate_space)
 
 
@@ -247,6 +256,8 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 
 		#print(f"Initially propose: {self._thumb_display_offset=} {proposed_offset=} {final_offset=} {self.safeCanvas()=}")
 		self._thumb_display_offset = final_offset
+
+		print("Final offset ", final_offset)
 
 		new_rect = self.finalThumbnailRect()
 		self.update(new_rect)
@@ -418,7 +429,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		if self._dragThumbnailActive():
 			# Handle thumbnail drag
 			
-			self.setThumbnailOffset(event.position() - self._mouse_thumbnail_offset)
+			self.setThumbnailOffset(event.position() - self._mouse_thumbnail_offset, QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignTop)
 			return True
 		
 		elif self._dragReticleActive():
