@@ -227,7 +227,6 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 	def drawBackground(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 
-
 		painter.save()
 
 		if self._is_enabled:
@@ -241,25 +240,23 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		painter.restore()
 
 	def _draw_horizontal_grid(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
-		# Horizontal
+		
 		# Align to grid divisions
 		range_scene_start = self._grid_unit_info.snapToGrid(rect_scene.topLeft()).x() - self._grid_unit_info.unit_size.width()
 		range_scene_end   = self._grid_unit_info.snapToGrid(rect_scene.topRight()).x() + self._grid_unit_info.unit_size.width()
 
-		x_pos = range_scene_start
-		while x_pos < range_scene_end:
+		range_steps       = round((range_scene_end - range_scene_start) / self._grid_unit_info.unit_step.x())
+		
+		for step in range(range_steps):
 
-			if not x_pos % self._grid_unit_info.unit_size.width():
-				painter.setPen(self._pen_tick_major)
-			else:
-				painter.setPen(self._pen_tick_minor)
+			x_pos = range_scene_start + (step * self._grid_unit_info.unit_step.x())
+
+			painter.setPen(self._pen_tick_major if not step % self._grid_unit_info.unit_divisions.x() else self._pen_tick_minor)
 
 			painter.drawLine(QtCore.QLineF(
 				QtCore.QPointF(x_pos, rect_scene.top()),
 				QtCore.QPointF(x_pos, rect_scene.bottom())
 			))
-
-			x_pos += self._grid_unit_info.unit_step.x()
 
 	def _draw_vertical_grid(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 
@@ -268,13 +265,13 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		range_scene_start = rect_scene.top() - (rect_scene.top()  % self._grid_unit_info.unit_size.height())
 		range_scene_end   = rect_scene.bottom()- (rect_scene.bottom() % self._grid_unit_info.unit_size.height()) + self._grid_unit_info.unit_size.height() # Overshoot by additional unit
 
-		y_pos = range_scene_start
-		while y_pos < range_scene_end:
+		range_steps       = round((range_scene_end - range_scene_start) / self._grid_unit_info.unit_step.y())
+		
+		for step in range(range_steps):
 
-			if not y_pos % self._grid_unit_info.unit_size.height():
-				painter.setPen(self._pen_tick_major)
-			else:
-				painter.setPen(self._pen_tick_minor)
+			y_pos = range_scene_start + (step * self._grid_unit_info.unit_step.y())
+
+			painter.setPen(self._pen_tick_major if not step % self._grid_unit_info.unit_divisions.y() else self._pen_tick_minor)
 
 			painter.drawLine(QtCore.QLineF(
 				QtCore.QPointF(rect_scene.left(), y_pos),

@@ -15,10 +15,14 @@ class BSBinFrameViewGridInfo:
 	"""Grid info for drawing a BSBinFrameView"""
 
 	unit_size       :QtCore.QSizeF
-	unit_divisions  :QtCore.QPointF
+	"""Distance per unit"""
+
+	unit_divisions  :QtCore.QPoint
+	"""Divisions per unit"""
 
 	@property
 	def unit_step(self) -> QtCore.QPointF:
+		"""Distance per unit division"""
 
 		return QtCore.QPointF(
 			self.unit_size.width() / self.unit_divisions.x(),
