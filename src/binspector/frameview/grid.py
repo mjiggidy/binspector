@@ -52,6 +52,8 @@ class BSFrameGridSnapper(QtCore.QObject):
 		self._frameview  = frame_view
 		self._is_enabled = is_enabled
 
+		self._moved = False
+
 		frame_view.viewport().setMouseTracking(True)
 		frame_view.viewport().installEventFilter(self)
 
@@ -99,6 +101,8 @@ class BSFrameGridSnapper(QtCore.QObject):
 		if event.type() == QtCore.QEvent.Type.MouseMove and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
 
 			# Handle mouse drag
+			self._moved = True
+
 			self.sig_active_grid_unit_changed.emit(
 				self.nearestGridUnitFromView(event.position())
 			)
@@ -106,6 +110,7 @@ class BSFrameGridSnapper(QtCore.QObject):
 		elif event.type() == QtCore.QEvent.Type.MouseButtonPress and event.button() & QtCore.Qt.MouseButton.LeftButton:
 
 			# Handle mouse press
+			self._moved = False
 			self.sig_active_grid_unit_changed.emit(
 				self.nearestGridUnitFromView(event.position())
 			)
@@ -113,9 +118,11 @@ class BSFrameGridSnapper(QtCore.QObject):
 		elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and event.button() & QtCore.Qt.MouseButton.LeftButton:
 
 			# Handle mouse release
-			self.sig_active_grid_unit_chosen.emit(
-				self.nearestGridUnitFromView(event.position())
-			)
+			if self._moved:
+
+				self.sig_active_grid_unit_chosen.emit(
+					self.nearestGridUnitFromView(event.position())
+				)
 
 			self.sig_active_grid_unit_changed.emit(None)
 
