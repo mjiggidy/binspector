@@ -394,15 +394,16 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		if QtCore.Qt.Orientation.Horizontal in tick_orientations:
 
 			# Align to grid divisions
-			range_scene_start = rect_scene.left()  - rect_scene.left()  % self._grid_info.unit_size.width()
-			range_scene_end  = rect_scene.right()  - rect_scene.right() % self._grid_info.unit_size.width() + self._grid_info.unit_size.width()
-			range_scene_steps = (range_scene_end - range_scene_start) / self._grid_info.unit_size.width() + 1
+			range_scene_start = self._grid_info.snapToGrid(rect_scene.topLeft()).x() - self._grid_info.unit_size.width()
+			range_scene_end   = self._grid_info.snapToGrid(rect_scene.topRight()).x() + self._grid_info.unit_size.width()
+
+			range_scene_steps = round((range_scene_end - range_scene_start) / self._grid_info.unit_step.x())
 
 			ticks = []
 
-			for step in range(round(range_scene_steps)):
+			for step in range(range_scene_steps):
 
-				scene_x = range_scene_start + (self._grid_info.unit_size.width() * step)
+				scene_x    = range_scene_start + (step * self._grid_info.unit_step.x())
 				viewport_x = self.mapFromScene(scene_x, 0).x()
 
 				ticks.append(
@@ -417,15 +418,16 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		if QtCore.Qt.Orientation.Vertical in tick_orientations:
 
 			# Align to grid divisions
-			range_scene_start = rect_scene.top() - rect_scene.top() % self._grid_info.unit_size.height()
-			range_scene_end   = rect_scene.bottom() - rect_scene.bottom() % self._grid_info.unit_size.height() + self._grid_info.unit_size.height()
-			range_scene_steps = (range_scene_end - range_scene_start) / self._grid_info.unit_size.height() + 1
+			range_scene_start = self._grid_info.snapToGrid(rect_scene.topLeft()).y() - self._grid_info.unit_size.height()
+			range_scene_end   = self._grid_info.snapToGrid(rect_scene.bottomLeft()).y() + self._grid_info.unit_size.height()
+			
+			range_scene_steps = round((range_scene_end - range_scene_start) / self._grid_info.unit_step.y())
 
 			ticks = []
 
 			for step in range(round(range_scene_steps)):
 
-				scene_y = range_scene_start + (self._grid_info.unit_size.height() * step)
+				scene_y = range_scene_start + (step * self._grid_info.unit_step.y())
 				viewport_y = self.mapFromScene(0, scene_y).y()
 
 				ticks.append(
