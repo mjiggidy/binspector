@@ -262,9 +262,9 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 		# Vertical
 		# Align to grid divisions
-		range_scene_start = rect_scene.top() - (rect_scene.top()  % self._grid_unit_info.unit_size.height())
-		range_scene_end   = rect_scene.bottom()- (rect_scene.bottom() % self._grid_unit_info.unit_size.height()) + self._grid_unit_info.unit_size.height() # Overshoot by additional unit
-
+		range_scene_start = self._grid_unit_info.snapToGrid(rect_scene.topLeft()).y() - self._grid_unit_info.unit_size.height()
+		range_scene_end   = self._grid_unit_info.snapToGrid(rect_scene.bottomLeft()).y() + self._grid_unit_info.unit_size.height()
+		
 		range_steps       = round((range_scene_end - range_scene_start) / self._grid_unit_info.unit_step.y())
 		
 		for step in range(range_steps):
