@@ -1,5 +1,5 @@
 from __future__ import annotations
-import dataclasses, typing
+import dataclasses, typing, enum
 from PySide6 import QtCore, QtGui
 from . import abstractoverlay
 
@@ -11,6 +11,15 @@ DEFAULT_RULER_POSITION      = QtCore.QPointF(0,0)
 USE_ANTIALIASING            = False
 DEFAULT_TICK_SIZE           = 3    # px
 
+class BSRulerTickType(enum.IntEnum):
+	"""Tickity type"""
+
+	MAJOR = enum.auto()
+	MINOR = enum.auto()
+	HINT  = enum.auto()
+
+DEFAULT_TICK_TYPES          = set((BSRulerTickType.MAJOR,))
+
 @dataclasses.dataclass(frozen=True)
 class BSRulerTickInfo:
 	"""Ruler tick info"""
@@ -20,6 +29,9 @@ class BSRulerTickInfo:
 
 	tick_label:   str
 	"""Label to print"""
+
+	tick_type:    BSRulerTickType = BSRulerTickType.MAJOR
+	"""Type o' the tick"""
 
 
 class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
@@ -41,6 +53,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._ruler_width        = ruler_width
 		self._ruler_tick_size    = DEFAULT_TICK_SIZE
 		self._font_ruler_ticks_scale = DEFAULT_FONT_SCALE
+		self._tick_types         = DEFAULT_TICK_TYPES
 		
 		self._ruler_ticks:dict[QtCore.Qt.Orientation, list[BSRulerTickInfo]] = {
 			QtCore.Qt.Orientation.Horizontal: set(),
@@ -364,7 +377,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		painter.setPen(self._pen_ruler_ticks)
 		painter.setFont(self._font_ruler_ticks)
 
-		for tick_info in self._ruler_ticks[orientation]:
+		for tick_info in filter(lambda t: t.tick_type in self._tick_types, self._ruler_ticks[orientation]):
 			
 			tick_lines = []
 

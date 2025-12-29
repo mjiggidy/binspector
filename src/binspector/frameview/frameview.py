@@ -211,7 +211,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 	def processViewRectChanges(self):
 		"""Do necessary updates when user pans/zooms"""
 
-		self.updateRulerTicks()
+		self.updateVisibleGridTicks()
 
 		self.updateBinMap()
 
@@ -384,7 +384,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 			self.processViewRectChanges()
 
-	def updateRulerTicks(self, rect_scene:QtCore.QRect|None=None, tick_orientations:typing.Iterable[QtCore.Qt.Orientation]|None=None):
+	def updateVisibleGridTicks(self, rect_scene:QtCore.QRect|None=None, tick_orientations:typing.Iterable[QtCore.Qt.Orientation]|None=None):
+		"""Update grid ticks visible in the viewport"""
 
 		rect_scene        = rect_scene or self.visibleSceneRect()
 		tick_orientations = tick_orientations or [QtCore.Qt.Orientation.Horizontal, QtCore.Qt.Orientation.Vertical]
@@ -409,7 +410,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 				ticks.append(
 					frameruler.BSRulerTickInfo(
 						ruler_offset = viewport_x,
-						tick_label = str(round(scene_x))
+						tick_label   = str(round(scene_x)),
+						tick_type    = frameruler.BSRulerTickType.MAJOR \
+						  if not step % self._grid_info.unit_divisions.x()
+						  else frameruler.BSRulerTickType.MINOR
 					)
 				)
 
@@ -433,7 +437,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 				ticks.append(
 					frameruler.BSRulerTickInfo(
 						ruler_offset= viewport_y,
-						tick_label = str(round(scene_y))
+						tick_label = str(round(scene_y)),
+						tick_type    = frameruler.BSRulerTickType.MAJOR \
+						  if not step % self._grid_info.unit_divisions.y()
+						  else frameruler.BSRulerTickType.MINOR
 					)
 				)
 
