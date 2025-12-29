@@ -202,8 +202,9 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			return
 		
 		self.setSceneRect(padded_scene_rect)
-		self._overlay_map.setSceneRect(padded_scene_rect)
-		self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()]) # NOTE: Too expensive lol
+
+		self.updateBinMap()
+
 		self.sig_scene_rect_changed.emit(padded_scene_rect)
 
 	@QtCore.Slot()
@@ -212,7 +213,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self.updateRulerTicks()
 
-		self._overlay_map.setViewReticle(self.visibleSceneRect())
+		self.updateBinMap()
+
 		self.sig_view_rect_changed.emit(self.visibleSceneRect())
 
 	def setTransform(self, matrix:QtGui.QTransform, *args, combine:bool=False, **kwargs) -> None:
@@ -434,6 +436,31 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 				)
 
 			self._overlay_ruler.setTicks(ticks, QtCore.Qt.Orientation.Vertical)
+	
+	def updateBinMap(self):
+		"""Update scene rect, reticle and """
+
+		visible_scene_rect = self.visibleSceneRect()
+		padded_scene_rect  = self.sceneRect()
+
+		bin_map_rect = QtCore.QRectF(
+			QtCore.QPointF(
+				min(visible_scene_rect.left(), padded_scene_rect.left()),
+				min(visible_scene_rect.top(), padded_scene_rect.top()),
+			),
+			QtCore.QPointF(
+				max(visible_scene_rect.right(), padded_scene_rect.right()),
+				max(visible_scene_rect.bottom(), padded_scene_rect.bottom()),
+			)
+		)
+
+		if self._overlay_map.sceneRect() != bin_map_rect:
+			self._overlay_map.setSceneRect(bin_map_rect)
+			self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()])
+		
+		if self._overlay_map.viewReticle() != visible_scene_rect:
+			self._overlay_map.setViewReticle(visible_scene_rect)
+			
 
 	def visibleSceneRect(self) -> QtCore.QRectF:
 		"""The portion of the scene rect viewable in the viewport"""
