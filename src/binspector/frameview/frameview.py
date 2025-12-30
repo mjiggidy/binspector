@@ -78,7 +78,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# Background Painter
 		# NOTE: Watches the QGraphicsView for palette changes (`parent=self`), NOT the viewport().
 		# Viewport doesn't fire paletteChange events here.  Dunno. Maybe a TODO in disguise lol
-		self._background_painter = painters.BSBinFrameBackgroundPainter(parent=self, grid_info=self._grid_info)
+		self._background_painter = painters.BSBinFrameBackgroundPainter(parent=self, tick_info=self._visible_tick_info)
 		self._item_brushes       = painters.BSFrameItemBrushManager(parent=self)
 		self._grid_snapper       = grid.BSFrameGridSnapper(frame_view=self)
 

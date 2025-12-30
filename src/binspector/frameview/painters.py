@@ -127,7 +127,6 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 	def __init__(self,
 		parent:QtWidgets.QWidget,
 		*args,
-		grid_info:BSBinFrameViewGridInfo|None=None,
 		tick_info:dict[QtCore.Qt.Orientation, list[frameruler.BSRulerTickInfo]]|None=None,
 		tick_width_major:float=3,
 		tick_width_minor:float=1.5,
@@ -137,11 +136,6 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		super().__init__(parent, *args, **kwargs)
 
 		self._is_enabled = True
-
-		self._grid_unit_info = grid_info or BSBinFrameViewGridInfo(
-			unit_size      = BSFrameViewConfig.GRID_UNIT_SIZE,
-			unit_divisions = BSFrameViewConfig.GRID_DIVISIONS,
-		)
 
 		self._visible_tick_info = tick_info or dict()
 
@@ -204,11 +198,6 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		
 		self._visible_tick_info = visible_tick_info
 		self.sig_visible_tick_info_changed.emit(visible_tick_info)
-
-	@QtCore.Slot(object)
-	def setGridInfo(self, grid_info:BSBinFrameViewGridInfo):
-
-		self._grid_unit_info = grid_info
 
 	@QtCore.Slot()
 	@QtCore.Slot(QtCore.QPointF)
