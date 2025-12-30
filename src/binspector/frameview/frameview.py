@@ -167,7 +167,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		if not self.scene().mouseGrabberItem():
 			return
 
-		self._background_painter.setActiveGridUnit(unit_coordinates)
+		self._background_painter.setActiveGridUnit(QtCore.QRectF(unit_coordinates, self._grid_info.unit_size) if unit_coordinates is not None else None)
 		self.viewport().update()
 
 	def actions(self) -> BSFrameViewActions:

@@ -24,8 +24,11 @@ DEFAULT_TICK_TYPES          = set((BSRulerTickType.MAJOR,))
 class BSRulerTickInfo:
 	"""Ruler tick info"""
 
-	ruler_offset: int|float
+	local_offset: int|float
 	"""Pixel offset from widget rect"""
+
+	scene_offset: int|float
+	"""Scene offset from origin"""
 
 	tick_label:   str
 	"""Label to print"""
@@ -37,23 +40,23 @@ class BSRulerTickInfo:
 class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	"""Ruler displayed over widget"""
 
-	sig_ruler_width_changed        = QtCore.Signal(int)
-	sig_ruler_ticks_changed        = QtCore.Signal(object)
-	sig_ruler_orientations_changed = QtCore.Signal(object)
-	sig_ruler_position_changed     = QtCore.Signal(object)
-	sig_mouse_coords_changed       = QtCore.Signal(object)
-	sig_show_mouse_coords_changed  = QtCore.Signal(bool)
+	sig_ruler_width_changed          = QtCore.Signal(int)
+	sig_ruler_ticks_changed          = QtCore.Signal(object)
+	sig_ruler_orientations_changed   = QtCore.Signal(object)
+	sig_ruler_position_changed       = QtCore.Signal(object)
+	sig_mouse_coords_changed         = QtCore.Signal(object)
+	sig_show_mouse_coords_changed    = QtCore.Signal(bool)
 
 	def __init__(self, *args, ruler_width:int=DEFAULT_RULER_WIDTH, **kwargs):
 		
 		super().__init__(*args, **kwargs)
 
-		self._ruler_position     = DEFAULT_RULER_POSITION
-		self._ruler_stoke_width  = DEFAULT_RULER_OUTLINE_WIDTH
-		self._ruler_width        = ruler_width
-		self._ruler_tick_size    = DEFAULT_TICK_SIZE
+		self._ruler_position         = DEFAULT_RULER_POSITION
+		self._ruler_stoke_width      = DEFAULT_RULER_OUTLINE_WIDTH
+		self._ruler_width            = ruler_width
+		self._ruler_tick_size        = DEFAULT_TICK_SIZE
 		self._font_ruler_ticks_scale = DEFAULT_FONT_SCALE
-		self._tick_types         = DEFAULT_TICK_TYPES
+		self._tick_types             = DEFAULT_TICK_TYPES
 		
 		self._ruler_ticks:dict[QtCore.Qt.Orientation, list[BSRulerTickInfo]] = {
 			QtCore.Qt.Orientation.Horizontal: set(),
@@ -65,9 +68,9 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 			QtCore.Qt.Orientation.Vertical
 		])
 
-		self._last_mouse_coords  = QtCore.QPointF(500,500)
-		self._mouse_coords_enabled  = True
-		self._mouse_drag_start   = QtCore.QPointF()
+		self._last_mouse_coords      = QtCore.QPointF(500,500)
+		self._mouse_coords_enabled   = True
+		self._mouse_drag_start       = QtCore.QPointF()
 
 		# Pens
 		self._pen_ruler_base    = QtGui.QPen()
@@ -76,15 +79,15 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._pen_ruler_base.setCapStyle(QtCore.Qt.PenCapStyle.SquareCap)
 		self._pen_ruler_base.setJoinStyle(QtCore.Qt.PenJoinStyle.BevelJoin)
 
-		self._pen_ruler_ticks   = QtGui.QPen(self._pen_ruler_base)
-		self._pen_mouse_coords  = QtGui.QPen(self._pen_ruler_base)
+		self._pen_ruler_ticks        = QtGui.QPen(self._pen_ruler_base)
+		self._pen_mouse_coords       = QtGui.QPen(self._pen_ruler_base)
 
 		# Brushes
-		self._brush_ruler_base  = QtGui.QLinearGradient()
+		self._brush_ruler_base       = QtGui.QLinearGradient()
 
 		# Fonts
-		self._font_mouse_coords = self.font()
-		self._font_ruler_ticks  = self.font()
+		self._font_mouse_coords      = self.font()
+		self._font_ruler_ticks       = self.font()
 
 		self.setupDrawingTools()
 
@@ -387,16 +390,16 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 				if ruler_rect.bottom() < self.rect().bottom():
 
 					tick_lines.append(QtCore.QLineF(
-						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.bottom() - self._ruler_tick_size),
-						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.bottom())
+						QtCore.QPointF(tick_info.local_offset, ruler_rect.bottom() - self._ruler_tick_size),
+						QtCore.QPointF(tick_info.local_offset, ruler_rect.bottom())
 					))
 
 				# Top Ticks
 				if ruler_rect.top() > self.rect().top():
 					
 					tick_lines.append(QtCore.QLineF(
-						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.top() + self._ruler_tick_size),
-						QtCore.QPointF(tick_info.ruler_offset, ruler_rect.top())
+						QtCore.QPointF(tick_info.local_offset, ruler_rect.top() + self._ruler_tick_size),
+						QtCore.QPointF(tick_info.local_offset, ruler_rect.top())
 					))
 
 				tick_text = QtCore.QRectF(
@@ -404,7 +407,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 					ruler_rect.size()
 				)
 
-				tick_text.moveCenter(QtCore.QPoint(tick_info.ruler_offset, ruler_rect.center().y()))
+				tick_text.moveCenter(QtCore.QPoint(tick_info.local_offset, ruler_rect.center().y()))
 
 			elif orientation == QtCore.Qt.Orientation.Vertical:
 
@@ -412,23 +415,23 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 				if ruler_rect.right() < self.rect().right():
 
 					tick_lines.append(QtCore.QLineF(
-						QtCore.QPointF(ruler_rect.right() - self._ruler_tick_size, tick_info.ruler_offset),
-						QtCore.QPointF(ruler_rect.right(), tick_info.ruler_offset)
+						QtCore.QPointF(ruler_rect.right() - self._ruler_tick_size, tick_info.local_offset),
+						QtCore.QPointF(ruler_rect.right(), tick_info.local_offset)
 					))
 
 				# Left ticks
 				if ruler_rect.left() > self.rect().left():
 					#print(ruler_rect.left(), self.rect().left())
 					tick_lines.append(QtCore.QLineF(
-						QtCore.QPointF(ruler_rect.left() + self._ruler_tick_size, tick_info.ruler_offset),
-						QtCore.QPointF(ruler_rect.left(), tick_info.ruler_offset)
+						QtCore.QPointF(ruler_rect.left() + self._ruler_tick_size, tick_info.local_offset),
+						QtCore.QPointF(ruler_rect.left(), tick_info.local_offset)
 					))
 
 				tick_text = QtCore.QRectF(
 					ruler_rect.topLeft(),
 					ruler_rect.size()
 				)
-				tick_text.moveCenter(QtCore.QPoint(ruler_rect.center().x(), tick_info.ruler_offset))
+				tick_text.moveCenter(QtCore.QPoint(ruler_rect.center().x(), tick_info.local_offset))
 
 			for line_tick in tick_lines:
 				painter.drawLine(line_tick)
