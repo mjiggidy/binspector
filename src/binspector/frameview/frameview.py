@@ -21,13 +21,14 @@ DEFAULT_FRAME_VIEW_MARGINS = QtCore.QMarginsF(
 class BSBinFrameView(QtWidgets.QGraphicsView):
 	"""Frame view for an Avid bin"""
 
-	sig_zoom_level_changed      = QtCore.Signal(int)
-	sig_zoom_range_changed      = QtCore.Signal(object)
-	sig_overlay_manager_changed = QtCore.Signal(object)
-	sig_view_rect_changed       = QtCore.Signal(object)
-	sig_scene_rect_changed      = QtCore.Signal(object)
-	sig_scene_margins_changed   = QtCore.Signal(object)
-	sig_scene_changed           = QtCore.Signal(object)
+	sig_zoom_level_changed        = QtCore.Signal(int)
+	sig_zoom_range_changed        = QtCore.Signal(object)
+	sig_overlay_manager_changed   = QtCore.Signal(object)
+	sig_view_rect_changed         = QtCore.Signal(object)
+	sig_scene_rect_changed        = QtCore.Signal(object)
+	sig_scene_margins_changed     = QtCore.Signal(object)
+	sig_scene_changed             = QtCore.Signal(object)
+	sig_visible_tick_info_updated = QtCore.Signal(object) # dict
 
 	def __init__(self, *args, frame_scene:BSBinFrameScene|None=None, margins:QtCore.QMarginsF|None=None, **kwargs):
 
@@ -51,6 +52,12 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self._zoom_range         = range(100)
 		self._grid_info          = grid.BSBinFrameViewGridInfo(unit_size=BSFrameViewConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewConfig.GRID_DIVISIONS)
 		self._scene_rect_margins = margins or DEFAULT_FRAME_VIEW_MARGINS
+		
+		self._visible_tick_info:dict[QtCore.Qt.AlignmentFlag, list[frameruler.BSRulerTickInfo]]  = {
+			QtCore.Qt.Orientation.Horizontal: [],
+			QtCore.Qt.Orientation.Vertical:   [],
+			
+		}
 
 		self._anim_zoom_adjust   = QtCore.QPropertyAnimation(parent=self)
 		self._timer_cursor_reset = QtCore.QTimer()
@@ -384,6 +391,11 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 			self.processViewRectChanges()
 
+	def visibleGridTicks(self, orientation:QtCore.Qt.Orientation) -> list[frameruler.BSRulerTickInfo]:
+		"""Grid ticks visible in the current view"""
+
+		return self._visible_tick_info.get(orientation, [])
+
 	def updateVisibleGridTicks(self, rect_scene:QtCore.QRect|None=None, tick_orientations:typing.Iterable[QtCore.Qt.Orientation]|None=None):
 		"""Update grid ticks visible in the viewport"""
 
@@ -409,7 +421,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 				ticks.append(
 					frameruler.BSRulerTickInfo(
-						ruler_offset = viewport_x,
+						local_offset = viewport_x,
+						scene_offset = scene_x,
 						tick_label   = str(round(scene_x)),
 						tick_type    = frameruler.BSRulerTickType.MAJOR \
 						  if not step % self._grid_info.unit_divisions.x()
@@ -417,6 +430,8 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 					)
 				)
 
+			self._visible_tick_info[QtCore.Qt.Orientation.Horizontal] = ticks
+			self._background_painter.setVisibleTickInfo(self._visible_tick_info)
 			self._overlay_ruler.setTicks(ticks, QtCore.Qt.Orientation.Horizontal)
 
 		if QtCore.Qt.Orientation.Vertical in tick_orientations:
@@ -431,20 +446,24 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 			for step in range(round(range_scene_steps)):
 
-				scene_y = range_scene_start + (step * self._grid_info.unit_step.y())
+				scene_y    = range_scene_start + (step * self._grid_info.unit_step.y())
 				viewport_y = self.mapFromScene(0, scene_y).y()
 
 				ticks.append(
 					frameruler.BSRulerTickInfo(
-						ruler_offset= viewport_y,
-						tick_label = str(round(scene_y)),
-						tick_type    = frameruler.BSRulerTickType.MAJOR \
+						local_offset  = viewport_y,
+						scene_offset  = scene_y,
+						tick_label    = str(round(scene_y)),
+						tick_type     = frameruler.BSRulerTickType.MAJOR \
 						  if not step % self._grid_info.unit_divisions.y()
 						  else frameruler.BSRulerTickType.MINOR
 					)
 				)
 
+			self._visible_tick_info[QtCore.Qt.Orientation.Vertical] = ticks
 			self._overlay_ruler.setTicks(ticks, QtCore.Qt.Orientation.Vertical)
+
+			self.sig_visible_tick_info_updated.emit(self._visible_tick_info)
 	
 	def updateBinMap(self):
 		"""Update scene rect, reticle and """
