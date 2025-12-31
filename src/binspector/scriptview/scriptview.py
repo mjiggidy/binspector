@@ -21,13 +21,13 @@ class BSBinScriptView(treeview.BSBinTreeView):
 			idx_row = self.model().index(row, 0, parent)
 			delegate = self.itemDelegate(idx_row)
 			delegate = delegate.__class__(delegate)
-			delegate.setItemPadding(QtCore.QMargins(5,5, 5, 300))		
+			delegate.setItemPadding(QtCore.QMargins(5,5, 5, 100))		
 
 			self.setItemDelegateForColumn(0, delegate)	
 
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
-		usual_rect = options.rect.adjusted(0, 0, 0, -options.rect.height()/2)
+		usual_rect = options.rect.adjusted(0, 0, 0, -options.rect.height()/4)
 		new_options = QtWidgets.QStyleOptionViewItem(options)
 		new_options.rect = usual_rect
 		super().drawRow(painter, new_options, index)
@@ -44,7 +44,8 @@ class BSBinScriptView(treeview.BSBinTreeView):
 		text = src_index.siblingAtColumn(field_index).data(QtCore.Qt.ItemDataRole.DisplayRole)
 
 		active_rect = QtCore.QRectF(options.rect)
-		active_rect = active_rect.marginsRemoved(QtCore.QMarginsF(32, options.rect.height()/2, 8, 8))
+		active_rect = active_rect.marginsRemoved(QtCore.QMarginsF(128, options.rect.height()/2, 8, 8))
+		active_rect.translate(QtCore.QPointF(0, -20))
 
 		pen = QtGui.QPen()
 		pen.setColor(options.palette.windowText().color())
