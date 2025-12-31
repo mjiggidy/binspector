@@ -92,15 +92,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._binitems_list.setModel(self._bin_filter_model)
 		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
+		self._binitems_script.setModel(self._bin_filter_model)
+		self._binitems_script.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		
 		# NOTE: Set AFTER `view.setModel()`.  Got me good.
 		self._binitems_list.setSelectionModel(self._selection_model)
-		# NOTE: Disabled for now 
-#		self._binitems_frame.scene().setSelectionModel(self._selection_model)
+		self._binitems_script.setSelectionModel(self._selection_model)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
-		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_list  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 		self._binitems_list .addScrollBarWidget(self._binstats_list,  QtCore.Qt.AlignmentFlag.AlignLeft)
 		self._binitems_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
@@ -386,8 +389,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._proxystyle_hscroll.setScrollbarScaleFactor(scale_factor)
 
 		# .update()/.polish() doesn't work. Need to re-set each time?
-		self._binitems_list .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-		self._binitems_frame.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_list  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._binitems_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 	
 	def scrollbarScaler(self) -> proxystyles.BSScrollBarStyle:
 		"""The scaler for the horizontal scroll bar"""
