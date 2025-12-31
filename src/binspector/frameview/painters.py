@@ -1,14 +1,9 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core.config import BSFrameViewConfig
+from ..core import grid
 from ..utils import stylewatcher
 
-from ..overlays import frameruler #lol
-
-if TYPE_CHECKING:
-	from .grid import BSBinFrameViewGridInfo
 
 class BSFrameItemBrushManager(QtCore.QObject):
 	"""Pens, brushes and fonts for frame items"""
@@ -127,7 +122,7 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 	def __init__(self,
 		parent:QtWidgets.QWidget,
 		*args,
-		tick_info:dict[QtCore.Qt.Orientation, list[frameruler.BSRulerTickInfo]]|None=None,
+		tick_info:dict[QtCore.Qt.Orientation, list[grid.BSGridTickInfo]]|None=None,
 		tick_width_major:float=3,
 		tick_width_minor:float=1.5,
 		**kwargs
@@ -191,7 +186,7 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		self._brush_active_grid.setColor(active_grid_unit_color)
 
 	@QtCore.Slot(object)
-	def setVisibleTickInfo(self, visible_tick_info:dict[QtCore.Qt.Orientation, list[frameruler.BSRulerTickInfo]]):
+	def setVisibleTickInfo(self, visible_tick_info:dict[QtCore.Qt.Orientation, list[grid.BSGridTickInfo]]):
 
 		if self._visible_tick_info == visible_tick_info:
 			return
@@ -242,7 +237,7 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 			x_pos = tick.scene_offset
 
-			painter.setPen(self._pen_tick_major if tick.tick_type == frameruler.BSRulerTickType.MAJOR else self._pen_tick_minor)
+			painter.setPen(self._pen_tick_major if tick.tick_type == grid.BSGridTickType.MAJOR else self._pen_tick_minor)
 
 			painter.drawLine(QtCore.QLineF(
 				QtCore.QPointF(x_pos, rect_scene.top()),
@@ -257,7 +252,7 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 			y_pos = tick.scene_offset
 
-			painter.setPen(self._pen_tick_major if tick.tick_type == frameruler.BSRulerTickType.MAJOR else self._pen_tick_minor)
+			painter.setPen(self._pen_tick_major if tick.tick_type == grid.BSGridTickType.MAJOR else self._pen_tick_minor)
 
 			painter.drawLine(QtCore.QLineF(
 				QtCore.QPointF(rect_scene.left(), y_pos),

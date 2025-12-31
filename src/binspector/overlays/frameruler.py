@@ -1,7 +1,10 @@
 from __future__ import annotations
-import dataclasses, typing, enum
+import typing
 from PySide6 import QtCore, QtGui
+
 from . import abstractoverlay
+
+from ..core import grid
 
 DEFAULT_RULER_WIDTH         = 24   # px
 DEFAULT_RULER_OUTLINE_WIDTH = 1    # px
@@ -11,31 +14,7 @@ DEFAULT_RULER_POSITION      = QtCore.QPointF(0,0)
 USE_ANTIALIASING            = False
 DEFAULT_TICK_SIZE           = 3    # px
 
-class BSRulerTickType(enum.IntEnum):
-	"""Tickity type"""
-
-	MAJOR = enum.auto()
-	MINOR = enum.auto()
-	HINT  = enum.auto()
-
-DEFAULT_TICK_TYPES          = set((BSRulerTickType.MAJOR,))
-
-@dataclasses.dataclass(frozen=True)
-class BSRulerTickInfo:
-	"""Ruler tick info"""
-
-	local_offset: int|float
-	"""Pixel offset from widget rect"""
-
-	scene_offset: int|float
-	"""Scene offset from origin"""
-
-	tick_label:   str
-	"""Label to print"""
-
-	tick_type:    BSRulerTickType = BSRulerTickType.MAJOR
-	"""Type o' the tick"""
-
+DEFAULT_TICK_TYPES          = set((grid.BSGridTickType.MAJOR,))
 
 class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 	"""Ruler displayed over widget"""
@@ -58,7 +37,7 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		self._font_ruler_ticks_scale = DEFAULT_FONT_SCALE
 		self._tick_types             = DEFAULT_TICK_TYPES
 		
-		self._ruler_ticks:dict[QtCore.Qt.Orientation, list[BSRulerTickInfo]] = {
+		self._ruler_ticks:dict[QtCore.Qt.Orientation, list[grid.BSGridTickInfo]] = {
 			QtCore.Qt.Orientation.Horizontal: set(),
 			QtCore.Qt.Orientation.Vertical:   set(),
 		}
@@ -177,14 +156,14 @@ class BSFrameRulerOverlay(abstractoverlay.BSAbstractOverlay):
 		return set(self._ruler_orientations)
 	
 	@QtCore.Slot(object)
-	def setTicks(self, ruler_ticks:typing.Iterable[BSRulerTickInfo], orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal):
+	def setTicks(self, ruler_ticks:typing.Iterable[grid.BSGridTickInfo], orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal):
 
 		self._ruler_ticks[orientation] = set(ruler_ticks)
 		self.sig_ruler_ticks_changed.emit(ruler_ticks)
 		
 		self.update(self.rulerRect(self.rect(), orientation))
 	
-	def ticks(self, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal) -> list[BSRulerTickInfo]:
+	def ticks(self, orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal) -> list[grid.BSGridTickInfo]:
 
 		return list(self._ruler_orientations[orientation])
 

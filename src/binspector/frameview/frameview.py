@@ -2,11 +2,13 @@ from __future__ import annotations
 import typing, logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from ..core import grid
+
 from ..core.config import BSFrameViewConfig
 from ..utils import gestures
 from ..overlays import framemap, frameruler, manager
 
-from . import grid, painters
+from . import gridsnapper, painters
 from .framescene import BSBinFrameScene
 from .actions import BSFrameViewActions
 
@@ -50,10 +52,10 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._current_zoom       = 1.0
 		self._zoom_range         = range(100)
-		self._grid_info          = grid.BSBinFrameViewGridInfo(unit_size=BSFrameViewConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewConfig.GRID_DIVISIONS)
+		self._grid_info          = grid.BSGridSystemInfo(unit_size=BSFrameViewConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewConfig.GRID_DIVISIONS)
 		self._scene_rect_margins = margins or DEFAULT_FRAME_VIEW_MARGINS
 		
-		self._visible_tick_info:dict[QtCore.Qt.AlignmentFlag, list[frameruler.BSRulerTickInfo]]  = {
+		self._visible_tick_info:dict[QtCore.Qt.AlignmentFlag, list[grid.BSGridTickInfo]]  = {
 			QtCore.Qt.Orientation.Horizontal: [],
 			QtCore.Qt.Orientation.Vertical:   [],
 			
@@ -80,7 +82,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# Viewport doesn't fire paletteChange events here.  Dunno. Maybe a TODO in disguise lol
 		self._background_painter = painters.BSBinFrameBackgroundPainter(parent=self, tick_info=self._visible_tick_info)
 		self._item_brushes       = painters.BSFrameItemBrushManager(parent=self)
-		self._grid_snapper       = grid.BSFrameGridSnapper(frame_view=self)
+		self._grid_snapper       = gridsnapper.BSFrameGridSnapper(frame_view=self)
 
 		# Doers of things
 		# NOTE: Most of these fellers install themselves as eventFilters, enable mouse tracking on the widget, etc
@@ -391,7 +393,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 			self.processViewRectChanges()
 
-	def visibleGridTicks(self, orientation:QtCore.Qt.Orientation) -> list[frameruler.BSRulerTickInfo]:
+	def visibleGridTicks(self, orientation:QtCore.Qt.Orientation) -> list[grid.BSGridTickInfo]:
 		"""Grid ticks visible in the current view"""
 
 		return self._visible_tick_info.get(orientation, [])
@@ -420,13 +422,13 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 				viewport_x = self.mapFromScene(scene_x, 0).x()
 
 				ticks.append(
-					frameruler.BSRulerTickInfo(
+					grid.BSGridTickInfo(
 						local_offset = viewport_x,
 						scene_offset = scene_x,
 						tick_label   = str(round(scene_x)),
-						tick_type    = frameruler.BSRulerTickType.MAJOR \
+						tick_type    = grid.BSGridTickType.MAJOR \
 						  if not step % self._grid_info.unit_divisions.x()
-						  else frameruler.BSRulerTickType.MINOR
+						  else grid.BSGridTickType.MINOR
 					)
 				)
 
@@ -450,13 +452,13 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 				viewport_y = self.mapFromScene(0, scene_y).y()
 
 				ticks.append(
-					frameruler.BSRulerTickInfo(
+					grid.BSGridTickInfo(
 						local_offset  = viewport_y,
 						scene_offset  = scene_y,
 						tick_label    = str(round(scene_y)),
-						tick_type     = frameruler.BSRulerTickType.MAJOR \
+						tick_type     = grid.BSGridTickType.MAJOR \
 						  if not step % self._grid_info.unit_divisions.y()
-						  else frameruler.BSRulerTickType.MINOR
+						  else grid.BSGridTickType.MINOR
 					)
 				)
 

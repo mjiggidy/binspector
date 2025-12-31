@@ -3,42 +3,14 @@ Snappy little guy gonna keep ya aligned
 """
 
 from __future__ import annotations
-import typing, dataclasses
+import typing
 
 from PySide6 import QtCore, QtWidgets
 
+
+
 if typing.TYPE_CHECKING:
 	from . import frameview
-
-@dataclasses.dataclass(frozen=True)
-class BSBinFrameViewGridInfo:
-	"""Grid info for drawing a BSBinFrameView"""
-
-	unit_size       :QtCore.QSizeF
-	"""Distance per unit"""
-
-	unit_divisions  :QtCore.QPoint
-	"""Divisions per unit"""
-
-	@property
-	def unit_step(self) -> QtCore.QPointF:
-		"""Distance per unit division"""
-
-		return QtCore.QPointF(
-			self.unit_size.width() / self.unit_divisions.x(),
-			self.unit_size.height() / self.unit_divisions.y()
-		)
-	
-	def snapToGrid(self, unsnapped_coords:QtCore.QPointF, use_divisions:bool=False) -> QtCore.QPointF:
-		"""Find the coordinate of the grid unit containing a given coordinate"""
-
-		unit_width  = self.unit_step.x() if use_divisions else self.unit_size.width()
-		unit_height = self.unit_step.y() if use_divisions else self.unit_size.height()
-
-		return QtCore.QPointF(
-			unsnapped_coords.x() - unsnapped_coords.x() % unit_width,
-			unsnapped_coords.y() - unsnapped_coords.y() % unit_height
-		)
 
 class BSFrameGridSnapper(QtCore.QObject):
 	"""Return the coordinates of the nearest grid unit"""
@@ -131,5 +103,7 @@ class BSFrameGridSnapper(QtCore.QObject):
 			self.sig_active_grid_unit_changed.emit(None)
 
 		return super().eventFilter(watched, event)
+
+
 
 
