@@ -55,6 +55,12 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			self._setupSelectionModel()
 			self.sig_selection_model_changed.emit(selection_model)
 
+	@QtCore.Slot(object)
+	def setSelectedItems(self, item_indexes:list[int]):
+		"""Set selected items"""
+
+		for idx, item in enumerate(self._bin_items):
+			item.setSelected(idx in item_indexes)
 
 	@QtCore.Slot(object,object)
 	def setSelectedItemsFromSelectionModel(self, selected:QtCore.QItemSelection, deselected:QtCore.QItemSelection):

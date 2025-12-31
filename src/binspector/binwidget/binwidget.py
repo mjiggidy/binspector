@@ -42,6 +42,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_model         = bin_model or viewmodels.BSBinItemViewModel()
 		self._bin_filter_model  = viewmodels.BSBinViewProxyModel()
 		self._selection_model   = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
+		#self._selection_syncer  = syncselection.BSSelectionSyncer(parent=self, selection_model=self._selection_model)
 		
 		#self._scene_frame       = QtWidgets.QGraphicsScene()
 
@@ -119,6 +120,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
 		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
 
+		#self._section_main.currentChanged.connect(self._selection_syncer.viewModeChanged)
+		#self._selection_syncer.sig_frame_selection_changed.connect(print)
+
 	def _setupActions(self):
 
 		self._act_set_view_width_for_columns = QtGui.QAction(self._binitems_list)
@@ -180,8 +184,27 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		#print("SETTING VIEW MODE TO ", view_mode)
 
+		old_view_mode = avbutils.bins.BinDisplayModes(self._section_main.currentIndex())
+
 		self._section_main.setCurrentIndex(int(view_mode))
 		self._section_top.setViewMode(view_mode)
+
+		if view_mode == avbutils.bins.BinDisplayModes.FRAME:
+			self._binitems_frame.scene().setSelectedItems(
+				list(x.row() for x in self._selection_model.selectedRows())
+			)
+		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
+
+			self._selection_model.clearSelection()
+
+			for row, item in enumerate(self._binitems_frame.scene()._bin_items):
+				if item.isSelected():
+
+					self._selection_model.select(
+						self._bin_filter_model.index(row, 0, QtCore.QModelIndex()),
+						QtCore.QItemSelectionModel.SelectionFlag.Select|QtCore.QItemSelectionModel.SelectionFlag.Rows
+					)
+
 		self.sig_view_mode_changed.emit(view_mode)
 
 	def viewMode(self) -> avbutils.BinDisplayModes:
