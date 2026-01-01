@@ -32,6 +32,11 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 			# NOTE: Binding to sizeHintChanged here to trigger redraw
 			# Passing invalid model index seems to work ok
 			self.sizeHintChanged.emit(QtCore.QModelIndex())
+	
+	def itemPadding(self) -> QtCore.QMarginsF:
+
+		return self._padding
+
 			
 
 	def activeRectFromRect(self, rect:QtCore.QRectF) -> QtCore.QRectF:
