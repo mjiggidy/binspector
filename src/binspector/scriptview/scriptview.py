@@ -11,7 +11,7 @@ class BSBinScriptView(treeview.BSBinTreeView):
 
 		self._frame_size = QtCore.QSizeF(16, 9).scaled(QtCore.QSizeF(*[100]*2), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
 		
-		#self.setAlternatingRowColors(False)
+		self.setAlternatingRowColors(False)
 		
 		self.applyHeaderConstraints()
 
@@ -61,14 +61,14 @@ class BSBinScriptView(treeview.BSBinTreeView):
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
 		
+
+		
 		super_options = QtWidgets.QStyleOptionViewItem(options)
 		super_options.text = None
 		super_options.icon = QtGui.QIcon()
 		super_options.features = QtWidgets.QStyleOptionViewItem.ViewItemFeature.None_
-		
-		
-
 		super().drawRow(painter, super_options, index)
+
 		
 		list_rect         = QtCore.QRect(options.rect)
 		list_rect.setHeight(32)
@@ -110,7 +110,7 @@ class BSBinScriptView(treeview.BSBinTreeView):
 			),
 
 			QtCore.QPointF(
-				options.rect.right() + DEFAULT_PADDING.right(),
+				options.rect.right() - DEFAULT_PADDING.right(),
 				frame_rect.bottom(),
 			)
 		)
