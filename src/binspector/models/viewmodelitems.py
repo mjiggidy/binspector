@@ -96,6 +96,7 @@ class LBAbstractViewItem:
 			QtCore.Qt.ItemDataRole.ToolTipRole:          self._tooltip if self._tooltip is not None else repr(self._data),
 			QtCore.Qt.ItemDataRole.DecorationRole:       self._icon,
 			QtCore.Qt.ItemDataRole.InitialSortOrderRole: self.to_string(self._data),	# QCollator just compares strings
+			QtCore.Qt.ItemDataRole.TextAlignmentRole:    QtCore.Qt.AlignmentFlag.AlignTop,
 			QtCore.Qt.ItemDataRole.UserRole:             self,
 		})
 	def raw_data(self) -> typing.Any:
@@ -164,7 +165,7 @@ class TRTNumericViewItem(LBAbstractViewItem):
 			QtCore.Qt.ItemDataRole.DisplayRole:          self.to_string(self._data),
 			#QtCore.Qt.ItemDataRole.InitialSortOrderRole: self._data,
 			QtCore.Qt.ItemDataRole.FontRole:             QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont).family(),
-			QtCore.Qt.ItemDataRole.TextAlignmentRole:    QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter,
+			QtCore.Qt.ItemDataRole.TextAlignmentRole:    QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTop,
 		})
 	
 	def to_json(self) -> int:
@@ -217,7 +218,7 @@ class TRTDateTimeViewItem(LBAbstractViewItem):
 		self._data_roles.update({
 			QtCore.Qt.ItemDataRole.DisplayRole:          self._data.toString(self._format_string),
 			QtCore.Qt.ItemDataRole.InitialSortOrderRole: str(self._data.toMSecsSinceEpoch()),
-			QtCore.Qt.ItemDataRole.TextAlignmentRole:    QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter,
+			QtCore.Qt.ItemDataRole.TextAlignmentRole:    QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTop,
 		})
 	
 	def to_json(self) -> dict:
