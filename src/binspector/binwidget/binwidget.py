@@ -121,6 +121,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.sig_bin_stats_updated.connect(self._binstats_list.setText)
 		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
+
 		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
 
 		#self._section_main.currentChanged.connect(self._selection_syncer.viewModeChanged)
@@ -196,6 +197,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			self._binitems_frame.scene().setSelectedItems(
 				list(x.row() for x in self._selection_model.selectedRows())
 			)
+
+		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
+
+			list_headers = self._binitems_list.header().saveState()
+			self._binitems_script.header().restoreState(list_headers)
+			self._binitems_script.applyHeaderConstraints()
+
 		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
 
 			self._selection_model.clearSelection()

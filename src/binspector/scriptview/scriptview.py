@@ -8,11 +8,30 @@ class BSBinScriptView(treeview.BSBinTreeView):
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
-		self.setUniformRowHeights(False)
-
+		
 		#self.setAlternatingRowColors(False)
+		
+		self.applyHeaderConstraints()
 
-	# NOTE: Need additional proxy for manual moving/sorting/positions?
+	def applyHeaderConstraints(self):
+		"""Header constraints"""
+
+		# These need to be re-applied after restoringState to sync with other views
+
+		for col in range(self.header().count()):
+
+			delegate = self.itemDelegateForColumn(col)
+			padding  = delegate.itemPadding()
+			padding  = QtCore.QMargins(padding.left(), padding.top(), padding.right(), padding.bottom() + 40)
+		#	delegate.setItemPadding(padding)
+
+
+		self.header().setSectionsMovable(False)
+		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
+		#self.header().set
+		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.SingleSelection)
+		self.setSortingEnabled(False)
+		self.setDragEnabled(True)
 
 	def rowsInserted(self, parent:QtCore.QModelIndex, start:int, end:int):
 		
