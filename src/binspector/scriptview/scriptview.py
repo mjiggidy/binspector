@@ -11,7 +11,7 @@ class BSBinScriptView(treeview.BSBinTreeView):
 
 		self._frame_size = QtCore.QSizeF(16, 9).scaled(QtCore.QSizeF(*[100]*2), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
 		
-		self.setAlternatingRowColors(False)
+		#self.setAlternatingRowColors(False)
 		
 		self.applyHeaderConstraints()
 
@@ -59,16 +59,35 @@ class BSBinScriptView(treeview.BSBinTreeView):
 		#	self.setItemDelegateForColumn(0, delegate)	
 
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+		
+		options = QtWidgets.QStyleOptionViewItem(options)
+		
+		super().drawRow(painter, options, index)
+		return
+
+		if options.state & QtWidgets.QStyle.StateFlag.State_Selected:
+			print([s for s in options.state])
+			brush = options.palette.highlight()
+			pen = QtGui.QPen(options.palette.windowText().color())
+			pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
+			painter.setBrush(brush)
+			painter.setPen(pen)
+			painter.drawRect(options.rect)
+			
+		else:
+			print(options.features)
+			brush = options.palette.base()
+			#pen = QtGui.QPen(options.palette.windowText().color())
+			#pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
+			painter.setBrush(brush)
+			painter.setPen(QtGui.QPen())
+			painter.drawRect(options.rect)
+		self.viewport().update(options.rect)
+			
+
 
 		
-
-		
-		super_options = QtWidgets.QStyleOptionViewItem(options)
-		super_options.text = None
-		super_options.icon = QtGui.QIcon()
-		super_options.features = QtWidgets.QStyleOptionViewItem.ViewItemFeature.None_
-		super().drawRow(painter, super_options, index)
-
+		return
 		
 		list_rect         = QtCore.QRect(options.rect)
 		list_rect.setHeight(32)
@@ -76,7 +95,6 @@ class BSBinScriptView(treeview.BSBinTreeView):
 		list_options      = QtWidgets.QStyleOptionViewItem(options)
 		list_options.rect = list_rect
 		list_options.backgroundBrush = QtGui.QBrush()
-		super().drawRow(painter, list_options, index)
 
 
 
