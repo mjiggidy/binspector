@@ -50,16 +50,26 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 
 			return super().setSelectionModel(selectionModel)
 
-	def setModel(self, model):
+	@QtCore.Slot(object)
+	def setModel(self, model:viewmodels.BSBinViewProxyModel):
 
-		super().setModel(model)
+		if self.model() == model:
+			return
+		
+		elif not isinstance(model, viewmodels.BSBinViewProxyModel):
+			raise TypeError(f"Model must be a BSBinViewProxyModel (got {type(model)})")
+		
 
-		self.model().columnsInserted.connect(self.setColumnWidthsFromBinView)
-		self.model().columnsInserted.connect(
+		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=BSListViewConfig.DEFAULT_ITEM_PADDING))
+		
+		# TODO: Disconnect old model...?
+		
+		model.columnsInserted.connect(self.setColumnWidthsFromBinView)
+		model.columnsInserted.connect(
 			lambda parent_index, source_start, source_end:
 			self.assignItemDelegates(parent_index, source_start)
 		)
-		self.model().columnsMoved.connect(
+		model.columnsMoved.connect(
 			lambda source_parent,
 				source_logical_start,
 				source_logical_end,
@@ -68,7 +78,8 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 			self.assignItemDelegates(destination_parent, min(source_logical_start, destination_logical_start))
 		)
 
-		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=BSListViewConfig.DEFAULT_ITEM_PADDING))
+		super().setModel(model)
+		
 		self.setCustomDelegates()
 
 	@QtCore.Slot(object)
