@@ -9,7 +9,7 @@ from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
 
-from . import binitems
+from . import binitems, delegates
 
 class BSBinTreeView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
@@ -20,18 +20,9 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 	sig_selection_model_changed = QtCore.Signal(object)
 	"""Selection model was changed"""
 
-	ITEM_DELEGATES_PER_FIELD_ID = {
-		51 : binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=BSListViewConfig.DEFAULT_ITEM_PADDING), # Clip color
-		132: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=BSListViewConfig.DEFAULT_ITEM_PADDING), # Marker
-		200: binitems.BSIconLookupItemDelegate(aspect_ratio=QtCore.QSize(4,3), padding=BSListViewConfig.DEFAULT_ITEM_PADDING), # Bin Display Item Type
 
-	}
-	"""Specialized one-off fields"""
 
-	ITEM_DELEGATES_PER_FORMAT_ID = {
-		avbutils.BinColumnFormat.TIMECODE: binitems.LBTimecodeItemDelegate(padding=BSListViewConfig.DEFAULT_ITEM_PADDING),
-	}
-	"""Delegate for generic field formats"""
+
 
 	def __init__(self, *args, **kwargs):
 
@@ -221,7 +212,7 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 		"""Temp"""
 
 		# Clip color chips
-		clip_color_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[51]
+		clip_color_delegate = delegates.ITEM_DELEGATES_PER_FIELD_ID[51]
 		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor())))
 		for color in avbutils.get_default_clip_colors():
 
@@ -230,7 +221,7 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 			clip_color_delegate.iconProvider().addIcon(icon_color.toTuple(), icon)
 
 		# Marker icons
-		marker_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[132]
+		marker_delegate = delegates.ITEM_DELEGATES_PER_FIELD_ID[132]
 		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor())))
 		for marker_color in avbutils.MarkerColors:
 
@@ -240,7 +231,7 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 
 		# Bin item type icons
 		# TODO/TEMP: Prep bin display item type icons
-		item_type_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[200]
+		item_type_delegate = delegates.ITEM_DELEGATES_PER_FIELD_ID[200]
 		for item_type in avbutils.bins.BinDisplayItemTypes:
 			item_type_delegate.iconProvider().addIcon(
 				item_type|avbutils.bins.BinDisplayItemTypes.USER_CLIP,
@@ -267,11 +258,11 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 
 
 			# Look up specialized fields
-			if field_id in self.ITEM_DELEGATES_PER_FIELD_ID:
-				item_delegate = self.ITEM_DELEGATES_PER_FIELD_ID[field_id]
+			if field_id in delegates.ITEM_DELEGATES_PER_FIELD_ID:
+				item_delegate = delegates.ITEM_DELEGATES_PER_FIELD_ID[field_id]
 			# Look up specialized generic formats
-			elif format_id in self.ITEM_DELEGATES_PER_FORMAT_ID:
-				item_delegate = self.ITEM_DELEGATES_PER_FORMAT_ID[format_id]
+			elif format_id in delegates.ITEM_DELEGATES_PER_FORMAT_ID:
+				item_delegate = delegates.ITEM_DELEGATES_PER_FORMAT_ID[format_id]
 
 			self.setItemDelegateForColumn(col, item_delegate)
 
@@ -325,6 +316,6 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 	def setItemPadding(self, padding:QtCore.QMargins):
 
 		self.itemDelegate().setItemPadding(padding)
-		for delegate in self.ITEM_DELEGATES_PER_FIELD_ID.values():
+		for delegate in delegates.ITEM_DELEGATES_PER_FIELD_ID.values():
 			#print("Here")
 			delegate.setItemPadding(padding)
