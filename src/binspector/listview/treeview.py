@@ -3,13 +3,13 @@ import avbutils
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core.config import BSListViewConfig
-from ..core   import icons
+from ..core   import icon_engines
 from ..models import viewmodels
 from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
 
-from . import binitems, delegates
+from . import binitems, delegate_lookup
 
 class BSBinTreeView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
@@ -19,10 +19,6 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 
 	sig_selection_model_changed = QtCore.Signal(object)
 	"""Selection model was changed"""
-
-
-
-
 
 	def __init__(self, *args, **kwargs):
 
@@ -223,31 +219,31 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 		"""Temp"""
 
 		# Clip color chips
-		clip_color_delegate = delegates.ITEM_DELEGATES_PER_FIELD_ID[51]
-		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor())))
+		clip_color_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[51]
+		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icon_engines.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor())))
 		for color in avbutils.get_default_clip_colors():
 
 			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
-			icon = QtGui.QIcon(icons.BSPalettedClipColorIconEngine(clip_color=icon_color))
+			icon = QtGui.QIcon(icon_engines.BSPalettedClipColorIconEngine(clip_color=icon_color))
 			clip_color_delegate.iconProvider().addIcon(icon_color.toTuple(), icon)
 
 		# Marker icons
-		marker_delegate = delegates.ITEM_DELEGATES_PER_FIELD_ID[132]
-		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor())))
+		marker_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[132]
+		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icon_engines.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor())))
 		for marker_color in avbutils.MarkerColors:
 
 			marker_color = QtGui.QColor(marker_color.value)
-			icon = QtGui.QIcon(icons.BSPalettedMarkerIconEngine(marker_color=marker_color))
+			icon = QtGui.QIcon(icon_engines.BSPalettedMarkerIconEngine(marker_color=marker_color))
 			marker_delegate.iconProvider().addIcon(marker_color.toTuple(), icon)
 
 		# Bin item type icons
 		# TODO/TEMP: Prep bin display item type icons
-		item_type_delegate = delegates.ITEM_DELEGATES_PER_FIELD_ID[200]
+		item_type_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[200]
 		for item_type in avbutils.bins.BinDisplayItemTypes:
 			item_type_delegate.iconProvider().addIcon(
 				item_type|avbutils.bins.BinDisplayItemTypes.USER_CLIP,
 				QtGui.QIcon(
-					icons.BSPalettedSvgIconEngine(
+					icon_engines.BSPalettedSvgIconEngine(
 					":/icons/binitems/item_masterclip.svg",
 					)
 				)
@@ -269,11 +265,11 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 
 
 			# Look up specialized fields
-			if field_id in delegates.ITEM_DELEGATES_PER_FIELD_ID:
-				item_delegate = delegates.ITEM_DELEGATES_PER_FIELD_ID[field_id]
+			if field_id in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID:
+				item_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[field_id]
 			# Look up specialized generic formats
-			elif format_id in delegates.ITEM_DELEGATES_PER_FORMAT_ID:
-				item_delegate = delegates.ITEM_DELEGATES_PER_FORMAT_ID[format_id]
+			elif format_id in delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID:
+				item_delegate = delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID[format_id]
 
 			self.setItemDelegateForColumn(col, item_delegate)
 
@@ -327,6 +323,6 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 	def setItemPadding(self, padding:QtCore.QMargins):
 
 		self.itemDelegate().setItemPadding(padding)
-		for delegate in delegates.ITEM_DELEGATES_PER_FIELD_ID.values():
+		for delegate in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID.values():
 			#print("Here")
 			delegate.setItemPadding(padding)

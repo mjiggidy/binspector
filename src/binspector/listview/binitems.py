@@ -1,7 +1,7 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core  import icons
+from ..core  import icon_providers
 
 class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
@@ -84,14 +84,14 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
 	"""Displays an icon centered in its item rect, with padding and aspect ratio preservation or something"""
 
-	def __init__(self, *args, aspect_ratio:QtCore.QSize|None=None, icon_provider:icons.BSIconProvider|None=None, **kwargs):
+	def __init__(self, *args, aspect_ratio:QtCore.QSize|None=None, icon_provider:icon_providers.BSIconProvider|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		self._aspect_ratio  = aspect_ratio  or QtCore.QSize(1,1)
-		self._icon_provider = icon_provider or icons.BSIconProvider()
+		self._icon_provider = icon_provider or icon_providers.BSIconProvider()
 
-	def iconProvider(self) -> icons.BSIconProvider:
+	def iconProvider(self) -> icon_providers.BSIconProvider:
 		return self._icon_provider
 
 	def sizeWithAspectRatio(self, rect:QtCore.QSize) -> QtCore.QSize:

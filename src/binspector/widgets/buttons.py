@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..utils import stylewatcher
-from ..core import icons
+from ..core import icon_engines
 
 class BSActionPushButton(QtWidgets.QPushButton):
 	"""A QPushButton bound to a QAction"""
@@ -65,7 +65,7 @@ class BSPalettedActionPushButton(BSActionPushButton):
 			#show_icon:bool=True,
 			show_tooltip:bool=True,
 			*args,
-			icon_engine:icons.BSAbstractPalettedIconEngine|None=None,
+			icon_engine:icon_engines.BSAbstractPalettedIconEngine|None=None,
 			**kwargs
 		):
 
@@ -74,7 +74,7 @@ class BSPalettedActionPushButton(BSActionPushButton):
 		# Thanks for reading my blog post
 		super().__init__(action, show_text, show_icon=False, show_tooltip=show_tooltip)
 
-		self._icon_engine   = icons.BSAbstractPalettedIconEngine(parent=self)
+		self._icon_engine   = icon_engines.BSAbstractPalettedIconEngine(parent=self)
 		self._style_watcher = stylewatcher.BSWidgetStyleEventFilter(parent=self)
 
 		self.installEventFilter(self._style_watcher)
@@ -88,7 +88,7 @@ class BSPalettedActionPushButton(BSActionPushButton):
 
 		return super().setIcon(icon)
 
-	def setIconEngine(self, icon_engine:icons.BSAbstractPalettedIconEngine):
+	def setIconEngine(self, icon_engine:icon_engines.BSAbstractPalettedIconEngine):
 
 		if self._icon_engine == icon_engine:
 			return
