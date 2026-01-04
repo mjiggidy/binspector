@@ -2,7 +2,7 @@ import sys
 from os import PathLike
 from PySide6 import QtCore, QtSvg, QtGui, QtWidgets
 from binspector.res import icons_gui
-from binspector.core.icons import BSPalettedSvgIconEngine
+from binspector.core.icon_engines import BSPalettedSvgIconEngine
 	
 
 
