@@ -66,54 +66,19 @@ class BSBinScriptView(listview.BSBinListView):
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 		
 		options = QtWidgets.QStyleOptionViewItem(options)
+
+		item_delegate = self.itemDelegate(index)
 		
 		super().drawRow(painter, options, index)
-		return
-
-		if options.state & QtWidgets.QStyle.StateFlag.State_Selected:
-			print([s for s in options.state])
-			brush = options.palette.highlight()
-			pen = QtGui.QPen(options.palette.windowText().color())
-			pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-			painter.setBrush(brush)
-			painter.setPen(pen)
-			painter.drawRect(options.rect)
-			
-		else:
-			print(options.features)
-			brush = options.palette.base()
-			#pen = QtGui.QPen(options.palette.windowText().color())
-			#pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-			painter.setBrush(brush)
-			painter.setPen(QtGui.QPen())
-			painter.drawRect(options.rect)
-		self.viewport().update(options.rect)
-			
-
-
-		
-		return
-		
-		list_rect         = QtCore.QRect(options.rect)
-		list_rect.setHeight(32)
-
-		list_options      = QtWidgets.QStyleOptionViewItem(options)
-		list_options.rect = list_rect
-		list_options.backgroundBrush = QtGui.QBrush()
-
-
-
-		painter.save()
-
-		DEFAULT_PADDING = QtCore.QMarginsF(8,8,8,8)
 
 		frame_rect = QtCore.QRectF(
 			QtCore.QPointF(
-				options.rect.left() + DEFAULT_PADDING.left(),
-				options.rect.top() + DEFAULT_PADDING.top(),
+				options.rect.left() + item_delegate.itemPadding().left(),
+				options.rect.top() + item_delegate.itemPadding().top(),
 			),
 			self._frame_size
 		)
+
 
 
 
@@ -128,12 +93,12 @@ class BSBinScriptView(listview.BSBinListView):
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
-				frame_rect.right() + DEFAULT_PADDING.left(),
-				list_rect.bottom(),
+				frame_rect.right() + item_delegate.itemPadding().left(),
+				options.rect.top() + self.rowHeight(index) - item_delegate.itemPadding().bottom() + item_delegate.itemPadding().top(),
 			),
 
 			QtCore.QPointF(
-				options.rect.right() - DEFAULT_PADDING.right(),
+				options.rect.right() - item_delegate.itemPadding().right(),
 				frame_rect.bottom(),
 			)
 		)
@@ -147,6 +112,8 @@ class BSBinScriptView(listview.BSBinListView):
 		brush.setColor(options.palette.window().color())
 		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 
+		painter.save()
+		
 		painter.setPen(pen)
 		painter.setBrush(brush)
 

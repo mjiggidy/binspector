@@ -425,7 +425,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._default_delegate_list  .setItemPadding(padding)
 		script_pad = QtCore.QMarginsF(padding)
-		script_pad.setBottom(padding.bottom() + self._binitems_script._frame_size.height())
+		script_pad.setBottom(self._binitems_script._frame_size.height() - padding.top())
 		self._default_delegate_script.setItemPadding(script_pad)
 
 	@QtCore.Slot(str)
