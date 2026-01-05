@@ -79,7 +79,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def _setupWidgets(self):
 
 		# Top Tool Bar
-		self._section_top._sld_frame_scale .setRange(BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE.start, BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE.stop)
+		self._section_top._sld_frame_scale .setRange(BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE.start,   BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE.stop)
 		self._section_top._sld_script_scale.setRange(BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_RANGE.start, BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_RANGE.stop)
 
 		self.layout().addWidget(self._section_top)
@@ -136,6 +136,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top.sig_frame_scale_changed  .connect(self._binitems_frame.setZoom)
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
+
+		self._section_top.sig_script_scale_changed         .connect(self._binitems_script.setFrameScale)
+		self._binitems_script.sig_frame_scale_changed      .connect(self._section_top._sld_script_scale.setValue)
+		self._binitems_script.sig_frame_scale_range_changed.connect(lambda r: self._section_top._sld_script_scale.setRange(r.start, r.stop))
 
 		self.sig_bin_stats_updated.connect(self._binstats_list.setText)
 		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
@@ -201,12 +205,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				col_delegate = self._binitems_list.itemDelegate()
 			
 			# LOL: Just default for now
-			self._default_delegate_list.setItemPadding(BSListViewConfig.DEFAULT_ITEM_PADDING)
+			
+			
+			#self._default_delegate_list.setItemPadding(BSListViewConfig.DEFAULT_ITEM_PADDING)
+			
+			
 			self._binitems_list.setItemDelegateForColumn(col_logical, self._default_delegate_list)
-			
-			
-			
-			
 			self._binitems_script.setItemDelegateForColumn(col_logical, self._default_delegate_script)
 
 
@@ -423,10 +427,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setItemPadding(self, padding:QtCore.QMarginsF):
 		"""Set list item padding"""
 
-		self._default_delegate_list  .setItemPadding(padding)
-		script_pad = QtCore.QMarginsF(padding)
-		script_pad.setBottom(self._binitems_script._frame_size.height() - padding.top())
-		self._default_delegate_script.setItemPadding(script_pad)
+		self._default_delegate_list.setItemPadding(padding)
+		logging.getLogger(__name__).error("Padding %s", str(padding))
+		self._binitems_script.setItemPadding(padding)
 
 	@QtCore.Slot(str)
 	def focusBinColumn(self, focus_field_name:str) -> bool:

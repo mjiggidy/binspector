@@ -1,56 +1,107 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..binwidget import binitems
+from ..core.config import BSScriptViewConfig
+
 from ..listview import listview
 import avbutils
 
 class BSBinScriptView(listview.BSBinListView):
 	"""Script view"""
 
+	sig_frame_scale_changed       = QtCore.Signal(float)
+	sig_frame_scale_range_changed = QtCore.Signal(float) # TODO
+	sig_item_padding_changed      = QtCore.Signal(QtCore.QMarginsF)
+
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._frame_size = QtCore.QSizeF(16, 9).scaled(QtCore.QSizeF(*[100]*2), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-		
+		self.header().setSectionsMovable(False)
+		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
+		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.SingleSelection)
+		self.setSortingEnabled(False)
+		self.setDragEnabled(True)
 		#self.setAlternatingRowColors(False)
+
+		self._frame_size  = QtCore.QSizeF(16, 9)
+		self._frame_scale = BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_START
+
+		self._item_padding = BSScriptViewConfig.DEFAULT_ITEM_PADDING
 		
 		self.applyHeaderConstraints()
 
+	@QtCore.Slot(object)
+	def setFrameScale(self, frame_scale:float):
+		
+		if frame_scale == self._frame_scale:
+			return
+		
+		self._frame_scale = frame_scale
+
+		self.applyHeaderConstraints()
+		self.updateDelegates()
+
+		self.viewport().update()
+
+	def frameScale(self) -> float:
+		"""The scale factor for the frame rect"""
+
+		return self._frame_scale
+	
+	def frameRect(self) -> QtCore.QRectF:
+		"""The frame rect"""
+
+		return QtCore.QRectF(
+			QtCore.QPointF(0,0),
+			QtCore.QPointF(
+				self._frame_size.width() * self._frame_scale,
+				self._frame_size.height() * self._frame_scale
+			)
+		)
+	
+	@QtCore.Slot(QtCore.QMarginsF)
+	def setItemPadding(self, padding:QtCore.QMarginsF):
+		"""Set item padding and add frame size padding"""
+
+		if self._item_padding == padding:
+			import logging
+			logging.getLogger(__name__).error("NO %s", str(padding))
+			return
+		
+		self._item_padding = padding
+
+		#print("ITEM PADDING NOW", self._item_padding)
+
+		self.applyHeaderConstraints()
+		self.updateDelegates()
+		
+		self.sig_item_padding_changed.emit(padding)
+
+	def updateDelegates(self):
+
+		script_pad = QtCore.QMarginsF(self._item_padding)
+		old_pad = QtCore.QMarginsF(script_pad)
+		script_pad.setBottom(max(
+			self.frameRect().height(),
+			self._item_padding.bottom()
+
+		))
+
+		#print(f"{old_pad=} {script_pad=}")
+
+		for col in range(self.header().count()):
+			self.itemDelegateForColumn(col).setItemPadding(script_pad)
 
 	def applyHeaderConstraints(self):
 		"""Header constraints"""
 
-		# These need to be re-applied after restoringState to sync with other views
-
-#		for col in range(self.header().count()):
-#
-#			delegate = self.itemDelegateForColumn(col)
-#			padding  = delegate.itemPadding()
-#			padding  = QtCore.QMargins(padding.left(), padding.top(), padding.right(), padding.bottom() + 40)
-#		#	delegate.setItemPadding(padding)
-
-
-		#old_del  = self.itemDelegateForColumn(0)
-		#margins = old_del.itemPadding()
-		
-#		# NOTE: 200 conrtols width(?), 112 def controls height of row
-#		delegate = binitems.BSGenericItemDelegate(QtCore.QMargins(self._frame_size.width() + 16,0,0,self._frame_size.height()))
-#		self.setItemDelegateForColumn(self.header().logicalIndex(0),delegate)
+		self.resizeColumnToContents(self.header().logicalIndex(0))
 
 		# Resize first section to accomodate frame
 		self.header().resizeSection(
 			self.header().logicalIndex(0),
-			self.header().sectionSize(self.header().logicalIndex(0)) + self._frame_size.width() + 16
+			self.header().sectionSize(self.header().logicalIndex(0)) + self.frameRect().width() + 16
 		)
-
-
-		self.header().setSectionsMovable(False)
-		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
-		#self.header().set
-		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.SingleSelection)
-		self.setSortingEnabled(False)
-		self.setDragEnabled(True)
 
 	def rowsInserted(self, parent:QtCore.QModelIndex, start:int, end:int):
 		
@@ -65,41 +116,37 @@ class BSBinScriptView(listview.BSBinListView):
 
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 		
-		options = QtWidgets.QStyleOptionViewItem(options)
-
+		
 		item_delegate = self.itemDelegate(index)
 		
 		super().drawRow(painter, options, index)
 
-		frame_rect = QtCore.QRectF(
+
+		#print(f"{options.rect=} {item_delegate.itemPadding()=}")
+
+		frame_rect = self.frameRect().translated(
 			QtCore.QPointF(
-				options.rect.left() + item_delegate.itemPadding().left(),
-				options.rect.top() + item_delegate.itemPadding().top(),
-			),
-			self._frame_size
+				options.rect.left() + self._item_padding.left(),
+				options.rect.top()  +self._item_padding.top(),
+			)
 		)
 
+		fields      = index.model().sourceModel().fields()
 
-
-
-		fields = index.model().sourceModel().fields()
 		field_index = fields.index(str(avbutils.BIN_COLUMN_ROLES["Name"]))
-		#print(fields, field_index)
-
-		src_index = index.model().mapToSource(index)
-
+		src_index   = index.model().mapToSource(index)
 
 		script_text = src_index.siblingAtColumn(field_index).data(QtCore.Qt.ItemDataRole.DisplayRole)
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
 				frame_rect.right() + item_delegate.itemPadding().left(),
-				options.rect.top() + self.rowHeight(index) - item_delegate.itemPadding().bottom() + item_delegate.itemPadding().top(),
+				options.rect.bottom() - item_delegate.itemPadding().bottom(),
 			),
 
 			QtCore.QPointF(
 				options.rect.right() - item_delegate.itemPadding().right(),
-				frame_rect.bottom(),
+				options.rect.bottom() - item_delegate.itemPadding().top(),
 			)
 		)
 
@@ -124,4 +171,4 @@ class BSBinScriptView(listview.BSBinListView):
 
 		painter.restore()
 
-		self.viewport().update(options.rect) # NOTE: Not just active_rect -- Scrolling needs to repaint the whole thing
+#		self.viewport().update(options.rect) # NOTE: Not just active_rect -- Scrolling needs to repaint the whole thing

@@ -36,7 +36,7 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 		if selectionModel != self.selectionModel():
 
-			logging.getLogger(__name__).error("BinTreeView changed selection model to %s", selectionModel)
+			logging.getLogger(__name__).error("BinTreeView changed selection model to %s", str(selectionModel))
 			self.sig_selection_model_changed.emit(selectionModel)
 
 			return super().setSelectionModel(selectionModel)

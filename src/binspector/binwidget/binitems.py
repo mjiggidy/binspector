@@ -26,13 +26,14 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 	def setItemPadding(self, padding:QtCore.QMargins):
 		"""Set padding around individual items"""
 
-		if self._padding != padding:
+		if self._padding == padding:
+			return
 
-			self._padding = padding
+		self._padding = padding
 
-			# NOTE: Binding to sizeHintChanged here to trigger redraw
-			# Passing invalid model index seems to work ok
-			self.sizeHintChanged.emit(QtCore.QModelIndex())
+		# NOTE: Binding to sizeHintChanged here to trigger redraw
+		# Passing invalid model index seems to work ok
+		self.sizeHintChanged.emit(QtCore.QModelIndex())
 	
 	def itemPadding(self) -> QtCore.QMarginsF:
 

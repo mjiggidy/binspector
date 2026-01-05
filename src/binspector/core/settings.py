@@ -208,7 +208,7 @@ class BSSettingsManager:
 		return scale_factor
 	
 	@QtCore.Slot(object)
-	def setListItemPadding(self, padding:QtCore.QMargins):
+	def setListItemPadding(self, padding:QtCore.QMarginsF):
 
 		padding_list = [padding.left(), padding.top(), padding.right(), padding.bottom()]
 
@@ -218,7 +218,7 @@ class BSSettingsManager:
 	def listItemPadding(self) -> QtCore.QMargins:
 		
 		padding = self.settings("bs").value("UserInterface/list_item_padding", [12, 6, 12, 6], list)
-		padding = QtCore.QMargins(*map(int, padding))
+		padding = QtCore.QMarginsF(*map(float, padding))
 
 		logging.getLogger(__name__).debug("Returning list_item_padding: %s", padding)
 		return padding
