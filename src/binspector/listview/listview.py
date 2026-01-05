@@ -2,6 +2,8 @@ import logging
 import avbutils
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from ..binwidget import delegate_lookup
+
 from ..core.config import BSListViewConfig
 from ..core   import icon_engines
 from ..models import viewmodels
@@ -9,9 +11,9 @@ from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
 
-from . import binitems, delegate_lookup
+from . import binitems
 
-class BSBinTreeView(treeview.BSTreeViewBase):
+class BSBinListView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
 
 	sig_default_sort_columns_changed = QtCore.Signal(object)
@@ -61,22 +63,10 @@ class BSBinTreeView(treeview.BSTreeViewBase):
 		# TODO: Disconnect old model...?
 		
 		model.columnsInserted.connect(self.setColumnWidthsFromBinView)
-		model.columnsInserted.connect(
-			lambda parent_index, source_start, source_end:
-			self.assignItemDelegates(parent_index, source_start)
-		)
-		model.columnsMoved.connect(
-			lambda source_parent,
-				source_logical_start,
-				source_logical_end,
-				destination_parent,
-				destination_logical_start: # NOTE: Won't work for heirarchical models
-			self.assignItemDelegates(destination_parent, min(source_logical_start, destination_logical_start))
-		)
 
 		super().setModel(model)
 		
-		self.setCustomDelegates()
+		#self.setCustomDelegates()
 
 	@QtCore.Slot(object)
 	def selectSectionFromCoordinates(self, viewport_coords:QtCore.QPoint):

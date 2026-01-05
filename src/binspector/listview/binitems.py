@@ -3,6 +3,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core  import icon_providers
 
+
 class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
 	def __init__(self, padding:QtCore.QMargins|None=None, *args, **kwargs):
@@ -169,3 +170,4 @@ class LBTimecodeItemDelegate(BSGenericItemDelegate):
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex):
 		
 		super().paint(painter, option, index)
+
