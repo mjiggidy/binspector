@@ -41,6 +41,8 @@ class BSBinScriptView(listview.BSBinListView):
 		self.applyHeaderConstraints()
 		self.updateDelegates()
 
+		self.sig_frame_scale_changed.emit(frame_scale)
+
 		self.viewport().update()
 
 	def frameScale(self) -> float:
@@ -104,15 +106,16 @@ class BSBinScriptView(listview.BSBinListView):
 		)
 
 	def rowsInserted(self, parent:QtCore.QModelIndex, start:int, end:int):
+		pass
 		
-		for row in range(start, end+1):
-			
-			idx_row = self.model().index(row, 0, parent)
-			delegate = self.itemDelegate(idx_row)
-			delegate = delegate.__class__(delegate)
-		#	delegate.setItemPadding(QtCore.QMargins(5,5, 5, 500))		
-
-		#	self.setItemDelegateForColumn(0, delegate)	
+#		for row in range(start, end+1):
+#			
+#			idx_row = self.model().index(row, 0, parent)
+#			delegate = self.itemDelegate(idx_row)
+#			delegate = delegate.__class__(delegate)
+#		#	delegate.setItemPadding(QtCore.QMargins(5,5, 5, 500))		
+#
+#		#	self.setItemDelegateForColumn(0, delegate)	
 
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 		
