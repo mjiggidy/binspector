@@ -3,7 +3,7 @@ Manage display delegates
 """
 
 from ..core.config import BSListViewConfig
-from ..listview import binitems
+from . import binitems
 import avbutils
 from PySide6 import QtCore
 
@@ -16,6 +16,6 @@ ITEM_DELEGATES_PER_FIELD_ID = {
 """Specialized one-off fields"""
 
 ITEM_DELEGATES_PER_FORMAT_ID = {
-	avbutils.BinColumnFormat.TIMECODE: binitems.LBTimecodeItemDelegate(padding=BSListViewConfig.DEFAULT_ITEM_PADDING),
+	avbutils.BinColumnFormat.TIMECODE: binitems.LBTimecodeItemDelegate,
 }
 """Delegate for generic field formats"""

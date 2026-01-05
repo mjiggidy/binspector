@@ -7,7 +7,7 @@ import avb, avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from . import proxystyles, scrollwidgets, widgetbars
+from . import proxystyles, scrollwidgets, widgetbars, binitems
 
 from ..listview import listview
 from ..frameview import frameview
@@ -15,6 +15,7 @@ from ..scriptview import scriptview
 
 from ..models import viewmodels
 from ..widgets import buttons
+from . import delegate_lookup
 
 from ..core.config import BSListViewConfig, BSFrameViewConfig, BSScriptViewConfig
 
@@ -62,6 +63,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._binstats_list     = scrollwidgets.BSBinStatsLabel()
 		self._binstats_frame    = scrollwidgets.BSBinStatsLabel()
+
+		self._default_delegate_list   = binitems.BSGenericItemDelegate()
+		self._default_delegate_script = binitems.BSGenericItemDelegate()
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)
@@ -186,17 +190,24 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			)
 
 			# Do specific column IDs first
-			if col_id in listview.delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID:
-				col_delegate = listview.delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[col_id](aspect_ratio=QtCore.QSize(4,3), padding=BSListViewConfig.DEFAULT_ITEM_PADDING)
+			if col_id in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID:
+				col_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[col_id]( padding=BSListViewConfig.DEFAULT_ITEM_PADDING)
 				
 
-			elif col_format in listview.delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID:
-				col_delegate = listview.delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID[col_format](aspect_ratio=QtCore.QSize(4,3), padding=BSListViewConfig.DEFAULT_ITEM_PADDING)
+			elif col_format in delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID:
+				col_delegate = delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID[col_format]( padding=BSListViewConfig.DEFAULT_ITEM_PADDING)
 
 			else:
 				col_delegate = self._binitems_list.itemDelegate()
 			
-			self._binitems_list.setItemDelegateForColumn(col_logical, col_delegate)
+			# LOL: Just default for now
+			self._default_delegate_list.setItemPadding(BSListViewConfig.DEFAULT_ITEM_PADDING)
+			self._binitems_list.setItemDelegateForColumn(col_logical, self._default_delegate_list)
+			
+			
+			
+			
+			self._binitems_script.setItemDelegateForColumn(col_logical, self._default_delegate_script)
 
 
 			
@@ -410,8 +421,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	@QtCore.Slot(object)
 	def setItemPadding(self, padding:QtCore.QMargins):
+		"""Set list item padding"""
 
-		self._binitems_list.setItemPadding(padding)
+		self._default_delegate_list  .setItemPadding(padding)
+		self._default_delegate_script.setItemPadding(padding)
 
 	@QtCore.Slot(str)
 	def focusBinColumn(self, focus_field_name:str) -> bool:

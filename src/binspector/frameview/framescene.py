@@ -1,7 +1,7 @@
 import logging
 from PySide6 import QtCore, QtWidgets
 
-from ..listview import binitems
+from ..binwidget import binitems
 
 from ..models import viewmodels
 from ..core import config

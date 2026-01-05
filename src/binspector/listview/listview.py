@@ -1,17 +1,11 @@
 import logging
-import avbutils
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..binwidget import delegate_lookup
-
 from ..core.config import BSListViewConfig
-from ..core   import icon_engines
 from ..models import viewmodels
 from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
-
-from . import binitems
 
 class BSBinListView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
@@ -26,7 +20,6 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 		super().__init__(*args, **kwargs)
 
-		#self._palette_watcher       = icons.BSPaletteWatcherForSomeReason() #NOTE: Use my utils.StyleWatcher here?
 		self._column_select_watcher = columnselect.BSColumnSelectWatcher()
 
 		self.setModel(viewmodels.BSBinViewProxyModel())
@@ -58,7 +51,7 @@ class BSBinListView(treeview.BSTreeViewBase):
 			raise TypeError(f"Model must be a BSBinViewProxyModel (got {type(model)})")
 		
 
-		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=BSListViewConfig.DEFAULT_ITEM_PADDING))
+#		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=BSListViewConfig.DEFAULT_ITEM_PADDING))
 		
 		# TODO: Disconnect old model...?
 		
@@ -205,63 +198,63 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 		return super().mousePressEvent(event)
 
-	def setCustomDelegates(self):
-		"""Temp"""
+#	def setCustomDelegates(self):
+#		"""Temp"""
+#
+#		# Clip color chips
+#		clip_color_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[51]
+#		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icon_engines.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor())))
+#		for color in avbutils.get_default_clip_colors():
+#
+#			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
+#			icon = QtGui.QIcon(icon_engines.BSPalettedClipColorIconEngine(clip_color=icon_color))
+#			clip_color_delegate.iconProvider().addIcon(icon_color.toTuple(), icon)
+#
+#		# Marker icons
+#		marker_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[132]
+#		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icon_engines.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor())))
+#		for marker_color in avbutils.MarkerColors:
+#
+#			marker_color = QtGui.QColor(marker_color.value)
+#			icon = QtGui.QIcon(icon_engines.BSPalettedMarkerIconEngine(marker_color=marker_color))
+#			marker_delegate.iconProvider().addIcon(marker_color.toTuple(), icon)
+#
+#		# Bin item type icons
+#		# TODO/TEMP: Prep bin display item type icons
+#		item_type_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[200]
+#		for item_type in avbutils.bins.BinDisplayItemTypes:
+#			item_type_delegate.iconProvider().addIcon(
+#				item_type|avbutils.bins.BinDisplayItemTypes.USER_CLIP,
+#				QtGui.QIcon(
+#					icon_engines.BSPalettedSvgIconEngine(
+#					":/icons/binitems/item_masterclip.svg",
+#					)
+#				)
+#			)
 
-		# Clip color chips
-		clip_color_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[51]
-		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icon_engines.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor())))
-		for color in avbutils.get_default_clip_colors():
-
-			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
-			icon = QtGui.QIcon(icon_engines.BSPalettedClipColorIconEngine(clip_color=icon_color))
-			clip_color_delegate.iconProvider().addIcon(icon_color.toTuple(), icon)
-
-		# Marker icons
-		marker_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[132]
-		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icon_engines.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor())))
-		for marker_color in avbutils.MarkerColors:
-
-			marker_color = QtGui.QColor(marker_color.value)
-			icon = QtGui.QIcon(icon_engines.BSPalettedMarkerIconEngine(marker_color=marker_color))
-			marker_delegate.iconProvider().addIcon(marker_color.toTuple(), icon)
-
-		# Bin item type icons
-		# TODO/TEMP: Prep bin display item type icons
-		item_type_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[200]
-		for item_type in avbutils.bins.BinDisplayItemTypes:
-			item_type_delegate.iconProvider().addIcon(
-				item_type|avbutils.bins.BinDisplayItemTypes.USER_CLIP,
-				QtGui.QIcon(
-					icon_engines.BSPalettedSvgIconEngine(
-					":/icons/binitems/item_masterclip.svg",
-					)
-				)
-			)
-
-	@QtCore.Slot(object, int, int)
-	def assignItemDelegates(self, parent_index:QtCore.QModelIndex, logical_start_column:int):
-		"""Assign item delegates starting with the first changed logical row, cascaded through to the end"""
-
-		if parent_index.isValid():
-			return
-
-		for col in range(logical_start_column, self.model().columnCount()):
-
-			field_id     = self.model().headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+1)
-			format_id    = self.model().headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+2)
-
-			item_delegate = self.itemDelegate()
-
-
-			# Look up specialized fields
-			if field_id in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID:
-				item_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[field_id]
-			# Look up specialized generic formats
-			elif format_id in delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID:
-				item_delegate = delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID[format_id]
-
-			self.setItemDelegateForColumn(col, item_delegate)
+#	@QtCore.Slot(object, int, int)
+#	def assignItemDelegates(self, parent_index:QtCore.QModelIndex, logical_start_column:int):
+#		"""Assign item delegates starting with the first changed logical row, cascaded through to the end"""
+#
+#		if parent_index.isValid():
+#			return
+#
+#		for col in range(logical_start_column, self.model().columnCount()):
+#
+#			field_id     = self.model().headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+1)
+#			format_id    = self.model().headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+2)
+#
+#			item_delegate = self.itemDelegate()
+#
+#
+#			# Look up specialized fields
+#			if field_id in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID:
+#				item_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[field_id]
+#			# Look up specialized generic formats
+#			elif format_id in delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID:
+#				item_delegate = delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID[format_id]
+#
+#			self.setItemDelegateForColumn(col, item_delegate)
 
 	@QtCore.Slot(object, int)
 	@QtCore.Slot(object, int, int)
@@ -289,7 +282,7 @@ class BSBinListView(treeview.BSTreeViewBase):
 		column_width = self.model().headerData(
 			col_index_logical,
 			QtCore.Qt.Orientation.Horizontal,
-			QtCore.Qt.ItemDataRole.UserRole+4 # Column width, if specified by bin view
+			viewmodels.viewmodelitems.BSBinColumnDataRoles.BSColumnWidth # Column width, if specified by bin view
 		)
 
 		if column_width:
@@ -309,10 +302,10 @@ class BSBinListView(treeview.BSTreeViewBase):
 		self._default_sort = sort_columns
 		self.sig_default_sort_columns_changed.emit(self._default_sort)
 
-	@QtCore.Slot(object)
-	def setItemPadding(self, padding:QtCore.QMargins):
-
-		self.itemDelegate().setItemPadding(padding)
-		for delegate in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID.values():
-			#print("Here")
-			delegate.setItemPadding(padding)
+#	@QtCore.Slot(object)
+#	def setItemPadding(self, padding:QtCore.QMargins):
+#
+#		self.itemDelegate().setItemPadding(padding)
+#		for delegate in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID.values():
+#			#print("Here")
+#			delegate.setItemPadding(padding)

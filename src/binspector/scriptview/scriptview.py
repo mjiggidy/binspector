@@ -1,5 +1,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..listview import listview, binitems
+
+from ..binwidget import binitems
+from ..listview import listview
 import avbutils
 
 class BSBinScriptView(listview.BSBinListView):
@@ -32,9 +34,9 @@ class BSBinScriptView(listview.BSBinListView):
 		#old_del  = self.itemDelegateForColumn(0)
 		#margins = old_del.itemPadding()
 		
-		# NOTE: 200 conrtols width(?), 112 def controls height of row
-		delegate = binitems.BSGenericItemDelegate(QtCore.QMargins(self._frame_size.width() + 16,0,0,self._frame_size.height()))
-		self.setItemDelegateForColumn(self.header().logicalIndex(0),delegate)
+#		# NOTE: 200 conrtols width(?), 112 def controls height of row
+#		delegate = binitems.BSGenericItemDelegate(QtCore.QMargins(self._frame_size.width() + 16,0,0,self._frame_size.height()))
+#		self.setItemDelegateForColumn(self.header().logicalIndex(0),delegate)
 
 		# Resize first section to accomodate frame
 		self.header().resizeSection(
