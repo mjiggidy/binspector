@@ -1,6 +1,8 @@
 import logging
 from PySide6 import QtCore, QtWidgets
 
+from ..listview import binitems
+
 from ..models import viewmodels
 from ..core import config
 from . import sceneitems, painters
@@ -138,10 +140,10 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			# Resolve source model to ensure we always have relevent columns available
 			proxy_row_index  = self._bin_filter_model.index(row, 0, parent_row_index)
 
-			bin_item_name   = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemName)
-			bin_item_coords = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSFrameCoordinates)
-			bin_item_color  = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSClipColor)
-			bin_item_type   = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemType)
+			bin_item_name   = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSItemName)
+			bin_item_coords = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSFrameCoordinates)
+			bin_item_color  = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSClipColor)
+			bin_item_type   = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSItemType)
 
 			#print(bin_item_color)
 

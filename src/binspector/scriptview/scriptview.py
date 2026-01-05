@@ -1,8 +1,8 @@
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..listview import treeview, binitems
+from ..listview import listview, binitems
 import avbutils
 
-class BSBinScriptView(treeview.BSBinTreeView):
+class BSBinScriptView(listview.BSBinListView):
 	"""Script view"""
 
 	def __init__(self, *args, **kwargs):
@@ -37,7 +37,10 @@ class BSBinScriptView(treeview.BSBinTreeView):
 		self.setItemDelegateForColumn(self.header().logicalIndex(0),delegate)
 
 		# Resize first section to accomodate frame
-		self.header().resizeSection(self.header().logicalIndex(0), self.header().sectionSize(self.header().logicalIndex(0)) + self._frame_size.width() + 16)
+		self.header().resizeSection(
+			self.header().logicalIndex(0),
+			self.header().sectionSize(self.header().logicalIndex(0)) + self._frame_size.width() + 16
+		)
 
 
 		self.header().setSectionsMovable(False)

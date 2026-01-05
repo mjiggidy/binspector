@@ -9,14 +9,14 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from . import proxystyles, scrollwidgets, widgetbars
 
-from ..listview import treeview
+from ..listview import listview
 from ..frameview import frameview
 from ..scriptview import scriptview
 
 from ..models import viewmodels
 from ..widgets import buttons
 
-from ..core.config import BSFrameViewConfig, BSScriptViewConfig
+from ..core.config import BSListViewConfig, BSFrameViewConfig, BSScriptViewConfig
 
 
 class BSBinContentsWidget(QtWidgets.QWidget):
@@ -56,7 +56,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top       = widgetbars.BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
 		
-		self._binitems_list     = treeview.BSBinTreeView()
+		self._binitems_list     = listview.BSBinListView()
 		self._binitems_frame    = frameview.BSBinFrameView()
 		self._binitems_script   = scriptview.BSBinScriptView()
 
@@ -115,6 +115,20 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
 		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
 
+		# NEW: Moving out from list view
+		self._bin_filter_model.columnsInserted.connect(
+			lambda parent_index, source_start, source_end:
+			self.assignItemDelegates(parent_index, source_start)
+		)
+		self._bin_filter_model.columnsMoved.connect(
+			lambda source_parent,
+				source_logical_start,
+				source_logical_end,
+				destination_parent,
+				destination_logical_start: # NOTE: Won't work for heirarchical models
+			self.assignItemDelegates(destination_parent, min(source_logical_start, destination_logical_start))
+		)
+
 		self._section_top.sig_frame_scale_changed  .connect(self._binitems_frame.setZoom)
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
@@ -142,6 +156,52 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.addAction(self._act_set_view_width_for_columns)
 		self._binitems_list.addAction(self._act_autofit_columns)
 
+	@QtCore.Slot(QtCore.QModelIndex, int)
+	def assignItemDelegates(self, parent_index:QtCore.QModelIndex, start_col_logical:int):
+
+		if parent_index.isValid():
+			logging.getLogger(__name__).error("Seems to be a child row? Weird. %s", str(parent_index))
+			return
+		
+		# List View
+		
+		# Start by getting the leftmost visual index
+		start_col_visual = self._binitems_list.header().visualIndex(start_col_logical)
+		
+		# For each col appearing visually after the start, map it to logical and assign its stuff
+		for col_visual in range(start_col_visual, self._binitems_list.header().count()):
+
+			col_logical = self._binitems_list.header().logicalIndex(col_visual)
+
+			col_id = self._bin_filter_model.headerData(
+				col_logical,
+				QtCore.Qt.Orientation.Horizontal,
+				viewmodels.viewmodelitems.BSBinColumnDataRoles.BSColumnID
+			)
+
+			col_format = self._bin_filter_model.headerData(
+				col_logical,
+				QtCore.Qt.Orientation.Horizontal,
+				viewmodels.viewmodelitems.BSBinColumnDataRoles.BSDataFormat
+			)
+
+			# Do specific column IDs first
+			if col_id in listview.delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID:
+				col_delegate = listview.delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[col_id](aspect_ratio=QtCore.QSize(4,3), padding=BSListViewConfig.DEFAULT_ITEM_PADDING)
+				
+
+			elif col_format in listview.delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID:
+				col_delegate = listview.delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID[col_format](aspect_ratio=QtCore.QSize(4,3), padding=BSListViewConfig.DEFAULT_ITEM_PADDING)
+
+			else:
+				col_delegate = self._binitems_list.itemDelegate()
+			
+			self._binitems_list.setItemDelegateForColumn(col_logical, col_delegate)
+
+
+			
+
+
 	@QtCore.Slot(object)
 	def setBinModel(self, bin_model:viewmodels.BSBinItemViewModel):
 		"""Set the bin item model for the bin"""
@@ -168,7 +228,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	# View Mode Widgets
 	###
 
-	def listView(self) -> treeview.BSBinTreeView:
+	def listView(self) -> listview.BSBinListView:
 		"""List View Mode widget"""
 
 		return self._binitems_list
@@ -180,18 +240,21 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	def scriptView(self) -> scriptview.BSBinScriptView:
 		"""Script View Mode widget"""
+		
 		return self._binitems_script
 	
 	@QtCore.Slot(object)
 	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
-		"""Set the current view mode"""
+		"""Set the current bin view mode"""
 
-		#print("SETTING VIEW MODE TO ", view_mode)
+		logging.getLogger(__name__).debug("Setting bin view mode to %s", str(view_mode))
 
 		old_view_mode = avbutils.bins.BinDisplayModes(self._section_main.currentIndex())
 
 		self._section_main.setCurrentIndex(int(view_mode))
-		self._section_top.setViewMode(view_mode)
+		self._section_top .setViewMode(view_mode)
+
+		# Sync selection from old view to new view
 
 		if view_mode == avbutils.bins.BinDisplayModes.FRAME:
 			self._binitems_frame.scene().setSelectedItems(
@@ -317,6 +380,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setBinPalette(self, palette:QtGui.QPalette):
+		"""Set the color palette for the bin"""
 
 		if self._bin_palette == palette:
 			return
@@ -327,7 +391,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	
 	@QtCore.Slot(QtGui.QFont)
 	def setBinFont(self, bin_font:QtGui.QFont):
-		"""Set the font for the bin."""
+		"""Set the font for the bin"""
 		
 		if self._bin_font == bin_font:
 			return

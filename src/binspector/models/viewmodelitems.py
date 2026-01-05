@@ -5,6 +5,33 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from functools import singledispatch
 
 
+class BSBinItemDataRoles(enum.IntEnum):
+	"""Item Data Roles for Bin Items (extends `QtCore.Qt.ItemDataRole`)"""
+
+	BSItemName         = QtCore.Qt.ItemDataRole.UserRole + 1
+	BSItemType         = enum.auto()
+	BSClipColor        = enum.auto()
+	BSFrameCoordinates = enum.auto()
+	BSFrameThumbnail   = enum.auto()
+
+class BSBinColumnDataRoles(enum.IntEnum):
+	"""Item Data Roles for Bin Column Headers (extends `QtCore.Qt.ItemDataRole`)"""
+
+	BSColumnID         = QtCore.Qt.ItemDataRole.UserRole + 1
+	"""The ID of the column data (Unique for Name, Tape, Start, etc)"""
+
+	BSDataFormat       = enum.auto()
+	"""The ID of the data type (Unique for String, Timecode, etc)"""
+
+	BSColumnIsHidden   = enum.auto()
+	"""Is the column hidden from view"""
+
+	BSColumnWidth      = enum.auto()
+	"""User-specified column width, if set"""
+
+	BSColumnHash       = enum.auto()
+	"""Unique ID for column ID + display text (useful for User fields)"""
+
 class LBAbstractViewHeaderItem:
 	"""An abstract header item for TRT views"""
 
@@ -40,14 +67,14 @@ class LBAbstractViewHeaderItem:
 		"""Precalculate Header Data"""
 
 		self._data_roles.update({
-			QtCore.Qt.ItemDataRole.DisplayRole: str(self._display_name),
-			QtCore.Qt.ItemDataRole.DecorationRole: self._icon,
-			QtCore.Qt.ItemDataRole.UserRole:    self,
-			QtCore.Qt.ItemDataRole.UserRole+1:  self._field_id, # Think I wanna do this for bin headings
-			QtCore.Qt.ItemDataRole.UserRole+2:  self._format_id,
-			QtCore.Qt.ItemDataRole.UserRole+3:  self._is_hidden,
-			QtCore.Qt.ItemDataRole.UserRole+4:  self._field_width,
-			QtCore.Qt.ItemDataRole.UserRole+5:  self._field_name,
+			QtCore.Qt.ItemDataRole.DisplayRole:      str(self._display_name),
+			QtCore.Qt.ItemDataRole.DecorationRole:   self._icon,
+			QtCore.Qt.ItemDataRole.UserRole:         self,
+			BSBinColumnDataRoles  .BSColumnID:       self._field_id, # Think I wanna do this for bin headings
+			BSBinColumnDataRoles  .BSDataFormat:     self._format_id,
+			BSBinColumnDataRoles  .BSColumnIsHidden: self._is_hidden,
+			BSBinColumnDataRoles  .BSColumnWidth:    self._field_width,
+			BSBinColumnDataRoles  .BSColumnHash:     self._field_name,
 		 })
 	
 	def data(self, role:QtCore.Qt.ItemDataRole) -> typing.Any:
@@ -411,3 +438,4 @@ def _(item:datetime.datetime):
 @get_viewitem_for_item.register
 def _(item:Timecode):
 	return TRTTimecodeViewItem(item)
+

@@ -1,15 +1,8 @@
-import typing, enum
+import typing
 from PySide6 import QtCore
 import avbutils
+
 from . import viewmodelitems
-
-class BSBinItemDataRoles(enum.IntEnum):
-
-	BSItemName         = QtCore.Qt.ItemDataRole.UserRole + 1
-	BSItemType         = enum.auto()
-	BSClipColor        = enum.auto()
-	BSFrameCoordinates = enum.auto()
-	BSFrameThumbnail   = enum.auto()
 
 class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 	"""QSortFilterProxyModel that implements bin view settings and filters"""
@@ -298,16 +291,16 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		bin_item_data = self._bin_items[index.row()]
 
 		# Do row stuff first
-		if role == BSBinItemDataRoles.BSItemName:
+		if role == viewmodelitems.BSBinItemDataRoles.BSItemName:
 			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Name"]).data(QtCore.Qt.ItemDataRole.DisplayRole)
 		
-		elif role == BSBinItemDataRoles.BSFrameCoordinates:
+		elif role == viewmodelitems.BSBinItemDataRoles.BSFrameCoordinates:
 			return self._frame_locations[index.row()]
 		
-		elif role == BSBinItemDataRoles.BSClipColor:
+		elif role == viewmodelitems.BSBinItemDataRoles.BSClipColor:
 			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Color"]).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
-		elif role == BSBinItemDataRoles.BSItemType:
+		elif role == viewmodelitems.BSBinItemDataRoles.BSItemType:
 			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES[""]).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 
 		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+1)
