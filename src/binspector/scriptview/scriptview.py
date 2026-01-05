@@ -16,14 +16,13 @@ class BSBinScriptView(listview.BSBinListView):
 
 		super().__init__(*args, **kwargs)
 
-		self.header().setSectionsMovable(False)
-		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
-		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.SingleSelection)
-		self.setSortingEnabled(False)
-		self.setDragEnabled(True)
+
 		#self.setAlternatingRowColors(False)
 
-		self._frame_size  = QtCore.QSizeF(16, 9)
+		self.verticalScrollBar().valueChanged.connect(self.viewport().update)
+		self.horizontalScrollBar().valueChanged.connect(self.viewport().update)
+
+		self._frame_size  = QtCore.QSizeF(16, 9) * 2
 		self._frame_scale = BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_START
 
 		self._item_padding = BSScriptViewConfig.DEFAULT_ITEM_PADDING
@@ -102,8 +101,14 @@ class BSBinScriptView(listview.BSBinListView):
 		# Resize first section to accomodate frame
 		self.header().resizeSection(
 			self.header().logicalIndex(0),
-			self.header().sectionSize(self.header().logicalIndex(0)) + self.frameRect().width() + 16
+			self.header().sectionSize(self.header().logicalIndex(0)) + self.frameRect().width()
 		)
+
+		self.header().setSectionsMovable(False)
+		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
+		self.setSortingEnabled(False)
+		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.SingleSelection)
+		self.setDragEnabled(True)
 
 	def rowsInserted(self, parent:QtCore.QModelIndex, start:int, end:int):
 		pass
@@ -122,8 +127,9 @@ class BSBinScriptView(listview.BSBinListView):
 		
 		item_delegate = self.itemDelegate(index)
 		
+		
 		super().drawRow(painter, options, index)
-
+		
 
 		#print(f"{options.rect=} {item_delegate.itemPadding()=}")
 
@@ -133,6 +139,7 @@ class BSBinScriptView(listview.BSBinListView):
 				options.rect.top()  +self._item_padding.top(),
 			)
 		)
+		
 
 		fields      = index.model().sourceModel().fields()
 
@@ -174,4 +181,5 @@ class BSBinScriptView(listview.BSBinListView):
 
 		painter.restore()
 
+		
 #		self.viewport().update(options.rect) # NOTE: Not just active_rect -- Scrolling needs to repaint the whole thing
