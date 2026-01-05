@@ -420,11 +420,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	###
 
 	@QtCore.Slot(object)
-	def setItemPadding(self, padding:QtCore.QMargins):
+	def setItemPadding(self, padding:QtCore.QMarginsF):
 		"""Set list item padding"""
 
 		self._default_delegate_list  .setItemPadding(padding)
-		self._default_delegate_script.setItemPadding(padding)
+		script_pad = QtCore.QMarginsF(padding)
+		script_pad.setBottom(padding.bottom() + self._binitems_script._frame_size.height())
+		self._default_delegate_script.setItemPadding(script_pad)
 
 	@QtCore.Slot(str)
 	def focusBinColumn(self, focus_field_name:str) -> bool:
