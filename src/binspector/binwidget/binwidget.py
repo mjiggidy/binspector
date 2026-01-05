@@ -338,12 +338,14 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	# Bin Views and Filters
 	###
 
-	@QtCore.Slot(object, object, object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int):
+	@QtCore.Slot(object, object, int, int)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int, script_scale:int):
 
 		self.setBinViewName(bin_view.name)
 		self.frameView().setZoom(frame_scale)
 		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
+		
+		self.scriptView().setFrameScale(script_scale)
 
 		#print("Okay haha...")
 
