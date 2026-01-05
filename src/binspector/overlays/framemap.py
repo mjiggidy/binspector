@@ -257,7 +257,7 @@ class BSThumbnailMapOverlay(abstractoverlay.BSAbstractOverlay):
 		#print(f"Initially propose: {self._thumb_display_offset=} {proposed_offset=} {final_offset=} {self.safeCanvas()=}")
 		self._thumb_display_offset = final_offset
 
-		print("Final offset ", final_offset)
+		#print("Final offset ", final_offset)
 
 		new_rect = self.finalThumbnailRect()
 		self.update(new_rect)

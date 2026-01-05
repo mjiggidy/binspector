@@ -448,7 +448,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._bin_widget.listView().model().setDynamicSortFilter(True)
 
 		for col in range(self._bin_widget.listView().header().count()):
-			print("Haha...")
+			#print("Haha...")
 			self._bin_widget.listView().setColumnWidthFromBinView(col, True)
 		
 		if self._man_binview.defaultSortColumns():
