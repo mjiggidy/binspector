@@ -12,6 +12,7 @@ class BSBinScriptView(listview.BSBinListView):
 	sig_frame_scale_range_changed = QtCore.Signal(float) # TODO
 	sig_item_padding_changed      = QtCore.Signal(QtCore.QMarginsF)
 
+
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -27,6 +28,10 @@ class BSBinScriptView(listview.BSBinListView):
 
 		self._item_padding = BSScriptViewConfig.DEFAULT_ITEM_PADDING
 		
+		# NOTE: Need special first delegate -- here? Or probably just deal with it
+		# on layout changes
+		self._first_col_delegate = None
+	
 		self.applyHeaderConstraints()
 
 	@QtCore.Slot(object)
