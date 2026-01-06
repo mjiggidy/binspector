@@ -88,21 +88,33 @@ class BSBinScriptView(listview.BSBinListView):
 
 		))
 
+		script_pad.setLeft(self.frameRect().width() + script_pad.left() + script_pad.right())
+
 		#print(f"{old_pad=} {script_pad=}")
 
 		for col in range(self.header().count()):
-			self.itemDelegateForColumn(col).setItemPadding(script_pad)
+
+			if col == self.header().logicalIndex(0):
+				first_pad = QtCore.QMarginsF(script_pad)
+				first_pad.setLeft(self.frameRect().width() + script_pad.left() + script_pad.right())
+				self.itemDelegateForColumn(col).setItemPadding(first_pad)
+
+				self.resizeColumnToContents(col)
+			else:
+				self.itemDelegateForColumn(col).setItemPadding(script_pad)
 
 	def applyHeaderConstraints(self):
 		"""Header constraints"""
 
-		self.resizeColumnToContents(self.header().logicalIndex(0))
+		# Since I copy header from list view to script view, need to restore a lot of constraints
+
+#		self.resizeColumnToContents(self.header().logicalIndex(0))
 
 		# Resize first section to accomodate frame
-		self.header().resizeSection(
-			self.header().logicalIndex(0),
-			self.header().sectionSize(self.header().logicalIndex(0)) + self.frameRect().width()
-		)
+#		self.header().resizeSection(
+#			self.header().logicalIndex(0),
+#			self.header().sectionSize(self.header().logicalIndex(0)) + self.frameRect().width()
+#		)
 
 		self.header().setSectionsMovable(False)
 		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
@@ -150,13 +162,13 @@ class BSBinScriptView(listview.BSBinListView):
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
-				frame_rect.right() + item_delegate.itemPadding().left(),
-				options.rect.bottom() - item_delegate.itemPadding().bottom(),
+				frame_rect.right() + self._item_padding.left(),
+				options.rect.bottom() - item_delegate.itemPadding().bottom() + item_delegate.itemPadding().top(),
 			),
 
 			QtCore.QPointF(
 				options.rect.right() - item_delegate.itemPadding().right(),
-				options.rect.bottom() - item_delegate.itemPadding().top(),
+				frame_rect.bottom()
 			)
 		)
 

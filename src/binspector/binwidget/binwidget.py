@@ -281,6 +281,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			list_headers = self._binitems_list.header().saveState()
 			self._binitems_script.header().restoreState(list_headers)
 			self._binitems_script.applyHeaderConstraints()
+			self._binitems_script.updateDelegates()
 
 		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
 

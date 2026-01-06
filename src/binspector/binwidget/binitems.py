@@ -35,7 +35,7 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		# Passing invalid model index seems to work ok
 		self.sizeHintChanged.emit(QtCore.QModelIndex())
 	
-	def itemPadding(self) -> QtCore.QMarginsF:
+	def itemPadding(self) -> QtCore.QMargins:
 
 		return self._padding
 
@@ -80,6 +80,9 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 			elided_text,
 			QtGui.QPalette.ColorRole.HighlightedText if bool(kewl_options.state & QtWidgets.QStyle.StateFlag.State_Selected) else QtGui.QPalette.ColorRole.Text
 		)
+#		if self._padding.left() != self._padding.right():
+#			print(self._padding)
+#		painter.drawRect(kewl_options.rect)
 
 		#return super().paint(painter, kewl_options, index)
 
