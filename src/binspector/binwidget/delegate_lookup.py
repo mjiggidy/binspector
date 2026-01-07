@@ -70,6 +70,7 @@ class BSDelegateProvider(QtCore.QObject):
 		self._field_delegates  :FieldLookup   = dict()
 
 	def setView(self, view:QtWidgets.QAbstractItemView):
+		"""Set the `QAbstractItemview` which will use the delegates"""
 
 		if self._view == view:
 			return
@@ -80,6 +81,7 @@ class BSDelegateProvider(QtCore.QObject):
 		self.sig_view_changed.emit(view)
 
 	def view(self) -> QtWidgets.QAbstractItemView:
+		"""The view for which the delegates will be used"""
 
 		return self._view
 	
@@ -101,6 +103,7 @@ class BSDelegateProvider(QtCore.QObject):
 		return self._view.itemDelegate()
 	
 	def setDelegateForFormat(self, column_format_id:avbutils.bins.BinColumnFormat, delegate:binitems.BSGenericItemDelegate):
+		"""Set the item delegate for a given format"""
 
 		if column_format_id in self._format_delegates and self._format_delegates[column_format_id] == delegate:
 			return
@@ -110,6 +113,7 @@ class BSDelegateProvider(QtCore.QObject):
 		self.sig_format_delegate_changed.emit(column_format_id, delegate)
 
 	def setDelegateForField(self, column_field_id:int, delegate:binitems.BSGenericItemDelegate):
+		"""Set the item delegate for a given field"""
 
 		if column_field_id in  self._field_delegates and self._field_delegates[column_field_id] == delegate:
 			return
@@ -118,6 +122,7 @@ class BSDelegateProvider(QtCore.QObject):
 		self.sig_field_delegate_changed.emit(column_field_id, delegate)
 
 	def delegates(self) -> set[binitems.BSGenericItemDelegate]:
+		"""Get all known item delegate instances (does not include unique instances)"""
 
 		import itertools
 		return set(itertools.chain(self._format_delegates.values(), self._field_delegates.values()))
