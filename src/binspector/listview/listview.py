@@ -6,6 +6,7 @@ from ..models import viewmodels
 from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
+from ..binwidget import delegate_lookup
 
 class BSBinListView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
@@ -20,7 +21,8 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 		super().__init__(*args, **kwargs)
 
-		self._column_select_watcher = columnselect.BSColumnSelectWatcher()
+		self._delegate_provider     = delegate_lookup.BSDelegateProvider(view=self)
+		self._column_select_watcher = columnselect.BSColumnSelectWatcher(parent=self)
 
 		self.setModel(viewmodels.BSBinViewProxyModel())
 
@@ -34,12 +36,13 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 	def setSelectionModel(self, selectionModel):
 
-		if selectionModel != self.selectionModel():
+		if selectionModel == self.selectionModel():
+			return
 
-			logging.getLogger(__name__).error("BinTreeView changed selection model to %s", str(selectionModel))
-			self.sig_selection_model_changed.emit(selectionModel)
+		logging.getLogger(__name__).error("BinTreeView changed selection model to %s", str(selectionModel))
+		self.sig_selection_model_changed.emit(selectionModel)
 
-			return super().setSelectionModel(selectionModel)
+		return super().setSelectionModel(selectionModel)
 
 	@QtCore.Slot(object)
 	def setModel(self, model:viewmodels.BSBinViewProxyModel):
@@ -60,6 +63,11 @@ class BSBinListView(treeview.BSTreeViewBase):
 		super().setModel(model)
 		
 		#self.setCustomDelegates()
+
+	def delegateProvider(self) -> delegate_lookup.BSDelegateProvider:
+		"""Get the thing that looks up delegates for the thing"""
+
+		return self._delegate_provider
 
 	@QtCore.Slot(object)
 	def selectSectionFromCoordinates(self, viewport_coords:QtCore.QPoint):

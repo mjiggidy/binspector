@@ -103,6 +103,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# NOTE: Set AFTER `view.setModel()`.  Got me good.
 		self._binitems_list.setSelectionModel(self._selection_model)
 		self._binitems_script.setSelectionModel(self._selection_model)
+
+		self._binitems_list.delegateProvider().setDefaultItemDelegate(self._default_delegate_list)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
 		self._binitems_list  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
@@ -209,8 +211,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			
 			#self._default_delegate_list.setItemPadding(BSListViewConfig.DEFAULT_ITEM_PADDING)
 			
-			
-			self._binitems_list.setItemDelegateForColumn(col_logical, self._default_delegate_list)
+			# Note: Maybe just do this in the delegateProvider? Watch the view for column insertions?
+			col_delegate = self._binitems_list.delegateProvider().delegateForColumn(col_logical)
+			self._binitems_list.setItemDelegateForColumn(col_logical, col_delegate)
+			#print(f"Got column delegate for row: {col_delegate}")
+
+			#self._binitems_list.setItemDelegateForColumn(col_logical, self._default_delegate_list)
 			self._binitems_script.setItemDelegateForColumn(col_logical, self._default_delegate_script)
 
 
