@@ -3,6 +3,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from ..core.config import BSScriptViewConfig
 
 from ..listview import listview
+from ..binwidget import delegate_lookup
 import avbutils
 
 class BSBinScriptView(listview.BSBinListView):
@@ -30,9 +31,15 @@ class BSBinScriptView(listview.BSBinListView):
 		
 		# NOTE: Need special first delegate -- here? Or probably just deal with it
 		# on layout changes
+		self._delegate_provider  = delegate_lookup.BSDelegateProvider(view=self)
 		self._first_col_delegate = None
+
 	
 		self.applyHeaderConstraints()
+	
+	def delegateProvider(self) -> delegate_lookup.BSDelegateProvider:
+
+		return self._delegate_provider
 
 	@QtCore.Slot(object)
 	def setFrameScale(self, frame_scale:float):
