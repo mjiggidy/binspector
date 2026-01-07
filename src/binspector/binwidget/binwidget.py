@@ -104,7 +104,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binitems_list.setSelectionModel(self._selection_model)
 		self._binitems_script.setSelectionModel(self._selection_model)
 
-		self._binitems_list.delegateProvider().setDefaultItemDelegate(self._default_delegate_list)
+		self._binitems_list  .delegateProvider().setDefaultItemDelegate(self._default_delegate_list)
+		self._binitems_script.delegateProvider().setDefaultItemDelegate(self._default_delegate_script)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
 		self._binitems_list  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
@@ -126,6 +127,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			lambda parent_index, source_start, source_end:
 			self.assignItemDelegates(parent_index, source_start)
 		)
+		
 		self._bin_filter_model.columnsMoved.connect(
 			lambda source_parent,
 				source_logical_start,
@@ -217,6 +219,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			#print(f"Got column delegate for row: {col_delegate}")
 
 			#self._binitems_list.setItemDelegateForColumn(col_logical, self._default_delegate_list)
+			col_delegate = self._binitems_script.delegateProvider().delegateForColumn(col_logical)
 			self._binitems_script.setItemDelegateForColumn(col_logical, self._default_delegate_script)
 
 
@@ -286,6 +289,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 			list_headers = self._binitems_list.header().saveState()
 			self._binitems_script.header().restoreState(list_headers)
+			self.assignItemDelegates(QtCore.QModelIndex(), self._binitems_script.header().logicalIndex(0))
 			self._binitems_script.applyHeaderConstraints()
 			self._binitems_script.updateDelegates()
 
