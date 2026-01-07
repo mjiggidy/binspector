@@ -120,12 +120,6 @@ class BSDelegateProvider(QtCore.QObject):
 
 		self._field_delegates[column_field_id] = delegate
 		self.sig_field_delegate_changed.emit(column_field_id, delegate)
-
-	def delegates(self) -> set[binitems.BSGenericItemDelegate]:
-		"""Get all known item delegate instances (does not include unique instances)"""
-
-		import itertools
-		return set(itertools.chain(self._format_delegates.values(), self._field_delegates.values()))
 	
 	def delegateForFormat(self, format:avbutils.bins.BinColumnFormat, /, default_ok:bool=True) -> binitems.BSGenericItemDelegate|None:
 		"""Return the delegate for the given `avbutils.bins.BinColumnFormat"""
@@ -155,7 +149,6 @@ class BSDelegateProvider(QtCore.QObject):
 		# Return delegate instance
 		return self._field_delegates[field]
 		
-
 	def delegateForColumn(self,
 		logical_column_index:int,
 		*args,
@@ -173,22 +166,22 @@ class BSDelegateProvider(QtCore.QObject):
 
 			if field in self._FIELD_DELEGATE_FACTORIES:
 				return self._FIELD_DELEGATE_FACTORIES[field]()
-			
 			elif format in self._FORMAT_DELEGATE_FACTORIES[format]:
 				return self._FORMAT_DELEGATE_FACTORIES[format]()
-			
 			else:
 				return self.defaultItemDelegate()
-		
 			
 		else:
 
 			if (delegate := self.delegateForField(field, default_ok=False)) is not None:
 				return delegate
-			
 			elif (delegate := self.delegateForFormat(format, default_ok=False)) is not None:
 				return delegate
-			
 			else:
 				return self.defaultItemDelegate()
-		
+
+	def delegates(self) -> set[binitems.BSGenericItemDelegate]:
+		"""Get all known item delegate instances (does not include unique instances)"""
+
+		import itertools
+		return set(itertools.chain(self._format_delegates.values(), self._field_delegates.values()))
