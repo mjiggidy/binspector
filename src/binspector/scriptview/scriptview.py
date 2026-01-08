@@ -87,8 +87,9 @@ class BSBinScriptView(listview.BSBinListView):
 			return
 		
 		self._frame_scale = frame_scale
-
-#		self.updateDelegates()
+		
+		#self._delegate_provider.refreshDelegates()
+		self.refreshDelegatePadding()
 
 		self.sig_frame_scale_changed.emit(frame_scale)
 
@@ -118,11 +119,13 @@ class BSBinScriptView(listview.BSBinListView):
 			return
 		
 		self._item_padding = padding
-		self.updateDelegates()
+		
+		self.refreshDelegatePadding()
 		
 		self.sig_item_padding_changed.emit(padding)
 
-	def updateDelegates(self):
+	def refreshDelegatePadding(self):
+		"""Re-calculate and re-apply padding data when size stuff changes"""
 
 		script_pad = QtCore.QMarginsF(self._item_padding)
 		old_pad = QtCore.QMarginsF(script_pad)
