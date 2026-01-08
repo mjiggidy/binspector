@@ -32,9 +32,48 @@ class BSBinScriptView(listview.BSBinListView):
 		# NOTE: Need special first delegate -- here? Or probably just deal with it
 		# on layout changes
 		self._delegate_provider  = delegate_lookup.BSDelegateProvider(view=self)
-		self._first_col_delegate = None
-
 	
+		self.applyHeaderConstraints()
+
+		self.header().sectionCountChanged.connect(self._delegate_provider.refreshDelegates)
+
+	def syncFromHeader(self, header:QtWidgets.QHeaderView):
+		"""Sync header from another header"""
+
+		self.header().restoreState(
+			header.saveState()
+		)
+
+		self._delegate_provider.refreshDelegates()
+
+		# Add additional padding to first-column delegate
+		first_col_logical = self.header().logicalIndex(0)
+		first_col_width   = self.header().sectionSize(first_col_logical)
+
+		new_del = self._delegate_provider.delegateForColumn(
+			first_col_logical,
+			unique_instance=True
+		)
+
+		# How much more padding to add
+		addtl_padding = self.frameRect().right() + self._item_padding.right()
+
+		new_padding = QtCore.QMarginsF(self._item_padding)
+		
+		new_padding.setLeft(self._item_padding.left() + addtl_padding)
+		new_padding.setBottom(max(
+			self.frameRect().height(),
+			self._item_padding.bottom()
+		))
+		new_del.setItemPadding(new_padding)
+
+		self._delegate_provider.setDelegateForColumn(first_col_logical, new_del)
+		
+		self.header().resizeSection(
+			first_col_logical,
+			first_col_width + self.frameRect().right() + self._item_padding.right()
+		)
+
 		self.applyHeaderConstraints()
 	
 	def delegateProvider(self) -> delegate_lookup.BSDelegateProvider:
@@ -49,8 +88,7 @@ class BSBinScriptView(listview.BSBinListView):
 		
 		self._frame_scale = frame_scale
 
-		self.applyHeaderConstraints()
-		self.updateDelegates()
+#		self.updateDelegates()
 
 		self.sig_frame_scale_changed.emit(frame_scale)
 
@@ -77,15 +115,9 @@ class BSBinScriptView(listview.BSBinListView):
 		"""Set item padding and add frame size padding"""
 
 		if self._item_padding == padding:
-			import logging
-			logging.getLogger(__name__).error("NO %s", str(padding))
 			return
 		
 		self._item_padding = padding
-
-		#print("ITEM PADDING NOW", self._item_padding)
-
-		self.applyHeaderConstraints()
 		self.updateDelegates()
 		
 		self.sig_item_padding_changed.emit(padding)
@@ -100,33 +132,27 @@ class BSBinScriptView(listview.BSBinListView):
 
 		))
 
-		script_pad.setLeft(self.frameRect().width() + script_pad.left() + script_pad.right())
+#		script_pad.setLeft(self.frameRect().width() + script_pad.left() + script_pad.right())
 
 		#print(f"{old_pad=} {script_pad=}")
 
+		first_section_logical = self.header().logicalIndex(0)
+
 		for col in range(self.header().count()):
 
-			if col == self.header().logicalIndex(0):
+			if col == first_section_logical:
 				first_pad = QtCore.QMarginsF(script_pad)
 				first_pad.setLeft(self.frameRect().width() + script_pad.left() + script_pad.right())
-				self.itemDelegateForColumn(col).setItemPadding(first_pad)
+				self._delegate_provider.delegateForColumn(col).setItemPadding(first_pad)
 
 				self.resizeColumnToContents(col)
 			else:
-				self.itemDelegateForColumn(col).setItemPadding(script_pad)
+				self._delegate_provider.delegateForColumn(col).setItemPadding(script_pad)
 
 	def applyHeaderConstraints(self):
 		"""Header constraints"""
 
 		# Since I copy header from list view to script view, need to restore a lot of constraints
-
-#		self.resizeColumnToContents(self.header().logicalIndex(0))
-
-		# Resize first section to accomodate frame
-#		self.header().resizeSection(
-#			self.header().logicalIndex(0),
-#			self.header().sectionSize(self.header().logicalIndex(0)) + self.frameRect().width()
-#		)
 
 		self.header().setSectionsMovable(False)
 		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)

@@ -64,9 +64,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._binstats_list     = scrollwidgets.BSBinStatsLabel()
 		self._binstats_frame    = scrollwidgets.BSBinStatsLabel()
 
-		self._default_delegate_list   = binitems.BSGenericItemDelegate()
-		self._default_delegate_script = binitems.BSGenericItemDelegate()
-
 		# Create proxy style from application style for potential horizontal scrollbar height mods
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)
 
@@ -103,9 +100,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# NOTE: Set AFTER `view.setModel()`.  Got me good.
 		self._binitems_list.setSelectionModel(self._selection_model)
 		self._binitems_script.setSelectionModel(self._selection_model)
-
-		self._binitems_list  .delegateProvider().setDefaultItemDelegate(self._default_delegate_list)
-		self._binitems_script.delegateProvider().setDefaultItemDelegate(self._default_delegate_script)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
 		self._binitems_list  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
@@ -121,21 +115,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_filter_model.rowsRemoved   .connect(self.updateBinStats)
 		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
 		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
-
-		# NEW: Moving out from list view
-		self._bin_filter_model.columnsInserted.connect(
-			lambda parent_index, source_start, source_end:
-			self.assignItemDelegates(parent_index, source_start)
-		)
-		
-		self._bin_filter_model.columnsMoved.connect(
-			lambda source_parent,
-				source_logical_start,
-				source_logical_end,
-				destination_parent,
-				destination_logical_start: # NOTE: Won't work for heirarchical models
-			self.assignItemDelegates(destination_parent, min(source_logical_start, destination_logical_start))
-		)
 
 		self._section_top.sig_frame_scale_changed  .connect(self._binitems_frame.setZoom)
 		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
@@ -167,62 +146,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._binitems_list.addAction(self._act_set_view_width_for_columns)
 		self._binitems_list.addAction(self._act_autofit_columns)
-
-	@QtCore.Slot(QtCore.QModelIndex, int)
-	def assignItemDelegates(self, parent_index:QtCore.QModelIndex, start_col_logical:int):
-
-		if parent_index.isValid():
-			logging.getLogger(__name__).error("Seems to be a child row? Weird. %s", str(parent_index))
-			return
-		
-		# List View
-		
-		# Start by getting the leftmost visual index
-		start_col_visual = self._binitems_list.header().visualIndex(start_col_logical)
-		
-		# For each col appearing visually after the start, map it to logical and assign its stuff
-		for col_visual in range(start_col_visual, self._binitems_list.header().count()):
-
-			col_logical = self._binitems_list.header().logicalIndex(col_visual)
-
-			col_id = self._bin_filter_model.headerData(
-				col_logical,
-				QtCore.Qt.Orientation.Horizontal,
-				viewmodels.viewmodelitems.BSBinColumnDataRoles.BSColumnID
-			)
-
-			col_format = self._bin_filter_model.headerData(
-				col_logical,
-				QtCore.Qt.Orientation.Horizontal,
-				viewmodels.viewmodelitems.BSBinColumnDataRoles.BSDataFormat
-			)
-
-			# Do specific column IDs first
-			if col_id in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID:
-				col_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[col_id]( padding=BSListViewConfig.DEFAULT_ITEM_PADDING)
-				
-
-			elif col_format in delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID:
-				col_delegate = delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID[col_format]( padding=BSListViewConfig.DEFAULT_ITEM_PADDING)
-
-			else:
-				col_delegate = self._binitems_list.itemDelegate()
-			
-			# LOL: Just default for now
-			
-			
-			#self._default_delegate_list.setItemPadding(BSListViewConfig.DEFAULT_ITEM_PADDING)
-			
-			# Note: Maybe just do this in the delegateProvider? Watch the view for column insertions?
-			col_delegate = self._binitems_list.delegateProvider().delegateForColumn(col_logical)
-			self._binitems_list.setItemDelegateForColumn(col_logical, col_delegate)
-			#print(f"Got column delegate for row: {col_delegate}")
-
-			#self._binitems_list.setItemDelegateForColumn(col_logical, self._default_delegate_list)
-			col_delegate = self._binitems_script.delegateProvider().delegateForColumn(col_logical)
-			self._binitems_script.setItemDelegateForColumn(col_logical, self._default_delegate_script)
-
-
 			
 
 
@@ -281,31 +204,49 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Sync selection from old view to new view
 
 		if view_mode == avbutils.bins.BinDisplayModes.FRAME:
+			
+			# Entering frame mode
+			# Sync selected items from selection model
+			
 			self._binitems_frame.scene().setSelectedItems(
 				list(x.row() for x in self._selection_model.selectedRows())
 			)
 
-		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
+		elif old_view_mode == avbutils.bins.BinDisplayModes.LIST:
 
-			list_headers = self._binitems_list.header().saveState()
-			self._binitems_script.header().restoreState(list_headers)
-			self.assignItemDelegates(QtCore.QModelIndex(), self._binitems_script.header().logicalIndex(0))
-			self._binitems_script.applyHeaderConstraints()
-			self._binitems_script.updateDelegates()
+			# Leaving list mode?
+			# Sync headers over to Script
+
+			self.syncHeaders()
 
 		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
+
+			# Leaving Frame mode
+			# Sync selection back to selection model
 
 			self._selection_model.clearSelection()
 
 			for row, item in enumerate(self._binitems_frame.scene()._bin_items):
-				if item.isSelected():
 
-					self._selection_model.select(
-						self._bin_filter_model.index(row, 0, QtCore.QModelIndex()),
-						QtCore.QItemSelectionModel.SelectionFlag.Select|QtCore.QItemSelectionModel.SelectionFlag.Rows
-					)
+				if not item.isSelected():
+					continue
+
+				self._selection_model.select(
+					self._bin_filter_model.index(row, 0, QtCore.QModelIndex()),
+					QtCore.QItemSelectionModel.SelectionFlag.Select | \
+					  QtCore.QItemSelectionModel.SelectionFlag.Rows
+				)
 
 		self.sig_view_mode_changed.emit(view_mode)
+
+	def syncHeaders(self):
+		"""Synchronize headers"""
+
+		# For now, treating List view as hero.
+		# In Avid, Script view header is immutable, follows List view
+		# I don't know... maybe script view could do this
+
+		self._binitems_script.syncFromHeader(self._binitems_list.header())
 
 	def viewMode(self) -> avbutils.BinDisplayModes:
 		"""Current view mode"""
@@ -398,9 +339,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._bin_filter_model.setSiftOptions(sift_options)
 
-#	@QtCore.Slot(object)
-#	def setDisplayMode(self, mode:avbutils.BinDisplayModes):
-#		pass
 
 	###
 	# Bin Appearance
@@ -440,9 +378,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setItemPadding(self, padding:QtCore.QMarginsF):
 		"""Set list item padding"""
 
-		self._default_delegate_list.setItemPadding(padding)
-		logging.getLogger(__name__).error("Padding %s", str(padding))
+		self._binitems_list  .setItemPadding(padding)
 		self._binitems_script.setItemPadding(padding)
+		#logging.getLogger(__name__).error("Padding %s", str(padding))
 
 	@QtCore.Slot(str)
 	def focusBinColumn(self, focus_field_name:str) -> bool:

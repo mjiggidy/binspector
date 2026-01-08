@@ -14,25 +14,29 @@ class BSBinListView(treeview.BSTreeViewBase):
 	sig_default_sort_columns_changed = QtCore.Signal(object)
 	"""TODO: HMMMMMM"""
 
-	sig_selection_model_changed = QtCore.Signal(object)
+	sig_selection_model_changed      = QtCore.Signal(object)
 	"""Selection model was changed"""
+
+	sig_item_padding_changed         = QtCore.Signal(object)
+
 
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._delegate_provider     = delegate_lookup.BSDelegateProvider(view=self)
-		self._column_select_watcher = columnselect.BSColumnSelectWatcher(parent=self)
-
 		self.setModel(viewmodels.BSBinViewProxyModel())
-
 		self.setSelectionBehavior(BSListViewConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSListViewConfig.DEFAULT_SELECTION_MODE)
 
-		# TODO/TEMP: Prep clip color icons
+		self._delegate_provider     = delegate_lookup.BSDelegateProvider(view=self)
+		self._column_select_watcher = columnselect.BSColumnSelectWatcher(parent=self)
+		self._item_padding          = BSListViewConfig.DEFAULT_ITEM_PADDING
 
 		self.header().viewport().installEventFilter(self._column_select_watcher)
 		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
+
+		self.header().sectionCountChanged.connect(self._delegate_provider.refreshDelegates)
+		
 
 	def setSelectionModel(self, selectionModel):
 
@@ -52,9 +56,6 @@ class BSBinListView(treeview.BSTreeViewBase):
 		
 		elif not isinstance(model, viewmodels.BSBinViewProxyModel):
 			raise TypeError(f"Model must be a BSBinViewProxyModel (got {type(model)})")
-		
-
-#		self.setItemDelegate(binitems.BSGenericItemDelegate(padding=BSListViewConfig.DEFAULT_ITEM_PADDING))
 		
 		# TODO: Disconnect old model...?
 		
@@ -294,10 +295,24 @@ class BSBinListView(treeview.BSTreeViewBase):
 		)
 
 		if column_width:
-			self.setColumnWidth(col_index_logical, column_width + BSListViewConfig.DEFAULT_ITEM_PADDING.left() + BSListViewConfig.DEFAULT_ITEM_PADDING.right())
+			self.setColumnWidth(col_index_logical, column_width + self._item_padding.left() + self._item_padding.right())
 
 		elif autosize_if_undefined:
 			self.resizeColumnToContents(col_index_logical)
+
+	@QtCore.Slot(QtCore.QMarginsF)
+	def setItemPadding(self, padding:QtCore.QMarginsF):
+		"""Set item padding and add frame size padding"""
+
+		if self._item_padding == padding:
+			return
+		
+
+		for col in range(self.header().count()):
+			self._delegate_provider.delegateForColumn(col).setItemPadding(padding)
+		
+		self._item_padding = padding
+		self.sig_item_padding_changed.emit(padding)
 
 	def sizeHintForColumn(self, column) -> int:
 		"""Column width"""

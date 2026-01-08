@@ -43,7 +43,7 @@ class BSDelegateProvider(QtCore.QObject):
 	sig_format_delegate_changed       = QtCore.Signal(int, object)
 	"""(`FormatID`, `NewDelegate`)"""
 
-	def __init__(self, view:QtWidgets.QAbstractItemView, **kwargs):
+	def __init__(self, view:QtWidgets.QAbstractItemView, default_delegate:binitems.BSGenericItemDelegate|None=None):
 
 		super().__init__(parent=view)
 
@@ -68,7 +68,19 @@ class BSDelegateProvider(QtCore.QObject):
 		# Cached instances
 		self._format_delegates :FormatLookup  = dict()
 		self._field_delegates  :FieldLookup   = dict()
+		
+		self.setDefaultItemDelegate(default_delegate or binitems.BSGenericItemDelegate())
 
+	@QtCore.Slot()
+	def refreshDelegates(self):
+		"""Update all delegates in the current view"""
+
+		if not self._view.model():
+			return
+
+		for col in range(self._view.model().columnCount()):
+			self.setDelegateForColumn(col, self.delegateForColumn(col))
+	
 	def setView(self, view:QtWidgets.QAbstractItemView):
 		"""Set the `QAbstractItemview` which will use the delegates"""
 
@@ -148,6 +160,16 @@ class BSDelegateProvider(QtCore.QObject):
 
 		# Return delegate instance
 		return self._field_delegates[field]
+	
+	def setDelegateForColumn(self, logical_column_index:int, item_delegate:binitems.BSGenericItemDelegate):
+
+		if self._view.itemDelegateForColumn(logical_column_index) == item_delegate:
+			return
+		
+		import logging
+		logging.getLogger(__name__).debug("Setting visual col %s to %s with padding %s", str(self._view.header().visualIndex(logical_column_index)), str(item_delegate), str(item_delegate.itemPadding()))
+		
+		self._view.setItemDelegateForColumn(logical_column_index, item_delegate)
 		
 	def delegateForColumn(self,
 		logical_column_index:int,
@@ -166,17 +188,21 @@ class BSDelegateProvider(QtCore.QObject):
 
 			if field in self._FIELD_DELEGATE_FACTORIES:
 				return self._FIELD_DELEGATE_FACTORIES[field]()
-			elif format in self._FORMAT_DELEGATE_FACTORIES[format]:
+			
+			elif format in self._FORMAT_DELEGATE_FACTORIES:
 				return self._FORMAT_DELEGATE_FACTORIES[format]()
-			else:
-				return self.defaultItemDelegate()
+			
+			else: # TODO: UUUHHH PROLLY NOT
+				return self.defaultItemDelegate().__class__()
 			
 		else:
 
 			if (delegate := self.delegateForField(field, default_ok=False)) is not None:
 				return delegate
+			
 			elif (delegate := self.delegateForFormat(format, default_ok=False)) is not None:
 				return delegate
+			
 			else:
 				return self.defaultItemDelegate()
 
