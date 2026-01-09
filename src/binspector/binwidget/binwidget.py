@@ -212,12 +212,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				list(x.row() for x in self._selection_model.selectedRows())
 			)
 
-		elif old_view_mode == avbutils.bins.BinDisplayModes.LIST:
+		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
 
 			# Leaving list mode?
 			# Sync headers over to Script
 
 			self.syncHeaders()
+			self._binitems_script.adjustFirstItemPadding()
 
 		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
 

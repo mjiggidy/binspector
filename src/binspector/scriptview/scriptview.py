@@ -145,14 +145,23 @@ class BSBinScriptView(listview.BSBinListView):
 		))
 #		)
 
+		done_dels = set()
+		
 		self._delegate_provider.defaultItemDelegate().setItemPadding(script_item_padding)
 
+		done_dels.add(self._delegate_provider.defaultItemDelegate())
+
 		for col in range(self.header().count()):
+			
 			new_del = self._delegate_provider.delegateForColumn(col)
-			new_del.setItemPadding(script_item_padding)
+			
+			if new_del not in done_dels:
+				new_del.setItemPadding(script_item_padding)
+				done_dels.add(new_del)
+			
 			self._delegate_provider.setDelegateForColumn(col, new_del)
 
-		self.adjustFirstItemPadding()
+		#self.adjustFirstItemPadding()
 
 	def applyHeaderConstraints(self):
 		"""Header constraints"""
