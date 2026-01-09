@@ -3,7 +3,7 @@ Manage display delegates
 """
 from __future__ import annotations
 from ..core.config import BSListViewConfig
-from . import binitems
+from . import itemdelegates
 from ..models import viewmodelitems, viewmodels
 import avbutils
 from PySide6 import QtCore
@@ -12,10 +12,10 @@ import typing
 if typing.TYPE_CHECKING:
 	from PySide6 import QtWidgets
 
-type FormatLookup = dict[avbutils.BinColumnFormat, binitems.BSGenericItemDelegate]
+type FormatLookup = dict[avbutils.BinColumnFormat, itemdelegates.BSGenericItemDelegate]
 """Key/Val Lookup For Delegate Lookup"""
 
-type FieldLookup = dict[int, binitems.BSGenericItemDelegate]
+type FieldLookup = dict[int, itemdelegates.BSGenericItemDelegate]
 """Key/Val Lookup For Particular Field Lookups"""
 
 class BSDelegateProvider(QtCore.QObject):
@@ -29,22 +29,22 @@ class BSDelegateProvider(QtCore.QObject):
 	sig_format_delegate_changed       = QtCore.Signal(int, object)
 	"""(`FormatID`, `NewDelegate`)"""
 
-	def __init__(self, view:QtWidgets.QAbstractItemView, default_delegate:binitems.BSGenericItemDelegate|None=None):
+	def __init__(self, view:QtWidgets.QAbstractItemView, default_delegate:itemdelegates.BSGenericItemDelegate|None=None):
 
 		super().__init__(parent=view)
 
 		# Callables
 
 		self._FIELD_DELEGATE_FACTORIES: FieldLookup = {
-			51 : binitems.BSIconLookupItemDelegate, # Clip color
-			132: binitems.BSIconLookupItemDelegate, # Marker
-			200: binitems.BSIconLookupItemDelegate, # Bin Display Item Type
+			51 : itemdelegates.BSIconLookupItemDelegate, # Clip color
+			132: itemdelegates.BSIconLookupItemDelegate, # Marker
+			200: itemdelegates.BSIconLookupItemDelegate, # Bin Display Item Type
 
 		}
 		"""Specialized one-off fields"""
 
 		self._FORMAT_DELEGATE_FACTORIES: FormatLookup = {
-			avbutils.BinColumnFormat.TIMECODE: binitems.LBTimecodeItemDelegate,
+			avbutils.BinColumnFormat.TIMECODE: itemdelegates.LBTimecodeItemDelegate,
 		}
 		"""Delegate for generic field formats"""	
 
@@ -55,7 +55,7 @@ class BSDelegateProvider(QtCore.QObject):
 		self._format_delegates :FormatLookup  = dict()
 		self._field_delegates  :FieldLookup   = dict()
 		
-		self.setDefaultItemDelegate(default_delegate or binitems.BSGenericItemDelegate())
+		self.setDefaultItemDelegate(default_delegate or itemdelegates.BSGenericItemDelegate())
 
 	@QtCore.Slot()
 	def refreshDelegates(self):
@@ -83,7 +83,7 @@ class BSDelegateProvider(QtCore.QObject):
 
 		return self._view
 	
-	def setDefaultItemDelegate(self, delegate:binitems.BSGenericItemDelegate):
+	def setDefaultItemDelegate(self, delegate:itemdelegates.BSGenericItemDelegate):
 		"""Set the view's default item delegate (convenience for view's `setItemDelegate()` method)"""
 
 		if self._view.itemDelegate() == delegate:
@@ -92,7 +92,7 @@ class BSDelegateProvider(QtCore.QObject):
 		self._view.setItemDelegate(delegate)
 		self.sig_default_item_delegate_changed.emit(delegate)
 
-	def defaultItemDelegate(self, index:QtCore.QModelIndex|None=None) -> binitems.BSGenericItemDelegate:
+	def defaultItemDelegate(self, index:QtCore.QModelIndex|None=None) -> itemdelegates.BSGenericItemDelegate:
 		"""Return the view's default item delegate (convenience passthrough for view's `itemDelegate()` method)"""
 
 		if index is not None:
@@ -100,7 +100,7 @@ class BSDelegateProvider(QtCore.QObject):
 		
 		return self._view.itemDelegate()
 	
-	def setDelegateForFormat(self, column_format_id:avbutils.bins.BinColumnFormat, delegate:binitems.BSGenericItemDelegate):
+	def setDelegateForFormat(self, column_format_id:avbutils.bins.BinColumnFormat, delegate:itemdelegates.BSGenericItemDelegate):
 		"""Set the item delegate for a given format"""
 
 		if column_format_id in self._format_delegates and self._format_delegates[column_format_id] == delegate:
@@ -110,7 +110,7 @@ class BSDelegateProvider(QtCore.QObject):
 
 		self.sig_format_delegate_changed.emit(column_format_id, delegate)
 
-	def setDelegateForField(self, column_field_id:int, delegate:binitems.BSGenericItemDelegate):
+	def setDelegateForField(self, column_field_id:int, delegate:itemdelegates.BSGenericItemDelegate):
 		"""Set the item delegate for a given field"""
 
 		if column_field_id in  self._field_delegates and self._field_delegates[column_field_id] == delegate:
@@ -119,7 +119,7 @@ class BSDelegateProvider(QtCore.QObject):
 		self._field_delegates[column_field_id] = delegate
 		self.sig_field_delegate_changed.emit(column_field_id, delegate)
 	
-	def delegateForFormat(self, format:avbutils.bins.BinColumnFormat, /, default_ok:bool=True) -> binitems.BSGenericItemDelegate|None:
+	def delegateForFormat(self, format:avbutils.bins.BinColumnFormat, /, default_ok:bool=True) -> itemdelegates.BSGenericItemDelegate|None:
 		"""Return the delegate for the given `avbutils.bins.BinColumnFormat"""
 
 		# Return default delegate instance if unknown
@@ -133,7 +133,7 @@ class BSDelegateProvider(QtCore.QObject):
 		# Return delegate instance
 		return self._format_delegates[format]
 	
-	def delegateForField(self, field:int, /, default_ok:bool=True) -> binitems.BSGenericItemDelegate:
+	def delegateForField(self, field:int, /, default_ok:bool=True) -> itemdelegates.BSGenericItemDelegate:
 		"""Return the delegate for the given `avbutils.bins.BIN_COLUMN_ROLES`"""
 
 		# Return default delegate instance if unknown
@@ -147,7 +147,7 @@ class BSDelegateProvider(QtCore.QObject):
 		# Return delegate instance
 		return self._field_delegates[field]
 	
-	def setDelegateForColumn(self, logical_column_index:int, item_delegate:binitems.BSGenericItemDelegate):
+	def setDelegateForColumn(self, logical_column_index:int, item_delegate:itemdelegates.BSGenericItemDelegate):
 
 		if self._view.itemDelegateForColumn(logical_column_index) == item_delegate:
 			return
@@ -162,7 +162,7 @@ class BSDelegateProvider(QtCore.QObject):
 		*args,
 		orientation:QtCore.Qt.Orientation=QtCore.Qt.Orientation.Horizontal,
 		unique_instance:bool=False
-	) -> binitems.BSGenericItemDelegate:
+	) -> itemdelegates.BSGenericItemDelegate:
 		"""Provide a delegate for a given logical column index of the view's model"""
 
 		model  = self._view.model()
@@ -192,7 +192,7 @@ class BSDelegateProvider(QtCore.QObject):
 			else:
 				return self.defaultItemDelegate()
 
-	def delegates(self) -> set[binitems.BSGenericItemDelegate]:
+	def delegates(self) -> set[itemdelegates.BSGenericItemDelegate]:
 		"""Get all known item delegate instances (does not include unique instances)"""
 
 		import itertools
