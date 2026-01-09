@@ -164,7 +164,7 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 		if self.selectionBehavior() == behavior:
 
-			logging.getLogger(__name__).debug("Selection behavior already %s. Not changed.", behavior)
+			#logging.getLogger(__name__).debug("Selection behavior already %s. Not changed.", behavior)
 			return
 
 		# NOTE: BIG NOTE: TODO: ETC:
