@@ -241,29 +241,6 @@ class BSBinListView(treeview.BSTreeViewBase):
 #				)
 #			)
 
-#	@QtCore.Slot(object, int, int)
-#	def assignItemDelegates(self, parent_index:QtCore.QModelIndex, logical_start_column:int):
-#		"""Assign item delegates starting with the first changed logical row, cascaded through to the end"""
-#
-#		if parent_index.isValid():
-#			return
-#
-#		for col in range(logical_start_column, self.model().columnCount()):
-#
-#			field_id     = self.model().headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+1)
-#			format_id    = self.model().headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+2)
-#
-#			item_delegate = self.itemDelegate()
-#
-#
-#			# Look up specialized fields
-#			if field_id in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID:
-#				item_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[field_id]
-#			# Look up specialized generic formats
-#			elif format_id in delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID:
-#				item_delegate = delegate_lookup.ITEM_DELEGATES_PER_FORMAT_ID[format_id]
-#
-#			self.setItemDelegateForColumn(col, item_delegate)
 
 	@QtCore.Slot(object, int)
 	@QtCore.Slot(object, int, int)
@@ -307,12 +284,25 @@ class BSBinListView(treeview.BSTreeViewBase):
 		if self._item_padding == padding:
 			return
 		
+		self._item_padding = padding
+
+		self.refreshDelegates()
+
+		logging.getLogger(__name__).debug("Setting padding to %s", str(self._item_padding))
+
+		self.sig_item_padding_changed.emit(padding)
+
+	def refreshDelegates(self):
+
+		my_del = self._delegate_provider.defaultItemDelegate()
+		my_del.setItemPadding(self._item_padding)
+		self._delegate_provider.setDefaultItemDelegate(my_del)
 
 		for col in range(self.header().count()):
-			self._delegate_provider.delegateForColumn(col).setItemPadding(padding)
-		
-		self._item_padding = padding
-		self.sig_item_padding_changed.emit(padding)
+			my_del = self._delegate_provider.delegateForColumn(col)
+			my_del.setItemPadding(self._item_padding)
+			self._delegate_provider.setDelegateForColumn(col, my_del)
+
 
 	def sizeHintForColumn(self, column) -> int:
 		"""Column width"""
@@ -324,11 +314,3 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 		self._default_sort = sort_columns
 		self.sig_default_sort_columns_changed.emit(self._default_sort)
-
-#	@QtCore.Slot(object)
-#	def setItemPadding(self, padding:QtCore.QMargins):
-#
-#		self.itemDelegate().setItemPadding(padding)
-#		for delegate in delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID.values():
-#			#print("Here")
-#			delegate.setItemPadding(padding)
