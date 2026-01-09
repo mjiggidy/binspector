@@ -13,6 +13,7 @@ class BSBinItemDataRoles(enum.IntEnum):
 	BSClipColor        = enum.auto()
 	BSFrameCoordinates = enum.auto()
 	BSFrameThumbnail   = enum.auto()
+	BSScriptNotes      = enum.auto()
 
 class BSBinColumnDataRoles(enum.IntEnum):
 	"""Item Data Roles for Bin Column Headers (extends `QtCore.Qt.ItemDataRole`)"""

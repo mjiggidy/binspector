@@ -177,14 +177,10 @@ class BSBinScriptView(listview.BSBinListView):
 				options.rect.top()  +self._item_padding.top(),
 			)
 		)
-		
 
-		fields      = index.model().sourceModel().fields()
-
-		field_index = fields.index(str(avbutils.BIN_COLUMN_ROLES["Name"]))
-		src_index   = index.model().mapToSource(index)
-
-		script_text = src_index.siblingAtColumn(field_index).data(QtCore.Qt.ItemDataRole.DisplayRole)
+		from ..models import viewmodelitems
+		# NOTE: Getting "None" here.
+		script_text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
