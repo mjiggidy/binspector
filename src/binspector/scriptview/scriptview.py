@@ -44,36 +44,7 @@ class BSBinScriptView(listview.BSBinListView):
 			header.saveState()
 		)
 
-		self._delegate_provider.refreshDelegates()
-
-		# Add additional padding to first-column delegate
-		first_col_logical = self.header().logicalIndex(0)
-		first_col_width   = self.header().sectionSize(first_col_logical)
-
-		new_del = self._delegate_provider.delegateForColumn(
-			first_col_logical,
-			unique_instance=True
-		)
-
-		# How much more padding to add
-		addtl_padding = self.frameRect().right() + self._item_padding.right()
-
-		new_padding = QtCore.QMarginsF(self._item_padding)
-		
-		new_padding.setLeft(self._item_padding.left() + addtl_padding)
-		new_padding.setBottom(max(
-			self.frameRect().height(),
-			self._item_padding.bottom()
-		))
-		new_del.setItemPadding(new_padding)
-
-		self._delegate_provider.setDelegateForColumn(first_col_logical, new_del)
-		
-		self.header().resizeSection(
-			first_col_logical,
-			first_col_width + self.frameRect().right() + self._item_padding.right()
-		)
-
+		self.refreshDelegates()
 		self.applyHeaderConstraints()
 	
 	def delegateProvider(self) -> delegate_lookup.BSDelegateProvider:
@@ -88,12 +59,12 @@ class BSBinScriptView(listview.BSBinListView):
 		
 		self._frame_scale = frame_scale
 		
-		#self._delegate_provider.refreshDelegates()
-		self.refreshDelegatePadding()
+		self.refreshDelegates()
+
+		# Re-draw drawRow()
+		self.viewport().update()
 
 		self.sig_frame_scale_changed.emit(frame_scale)
-
-		self.viewport().update()
 
 	def frameScale(self) -> float:
 		"""The scale factor for the frame rect"""
@@ -120,37 +91,68 @@ class BSBinScriptView(listview.BSBinListView):
 		
 		self._item_padding = padding
 		
-		self.refreshDelegatePadding()
+		self.refreshDelegates()
 		
 		self.sig_item_padding_changed.emit(padding)
 
-	def refreshDelegatePadding(self):
-		"""Re-calculate and re-apply padding data when size stuff changes"""
+	def _firstItemOffset(self) -> float:
 
-		script_pad = QtCore.QMarginsF(self._item_padding)
-		old_pad = QtCore.QMarginsF(script_pad)
-		script_pad.setBottom(max(
+		return self._item_padding.left() + self.frameRect().width() + self._item_padding.right()
+
+	def adjustFirstItemPadding(self):
+		"""Adjust the first item delegate's padding to make room for frame stuff"""
+
+		first_col_logical = self.header().logicalIndex(0)
+
+		
+		first_col_width   = self.header().sectionSize(first_col_logical)
+
+		new_del = self._delegate_provider.delegateForColumn(
+			first_col_logical,
+			unique_instance=True
+		)
+
+		# How much more padding to add
+		addtl_padding = self._firstItemOffset()
+
+		new_padding = QtCore.QMarginsF(self._item_padding)
+		
+		new_padding.setLeft(addtl_padding)
+		new_padding.setBottom(max(
 			self.frameRect().height(),
 			self._item_padding.bottom()
-
 		))
+		new_del.setItemPadding(new_padding)
 
-#		script_pad.setLeft(self.frameRect().width() + script_pad.left() + script_pad.right())
+		self._delegate_provider.setDelegateForColumn(first_col_logical, new_del)
+		
+		self.header().resizeSection(
+			first_col_logical,
+			first_col_width + addtl_padding
+		)
 
-		#print(f"{old_pad=} {script_pad=}")
+		print(f"Adjust from {first_col_width=} to {first_col_width + addtl_padding =}")
 
-		first_section_logical = self.header().logicalIndex(0)
+	def refreshDelegates(self):
+		"""Re-calculate and re-apply padding data when size stuff changes"""
+
+		script_item_padding = QtCore.QMarginsF(self._item_padding)
+		
+		# Add bottom padding for at least the frame rect
+		script_item_padding.setBottom(max(
+			self.frameRect().height(),
+			self._item_padding.bottom()
+		))
+#		)
+
+		self._delegate_provider.defaultItemDelegate().setItemPadding(script_item_padding)
 
 		for col in range(self.header().count()):
+			new_del = self._delegate_provider.delegateForColumn(col)
+			new_del.setItemPadding(script_item_padding)
+			self._delegate_provider.setDelegateForColumn(col, new_del)
 
-			if col == first_section_logical:
-				first_pad = QtCore.QMarginsF(script_pad)
-				first_pad.setLeft(self.frameRect().width() + script_pad.left() + script_pad.right())
-				self._delegate_provider.delegateForColumn(col).setItemPadding(first_pad)
-
-				self.resizeColumnToContents(col)
-			else:
-				self._delegate_provider.delegateForColumn(col).setItemPadding(script_pad)
+		self.adjustFirstItemPadding()
 
 	def applyHeaderConstraints(self):
 		"""Header constraints"""
@@ -163,28 +165,11 @@ class BSBinScriptView(listview.BSBinListView):
 		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.SingleSelection)
 		self.setDragEnabled(True)
 
-	def rowsInserted(self, parent:QtCore.QModelIndex, start:int, end:int):
-		pass
-		
-#		for row in range(start, end+1):
-#			
-#			idx_row = self.model().index(row, 0, parent)
-#			delegate = self.itemDelegate(idx_row)
-#			delegate = delegate.__class__(delegate)
-#		#	delegate.setItemPadding(QtCore.QMargins(5,5, 5, 500))		
-#
-#		#	self.setItemDelegateForColumn(0, delegate)	
-
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 		
-		
 		item_delegate = self.itemDelegate(index)
-		
-		
-		super().drawRow(painter, options, index)
-		
 
-		#print(f"{options.rect=} {item_delegate.itemPadding()=}")
+		super().drawRow(painter, options, index)
 
 		frame_rect = self.frameRect().translated(
 			QtCore.QPointF(
@@ -203,7 +188,7 @@ class BSBinScriptView(listview.BSBinListView):
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
-				frame_rect.right() + self._item_padding.left(),
+				self._firstItemOffset(),
 				options.rect.bottom() - item_delegate.itemPadding().bottom() + item_delegate.itemPadding().top(),
 			),
 
@@ -233,6 +218,3 @@ class BSBinScriptView(listview.BSBinListView):
 		painter.drawRect(frame_rect)
 
 		painter.restore()
-
-		
-#		self.viewport().update(options.rect) # NOTE: Not just active_rect -- Scrolling needs to repaint the whole thing
