@@ -12,20 +12,6 @@ import typing
 if typing.TYPE_CHECKING:
 	from PySide6 import QtWidgets
 
-
-ITEM_DELEGATES_PER_FIELD_ID = {
-	51 : binitems.BSIconLookupItemDelegate, # Clip color
-	132: binitems.BSIconLookupItemDelegate, # Marker
-	200: binitems.BSIconLookupItemDelegate, # Bin Display Item Type
-
-}
-"""Specialized one-off fields"""
-
-ITEM_DELEGATES_PER_FORMAT_ID = {
-	avbutils.BinColumnFormat.TIMECODE: binitems.LBTimecodeItemDelegate,
-}
-"""Delegate for generic field formats"""
-
 type FormatLookup = dict[avbutils.BinColumnFormat, binitems.BSGenericItemDelegate]
 """Key/Val Lookup For Delegate Lookup"""
 
