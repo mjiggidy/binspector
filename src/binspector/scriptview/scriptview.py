@@ -2,6 +2,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core.config import BSScriptViewConfig
 
+from . import delegates
 from ..listview import listview
 from ..binwidget import delegate_lookup
 import avbutils
@@ -31,7 +32,8 @@ class BSBinScriptView(listview.BSBinListView):
 		
 		# NOTE: Need special first delegate -- here? Or probably just deal with it
 		# on layout changes
-		self._delegate_provider  = delegate_lookup.BSDelegateProvider(view=self)
+		self._delegate_provider     = delegate_lookup.BSDelegateProvider(view=self)
+		self._delegate_script_notes = delegates.BSScriptNotesDelegate(parent=self)
 	
 		self.applyHeaderConstraints()
 
@@ -187,9 +189,6 @@ class BSBinScriptView(listview.BSBinListView):
 			)
 		)
 
-		from ..models import viewmodelitems
-		# NOTE: Getting "None" here.
-		script_text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
@@ -203,8 +202,17 @@ class BSBinScriptView(listview.BSBinListView):
 			)
 		)
 
+		from ..models import viewmodelitems
+		# NOTE: Getting "None" here.
+		script_text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
+
+		print(options.state)
 		pen = QtGui.QPen()
-		pen.setColor(options.palette.windowText().color())
+		pen.setColor(
+			options.palette.highlightedText().color() \
+			  if options.state & QtWidgets.QStyle.StateFlag.State_Item \
+			  else options.palette.windowText().color()
+		)
 		pen.setWidthF(1/painter.device().devicePixelRatioF())
 		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
 
@@ -217,8 +225,13 @@ class BSBinScriptView(listview.BSBinListView):
 		painter.setPen(pen)
 		painter.setBrush(brush)
 
-		painter.drawRect(script_rect)
-		painter.drawText(script_rect, script_text)
+		script_note_options = QtWidgets.QStyleOptionViewItem(options)
+		script_note_options.rect = script_rect.toRect()
+		script_note_options.text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
+		self._delegate_script_notes.paint(painter, script_note_options, index)
+
+#		painter.drawRect(script_rect)
+#		painter.drawText(script_rect, script_text)
 
 		painter.drawRect(frame_rect)
 

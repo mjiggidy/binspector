@@ -7,7 +7,7 @@ import avb, avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from . import proxystyles, scrollwidgets, widgetbars, binitems
+from . import itemdelegates, proxystyles, scrollwidgets, widgetbars
 
 from ..listview import listview
 from ..frameview import frameview
