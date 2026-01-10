@@ -50,3 +50,6 @@ class BSScriptViewModeConfig:
 	DEFAULT_SCRIPT_ZOOM_START = avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start
 	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(16,4,16,4)
 	"""Default padding inside view item"""
+
+	FRAME_SIZE_SCALER = 1.25
+	"""Additional scaler to control frame size -- possibly pixel density-dependent"""

@@ -7,17 +7,15 @@ import avb, avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from . import itemdelegates, proxystyles, scrollwidgets, widgetbars
+from . import proxystyles, scrollwidgets, widgetbars
 
 from ..textview import textview
 from ..frameview import frameview
 from ..scriptview import scriptview
 
 from ..models import viewmodels
-from ..widgets import buttons
-from . import delegate_lookup
 
-from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
+from ..core.config import BSFrameViewModeConfig, BSScriptViewModeConfig
 
 
 class BSBinContentsWidget(QtWidgets.QWidget):
@@ -43,9 +41,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_model         = bin_model or viewmodels.BSBinItemViewModel()
 		self._bin_filter_model  = viewmodels.BSBinViewProxyModel()
 		self._selection_model   = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
-		#self._selection_syncer  = syncselection.BSSelectionSyncer(parent=self, selection_model=self._selection_model)
-		
-		#self._scene_frame       = QtWidgets.QGraphicsScene()
 
 		# Save initial palette for later togglin'
 		self._default_palette   = self.palette()
@@ -194,36 +189,33 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
 		"""Set the current bin view mode"""
 
-		logging.getLogger(__name__).debug("Setting bin view mode to %s", str(view_mode))
-
+		#logging.getLogger(__name__).debug("Setting bin view mode to %s", str(view_mode))
+		
 		old_view_mode = avbutils.bins.BinDisplayModes(self._section_main.currentIndex())
+		if old_view_mode == view_mode:
+			return
 
-		self._section_main.setCurrentIndex(int(view_mode))
+		self._section_main.setCurrentIndex(view_mode)
 		self._section_top .setViewMode(view_mode)
 
-		# Sync selection from old view to new view
-
+		# Entering Frame View Mode
+		# Sync selected items from selection model
 		if view_mode == avbutils.bins.BinDisplayModes.FRAME:
-			
-			# Entering frame mode
-			# Sync selected items from selection model
 			
 			self._viewmode_frame.scene().setSelectedItems(
 				list(x.row() for x in self._selection_model.selectedRows())
 			)
 
+		# Entering Script View Mode
+		# Sync headers over to Script
 		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
 
-			# Leaving Text View mode?
-			# Sync headers over to Script
-
-			self.syncHeaders()
+			self._viewmode_script.syncFromHeader(self._viewmode_text.header())
 			self._viewmode_script.adjustFirstItemPadding()
 
+		# Leaving Frame Mode
+		# Sync selection back to selection model
 		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
-
-			# Leaving Frame mode
-			# Sync selection back to selection model
 
 			self._selection_model.clearSelection()
 
@@ -240,52 +232,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.sig_view_mode_changed.emit(view_mode)
 
-	def syncHeaders(self):
-		"""Synchronize headers"""
-
-		# For now, treating List view as hero.
-		# In Avid, Script view header is immutable, follows List view
-		# I don't know... maybe script view could do this
-
-		self._viewmode_script.syncFromHeader(self._viewmode_text.header())
-
 	def viewMode(self) -> avbutils.BinDisplayModes:
 		"""Current view mode"""
 
 		return avbutils.BinDisplayModes(self._section_main.currentIndex())
 	
-#	def setListView(self, treeview:bintreeview.BSBinTreeView):
-#
-#		self._binitems_list = treeview
-#		self._setViewModeWidget(avbutils.BinDisplayModes.LIST, self._binitems_list)
-
-	
-#	def setFrameView(self, frame_view:binframeview.BSBinFrameView):
-#
-#		self._binitems_frame = frame_view
-#		self._setViewModeWidget(avbutils.BinDisplayModes.FRAME, self._binitems_frame)
-
-	
-#	def setScriptView(self, script_view:binscriptview.BSBinScriptView):
-#
-#		self._binitems_script = script_view
-#		self._setViewModeWidget(avbutils.BinDisplayModes.SCRIPT, self._binitems_script)
-
-	
-#	def setTopWidgetBar(self, toolbar:widgetbars.BSBinContentsTopWidgetBar):
-#		self._section_top = toolbar	
-
-#	@QtCore.Slot(object)
-#	def setBinAppearanceEnabled(self, is_enabled:bool):
-#		
-#		self._use_bin_appearance = is_enabled
-#		self.setPalette(self._bin_palette if is_enabled else self._default_palette)
-#		self.setFont(self._bin_font if is_enabled else self._default_font)
-#
-#	@QtCore.Slot(object)
-#	def setUseSystemAppearance(self, use_system:bool):
-#
-#		self.setBinAppearanceEnabled(not use_system)
 
 	###
 	# Bin Views and Filters
@@ -381,7 +332,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._viewmode_text  .setItemPadding(padding)
 		self._viewmode_script.setItemPadding(padding)
-		#logging.getLogger(__name__).error("Padding %s", str(padding))
 
 	@QtCore.Slot(str)
 	def focusBinColumn(self, focus_field_name:str) -> bool:
@@ -391,10 +341,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			for i in range(self._viewmode_text.header().count())]
 			):
 
-			#print(log_idx, field_name)
-
 			if field_name == focus_field_name:
-				#print("GOT IT AT", log_idx)
+
 				self._section_main.currentWidget().setFocus()
 				self._viewmode_text.selectSection(log_idx)
 				self._viewmode_text.scrollTo(self._viewmode_text.model().index(0, log_idx, QtCore.QModelIndex()), QtWidgets.QTreeView.ScrollHint.PositionAtCenter)

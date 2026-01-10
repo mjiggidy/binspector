@@ -30,13 +30,14 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		self._delegate_provider     = delegate_lookup.BSDelegateProvider(view=self)
 		self._column_select_watcher = columnselect.BSColumnSelectWatcher(parent=self)
-		self._item_padding          = BSTextViewModeConfig.DEFAULT_ITEM_PADDING
+		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 
-		self.header().viewport().installEventFilter(self._column_select_watcher)
-		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
-
-		self.header().sectionCountChanged.connect(self._delegate_provider.refreshDelegates)
+		#self.setItemPadding(self._item_padding)
 		
+		self.header().viewport().installEventFilter(self._column_select_watcher)
+
+		self.header().sectionCountChanged.connect(lambda: self.refreshDelegates())
+		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
 
 	def setSelectionModel(self, selectionModel):
 
@@ -75,7 +76,6 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		section_logical = self.header().logicalIndexAt(viewport_coords.x())
 		self.selectSection(section_logical)
-		#print(self.model().headerData(section_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole))
 
 	@QtCore.Slot(int)
 	def selectSection(self, column_logical:int):
@@ -99,7 +99,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 	def copySelection(self):
 		"""Copy selection to clipboard"""
-
+     
 		# TODO: Messssssy
 		# TODO: This'll be good to refactor for ALE/CSV/JSON exports, yay!
 
@@ -281,27 +281,48 @@ class BSBinTextView(treeview.BSTreeViewBase):
 	def setItemPadding(self, padding:QtCore.QMarginsF):
 		"""Set item padding and add frame size padding"""
 
+#		print("*** Received", padding)
+
 		if self._item_padding == padding:
 			return
 		
-		self._item_padding = padding
-
+		self._item_padding = QtCore.QMarginsF(padding)
+#		print("*** ITEM PADDING NOW ", self._item_padding)
 		self.refreshDelegates()
 
 		logging.getLogger(__name__).debug("Setting padding to %s", str(self._item_padding))
 
 		self.sig_item_padding_changed.emit(padding)
 
-	def refreshDelegates(self):
+	def refreshDelegates(self, adjusted_padding:QtCore.QMarginsF|None=None):
+		"""Re-calculate and re-apply padding data when size stuff changes"""
 
-		my_del = self._delegate_provider.defaultItemDelegate()
-		my_del.setItemPadding(self._item_padding)
-		self._delegate_provider.setDefaultItemDelegate(my_del)
+		adjusted_padding = QtCore.QMarginsF(adjusted_padding if adjusted_padding is not None else self._item_padding)
+#		print("****OKAY STARTING WITH", adjusted_padding)
+		
+		done_dels = set()
 
+		# Set padding on default del
+		current_del = self._delegate_provider.defaultItemDelegate()
+		current_del.setItemPadding(adjusted_padding)
+		
+		self._delegate_provider.setDefaultItemDelegate(current_del)
+
+		done_dels.add(current_del)
+
+		# Set padding on any other delegates
 		for col in range(self.header().count()):
-			my_del = self._delegate_provider.delegateForColumn(col)
-			my_del.setItemPadding(self._item_padding)
-			self._delegate_provider.setDelegateForColumn(col, my_del)
+		
+			current_del = self._delegate_provider.delegateForColumn(col)
+
+			if current_del not in done_dels:
+				current_del.setItemPadding(adjusted_padding)
+				done_dels.add(current_del)
+
+			self._delegate_provider.setDelegateForColumn(col, current_del)
+			
+#		for test_Del in done_dels:
+#			print(test_Del.itemPadding())
 
 
 	def sizeHintForColumn(self, column) -> int:

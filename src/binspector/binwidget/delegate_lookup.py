@@ -43,7 +43,7 @@ class BSDelegateProvider(QtCore.QObject):
 		"""Specialized one-off fields"""
 
 		self._FORMAT_DELEGATE_FACTORIES: FormatLookup = {
-			avbutils.BinColumnFormat.TIMECODE: itemdelegates.LBTimecodeItemDelegate,
+#			avbutils.BinColumnFormat.TIMECODE: itemdelegates.LBTimecodeItemDelegate,
 		}
 		"""Delegate for generic field formats"""	
 
@@ -55,16 +55,6 @@ class BSDelegateProvider(QtCore.QObject):
 		self._field_delegates  :FieldLookup   = dict()
 		
 		self.setDefaultItemDelegate(default_delegate or itemdelegates.BSGenericItemDelegate())
-
-	@QtCore.Slot()
-	def refreshDelegates(self):
-		"""Update all delegates in the current view"""
-
-		if not self._view.model():
-			return
-
-		for col in range(self._view.model().columnCount()):
-			self.setDelegateForColumn(col, self.delegateForColumn(col))
 	
 	def setView(self, view:QtWidgets.QAbstractItemView):
 		"""Set the `QAbstractItemview` which will use the delegates"""
@@ -151,8 +141,8 @@ class BSDelegateProvider(QtCore.QObject):
 		if self._view.itemDelegateForColumn(logical_column_index) == item_delegate:
 			return
 		
-		import logging
-		logging.getLogger(__name__).debug("Setting visual col %s to %s with padding %s", str(self._view.header().visualIndex(logical_column_index)), str(item_delegate), str(item_delegate.itemPadding()))
+#		import logging
+#		logging.getLogger(__name__).debug("Setting visual col %s to %s with padding %s", str(self._view.header().visualIndex(logical_column_index)), str(item_delegate), str(item_delegate.itemPadding()))
 		
 		self._view.setItemDelegateForColumn(logical_column_index, item_delegate)
 		

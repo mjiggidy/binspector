@@ -29,7 +29,7 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 		if self._padding == padding:
 			return
 
-		self._padding = padding
+		self._padding = QtCore.QMarginsF(padding)
 
 		# NOTE: Binding to sizeHintChanged here to trigger redraw
 		# Passing invalid model index seems to work ok
@@ -38,8 +38,6 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 	def itemPadding(self) -> QtCore.QMargins:
 
 		return self._padding
-
-			
 
 	def activeRectFromRect(self, rect:QtCore.QRectF) -> QtCore.QRectF:
 		"""The active area without padding and such"""
@@ -163,15 +161,3 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 			logging.getLogger(__name__).error("Error drawing icon: %s", e)
 		
 		painter.restore()
-
-class LBTimecodeItemDelegate(BSGenericItemDelegate):
-	"""Eventually imma want to"""
-
-	def __init__(self, *args, **kwargs):
-		
-		super().__init__(*args, **kwargs)
-
-	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex):
-		
-		super().paint(painter, option, index)
-
