@@ -2,9 +2,8 @@
 Manage display delegates
 """
 from __future__ import annotations
-from ..core.config import BSListViewConfig
 from . import itemdelegates
-from ..models import viewmodelitems, viewmodels
+from ..models import viewmodelitems
 import avbutils
 from PySide6 import QtCore
 

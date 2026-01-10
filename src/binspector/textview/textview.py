@@ -1,14 +1,14 @@
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core.config import BSListViewConfig
+from ..core.config import BSTextViewModeConfig
 from ..models import viewmodels
 from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
 from ..binwidget import delegate_lookup
 
-class BSBinListView(treeview.BSTreeViewBase):
+class BSBinTextView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
 
 	sig_default_sort_columns_changed = QtCore.Signal(object)
@@ -25,12 +25,12 @@ class BSBinListView(treeview.BSTreeViewBase):
 		super().__init__(*args, **kwargs)
 
 		self.setModel(viewmodels.BSBinViewProxyModel())
-		self.setSelectionBehavior(BSListViewConfig.DEFAULT_SELECTION_BEHAVIOR)
-		self.setSelectionMode(BSListViewConfig.DEFAULT_SELECTION_MODE)
+		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
+		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
 		self._delegate_provider     = delegate_lookup.BSDelegateProvider(view=self)
 		self._column_select_watcher = columnselect.BSColumnSelectWatcher(parent=self)
-		self._item_padding          = BSListViewConfig.DEFAULT_ITEM_PADDING
+		self._item_padding          = BSTextViewModeConfig.DEFAULT_ITEM_PADDING
 
 		self.header().viewport().installEventFilter(self._column_select_watcher)
 		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
@@ -160,7 +160,7 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 	def toggleSelectionBehavior(self, behavior:QtWidgets.QTreeView.SelectionBehavior|None=None, keep_current_selection:bool=False):
 
-		behavior = behavior or BSListViewConfig.DEFAULT_SELECTION_BEHAVIOR
+		behavior = behavior or BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR
 
 		if self.selectionBehavior() == behavior:
 
@@ -169,7 +169,7 @@ class BSBinListView(treeview.BSTreeViewBase):
 
 		# NOTE: BIG NOTE: TODO: ETC:
 		# Disabling keep_current_selection for all instances for now
-		keep_current_selection = keep_current_selection and BSListViewConfig.ALLOW_KEEP_CURRENT_SELECTION_BETWEEN_MODES
+		keep_current_selection = keep_current_selection and BSTextViewModeConfig.ALLOW_KEEP_CURRENT_SELECTION_BETWEEN_MODES
 
 		if not keep_current_selection:
 			self.clearSelection()
@@ -180,7 +180,7 @@ class BSBinListView(treeview.BSTreeViewBase):
 			self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.MultiSelection)
 
 		else:
-			self.setSelectionMode(BSListViewConfig.DEFAULT_SELECTION_MODE)
+			self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
 		logging.getLogger(__name__).debug("Treeview selection changed to behavior=%s, mode=%s", self.selectionBehavior(), self.selectionMode())
 

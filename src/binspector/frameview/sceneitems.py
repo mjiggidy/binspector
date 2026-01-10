@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 import avbutils
-from ..core.config import BSFrameViewConfig
+from ..core.config import BSFrameViewModeConfig
 from ..utils import drawing
 from . import painters
 
@@ -14,8 +14,8 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 		self._clip_color   = QtGui.QColor()
 		self._clip_type    = avbutils.bins.BinDisplayItemTypes(0)
 		
-		self._item_size    = BSFrameViewConfig.GRID_UNIT_SIZE
-		self._item_margins = BSFrameViewConfig.DEFAULT_ITEM_MARGINS
+		self._item_size    = BSFrameViewModeConfig.GRID_UNIT_SIZE
+		self._item_margins = BSFrameViewModeConfig.DEFAULT_ITEM_MARGINS
 		self._thumb_size   = QtCore.QSizeF(16,9)
 
 		self._label_margins = QtCore.QMarginsF(*[0.4]*4)

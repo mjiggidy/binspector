@@ -9,7 +9,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from . import itemdelegates, proxystyles, scrollwidgets, widgetbars
 
-from ..listview import listview
+from ..textview import textview
 from ..frameview import frameview
 from ..scriptview import scriptview
 
@@ -17,7 +17,7 @@ from ..models import viewmodels
 from ..widgets import buttons
 from . import delegate_lookup
 
-from ..core.config import BSListViewConfig, BSFrameViewConfig, BSScriptViewConfig
+from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
 
 
 class BSBinContentsWidget(QtWidgets.QWidget):
@@ -57,11 +57,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top       = widgetbars.BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
 		
-		self._binitems_list     = listview.BSBinListView()
-		self._binitems_frame    = frameview.BSBinFrameView()
-		self._binitems_script   = scriptview.BSBinScriptView()
+		self._viewmode_text     = textview.BSBinTextView()
+		self._viewmode_frame    = frameview.BSBinFrameView()
+		self._viewmode_script   = scriptview.BSBinScriptView()
 
-		self._binstats_list     = scrollwidgets.BSBinStatsLabel()
+		self._binstats_text     = scrollwidgets.BSBinStatsLabel()
 		self._binstats_frame    = scrollwidgets.BSBinStatsLabel()
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
@@ -76,38 +76,38 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def _setupWidgets(self):
 
 		# Top Tool Bar
-		self._section_top._sld_frame_scale .setRange(BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE.start,   BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE.stop)
-		self._section_top._sld_script_scale.setRange(BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_RANGE.start, BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_RANGE.stop)
+		self._section_top._sld_frame_scale .setRange(BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_RANGE.start,   BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_RANGE.stop)
+		self._section_top._sld_script_scale.setRange(BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_RANGE.start, BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_RANGE.stop)
 
 		self.layout().addWidget(self._section_top)
 
-		# Main List, Frame, and Script views
-		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._binitems_list)
-		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._binitems_frame)
-		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._binitems_script)
+		# Main Text, Frame, and Script views
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._viewmode_text)
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._viewmode_frame)
+		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._viewmode_script)
 
-		self._binitems_frame.setZoomRange(BSFrameViewConfig.DEFAULT_FRAME_ZOOM_RANGE)
-		self._binitems_frame.setZoom(BSFrameViewConfig.DEFAULT_FRAME_ZOOM_START)
+		self._viewmode_frame.setZoomRange(BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_RANGE)
+		self._viewmode_frame.setZoom(BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_START)
 		
 		self.layout().addWidget(self._section_main)
 
-		self._binitems_list.setModel(self._bin_filter_model)
-		self._binitems_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		self._viewmode_text.setModel(self._bin_filter_model)
+		self._viewmode_text.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-		self._binitems_script.setModel(self._bin_filter_model)
-		self._binitems_script.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		self._viewmode_script.setModel(self._bin_filter_model)
+		self._viewmode_script.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		
 		# NOTE: Set AFTER `view.setModel()`.  Got me good.
-		self._binitems_list.setSelectionModel(self._selection_model)
-		self._binitems_script.setSelectionModel(self._selection_model)
+		self._viewmode_text.setSelectionModel(self._selection_model)
+		self._viewmode_script.setSelectionModel(self._selection_model)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
-		self._binitems_list  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-		self._binitems_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-		self._binitems_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_text  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
-		self._binitems_list .addScrollBarWidget(self._binstats_list,  QtCore.Qt.AlignmentFlag.AlignLeft)
-		self._binitems_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
+		self._viewmode_text .addScrollBarWidget(self._binstats_text,  QtCore.Qt.AlignmentFlag.AlignLeft)
+		self._viewmode_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
 
 	def _setupSignals(self):
 		
@@ -116,15 +116,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
 		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
 
-		self._section_top.sig_frame_scale_changed  .connect(self._binitems_frame.setZoom)
-		self._binitems_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
-		self._binitems_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
+		self._section_top.sig_frame_scale_changed  .connect(self._viewmode_frame.setZoom)
+		self._viewmode_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
+		self._viewmode_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 
-		self._section_top.sig_script_scale_changed         .connect(self._binitems_script.setFrameScale)
-		self._binitems_script.sig_frame_scale_changed      .connect(self._section_top._sld_script_scale.setValue)
-		self._binitems_script.sig_frame_scale_range_changed.connect(lambda r: self._section_top._sld_script_scale.setRange(r.start, r.stop))
+		self._section_top.sig_script_scale_changed         .connect(self._viewmode_script.setFrameScale)
+		self._viewmode_script.sig_frame_scale_changed      .connect(self._section_top._sld_script_scale.setValue)
+		self._viewmode_script.sig_frame_scale_range_changed.connect(lambda r: self._section_top._sld_script_scale.setRange(r.start, r.stop))
 
-		self.sig_bin_stats_updated.connect(self._binstats_list.setText)
+		self.sig_bin_stats_updated.connect(self._binstats_text.setText)
 		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
 
 		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
@@ -134,18 +134,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	def _setupActions(self):
 
-		self._act_set_view_width_for_columns = QtGui.QAction(self._binitems_list)
-		self._act_set_view_width_for_columns.setText(self.tr("Fit bin list columns to contents"))
+		self._act_set_view_width_for_columns = QtGui.QAction(self._viewmode_text)
+		self._act_set_view_width_for_columns.setText(self.tr("Restore saved bin column widths"))
 		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
-		self._act_set_view_width_for_columns.triggered.connect(lambda: self._binitems_list.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._binitems_list.header().count()-1))
+		self._act_set_view_width_for_columns.triggered.connect(lambda: self._viewmode_text.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._viewmode_text.header().count()-1))
 
-		self._act_autofit_columns = QtGui.QAction(self._binitems_list)
-		self._act_autofit_columns.setText(self.tr("Auto-fit bin list columns to contents"))
+		self._act_autofit_columns = QtGui.QAction(self._viewmode_text)
+		self._act_autofit_columns.setText(self.tr("Auto-fit bin columns to contents"))
 		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
-		self._act_autofit_columns.triggered.connect(self._binitems_list.resizeAllColumnsToContents)
+		self._act_autofit_columns.triggered.connect(self._viewmode_text.resizeAllColumnsToContents)
 		
-		self._binitems_list.addAction(self._act_set_view_width_for_columns)
-		self._binitems_list.addAction(self._act_autofit_columns)
+		self._viewmode_text.addAction(self._act_set_view_width_for_columns)
+		self._viewmode_text.addAction(self._act_autofit_columns)
 			
 
 
@@ -169,26 +169,26 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		"""Connect bin model to all the schtuff"""
 
 		self._bin_filter_model.setSourceModel(self._bin_model)
-		self._binitems_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK
+		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK
 
 	###
 	# View Mode Widgets
 	###
 
-	def listView(self) -> listview.BSBinListView:
-		"""List View Mode widget"""
+	def textView(self) -> textview.BSBinTextView:
+		"""Text View Mode widget"""
 
-		return self._binitems_list
+		return self._viewmode_text
 	
 	def frameView(self) -> frameview.BSBinFrameView:
 		"""Frame View Mode widget"""
 
-		return self._binitems_frame
+		return self._viewmode_frame
 
 	def scriptView(self) -> scriptview.BSBinScriptView:
 		"""Script View Mode widget"""
 		
-		return self._binitems_script
+		return self._viewmode_script
 	
 	@QtCore.Slot(object)
 	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
@@ -208,17 +208,17 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			# Entering frame mode
 			# Sync selected items from selection model
 			
-			self._binitems_frame.scene().setSelectedItems(
+			self._viewmode_frame.scene().setSelectedItems(
 				list(x.row() for x in self._selection_model.selectedRows())
 			)
 
 		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
 
-			# Leaving list mode?
+			# Leaving Text View mode?
 			# Sync headers over to Script
 
 			self.syncHeaders()
-			self._binitems_script.adjustFirstItemPadding()
+			self._viewmode_script.adjustFirstItemPadding()
 
 		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
 
@@ -227,7 +227,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 			self._selection_model.clearSelection()
 
-			for row, item in enumerate(self._binitems_frame.scene()._bin_items):
+			for row, item in enumerate(self._viewmode_frame.scene()._bin_items):
 
 				if not item.isSelected():
 					continue
@@ -247,7 +247,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# In Avid, Script view header is immutable, follows List view
 		# I don't know... maybe script view could do this
 
-		self._binitems_script.syncFromHeader(self._binitems_list.header())
+		self._viewmode_script.syncFromHeader(self._viewmode_text.header())
 
 	def viewMode(self) -> avbutils.BinDisplayModes:
 		"""Current view mode"""
@@ -302,8 +302,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		#print("Okay haha...")
 
-		for col in range(self.listView().header().count()):
-			self.listView().setColumnWidthFromBinView(col, True)
+		for col in range(self.textView().header().count()):
+			self.textView().setColumnWidthFromBinView(col, True)
 
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
@@ -365,9 +365,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._bin_font = bin_font # TODO: Neeeded?
 		
-		self._binitems_list   .setFont(bin_font)
-		self._binitems_frame  .setFont(bin_font)
-		self._binitems_script .setFont(bin_font)
+		self._viewmode_text   .setFont(bin_font)
+		self._viewmode_frame  .setFont(bin_font)
+		self._viewmode_script .setFont(bin_font)
 		
 		self.sig_bin_font_changed.emit(bin_font)
 
@@ -377,18 +377,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	@QtCore.Slot(object)
 	def setItemPadding(self, padding:QtCore.QMarginsF):
-		"""Set list item padding"""
+		"""Set text item padding"""
 
-		self._binitems_list  .setItemPadding(padding)
-		self._binitems_script.setItemPadding(padding)
+		self._viewmode_text  .setItemPadding(padding)
+		self._viewmode_script.setItemPadding(padding)
 		#logging.getLogger(__name__).error("Padding %s", str(padding))
 
 	@QtCore.Slot(str)
 	def focusBinColumn(self, focus_field_name:str) -> bool:
 
 		for log_idx, field_name in enumerate(
-			[self._binitems_list.model().headerData(i, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+5)
-			for i in range(self._binitems_list.header().count())]
+			[self._viewmode_text.model().headerData(i, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+5)
+			for i in range(self._viewmode_text.header().count())]
 			):
 
 			#print(log_idx, field_name)
@@ -396,8 +396,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			if field_name == focus_field_name:
 				#print("GOT IT AT", log_idx)
 				self._section_main.currentWidget().setFocus()
-				self._binitems_list.selectSection(log_idx)
-				self._binitems_list.scrollTo(self._binitems_list.model().index(0, log_idx, QtCore.QModelIndex()), QtWidgets.QTreeView.ScrollHint.PositionAtCenter)
+				self._viewmode_text.selectSection(log_idx)
+				self._viewmode_text.scrollTo(self._viewmode_text.model().index(0, log_idx, QtCore.QModelIndex()), QtWidgets.QTreeView.ScrollHint.PositionAtCenter)
 				
 				
 				self.sig_focus_set_on_column.emit(log_idx)
@@ -431,9 +431,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._proxystyle_hscroll.setScrollbarScaleFactor(scale_factor)
 
 		# .update()/.polish() doesn't work. Need to re-set each time?
-		self._binitems_list  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-		self._binitems_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-		self._binitems_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_text  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 	
 	def scrollbarScaler(self) -> proxystyles.BSScrollBarStyle:
 		"""The scaler for the horizontal scroll bar"""

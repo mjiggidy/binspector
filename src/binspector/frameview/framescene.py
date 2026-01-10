@@ -149,7 +149,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			bin_item.setName(str(bin_item_name))
 			bin_item.setClipColor(bin_item_color)
 			bin_item.setClipType(bin_item_type)
-			bin_item.setFlags(config.BSFrameViewConfig.DEFAULT_ITEM_FLAGS)
+			bin_item.setFlags(config.BSFrameViewModeConfig.DEFAULT_ITEM_FLAGS)
 			
 			
 

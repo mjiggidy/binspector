@@ -6,9 +6,9 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..textview import textview
 from ..binwidget import delegate_lookup
-from ..core.config import BSScriptViewConfig
+from ..core.config import BSScriptViewModeConfig
 
-class BSBinScriptView(textview.BSBinListView):
+class BSBinScriptView(textview.BSBinTextView):
 	"""Script view"""
 
 	sig_frame_scale_changed       = QtCore.Signal(float)
@@ -27,9 +27,9 @@ class BSBinScriptView(textview.BSBinListView):
 		self.horizontalScrollBar().valueChanged.connect(self.viewport().update)
 
 		self._frame_size   = QtCore.QSizeF(16, 9) * 2
-		self._frame_scale  = BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_START
+		self._frame_scale  = BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_START
 
-		self._item_padding = BSScriptViewConfig.DEFAULT_ITEM_PADDING
+		self._item_padding = BSScriptViewModeConfig.DEFAULT_ITEM_PADDING
 		
 		# NOTE: Need special first delegate -- here? Or probably just deal with it
 		# on layout changes

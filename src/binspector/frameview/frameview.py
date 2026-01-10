@@ -4,7 +4,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core import grid
 
-from ..core.config import BSFrameViewConfig
+from ..core.config import BSFrameViewModeConfig
 from ..utils import gestures
 from ..overlays import framemap, frameruler, manager
 
@@ -13,10 +13,10 @@ from .framescene import BSBinFrameScene
 from .actions import BSFrameViewActions
 
 DEFAULT_FRAME_VIEW_MARGINS = QtCore.QMarginsF(
-	BSFrameViewConfig.GRID_UNIT_SIZE.width(),
-	BSFrameViewConfig.GRID_UNIT_SIZE.height(),
-	BSFrameViewConfig.GRID_UNIT_SIZE.width(),
-	BSFrameViewConfig.GRID_UNIT_SIZE.height(),
+	BSFrameViewModeConfig.GRID_UNIT_SIZE.width(),
+	BSFrameViewModeConfig.GRID_UNIT_SIZE.height(),
+	BSFrameViewModeConfig.GRID_UNIT_SIZE.width(),
+	BSFrameViewModeConfig.GRID_UNIT_SIZE.height(),
 )
 
 
@@ -52,7 +52,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 
 		self._current_zoom       = 1.0
 		self._zoom_range         = range(100)
-		self._grid_info          = grid.BSGridSystemInfo(unit_size=BSFrameViewConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewConfig.GRID_DIVISIONS)
+		self._grid_info          = grid.BSGridSystemInfo(unit_size=BSFrameViewModeConfig.GRID_UNIT_SIZE, unit_divisions=BSFrameViewModeConfig.GRID_DIVISIONS)
 		self._scene_rect_margins = margins or DEFAULT_FRAME_VIEW_MARGINS
 		
 		self._visible_tick_info:dict[QtCore.Qt.AlignmentFlag, list[grid.BSGridTickInfo]]  = {
