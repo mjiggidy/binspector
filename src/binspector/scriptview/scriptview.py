@@ -6,6 +6,8 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..textview import textview
 from ..binwidget import delegate_lookup
+from ..models import viewmodelitems
+
 from ..core.config import BSScriptViewModeConfig
 
 class BSBinScriptView(textview.BSBinTextView):
@@ -175,17 +177,28 @@ class BSBinScriptView(textview.BSBinTextView):
 
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 		
-		item_delegate = self.itemDelegate(index)
 
 		super().drawRow(painter, options, index)
 
+		# Bail early if no text to display
+		
+		script_text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
+		if not script_text:
+			return
+
+		# Gather required data
+
+		item_delegate   = self.itemDelegate(index)
+		row_is_selected = self.selectionModel().isSelected(index)
+
+		# Build rects
+		
 		frame_rect =self.frameRect().translated(
 			QtCore.QPointF(
 				options.rect.left() + self._item_padding.left(),
 				options.rect.top() + self._item_padding.top()
 			)
 		)
-
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
@@ -199,25 +212,17 @@ class BSBinScriptView(textview.BSBinTextView):
 			)
 		)
 
-		row_is_selected = self.selectionModel().isSelected(index)
-
-		from ..models import viewmodelitems
-		# NOTE: Getting "None" here.
-	
-		script_text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
-
-		#print(options.state)
-
-
+		# Draw em
 
 		pen = QtGui.QPen()
+		
+		pen.setWidthF(1/painter.device().devicePixelRatioF())
+		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
 		pen.setColor(
 			options.palette.highlightedText().color() \
 			  if row_is_selected \
 			  else options.palette.windowText().color()
 		)
-		pen.setWidthF(1/painter.device().devicePixelRatioF())
-		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
 
 		brush = QtGui.QBrush()
 		brush.setColor(options.palette.window().color())
@@ -227,12 +232,12 @@ class BSBinScriptView(textview.BSBinTextView):
 		
 		painter.setPen(pen)
 		painter.setBrush(brush)
+		painter.setFont(options.font)
 
-		script_note_options = QtWidgets.QStyleOptionViewItem(options)
-		script_note_options.rect = script_rect.toRect()
-		script_note_options.text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
-
-		painter.drawRect(script_rect)
+		if row_is_selected:
+			painter.drawRect(script_rect)
+		
+		
 		painter.drawText(script_rect, script_text)
 
 		painter.drawRect(frame_rect)
