@@ -1,13 +1,14 @@
+"""
+Script View Mode
+"""
+
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from ..textview import textview
+from ..binwidget import delegate_lookup
 from ..core.config import BSScriptViewConfig
 
-from . import delegates
-from ..listview import listview
-from ..binwidget import delegate_lookup
-import avbutils
-
-class BSBinScriptView(listview.BSBinListView):
+class BSBinScriptView(textview.BSBinListView):
 	"""Script view"""
 
 	sig_frame_scale_changed       = QtCore.Signal(float)
@@ -25,16 +26,16 @@ class BSBinScriptView(listview.BSBinListView):
 		self.verticalScrollBar().valueChanged.connect(self.viewport().update)
 		self.horizontalScrollBar().valueChanged.connect(self.viewport().update)
 
-		self._frame_size  = QtCore.QSizeF(16, 9) * 2
-		self._frame_scale = BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_START
+		self._frame_size   = QtCore.QSizeF(16, 9) * 2
+		self._frame_scale  = BSScriptViewConfig.DEFAULT_SCRIPT_ZOOM_START
 
 		self._item_padding = BSScriptViewConfig.DEFAULT_ITEM_PADDING
 		
 		# NOTE: Need special first delegate -- here? Or probably just deal with it
 		# on layout changes
 		self._delegate_provider     = delegate_lookup.BSDelegateProvider(view=self)
-		self._delegate_script_notes = delegates.BSScriptNotesDelegate(parent=self)
 	
+		self.refreshDelegates()
 		self.applyHeaderConstraints()
 
 		self.header().sectionCountChanged.connect(self._delegate_provider.refreshDelegates)
@@ -198,15 +199,21 @@ class BSBinScriptView(listview.BSBinListView):
 			)
 		)
 
+		row_is_selected = self.selectionModel().isSelected(index)
+
 		from ..models import viewmodelitems
 		# NOTE: Getting "None" here.
+	
 		script_text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
 
-		print(options.state)
+		#print(options.state)
+
+
+
 		pen = QtGui.QPen()
 		pen.setColor(
 			options.palette.highlightedText().color() \
-			  if options.state & QtWidgets.QStyle.StateFlag.State_Item \
+			  if row_is_selected \
 			  else options.palette.windowText().color()
 		)
 		pen.setWidthF(1/painter.device().devicePixelRatioF())
@@ -224,10 +231,9 @@ class BSBinScriptView(listview.BSBinListView):
 		script_note_options = QtWidgets.QStyleOptionViewItem(options)
 		script_note_options.rect = script_rect.toRect()
 		script_note_options.text = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
-		self._delegate_script_notes.paint(painter, script_note_options, index)
 
-#		painter.drawRect(script_rect)
-#		painter.drawText(script_rect, script_text)
+		painter.drawRect(script_rect)
+		painter.drawText(script_rect, script_text)
 
 		painter.drawRect(frame_rect)
 
