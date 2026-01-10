@@ -141,16 +141,14 @@ class BSBinScriptView(listview.BSBinListView):
 		script_item_padding = QtCore.QMarginsF(self._item_padding)
 		
 		# Add bottom padding for at least the frame rect
-		script_item_padding.setBottom(max(
-			self.frameRect().height(),
-			self._item_padding.bottom()
-		))
+		script_item_padding.setBottom(self.frameRect().height() + self._item_padding.bottom())
+		
 #		)
 
+		# Keep the Done Delegates so we don't set a buncha times
 		done_dels = set()
 		
 		self._delegate_provider.defaultItemDelegate().setItemPadding(script_item_padding)
-
 		done_dels.add(self._delegate_provider.defaultItemDelegate())
 
 		for col in range(self.header().count()):
@@ -162,8 +160,6 @@ class BSBinScriptView(listview.BSBinListView):
 				done_dels.add(new_del)
 			
 			self._delegate_provider.setDelegateForColumn(col, new_del)
-
-		#self.adjustFirstItemPadding()
 
 	def applyHeaderConstraints(self):
 		"""Header constraints"""
@@ -182,10 +178,10 @@ class BSBinScriptView(listview.BSBinListView):
 
 		super().drawRow(painter, options, index)
 
-		frame_rect = self.frameRect().translated(
+		frame_rect =self.frameRect().translated(
 			QtCore.QPointF(
 				options.rect.left() + self._item_padding.left(),
-				options.rect.top()  +self._item_padding.top(),
+				options.rect.top() + self._item_padding.top()
 			)
 		)
 
