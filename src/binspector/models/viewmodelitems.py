@@ -349,7 +349,7 @@ class TRTClipColorViewItem(LBAbstractViewItem):
 		self._data_roles.update({
 			#QtCore.Qt.ItemDataRole.UserRole: self._data,
 			#QtCore.Qt.ItemDataRole.BackgroundRole: self._data,
-			QtCore.Qt.ItemDataRole.DecorationRole: self._data.toTuple() if self._data.isValid() else -1,
+			QtCore.Qt.ItemDataRole.DecorationRole:self._data,
 			QtCore.Qt.ItemDataRole.ToolTipRole: f"R: {self._data.red()} G: {self._data.green()} B: {self._data.blue()}" if self._data.isValid() else "No Color",
 			QtCore.Qt.ItemDataRole.InitialSortOrderRole: self.to_string(self._data.getRgb())
 		})

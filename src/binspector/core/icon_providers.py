@@ -1,4 +1,4 @@
-import typing
+import typing, logging
 from . import icon_engines
 
 from PySide6 import QtGui
@@ -32,6 +32,7 @@ class BSIconProvider:
 		"""Add a `QIcon` for a key"""
 		self._icons[key] = icon
 
+	# NOTE: Plan to override this is subclasses I think
 	def getIcon(self, key:typing.Hashable) -> QtGui.QIcon:
 		"""Given a key, lookup and return an existing `QIcon`, or return invalid"""
 
@@ -41,3 +42,23 @@ class BSIconProvider:
 			return QtGui.QIcon()
 
 		return self._icons[key]
+	
+class BSPalettedClipColorIconProvider(BSIconProvider):
+
+	def getIcon(self, clip_color:QtGui.QColor, border_width:int=1):
+
+		#print("*** LOOOKING FOR ", clip_color)
+
+		clip_color_hash = hash(clip_color.toTuple() if clip_color.isValid() else -1)
+
+		if not clip_color_hash in self._icons:
+
+			#print("*** LOOOKING FOR ", clip_color)
+
+			self._icons[clip_color_hash] = icon_engines.BSPalettedClipColorIconEngine(
+				clip_color=clip_color,
+				border_width=border_width
+			)
+			logging.getLogger(__name__).debug("%s created icon %s", repr(self), repr(self._icons[clip_color_hash]))
+
+		return super().getIcon(clip_color_hash)

@@ -1,4 +1,4 @@
-import logging
+import logging, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core  import icon_providers
@@ -84,14 +84,18 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
 		#return super().paint(painter, kewl_options, index)
 
+	def clone(self, *args, **kwargs) -> typing.Self:
+
+		return self.__class__(self._padding, *args, **kwargs)
+
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
 	"""Displays an icon centered in its item rect, with padding and aspect ratio preservation or something"""
 
-	def __init__(self, *args, aspect_ratio:QtCore.QSize|None=None, icon_provider:icon_providers.BSIconProvider|None=None, **kwargs):
+	def __init__(self, *args, aspect_ratio:QtCore.QSizeF|None=None, icon_provider:icon_providers.BSIconProvider|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._aspect_ratio  = aspect_ratio  or QtCore.QSize(1,1)
+		self._aspect_ratio  = aspect_ratio  or QtCore.QSizeF(1,1)
 		self._icon_provider = icon_provider or icon_providers.BSIconProvider()
 
 	def iconProvider(self) -> icon_providers.BSIconProvider:
@@ -119,15 +123,17 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
-		opt_styled = QtWidgets.QStyleOptionViewItem(option)
-		self.initStyleOption(opt_styled, index)
-		style = opt_styled.widget.style() if opt_styled.widget else QtWidgets.QApplication.style()
+		self.initStyleOption(option, index)
+		style = option.widget.style() if option.widget else QtWidgets.QApplication.style()
 		
 		user_data = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
 		icon      = self._icon_provider.getIcon(user_data)
 
 		# Center, size and shape the canvas QRect
-		canvas_active = self.activeRectFromRect(opt_styled.rect)
+		canvas_active = self.activeRectFromRect(option.rect)#.marginsRemoved(self._padding)
+
+#		print("***** PADDING HERE IS ", self._padding)
+#		print("***** ACTIVE RECT IS ", canvas_active)
 		
 		# Based on the active canvas area, bind the width to
 		# Min: Same as height (square)
@@ -142,22 +148,32 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 			w_active = canvas_active.width()
 		
 		canvas_active.setWidth(w_active)
-		canvas_active.moveCenter(opt_styled.rect.center())
+		#canvas_active.moveCenter(option.rect.marginsRemoved(self._padding).center())
 		
 		painter.save()
-		painter.setClipRect(opt_styled.rect)
+		painter.setClipRect(option.rect)
 		
 		try:
-			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, opt_styled, painter, opt_styled.widget)
+			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, option, painter, option.widget)
 
 			icon.paint(
 				painter,
 				canvas_active.toRect(),
-				mode=QtGui.QIcon.Mode.Selected if opt_styled.state & QtWidgets.QStyle.StateFlag.State_Selected else QtGui.QIcon.Mode.Active,
-				state=QtGui.QIcon.State.On     if opt_styled.state & QtWidgets.QStyle.StateFlag.State_On       else QtGui.QIcon.State.Off,
+				mode=QtGui.QIcon.Mode.Selected if option.state & QtWidgets.QStyle.StateFlag.State_Selected else QtGui.QIcon.Mode.Active,
+				state=QtGui.QIcon.State.On     if option.state & QtWidgets.QStyle.StateFlag.State_On       else QtGui.QIcon.State.Off,
 			)
 		
 		except Exception as e:
 			logging.getLogger(__name__).error("Error drawing icon: %s", e)
 		
 		painter.restore()
+
+	def clone(self) -> typing.Self:
+
+	#	print("OKAY HERE I GOOO")
+
+		return self.__class__(
+			aspect_ratio = QtCore.QSizeF(self._aspect_ratio),
+			icon_provider = self._icon_provider,
+			padding = QtCore.QMarginsF(self._padding),
+		)
