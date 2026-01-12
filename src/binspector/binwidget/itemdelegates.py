@@ -148,7 +148,7 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 			w_active = canvas_active.width()
 		
 		canvas_active.setWidth(w_active)
-		#canvas_active.moveCenter(option.rect.marginsRemoved(self._padding).center())
+		canvas_active.moveCenter(QtCore.QRectF(option.rect).marginsRemoved(self._padding).center())
 		
 		painter.save()
 		painter.setClipRect(option.rect)
