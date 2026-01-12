@@ -4,6 +4,7 @@ Manage display delegates
 from __future__ import annotations
 from . import itemdelegates
 from ..models import viewmodelitems
+from ..core import icon_providers
 import avbutils
 from PySide6 import QtCore
 
@@ -34,23 +35,24 @@ class BSDelegateProvider(QtCore.QObject):
 
 		# Callables
 
-		self._FIELD_DELEGATE_FACTORIES: FieldLookup = {
-			51 : itemdelegates.BSIconLookupItemDelegate, # Clip color
-			132: itemdelegates.BSIconLookupItemDelegate, # Marker
-			200: itemdelegates.BSIconLookupItemDelegate, # Bin Display Item Type
+		self._FIELD_DELEGATE_REGISTRY: FieldLookup = {
+			51 : itemdelegates.BSIconLookupItemDelegate(
+				icon_provider=icon_providers.BSPalettedClipColorIconProvider()
+			), # Clip color
+			132: itemdelegates.BSIconLookupItemDelegate(), # Marker
+			200: itemdelegates.BSIconLookupItemDelegate(), # Bin Display Item Type
 
 		}
 		"""Specialized one-off fields"""
 
-		self._FORMAT_DELEGATE_FACTORIES: FormatLookup = {
-#			avbutils.BinColumnFormat.TIMECODE: itemdelegates.LBTimecodeItemDelegate,
+		self._FORMAT_DELEGATE_REGISTRY: FormatLookup = {
+#			avbutils.BinColumnFormat.TIMECODE: itemdelegates.LBTimecodeItemDelegate(),
 		}
-		"""Delegate for generic field formats"""	
-
+		"""Delegate for generic field formats"""
 
 		self._view = view
 
-		# Cached instances
+		# Cached instances -- TODO: Combine this with registry
 		self._format_delegates :FormatLookup  = dict()
 		self._field_delegates  :FieldLookup   = dict()
 		
@@ -112,12 +114,12 @@ class BSDelegateProvider(QtCore.QObject):
 		"""Return the delegate for the given `avbutils.bins.BinColumnFormat"""
 
 		# Return default delegate instance if unknown
-		if format not in self._format_delegates and format not in self._FORMAT_DELEGATE_FACTORIES:
+		if format not in self._format_delegates and format not in self._FORMAT_DELEGATE_REGISTRY:
 			return self.defaultItemDelegate() if default_ok else None
 		
 		# Cache delegate instance if there's a factory for it
 		if format not in self._format_delegates:
-			self._format_delegates[format] = self._FORMAT_DELEGATE_FACTORIES[format]()
+			self._format_delegates[format] = self._FORMAT_DELEGATE_REGISTRY[format]()
 
 		# Return delegate instance
 		return self._format_delegates[format]
@@ -126,12 +128,12 @@ class BSDelegateProvider(QtCore.QObject):
 		"""Return the delegate for the given `avbutils.bins.BIN_COLUMN_ROLES`"""
 
 		# Return default delegate instance if unknown
-		if field not in self._field_delegates and field not in self._FIELD_DELEGATE_FACTORIES:
+		if field not in self._field_delegates and field not in self._FIELD_DELEGATE_REGISTRY:
 			return self.defaultItemDelegate() if default_ok else None
 		
 		# Cache delegate instance if there's a factory for it
 		if field not in self._field_delegates:
-			self._field_delegates[field] = self._FIELD_DELEGATE_FACTORIES[field]()
+			self._field_delegates[field] = self._FIELD_DELEGATE_REGISTRY[field]
 
 		# Return delegate instance
 		return self._field_delegates[field]
@@ -159,16 +161,21 @@ class BSDelegateProvider(QtCore.QObject):
 		format = model.headerData(logical_column_index, orientation, viewmodelitems.BSBinColumnDataRoles.BSDataFormat)
 		field  = model.headerData(logical_column_index, orientation, viewmodelitems.BSBinColumnDataRoles.BSColumnID)
 
+		
+
 		if unique_instance:
 
-			if field in self._FIELD_DELEGATE_FACTORIES:
-				return self._FIELD_DELEGATE_FACTORIES[field]()
+			# Clone whatever the delegate should be
+			# NOTE: Cloning is a fancy thing I did from `BSGenericItemDelegate` that I'll regret later probably
+
+			if field in self._FIELD_DELEGATE_REGISTRY:
+				return self._FIELD_DELEGATE_REGISTRY[field].clone()
 			
-			elif format in self._FORMAT_DELEGATE_FACTORIES:
-				return self._FORMAT_DELEGATE_FACTORIES[format]()
+			elif format in self._FORMAT_DELEGATE_REGISTRY:
+				return self._FORMAT_DELEGATE_REGISTRY[format].clone()
 			
-			else: # TODO: UUUHHH PROLLY NOT
-				return self.defaultItemDelegate().__class__()
+			else:
+				return self.defaultItemDelegate().clone()
 			
 		else:
 
