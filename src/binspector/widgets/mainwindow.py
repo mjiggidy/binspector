@@ -1,10 +1,10 @@
 from os import PathLike
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..binwidget import binwidget
 from ..managers import actions, binproperties, appearance
-from ..widgets import siftwidget, menus, toolboxes, buttons, about
+from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..views import treeview
 from ..core import binloader, icon_engines, icon_providers
 
@@ -68,6 +68,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btn_toolbox_sifting    = buttons.BSActionPushButton(show_text=False)
 		self._btn_toolbox_binview    = buttons.BSActionPushButton(show_text=False)
 
+		self._drag_drop_overlay = overlaywidget.BSDragDropOverlayWidget(parent=self._bin_widget, is_visible=False)
 
 		# The rest
 		
@@ -82,6 +83,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		"""Configure general widget placement and config"""
 		
 		self.setCentralWidget(self._bin_widget)
+		self.setAcceptDrops(True)
 
 		self._dock_bindisplay.setWidget(self._tool_bindisplay)
 		self._dock_sifting.setWidget(self._tool_sifting)
@@ -544,3 +546,32 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self.cleanupSignals()
 		
 		return super().closeEvent(event)
+	
+	def dragEnterEvent(self, event:QtGui.QDragEnterEvent):
+
+		if not event.mimeData().hasUrls():
+
+			event.ignore()
+			return False
+
+		self._drag_drop_overlay.show()
+		
+		event.accept()
+		return True
+	
+	def dropEvent(self, event:QtGui.QDropEvent):
+
+		for file_path in map(lambda u: QtCore.QDir.toNativeSeparators(u.toLocalFile()), event.mimeData().urls()):
+
+			self.loadBinFromPath(file_path)
+			
+		self._drag_drop_overlay.hide()
+		event.accept()
+		return True
+	
+	def dragLeaveEvent(self, event:QtGui.QDragLeaveEvent):
+
+		self._drag_drop_overlay.hide()
+		
+		event.accept()
+		return True
