@@ -39,6 +39,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# QGraphics init
 		self.setInteractive(True)
 		self.setDragMode(QtWidgets.QGraphicsView.DragMode.RubberBandDrag)
+		self.setAcceptDrops(False)
 		self.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
 		self.setOptimizationFlags(
 			QtWidgets.QGraphicsView.OptimizationFlag.DontAdjustForAntialiasing |
