@@ -34,8 +34,31 @@ class BSDragDropOverlayWidget(BSAbstractOverlayWidget):
 		super().__init__(parent=parent)
 
 		self._margins = margins or QtCore.QMarginsF(32,32,32,32)
+		self._lerp_margins = QtCore.QMarginsF(0,0,0,0)
+
+		self._animator = QtCore.QVariantAnimation(parent=self)
+
+		
+		self._animator.setStartValue(0.0)
+		self._animator.setEndValue(1.0)
+		self._animator.setDuration(300) #ms
+		self._animator.setEasingCurve(QtCore.QEasingCurve.Type.OutExpo)
 
 		self.setVisible(is_visible)
+
+		self._animator.valueChanged.connect(self.update)
+
+	@QtCore.Slot()
+	def show(self):
+
+		self.dragStarted()
+
+		return super().show()
+
+	@QtCore.Slot()
+	def dragStarted(self):
+
+		self._animator.start()
 	
 	def margins(self) -> QtCore.QMarginsF:
 
@@ -59,14 +82,31 @@ class BSDragDropOverlayWidget(BSAbstractOverlayWidget):
 		if not self.isVisible():
 			print("NOPE")
 			return
+		
+		MAX_BG_OPACITY = 0.5
+		
+		lerp_margins = self._animator.currentValue()
+		#print(lerp_margins)
+		
+		color_border = QtGui.QColor(self.parent().palette().highlight().color())
+		color_border.setAlphaF(self._animator.currentValue())
+
+		color_background = QtGui.QColor(self.parent().palette().dark().color())
+		color_background.setAlphaF(self._animator.currentValue() * MAX_BG_OPACITY)
 
 		pen = QtGui.QPen()
-		pen.setWidth(10)
+		pen.setWidth(2)
 		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
-		pen.setColor(self.parent().palette().highlight().color())
+		pen.setColor(color_border)
+
+		brush = QtGui.QBrush()
+		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+		brush.setColor(color_background)
 
 		painter = QtGui.QPainter(self)
+		painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
 		painter.setPen(pen)
+		painter.setBrush(brush)
 		painter.drawRoundedRect(
-			QtCore.QRectF(self.parent().rect()).marginsRemoved(self._margins), 10, 10, QtCore.Qt.SizeMode.AbsoluteSize)
+			QtCore.QRectF(self.parent().rect()).marginsRemoved(self._margins * lerp_margins), 10, 10, QtCore.Qt.SizeMode.AbsoluteSize)
 		painter.end()
