@@ -6,6 +6,112 @@
 from PySide6 import QtCore
 
 qt_resource_data = b"\
+\x00\x00\x06s\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22UTF\
+-8\x22 standalone=\x22\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   width=\x22\
+14\x22\x0a   height=\x221\
+1\x22\x0a   viewBox=\x220\
+ 0 14 11\x22\x0a   ver\
+sion=\x221.1\x22\x0a   id\
+=\x22svg1\x22\x0a   xmlns\
+=\x22http://www.w3.\
+org/2000/svg\x22\x0a  \
+ xmlns:svg=\x22http\
+://www.w3.org/20\
+00/svg\x22>\x0a  <defs\
+\x0a     id=\x22defs1\x22\
+ />\x0a  <rect\x0a    \
+ style=\x22fill:#ff\
+ffff;fill-opacit\
+y:0.5;paint-orde\
+r:markers fill s\
+troke\x22\x0a     id=\x22\
+rect21\x22\x0a     wid\
+th=\x2213\x22\x0a     hei\
+ght=\x2210\x22\x0a     x=\
+\x220.5\x22\x0a     y=\x220.\
+5\x22\x0a     rx=\x221.5\x22\
+\x0a     ry=\x221.5\x22 /\
+>\x0a  <path\x0a     d\
+=\x22M 3,2 C 2.446,\
+2 2,2.446 2,3 v \
+7 c 0,0.554 0.44\
+6,1 1,1 h 10 c 0\
+.554,0 1,-0.446 \
+1,-1 V 3 C 14,2.\
+446 13.554,2 13,\
+2 Z M 3,3 H 4 V \
+4 H 3 Z m 9,0 h \
+1 V 4 H 12 Z M 3\
+,5 H 4 V 6 H 3 Z\
+ m 9,0 h 1 V 6 H\
+ 12 Z M 3,7 H 4 \
+V 8 H 3 Z m 9,0 \
+h 1 V 8 H 12 Z M\
+ 3,9 h 1 v 1 H 3\
+ Z m 9,0 h 1 v 1\
+ h -1 z\x22\x0a     st\
+yle=\x22fill:#00000\
+0;fill-opacity:0\
+.25;paint-order:\
+markers fill str\
+oke\x22\x0a     id=\x22pa\
+th20-3\x22 />\x0a  <pa\
+th\x0a     d=\x22M 2,1\
+ C 1.446,1 1,1.4\
+46 1,2 v 7 c 0,0\
+.554 0.446,1 1,1\
+ h 10 c 0.554,0 \
+1,-0.446 1,-1 V \
+2 C 13,1.446 12.\
+554,1 12,1 Z M 2\
+,2 H 3 V 3 H 2 Z\
+ m 9,0 h 1 V 3 H\
+ 11 Z M 2,4 H 3 \
+V 5 H 2 Z m 9,0 \
+h 1 V 5 H 11 Z M\
+ 2,6 H 3 V 7 H 2\
+ Z m 9,0 h 1 V 7\
+ H 11 Z M 2,8 H \
+3 V 9 H 2 Z m 9,\
+0 h 1 v 1 h -1 z\
+\x22\x0a     style=\x22pa\
+int-order:marker\
+s fill stroke;fi\
+ll:#000000;fill-\
+opacity:0.5\x22\x0a   \
+  id=\x22path20\x22 />\
+\x0a  <path\x0a     d=\
+\x22M 1,0 C 0.446,0\
+ 0,0.446 0,1 v 7\
+ c 0,0.554 0.446\
+,1 1,1 h 10 c 0.\
+554,0 1,-0.446 1\
+,-1 V 1 C 12,0.4\
+46 11.554,0 11,0\
+ Z M 1,1 H 2 V 2\
+ H 1 Z m 9,0 h 1\
+ V 2 H 10 Z M 1,\
+3 H 2 V 4 H 1 Z \
+m 9,0 h 1 V 4 H \
+10 Z M 1,5 H 2 V\
+ 6 H 1 Z m 9,0 h\
+ 1 V 6 H 10 Z M \
+1,7 H 2 V 8 H 1 \
+Z m 9,0 h 1 v 1 \
+h -1 z\x22\x0a     sty\
+le=\x22paint-order:\
+markers fill str\
+oke\x22\x0a     id=\x22pa\
+th20-0\x22 />\x0a</svg\
+>\x0a\
 \x00\x00\x01\xeb\
 \x00\
 \x00\x08\xdex\xda\xd5\xd6\xcd\x8e\xdb \x10\x00\xe0\xbb\x9f\
@@ -137,6 +243,11 @@ qt_resource_name = b"\
 \x00P\xa9c\
 \x00b\
 \x00i\x00n\x00i\x00t\x00e\x00m\x00s\
+\x00\x12\
+\x02\x05\xdaG\
+\x00i\
+\x00t\x00e\x00m\x00_\x00g\x00r\x00o\x00u\x00p\x00c\x00l\x00i\x00p\x00.\x00s\x00v\
+\x00g\
 \x00\x11\
 \x04\xe6\x92G\
 \x00i\
@@ -154,12 +265,14 @@ qt_resource_struct = b"\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x02\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\x10\x00\x02\x00\x00\x00\x02\x00\x00\x00\x03\
+\x00\x00\x00\x10\x00\x02\x00\x00\x00\x03\x00\x00\x00\x03\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00N\x00\x01\x00\x00\x00\x01\x00\x00\x01\xef\
+\x00\x00\x00x\x00\x01\x00\x00\x00\x01\x00\x00\x08f\
 \x00\x00\x01\x9a\xa3|\xaa\x8b\
-\x00\x00\x00&\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\
-\x00\x00\x01\x9aoq\xd9k\
+\x00\x00\x00&\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
+\x00\x00\x01\x9aoq\xd9j\
+\x00\x00\x00P\x00\x01\x00\x00\x00\x01\x00\x00\x06w\
+\x00\x00\x01\x9b\xbd\xfc\xc0L\
 "
 
 def qInitResources():
