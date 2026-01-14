@@ -1,6 +1,7 @@
 """
 Manage display delegates
 """
+
 from __future__ import annotations
 import typing
 import avbutils
@@ -41,15 +42,19 @@ class BSBinColumnDelegateProvider(QtCore.QObject):
 
 		super().__init__(parent=view)
 
+		ICON_ASPECT_RATIO = QtCore.QSizeF(4,3)
+
 		# Callables
 
 		self._FIELD_DELEGATE_REGISTRY: FieldLookup = {
 			51 : itemdelegates.BSIconLookupItemDelegate(
-				icon_provider=icon_providers.BSPalettedClipColorIconProvider()
+				aspect_ratio=ICON_ASPECT_RATIO,
+				icon_provider=icon_providers.BSPalettedClipColorIconProvider(),
 			), # Clip color
 			132: itemdelegates.BSIconLookupItemDelegate(), # Marker
 			200: itemdelegates.BSIconLookupItemDelegate(
-				icon_provider=icon_providers.BSPalettedBinItemTypeIconProvider()
+				aspect_ratio=ICON_ASPECT_RATIO,
+				icon_provider=icon_providers.BSPalettedBinItemTypeIconProvider(),
 			), # Bin Display Item Type
 
 		}
@@ -71,6 +76,13 @@ class BSBinColumnDelegateProvider(QtCore.QObject):
 		# Setup icons
 		item_type_icon_provider:icon_providers.BSPalettedBinItemTypeIconProvider = self._FIELD_DELEGATE_REGISTRY[200].iconProvider()
 		item_type_icon_provider.setIconPathForBinItemType(avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP, ":/icons/binitems/item_masterclip.svg")
+		item_type_icon_provider.setIconPathForBinItemType(avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP, ":/icons/binitems/item_masterclip.svg")
+
+		item_type_icon_provider.setIconPathForBinItemType(avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP, ":/icons/binitems/item_timeline.svg")
+		item_type_icon_provider.setIconPathForBinItemType(avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP, ":/icons/binitems/item_timeline.svg")
+
+		item_type_icon_provider.setIconPathForBinItemType(avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.USER_CLIP, ":/icons/binitems/item_groupclip.svg")
+		item_type_icon_provider.setIconPathForBinItemType(avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP, ":/icons/binitems/item_groupclip.svg")
 	
 	def setView(self, view:QtWidgets.QAbstractItemView):
 		"""Set the `QAbstractItemview` which will use the delegates"""
