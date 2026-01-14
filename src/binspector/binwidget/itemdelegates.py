@@ -64,8 +64,6 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
 		fm = QtGui.QFontMetrics(kewl_options.font)
 		elided_text = fm.elidedText(kewl_text, kewl_options.textElideMode, kewl_options.rect.width())
-
-		#print)
 		
 		# NOTE HERE: Uh so yeah this is redrawing a bunch at the smaller rect and I only really need text but lol
 		painter.setFont(kewl_options.font)
@@ -78,9 +76,9 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 			elided_text,
 			QtGui.QPalette.ColorRole.HighlightedText if bool(kewl_options.state & QtWidgets.QStyle.StateFlag.State_Selected) else QtGui.QPalette.ColorRole.Text
 		)
-#		if self._padding.left() != self._padding.right():
-#			print(self._padding)
-#		painter.drawRect(kewl_options.rect)
+
+		# DEBUG:
+		#painter.drawRect(kewl_options.rect)
 
 		#return super().paint(painter, kewl_options, index)
 
@@ -131,11 +129,8 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 
 		# Center, size and shape the canvas QRect
 		canvas_active = self.activeRectFromRect(option.rect)#.marginsRemoved(self._padding)
-
-#		print("***** PADDING HERE IS ", self._padding)
-#		print("***** ACTIVE RECT IS ", canvas_active)
 		
-		# Based on the active canvas area, bind the width to
+		# NOTE: Based on the active canvas area, bind the width to
 		# Min: Same as height (square)
 		# Max: Aspect ratio (w * w/h)
 		w_min = canvas_active.height()
@@ -152,6 +147,9 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		
 		painter.save()
 		painter.setClipRect(option.rect)
+		
+		# DEBUG
+		#painter.drawRect(option.rect)
 		
 		try:
 			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, option, painter, option.widget)
