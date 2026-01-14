@@ -108,5 +108,13 @@ class BSDragDropOverlayWidget(BSAbstractOverlayWidget):
 		painter.setPen(pen)
 		painter.setBrush(brush)
 		painter.drawRoundedRect(
-			QtCore.QRectF(self.parent().rect()).marginsRemoved(self._margins * lerp_margins), 10, 10, QtCore.Qt.SizeMode.AbsoluteSize)
+			QtCore.QRectF(
+				self.parent().rect()
+			).marginsRemoved(self._margins * lerp_margins),
+			10,
+			10,
+			QtCore.Qt.SizeMode.AbsoluteSize
+		)
+
+		painter.drawText(self.rect(), self.tr("Drop 'er on down here, buddy"), QtCore.Qt.AlignmentFlag.AlignCenter)
 		painter.end()
