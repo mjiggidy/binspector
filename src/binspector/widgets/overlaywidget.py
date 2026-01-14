@@ -80,7 +80,7 @@ class BSDragDropOverlayWidget(BSAbstractOverlayWidget):
 	def paintEvent(self, event:QtGui.QPaintEvent):
 
 		if not self.isVisible():
-			print("NOPE")
+#			print("NOPE")
 			return
 		
 		MAX_BG_OPACITY = 0.5
