@@ -2,13 +2,17 @@
 Manage display delegates
 """
 from __future__ import annotations
-from . import itemdelegates
-from ..models import viewmodelitems
-from ..core import icon_providers
+import typing
 import avbutils
+
 from PySide6 import QtCore
 
-import typing
+from . import itemdelegates
+
+from ..models import viewmodelitems
+from ..core   import icon_providers
+from ..res    import icons_binitems
+
 if typing.TYPE_CHECKING:
 	from PySide6 import QtWidgets
 
@@ -18,7 +22,11 @@ type FormatLookup = dict[avbutils.BinColumnFormat, itemdelegates.BSGenericItemDe
 type FieldLookup = dict[int, itemdelegates.BSGenericItemDelegate]
 """Key/Val Lookup For Particular Field Lookups"""
 
-class BSDelegateProvider(QtCore.QObject):
+class BSBinColumnDelegateProvider(QtCore.QObject):
+	"""
+	Item delegate provider for binwidget treeview columns.
+	Allows delegate lookup based generic field type or bespoke individual fields
+	"""
 
 	sig_view_changed                  = QtCore.Signal(object)
 	sig_default_item_delegate_changed = QtCore.Signal(object)
@@ -40,7 +48,9 @@ class BSDelegateProvider(QtCore.QObject):
 				icon_provider=icon_providers.BSPalettedClipColorIconProvider()
 			), # Clip color
 			132: itemdelegates.BSIconLookupItemDelegate(), # Marker
-			200: itemdelegates.BSIconLookupItemDelegate(), # Bin Display Item Type
+			200: itemdelegates.BSIconLookupItemDelegate(
+				icon_provider=icon_providers.BSPalettedBinItemTypeIconProvider()
+			), # Bin Display Item Type
 
 		}
 		"""Specialized one-off fields"""
@@ -57,6 +67,10 @@ class BSDelegateProvider(QtCore.QObject):
 		self._field_delegates  :FieldLookup   = dict()
 		
 		self.setDefaultItemDelegate(default_delegate or itemdelegates.BSGenericItemDelegate())
+
+		# Setup icons
+		item_type_icon_provider:icon_providers.BSPalettedBinItemTypeIconProvider = self._FIELD_DELEGATE_REGISTRY[200].iconProvider()
+		item_type_icon_provider.setIconPathForBinItemType(avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP, ":/icons/binitems/item_masterclip.svg")
 	
 	def setView(self, view:QtWidgets.QAbstractItemView):
 		"""Set the `QAbstractItemview` which will use the delegates"""

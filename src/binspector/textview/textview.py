@@ -28,7 +28,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
-		self._delegate_provider     = delegate_lookup.BSDelegateProvider(view=self)
+		self._delegate_provider     = delegate_lookup.BSBinColumnDelegateProvider(view=self)
 		self._column_select_watcher = columnselect.BSColumnSelectWatcher(parent=self)
 		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 
@@ -66,7 +66,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		
 		#self.setCustomDelegates()
 
-	def delegateProvider(self) -> delegate_lookup.BSDelegateProvider:
+	def delegateProvider(self) -> delegate_lookup.BSBinColumnDelegateProvider:
 		"""Get the thing that looks up delegates for the thing"""
 
 		return self._delegate_provider

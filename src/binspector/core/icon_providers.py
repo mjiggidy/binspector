@@ -1,7 +1,14 @@
+from __future__ import annotations
 import typing, logging
-from . import icon_engines
+import avbutils
 
 from PySide6 import QtGui
+
+from . import icon_engines
+
+
+if typing.TYPE_CHECKING:
+	import os
 
 PROPERTY_ICON_PALETTED = "icon_paletted"
 """Custom Property Key containing a resource path to a paletted SVG"""
@@ -45,7 +52,7 @@ class BSIconProvider:
 	
 class BSPalettedClipColorIconProvider(BSIconProvider):
 
-	def getIcon(self, clip_color:QtGui.QColor, border_width:int=1):
+	def getIcon(self, clip_color:QtGui.QColor) -> QtGui.QIcon:
 
 		#print("*** LOOOKING FOR ", clip_color)
 
@@ -57,8 +64,48 @@ class BSPalettedClipColorIconProvider(BSIconProvider):
 
 			self._icons[clip_color_hash] = icon_engines.BSPalettedClipColorIconEngine(
 				clip_color=clip_color,
-				border_width=border_width
+				border_width=1 # NOTE: Maybe set this in the constructor or something
 			)
 			logging.getLogger(__name__).debug("%s created icon %s", repr(self), repr(self._icons[clip_color_hash]))
 
 		return super().getIcon(clip_color_hash)
+
+class BSPalettedBinItemTypeIconProvider(BSIconProvider):
+
+	# TODO: More like a generic SVG lookup probably
+
+	def __init__(self, *args, path_registry:dict[avbutils.bins.BinDisplayItemTypes, os.PathLike[str]]|None=None, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._item_paths_registry: dict[avbutils.bins.BinDisplayItemTypes, os.PathLike[str]] = path_registry or dict()
+		"""SVG Resource Path Lookup per `BinDisplayItemTypes` thingy"""
+
+		self._default_svg_path:os.PathLike[str] = None
+		"""Optional default path (or `None`) if no icon registered for type"""
+	
+	def iconPathForBinItemType(self, bin_item:avbutils.bins.BinDisplayItemTypes) -> os.PathLike[str]|None:
+		"""Get the path for a given bin item type"""
+		
+		# NOTE: Being that `BinDisplayItemTypes` is a flag, maybe do this fancier
+		return self._item_paths_registry.get(bin_item, self._default_svg_path)
+	
+	def setIconPathForBinItemType(self, bin_item:avbutils.bins.BinDisplayItemTypes, icon_path:os.PathLike[str]):
+		"""Set an icon path for a given bin item type"""
+
+		logging.getLogger(__name__).debug("Adding icon path %s for %s", icon_path, repr(bin_item))
+		self._item_paths_registry[bin_item] = icon_path
+
+	def getIcon(self, bin_item_type:avbutils.bins.BinDisplayItemTypes):
+
+		if bin_item_type not in self._icons:
+
+			icon_path = self.iconPathForBinItemType(bin_item_type) or self._default_svg_path
+			
+			if icon_path:
+
+				icon = QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(icon_path))
+				self.addIcon(bin_item_type, icon)
+				return icon
+
+		return super().getIcon(bin_item_type)
