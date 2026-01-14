@@ -2,5 +2,6 @@
 <qresource prefix="/icons/binitems">
 	<file alias="item_masterclip.svg">../binitems/item_masterclip_v16_themed.svg</file>
 	<file alias="item_timeline.svg">../binitems/item_timeline_v01_themed.svg</file>
+	<file alias="item_groupclip.svg">../binitems/item_groupclip_v01_themed.svg</file>
 </qresource>
 </RCC>
