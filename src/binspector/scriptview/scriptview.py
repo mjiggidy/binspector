@@ -84,7 +84,9 @@ class BSBinScriptView(textview.BSBinTextView):
 	def _bottomItemPadding(self) -> float:
 		"""Calculated bottom padding for item delegate which factors in the frame"""
 
-		return self.frameRect().height() + self._item_padding.bottom()
+		
+
+		return self.frameRect().height() + self._item_padding.bottom() - QtGui.QFontMetricsF(self.font()).height()
 
 	def adjustFirstItemPadding(self):
 		"""Adjust the first item delegate's padding to make room for frame stuff"""
