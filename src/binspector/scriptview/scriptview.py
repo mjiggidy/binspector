@@ -80,6 +80,11 @@ class BSBinScriptView(textview.BSBinTextView):
 	def _firstItemOffset(self) -> float:
 
 		return self._item_padding.left() + self.frameRect().width() + self._item_padding.right()
+	
+	def _bottomItemPadding(self) -> float:
+		"""Calculated bottom padding for item delegate which factors in the frame"""
+
+		return self.frameRect().height() + self._item_padding.bottom()
 
 	def adjustFirstItemPadding(self):
 		"""Adjust the first item delegate's padding to make room for frame stuff"""
@@ -100,10 +105,7 @@ class BSBinScriptView(textview.BSBinTextView):
 		new_padding = QtCore.QMarginsF(self._item_padding)
 		
 		new_padding.setLeft(addtl_padding)
-		new_padding.setBottom(max(
-			self.frameRect().height(),
-			self._item_padding.bottom()
-		))
+		new_padding.setBottom(self._bottomItemPadding())
 		new_del.setItemPadding(new_padding)
 
 		self._delegate_provider.setDelegateForColumn(first_col_logical, new_del)
@@ -120,7 +122,7 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		# Add bottom padding for at least the frame rect
 		script_item_padding = QtCore.QMarginsF(self._item_padding)
-		script_item_padding.setBottom(self.frameRect().height() + self._item_padding.bottom())
+		script_item_padding.setBottom(self._bottomItemPadding())
 		
 		super().refreshDelegates(adjusted_padding=script_item_padding)
 
