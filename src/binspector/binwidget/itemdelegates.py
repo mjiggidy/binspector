@@ -111,7 +111,16 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		"""Return aspect ratio-corrected width x original height"""
 
 		orig_size = super().sizeHint(option, index)
-		adj_size  = self.sizeWithAspectRatio(orig_size)
+
+		# HACKY, BUT:
+		adj_size = QtCore.QSize(
+			orig_size.width() - self._padding.left() - self._padding.right(),
+			orig_size.height() - self._padding.top() - self._padding.bottom()
+		)
+
+		adj_size  = self.sizeWithAspectRatio(adj_size)
+
+		print("ADJ SIZE IS ", adj_size, " from orig",orig_size)
 		
 		# NOTE: This was killing me for a while.  Adding back in the horizontal padding
 		# after correcting horizontal aspect ratio based on height.  I'm dumb.
@@ -149,7 +158,8 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		painter.setClipRect(option.rect)
 		
 		# DEBUG
-		#painter.drawRect(option.rect)
+		painter.drawRect(QtCore.QRect(option.rect.topLeft(), self.sizeHint(option, index)))
+		#painter.drawRect()
 		
 		try:
 			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, option, painter, option.widget)
