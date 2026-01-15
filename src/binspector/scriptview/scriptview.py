@@ -105,7 +105,7 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		
 		first_col_width   = self.header().sectionSize(first_col_logical)
-		#self.header().setSectionResizeMode(first_col_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+		self.header().setSectionResizeMode(first_col_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		first_col_auto    = self.header().sectionSize(first_col_logical)
 		first_col_delta   = first_col_width - first_col_auto
 
