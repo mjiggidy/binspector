@@ -154,7 +154,7 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		painter.setClipRect(option.rect)
 		
 		# DEBUG
-		painter.drawRect(QtCore.QRect(option.rect.topLeft(), self.sizeHint(option, index)))
+		#painter.drawRect(QtCore.QRect(option.rect.topLeft(), self.sizeHint(option, index)))
 		#painter.drawRect()
 		
 		try:

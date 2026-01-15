@@ -104,10 +104,10 @@ class BSBinScriptView(textview.BSBinTextView):
 		first_col_logical = self.header().logicalIndex(0)
 
 		
-		first_col_width   = self.header().sectionSize(first_col_logical)
+	#	first_col_width   = self.header().sectionSize(first_col_logical)
 		self.header().setSectionResizeMode(first_col_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-		first_col_auto    = self.header().sectionSize(first_col_logical)
-		first_col_delta   = first_col_width - first_col_auto
+	#	first_col_auto    = self.header().sectionSize(first_col_logical)
+	#	first_col_delta   = first_col_width - first_col_auto
 
 		new_del = self._delegate_provider.delegateForColumn(
 			first_col_logical,
@@ -115,20 +115,20 @@ class BSBinScriptView(textview.BSBinTextView):
 		)
 
 
-		print("Left padding setting to ", self._firstItemOffset())
+#		print("Left padding setting to ", self._firstItemOffset())
 		new_padding = QtCore.QMarginsF(self._item_padding)
 		new_padding.setLeft(self._firstItemOffset())
 		new_padding.setBottom(self._bottomItemPadding())
-		print("neueue padding is", new_padding)
+#		print("neueue padding is", new_padding)
 		new_del.setItemPadding(new_padding)
 
 		self._delegate_provider.setDelegateForColumn(first_col_logical, new_del)
 
-		print("Delegate padding is now at ", self.itemDelegateForColumn(first_col_logical).itemPadding())
+#		print("Delegate padding is now at ", self.itemDelegateForColumn(first_col_logical).itemPadding())
 		
 #		first_col_width = self.header().sectionSize(first_col_logical)
 #		self.header().setSectionResizeMode(first_col_logical, QtWidgets.QHeaderView.ResizeMode.Fixed)
-#		self.header().resizeSection(first_col_logical, self.header().sectionSize(first_col_logical) + self.frameRect().width())
+		#self.header().resizeSection(first_col_logical, self.header().sectionSize(first_col_logical) + first_col_delta)
 		
 		
 
