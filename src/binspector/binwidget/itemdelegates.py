@@ -102,9 +102,19 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 	def sizeWithAspectRatio(self, rect:QtCore.QSize) -> QtCore.QSize:
 		"""Over-engineering?  Probably.  Return a size corrected for aspect ratio with priority given to height."""
 
+		# NOTE: Holy moly this had me cranky.  Two things to remember here:
+		# 1: All these BS lookups apply padding to their sizeHint
+		# 2: The aspect ratio is based on the fixed height of the row so we can vary the width of the column
+		# 3: HOWEVER Because Script View has "unbalaced" vertical padding, so...
+		# 4: We need to remove it first so the height doesn't throw off aspect ratio calculations.
+
+		rect_height_no_padding = rect.height() - self._padding.top() - self._padding.bottom()
+
+		rect_width_aspect_corrected = rect_height_no_padding * self._aspect_ratio.width()/self._aspect_ratio.height()
+
 		return QtCore.QSize(
-			rect.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()),
-			rect.height()
+			rect_width_aspect_corrected + self._padding.left() + self._padding.right(),
+			rect_height_no_padding + self._padding.top() + self._padding.bottom()
 		)
 
 	def sizeHint(self, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex) -> QtCore.QSize:
@@ -112,21 +122,7 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 
 		orig_size = super().sizeHint(option, index)
 
-		# HACKY, BUT:
-		adj_size = QtCore.QSize(
-			orig_size.width() - self._padding.left() - self._padding.right(),
-			orig_size.height() - self._padding.top() - self._padding.bottom()
-		)
-
-		adj_size  = self.sizeWithAspectRatio(adj_size)
-
-		print("ADJ SIZE IS ", adj_size, " from orig",orig_size)
-		
-		# NOTE: This was killing me for a while.  Adding back in the horizontal padding
-		# after correcting horizontal aspect ratio based on height.  I'm dumb.
-		adj_size += QtCore.QSize(self._padding.left() + self._padding.right(), 0)
-		
-		return adj_size
+		return self.sizeWithAspectRatio(orig_size)
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
