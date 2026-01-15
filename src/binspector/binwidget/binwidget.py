@@ -246,15 +246,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int, script_scale:int):
 
 		self.setBinViewName(bin_view.name)
+
+		for col in range(self.textView().header().count()):
+			self.textView().setColumnWidthFromBinView(col, True)
+			
 		self.frameView().setZoom(frame_scale)
 		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
 		
 		self.scriptView().setFrameScale(script_scale)
 
-		#print("Okay haha...")
-
-		for col in range(self.textView().header().count()):
-			self.textView().setColumnWidthFromBinView(col, True)
 
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
@@ -345,15 +345,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 				self._section_main.currentWidget().setFocus()
 				self._viewmode_text.selectSection(log_idx)
-				self._viewmode_text.scrollTo(self._viewmode_text.model().index(0, log_idx, QtCore.QModelIndex()), QtWidgets.QTreeView.ScrollHint.PositionAtCenter)
-				
+				self._viewmode_text.scrollTo(
+					self._viewmode_text.model().index(0, log_idx, QtCore.QModelIndex()),
+					QtWidgets.QTreeView.ScrollHint.PositionAtCenter
+				)
 				
 				self.sig_focus_set_on_column.emit(log_idx)
 				return True
 		
 		QtWidgets.QApplication.beep()
-		#self.sig_focus_set_on_column.emit(-1)
-		
 		return False
 
 	###
@@ -362,15 +362,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	def addScrollBarWidget(self, widget:QtWidgets.QWidget, view_mode:avbutils.bins.BinDisplayModes):
 
-		scroll_area:QtWidgets.QScrollArea = self._section_main.widget(view_mode).scrollArea()
+		widget.setFixedWidth(self._proxystyle_hscroll.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent))
+		self._section_main.widget(view_mode).scrollArea().addScrollBarWidget(widget, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-		scroll_area.addScrollBarWidget(widget, QtCore.Qt.AlignmentFlag.AlignLeft)
-
-		widget.setFixedWidth(
-			self._proxystyle_hscroll.pixelMetric(
-				QtWidgets.QStyle.PixelMetric.PM_ScrollBarExtent
-			)
-		)
 	
 	@QtCore.Slot(int)
 	@QtCore.Slot(float)
