@@ -122,6 +122,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.sig_bin_stats_updated.connect(self._binstats_text.setText)
 		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
 
+
+		
 		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
 
 		#self._section_main.currentChanged.connect(self._selection_syncer.viewModeChanged)
