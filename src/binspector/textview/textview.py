@@ -6,7 +6,7 @@ from ..models import viewmodels
 from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
-from ..binwidget import delegate_lookup
+from . import delegate_lookup
 
 class BSBinTextView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
@@ -29,10 +29,13 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
 		self._delegate_provider     = delegate_lookup.BSBinColumnDelegateProvider(view=self)
+		self._item_delegate         = delegate_lookup.BSDelegateLookupDelegate(parent=self, delegate_provider=self._delegate_provider)
 		self._column_select_watcher = columnselect.BSColumnSelectWatcher(parent=self)
 		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 
-		#self.setItemPadding(self._item_padding)
+
+		self.setItemPadding(self._item_padding)
+		self.setItemDelegate(self._item_delegate)
 		
 		self.header().viewport().installEventFilter(self._column_select_watcher)
 
@@ -288,6 +291,11 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		
 		self._item_padding = QtCore.QMarginsF(padding)
 #		print("*** ITEM PADDING NOW ", self._item_padding)
+
+		for delegate in self._delegate_provider.delegates():
+			#rint("HEY NOW I UPDATE", delegate)
+			delegate.setItemPadding(padding)
+
 
 		logging.getLogger(__name__).debug("Setting padding to %s", str(self._item_padding))
 

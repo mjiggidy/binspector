@@ -5,7 +5,6 @@ Script View Mode
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..textview import textview
-from ..binwidget import delegate_lookup
 from ..models import viewmodelitems
 
 from ..core.config import BSScriptViewModeConfig
@@ -149,7 +148,7 @@ class BSBinScriptView(textview.BSBinTextView):
 		# Gather required data
 
 		script_text     = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
-		item_delegate   = self.itemDelegate(index)
+		item_delegate   = self._delegate_provider.delegateForColumn(index.column())
 		row_is_selected = self.selectionModel().isSelected(index)
 
 		# Build rects
