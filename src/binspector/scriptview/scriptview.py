@@ -33,7 +33,6 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		self.setItemPadding(BSScriptViewModeConfig.DEFAULT_ITEM_PADDING)
 	
-		#self.refreshDelegates()
 		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
 		self.applyHeaderConstraints()
 
@@ -41,7 +40,7 @@ class BSBinScriptView(textview.BSBinTextView):
 	def setItemPadding(self, padding:QtCore.QMarginsF):
 		print("Please help me oh god")
 		super().setItemPadding(padding)
-		self.adjustFirstItemPadding()
+#		self.adjustFirstItemPadding()
 
 	def syncFromHeader(self, header:QtWidgets.QHeaderView):
 		"""Sync header from another header"""
@@ -49,8 +48,6 @@ class BSBinScriptView(textview.BSBinTextView):
 		self.header().restoreState(
 			header.saveState()
 		)
-
-		self.refreshDelegates()
 		self.applyHeaderConstraints()
 
 	@QtCore.Slot(object)
@@ -61,8 +58,7 @@ class BSBinScriptView(textview.BSBinTextView):
 		
 		self._frame_scale = frame_scale
 		
-		self.refreshDelegates()
-		self.adjustFirstItemPadding()
+		#self.adjustFirstItemPadding()
 		#self.applyHeaderConstraints() # NOTE: Not needed / complicates scaling
 
 		# Re-draw drawRow()
@@ -98,21 +94,21 @@ class BSBinScriptView(textview.BSBinTextView):
 		# but uhhhhh good foooor noowwww...???
 		return self.frameRect().height() + self._item_padding.bottom() - QtGui.QFontMetricsF(self.font()).height()
 
-	def adjustFirstItemPadding(self):
-		"""Adjust the first item delegate's padding to make room for frame stuff"""
-
-		first_col_logical = self.header().logicalIndex(0)
-
-		
-	#	first_col_width   = self.header().sectionSize(first_col_logical)
-		self.header().setSectionResizeMode(first_col_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-	#	first_col_auto    = self.header().sectionSize(first_col_logical)
-	#	first_col_delta   = first_col_width - first_col_auto
-
-		new_del = self._delegate_provider.delegateForColumn(
-			first_col_logical,
-			unique_instance=True
-		)
+#	def adjustFirstItemPadding(self):
+#		"""Adjust the first item delegate's padding to make room for frame stuff"""
+#
+#		first_col_logical = self.header().logicalIndex(0)
+#
+#		
+#	#	first_col_width   = self.header().sectionSize(first_col_logical)
+#		self.header().setSectionResizeMode(first_col_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+#	#	first_col_auto    = self.header().sectionSize(first_col_logical)
+#	#	first_col_delta   = first_col_width - first_col_auto
+#
+#		new_del = self._delegate_provider.delegateForColumn(
+#			first_col_logical,
+#			unique_instance=True
+#		)
 
 
 #		print("Left padding setting to ", self._firstItemOffset())
@@ -133,15 +129,6 @@ class BSBinScriptView(textview.BSBinTextView):
 		
 
 #		print(f"Adjust from {first_col_width=} to {first_col_width + addtl_padding =}")
-
-	def refreshDelegates(self):
-		"""Re-calculate and re-apply padding data when size stuff changes"""
-
-		# Add bottom padding for at least the frame rect
-		script_item_padding = QtCore.QMarginsF(self._item_padding)
-		script_item_padding.setBottom(self._bottomItemPadding())
-		
-		super().refreshDelegates(adjusted_padding=script_item_padding)
 
 	def applyHeaderConstraints(self):
 		"""Header constraints"""

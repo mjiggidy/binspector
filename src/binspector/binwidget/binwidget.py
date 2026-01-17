@@ -213,7 +213,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
 
 			self._viewmode_script.syncFromHeader(self._viewmode_text.header())
-			self._viewmode_script.adjustFirstItemPadding()
+			#self._viewmode_script.adjustFirstItemPadding()
 
 		# Leaving Frame Mode
 		# Sync selection back to selection model

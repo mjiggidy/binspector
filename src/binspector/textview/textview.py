@@ -36,7 +36,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		
 		self.header().viewport().installEventFilter(self._column_select_watcher)
 
-		self.header().sectionCountChanged.connect(lambda: self.refreshDelegates())
+		#self.header().sectionCountChanged.connect(lambda: self.refreshDelegates())
 		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
 
 	def setSelectionModel(self, selectionModel):
@@ -288,38 +288,10 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		
 		self._item_padding = QtCore.QMarginsF(padding)
 #		print("*** ITEM PADDING NOW ", self._item_padding)
-		self.refreshDelegates()
 
 		logging.getLogger(__name__).debug("Setting padding to %s", str(self._item_padding))
 
 		self.sig_item_padding_changed.emit(padding)
-
-	def refreshDelegates(self, adjusted_padding:QtCore.QMarginsF|None=None):
-		"""Re-calculate and re-apply padding data when size stuff changes"""
-
-		adjusted_padding = QtCore.QMarginsF(adjusted_padding if adjusted_padding is not None else self._item_padding)
-#		print("****OKAY STARTING WITH", adjusted_padding)
-		
-		done_dels = set()
-
-		# Set padding on default del
-		current_del = self._delegate_provider.defaultItemDelegate()
-		current_del.setItemPadding(adjusted_padding)
-		
-		self._delegate_provider.setDefaultItemDelegate(current_del)
-
-		done_dels.add(current_del)
-
-		# Set padding on any other delegates
-		for col in range(self.header().count()):
-		
-			current_del = self._delegate_provider.delegateForColumn(col)
-
-			if current_del not in done_dels:
-				current_del.setItemPadding(adjusted_padding)
-				done_dels.add(current_del)
-
-			self._delegate_provider.setDelegateForColumn(col, current_del)
 			
 #		for test_Del in done_dels:
 #			print(test_Del.itemPadding())
