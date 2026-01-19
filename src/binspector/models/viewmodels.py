@@ -246,6 +246,12 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		self._headers:list[viewmodelitems.LBAbstractViewHeaderItem] = []
 		"""List of view headers"""
+
+	def supportedDropActions(self):
+		return super().supportedDropActions() | QtCore.Qt.DropAction.MoveAction
+	
+	def moveRows(self, sourceParent, sourceRow, count, destinationParent, destinationChild):
+		return super().moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild)
 	
 	def rowCount(self, /, parent:QtCore.QModelIndex=QtCore.QModelIndex()) -> int:
 		"""Number of bin items"""
