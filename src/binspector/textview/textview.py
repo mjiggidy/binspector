@@ -333,7 +333,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 			51, itemdelegates.BSIconLookupItemDelegate(
 				parent=self,
 				aspect_ratio=self.ICON_ASPECT_RATIO,
-				icon_provider=icon_providers.BSPalettedClipColorIconProvider(),
+				icon_provider=icon_providers.BSStyledClipColorIconProvider(),
 			)
 		)
 
@@ -350,20 +350,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 			itemdelegates.BSIconLookupItemDelegate(
 				parent=self,
 				aspect_ratio=self.ICON_ASPECT_RATIO,
-				icon_provider=icon_providers.BSPalettedBinItemTypeIconProvider(path_registry=BIN_ITEM_TYPE_ICON_REGISTRY),
+				icon_provider=icon_providers.BSStyledBinItemTypeIconProvider(path_registry=BIN_ITEM_TYPE_ICON_REGISTRY),
 			)
 
 		)
-
-
-
-		# Set up those bin item type icons
-		
-
-		
-#		"""Specialized one-off fields"""
-
-#		self._FORMAT_DELEGATE_REGISTRY: FormatLookupDict = {
-#			avbutils.BinColumnFormat.TIMECODE: itemdelegates.LBTimecodeItemDelegate(),
-#		}
-#		"""Delegate for generic field formats"""
