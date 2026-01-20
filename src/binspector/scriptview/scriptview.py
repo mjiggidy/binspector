@@ -5,7 +5,6 @@ Script View Mode
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..textview import textview
-from ..binwidget import delegate_lookup
 from ..models import viewmodelitems
 
 from ..core.config import BSScriptViewModeConfig
@@ -33,15 +32,21 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		self.setItemPadding(BSScriptViewModeConfig.DEFAULT_ITEM_PADDING)
 	
-		#self.refreshDelegates()
-		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
 		self.applyHeaderConstraints()
 
 	@QtCore.Slot(QtCore.QMarginsF)
 	def setItemPadding(self, padding:QtCore.QMarginsF):
-		print("Please help me oh god")
+		#print("Please help me oh god")
 		super().setItemPadding(padding)
+
+		for delegate in self._delegate_provider.delegates():
+			padding= delegate.itemPadding()
+			padding.setBottom(self._bottomItemPadding())
+			delegate.setItemPadding(padding)
+
 		self.adjustFirstItemPadding()
+
+		self.scheduleDelayedItemsLayout()
 
 	def syncFromHeader(self, header:QtWidgets.QHeaderView):
 		"""Sync header from another header"""
@@ -49,8 +54,6 @@ class BSBinScriptView(textview.BSBinTextView):
 		self.header().restoreState(
 			header.saveState()
 		)
-
-		self.refreshDelegates()
 		self.applyHeaderConstraints()
 
 	@QtCore.Slot(object)
@@ -61,9 +64,9 @@ class BSBinScriptView(textview.BSBinTextView):
 		
 		self._frame_scale = frame_scale
 		
-		self.refreshDelegates()
 		self.adjustFirstItemPadding()
-		#self.applyHeaderConstraints() # NOTE: Not needed / complicates scaling
+		self.applyHeaderConstraints() # NOTE: Not needed / complicates scaling
+		self.setItemPadding(self._item_padding)
 
 		# Re-draw drawRow()
 		#self.viewport().update()
@@ -101,55 +104,38 @@ class BSBinScriptView(textview.BSBinTextView):
 	def adjustFirstItemPadding(self):
 		"""Adjust the first item delegate's padding to make room for frame stuff"""
 
-		first_col_logical = self.header().logicalIndex(0)
-
-		
-	#	first_col_width   = self.header().sectionSize(first_col_logical)
-		self.header().setSectionResizeMode(first_col_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-	#	first_col_auto    = self.header().sectionSize(first_col_logical)
-	#	first_col_delta   = first_col_width - first_col_auto
-
-		new_del = self._delegate_provider.delegateForColumn(
-			first_col_logical,
-			unique_instance=True
-		)
-
-
 #		print("Left padding setting to ", self._firstItemOffset())
 		new_padding = QtCore.QMarginsF(self._item_padding)
+
+		first_col_log = self.header().logicalIndex(0)
+
+		
+		first_del = self._delegate_provider.delegateForColumn(first_col_log)
+		first_del = first_del.clone()
+
+
 		new_padding.setLeft(self._firstItemOffset())
 		new_padding.setBottom(self._bottomItemPadding())
-#		print("neueue padding is", new_padding)
-		new_del.setItemPadding(new_padding)
+		first_del.setItemPadding(new_padding)
 
-		self._delegate_provider.setDelegateForColumn(first_col_logical, new_del)
+		self._delegate_provider.setDelegateForColumn(first_col_log, first_del)
 
-#		print("Delegate padding is now at ", self.itemDelegateForColumn(first_col_logical).itemPadding())
+		#first_del = self._delegate_provider.delegateForColumn(first_col_log)
+		#print("**** SEtting first item paddin gfor", self.model().headerData(0, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole), "to", new_padding)
+
 		
-#		first_col_width = self.header().sectionSize(first_col_logical)
-#		self.header().setSectionResizeMode(first_col_logical, QtWidgets.QHeaderView.ResizeMode.Fixed)
-		#self.header().resizeSection(first_col_logical, self.header().sectionSize(first_col_logical) + first_col_delta)
-		
-		
-
-#		print(f"Adjust from {first_col_width=} to {first_col_width + addtl_padding =}")
-
-	def refreshDelegates(self):
-		"""Re-calculate and re-apply padding data when size stuff changes"""
-
-		# Add bottom padding for at least the frame rect
-		script_item_padding = QtCore.QMarginsF(self._item_padding)
-		script_item_padding.setBottom(self._bottomItemPadding())
-		
-		super().refreshDelegates(adjusted_padding=script_item_padding)
 
 	def applyHeaderConstraints(self):
 		"""Header constraints"""
 
 		# Since I copy header from list view to script view, need to restore a lot of constraints
 
+		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
+		
+		first_col_log = self.header().logicalIndex(0)
+		self.header().setSectionResizeMode(first_col_log, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+
 		self.header().setSectionsMovable(False)
-		#self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
 		self.setSortingEnabled(False)
 		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.SingleSelection)
 		self.setDragEnabled(True)
@@ -162,7 +148,7 @@ class BSBinScriptView(textview.BSBinTextView):
 		# Gather required data
 
 		script_text     = index.data(role=viewmodelitems.BSBinItemDataRoles.BSScriptNotes)
-		item_delegate   = self.itemDelegate(index)
+		item_delegate   = self._delegate_provider.delegateForColumn(index.column())
 		row_is_selected = self.selectionModel().isSelected(index)
 
 		# Build rects

@@ -50,27 +50,55 @@ class BSIconProvider:
 
 		return self._icons[key]
 	
-class BSPalettedClipColorIconProvider(BSIconProvider):
+class BSStyledIconProvider(BSIconProvider):
 
-	def getIcon(self, clip_color:QtGui.QColor) -> QtGui.QIcon:
+	def getIcon(self, bin_item_hash:typing.Hashable) -> QtGui.QIcon:
+		"""Virtual Function: Return an icon for the current palette"""
 
-		#print("*** LOOOKING FOR ", clip_color)
+		return self._icons[bin_item_hash]
+	
+class BSStyledMarkerIconProvider(BSStyledIconProvider):
 
-		clip_color_hash = hash(clip_color.toTuple() if clip_color.isValid() else -1)
+	def getIcon(self, marker_color:QtGui.QColor, palette:QtGui.QPalette):
+
+		#print("Del got ", marker_color)
+
+		marker_color_hash = hash(marker_color.toTuple() if marker_color.isValid() else -1) + palette.cacheKey()
+
+		if not marker_color_hash in self._icons:
+
+			self.addIcon(
+				marker_color_hash,
+				icon_engines.BSPalettedMarkerIconEngine(
+					marker_color=marker_color,
+					border_width=1,
+					palette=palette
+				)
+			)
+
+		return super().getIcon(marker_color_hash)
+	
+class BSStyledClipColorIconProvider(BSStyledIconProvider):
+
+	def getIcon(self, clip_color:QtGui.QColor, palette:QtGui.QPalette) -> QtGui.QIcon:
+
+		clip_color_hash = hash(clip_color.toTuple() if clip_color.isValid() else -1) + palette.cacheKey()
 
 		if not clip_color_hash in self._icons:
 
-			#print("*** LOOOKING FOR ", clip_color)
-
-			self._icons[clip_color_hash] = icon_engines.BSPalettedClipColorIconEngine(
-				clip_color=clip_color,
-				border_width=1 # NOTE: Maybe set this in the constructor or something
+			self.addIcon(
+				clip_color_hash,
+				icon_engines.BSPalettedClipColorIconEngine(
+					palette=palette,
+					clip_color=clip_color,
+					border_width=1 # NOTE: Maybe set this in the constructor or something
+				)
 			)
 			logging.getLogger(__name__).debug("%s created icon %s", repr(self), repr(self._icons[clip_color_hash]))
 
 		return super().getIcon(clip_color_hash)
 
-class BSPalettedBinItemTypeIconProvider(BSIconProvider):
+class BSStyledBinItemTypeIconProvider(BSStyledIconProvider):
 
 	# TODO: More like a generic SVG lookup probably
 
@@ -96,16 +124,21 @@ class BSPalettedBinItemTypeIconProvider(BSIconProvider):
 		logging.getLogger(__name__).debug("Adding icon path %s for %s", icon_path, repr(bin_item))
 		self._item_paths_registry[bin_item] = icon_path
 
-	def getIcon(self, bin_item_type:avbutils.bins.BinDisplayItemTypes):
+	def getIcon(self, bin_item_type:avbutils.bins.BinDisplayItemTypes, palette:QtGui.QPalette):
 
-		if bin_item_type not in self._icons:
+		bin_item_hash = hash(bin_item_type) + palette.cacheKey()
+
+		if bin_item_hash not in self._icons:
 
 			icon_path = self.iconPathForBinItemType(bin_item_type) or self._default_svg_path
 			
 			if icon_path:
+				icon = QtGui.QIcon(
+					icon_engines.BSPalettedSvgIconEngine(svg_path=icon_path, palette=palette)
+				)
+			else:
+				icon = QtGui.QIcon()
+			
+			self.addIcon(bin_item_hash, icon)
 
-				icon = QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(icon_path))
-				self.addIcon(bin_item_type, icon)
-				return icon
-
-		return super().getIcon(bin_item_type)
+		return super().getIcon(bin_item_hash)

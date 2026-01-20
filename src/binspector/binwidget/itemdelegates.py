@@ -6,11 +6,11 @@ from ..core  import icon_providers
 
 class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
-	def __init__(self, padding:QtCore.QMargins|None=None, *args, **kwargs):
+	def __init__(self, padding:QtCore.QMarginsF|None=None, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._padding = padding or QtCore.QMargins()
+		self._padding = padding or QtCore.QMarginsF()
 
 	def sizeHint(self, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> QtCore.QSize:
 		"""Return size hint with padding factored in"""
@@ -84,19 +84,19 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
 	def clone(self, *args, **kwargs) -> typing.Self:
 
-		return self.__class__(self._padding, *args, **kwargs)
+		return self.__class__(QtCore.QMarginsF(self._padding), *args, **kwargs)
 
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
 	"""Displays an icon centered in its item rect, with padding and aspect ratio preservation or something"""
 
-	def __init__(self, *args, aspect_ratio:QtCore.QSizeF|None=None, icon_provider:icon_providers.BSIconProvider|None=None, **kwargs):
+	def __init__(self, *args, aspect_ratio:QtCore.QSizeF|None=None, icon_provider:icon_providers.BSStyledIconProvider|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		self._aspect_ratio  = aspect_ratio  or QtCore.QSizeF(1,1)
-		self._icon_provider = icon_provider or icon_providers.BSIconProvider()
+		self._icon_provider = icon_provider or icon_providers.BSStyledIconProvider()
 
-	def iconProvider(self) -> icon_providers.BSIconProvider:
+	def iconProvider(self) -> icon_providers.BSStyledIconProvider:
 		return self._icon_provider
 
 	def sizeWithAspectRatio(self, rect:QtCore.QSize) -> QtCore.QSize:
@@ -129,8 +129,12 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		self.initStyleOption(option, index)
 		style = option.widget.style() if option.widget else QtWidgets.QApplication.style()
 		
-		user_data = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
-		icon      = self._icon_provider.getIcon(user_data)
+		decoration_role = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
+		#user_role = index.data(QtCore.Qt.ItemDataRole.UserRole)
+		
+		
+		# TODO: Get Icon WITH PALETTE
+		icon      = self._icon_provider.getIcon(decoration_role, option.palette)
 
 		# Center, size and shape the canvas QRect
 		canvas_active = self.activeRectFromRect(option.rect)#.marginsRemoved(self._padding)
@@ -174,10 +178,8 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 
 	def clone(self) -> typing.Self:
 
-	#	print("OKAY HERE I GOOO")
-
 		return self.__class__(
-			aspect_ratio = QtCore.QSizeF(self._aspect_ratio),
+			aspect_ratio  = QtCore.QSizeF(self._aspect_ratio),
 			icon_provider = self._icon_provider,
-			padding = QtCore.QMarginsF(self._padding),
+			padding       = QtCore.QMarginsF(self._padding),
 		)

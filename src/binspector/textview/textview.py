@@ -6,7 +6,10 @@ from ..models import viewmodels
 from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
-from ..binwidget import delegate_lookup
+from . import proxydelegates
+from ..binwidget import itemdelegates
+from ..core import icon_providers
+from .proxydelegates import FieldLookupDict, FormatLookupDict
 
 class BSBinTextView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
@@ -24,21 +27,36 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		super().__init__(*args, **kwargs)
 
+		self.ICON_ASPECT_RATIO = QtCore.QSizeF(4,3)
+
 		self.setModel(viewmodels.BSBinViewProxyModel())
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
-		self._delegate_provider     = delegate_lookup.BSBinColumnDelegateProvider(view=self)
+		self.setDragEnabled(True)
+		self.setAcceptDrops(True)
+		self.setDropIndicatorShown(True)
+		self.setDragDropMode(QtWidgets.QAbstractItemView.DragDropMode.InternalMove)
+
+		self._delegate_provider     = proxydelegates.BSBinColumnDelegateProvider(view=self)
+		self._proxy_delegate        = proxydelegates.BSBinColumnProxyDelegate(delegate_provider=self._delegate_provider)
+		self.registerCustomDelegates()
+		self.setItemDelegate(self._proxy_delegate)
+
 		self._column_select_watcher = columnselect.BSColumnSelectWatcher(parent=self)
-		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
-
-		#self.setItemPadding(self._item_padding)
-		
-		self.header().viewport().installEventFilter(self._column_select_watcher)
-
-		self.header().sectionCountChanged.connect(lambda: self.refreshDelegates())
 		self._column_select_watcher.sig_column_selected.connect(self.selectSectionFromCoordinates)
+		self.header().viewport().installEventFilter(self._column_select_watcher)
+		
+		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
+		self.setItemPadding(self._item_padding)
 
+		#self.header().sectionCountChanged.connect(lambda: self.refreshDelegates())
+
+
+#	def rowHeight(self, index):
+#		first_col_logical = self.header().logicalIndex(0)
+#		return self._delegate_provider.delegateForColumn(first_col_logical).sizeHint(None, index)
+#
 	def setSelectionModel(self, selectionModel):
 
 		if selectionModel == self.selectionModel():
@@ -63,13 +81,6 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		model.columnsInserted.connect(self.setColumnWidthsFromBinView)
 
 		super().setModel(model)
-		
-		#self.setCustomDelegates()
-
-	def delegateProvider(self) -> delegate_lookup.BSBinColumnDelegateProvider:
-		"""Get the thing that looks up delegates for the thing"""
-
-		return self._delegate_provider
 
 	@QtCore.Slot(object)
 	def selectSectionFromCoordinates(self, viewport_coords:QtCore.QPoint):
@@ -281,57 +292,69 @@ class BSBinTextView(treeview.BSTreeViewBase):
 	def setItemPadding(self, padding:QtCore.QMarginsF):
 		"""Set item padding and add frame size padding"""
 
-#		print("*** Received", padding)
-
 		if self._item_padding == padding:
 			return
 		
 		self._item_padding = QtCore.QMarginsF(padding)
-#		print("*** ITEM PADDING NOW ", self._item_padding)
-		self.refreshDelegates()
+
+		for delegate in self._delegate_provider.delegates():
+			delegate.setItemPadding(padding)
 
 		logging.getLogger(__name__).debug("Setting padding to %s", str(self._item_padding))
+		
+		self.scheduleDelayedItemsLayout()
 
+		#self.update()
 		self.sig_item_padding_changed.emit(padding)
-
-	def refreshDelegates(self, adjusted_padding:QtCore.QMarginsF|None=None):
-		"""Re-calculate and re-apply padding data when size stuff changes"""
-
-		adjusted_padding = QtCore.QMarginsF(adjusted_padding if adjusted_padding is not None else self._item_padding)
-#		print("****OKAY STARTING WITH", adjusted_padding)
-		
-		done_dels = set()
-
-		# Set padding on default del
-		current_del = self._delegate_provider.defaultItemDelegate()
-		current_del.setItemPadding(adjusted_padding)
-		
-		self._delegate_provider.setDefaultItemDelegate(current_del)
-
-		done_dels.add(current_del)
-
-		# Set padding on any other delegates
-		for col in range(self.header().count()):
-		
-			current_del = self._delegate_provider.delegateForColumn(col)
-
-			if current_del not in done_dels:
-				current_del.setItemPadding(adjusted_padding)
-				done_dels.add(current_del)
-
-			self._delegate_provider.setDelegateForColumn(col, current_del)
-			
-#		for test_Del in done_dels:
-#			print(test_Del.itemPadding())
-
-
-	def sizeHintForColumn(self, column) -> int:
-		"""Column width"""
-
-		return super().sizeHintForColumn(column)
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_columns:list[list[int,str]]):
 
 		self._default_sort = sort_columns
 		self.sig_default_sort_columns_changed.emit(self._default_sort)
+
+	def registerCustomDelegates(self):
+		"""Register custom delegates, but probably not here"""
+
+		import avbutils
+
+		BIN_ITEM_TYPE_ICON_REGISTRY = {
+
+			avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_masterclip.svg",
+			avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_masterclip.svg",
+			avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP:         ":/icons/binitems/item_timeline.svg",
+			avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:    ":/icons/binitems/item_timeline.svg",
+			avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:            ":/icons/binitems/item_groupclip.svg",
+			avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:       ":/icons/binitems/item_groupclip.svg",
+		}
+
+		# Clip Color
+		self._delegate_provider.setUniqueDelegateForField(
+			51, itemdelegates.BSIconLookupItemDelegate(
+				parent=self,
+				aspect_ratio=self.ICON_ASPECT_RATIO,
+				icon_provider=icon_providers.BSStyledClipColorIconProvider(),
+			)
+		)
+
+
+		# Markers
+		self._delegate_provider.setUniqueDelegateForField(
+			132,
+			itemdelegates.BSIconLookupItemDelegate(
+				parent=self,
+				aspect_ratio=self.ICON_ASPECT_RATIO,
+				icon_provider=icon_providers.BSStyledMarkerIconProvider(),
+			)
+		)
+
+		# Bin Display Item Icon
+		self._delegate_provider.setUniqueDelegateForField(
+			200,
+			itemdelegates.BSIconLookupItemDelegate(
+				parent=self,
+				aspect_ratio=self.ICON_ASPECT_RATIO,
+				icon_provider=icon_providers.BSStyledBinItemTypeIconProvider(path_registry=BIN_ITEM_TYPE_ICON_REGISTRY),
+			)
+
+		)
