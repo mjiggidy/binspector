@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <path
+     id="rect24"
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;stroke-width:1;fill-opacity:1;fill:{Shadow};opacity:0.25;"
+     d="M 15 1 L 15 10 C 15 10.554 14.554 11 14 11 L 1 11 C 1 11.554 1.446 12 2 12 L 15 12 C 15.554 12 16 11.554 16 11 L 16 2 C 16 1.446 15.554 1 15 1 z " />
+  <g
+     id="layer1" />
+  <rect
+     style="fill:#1a1a1a;fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect23-5"
+     width="15"
+     height="11"
+     x="-23.5"
+     y="-0.5"
+     rx="1"
+     ry="1" />
+  <rect
+     style="fill:#008080;fill-opacity:1;stroke-width:0.999991;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect17-7"
+     width="13"
+     height="4"
+     x="-22.5"
+     y="0.5"
+     rx="0.5"
+     ry="0.5" />
+  <rect
+     style="fill:#000080;fill-opacity:1;stroke-width:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect18-4"
+     width="9.5"
+     height="2"
+     x="-22.5"
+     y="5"
+     ry="0.5"
+     rx="0.5" />
+  <rect
+     style="fill:#0000ff;fill-opacity:1;stroke-width:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect19-8"
+     width="3"
+     height="2"
+     x="-12.5"
+     y="5"
+     ry="0.5"
+     rx="0.5" />
+  <rect
+     style="fill:#0000ff;fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect20-0"
+     width="5.5"
+     height="2"
+     x="-22.5"
+     y="7.5"
+     ry="0.5"
+     rx="0.5" />
+  <rect
+     style="fill:#000080;fill-opacity:1;stroke-width:0.999995;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect21-6"
+     width="7"
+     height="2"
+     x="-16.5"
+     y="7.5"
+     ry="0.5"
+     rx="0.5" />
+  <rect
+     style="fill:#1a1a1a;fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect23-8"
+     width="15"
+     height="11"
+     x="-34"
+     y="-2"
+     rx="1"
+     ry="1" />
+  <rect
+     style="fill:#008080;fill-opacity:1;stroke-width:0.999991;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect17-3"
+     width="13"
+     height="4"
+     x="-33"
+     y="-1"
+     rx="0.99999994"
+     ry="1" />
+  <rect
+     style="fill:#000080;fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect18-5"
+     width="10"
+     height="2"
+     x="-33"
+     y="3.5"
+     ry="1"
+     rx="1" />
+  <rect
+     style="fill:#0000ff;fill-opacity:1;stroke-width:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect19-6"
+     width="3"
+     height="2"
+     x="-23"
+     y="3.5"
+     ry="1"
+     rx="1" />
+  <rect
+     style="fill:#0000ff;fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect20-8"
+     width="6"
+     height="2"
+     x="-33"
+     y="6"
+     ry="1"
+     rx="1" />
+  <rect
+     style="fill:#000080;fill-opacity:1;stroke-width:0.999995;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect21-8"
+     width="7"
+     height="2"
+     x="-27"
+     y="6"
+     ry="1"
+     rx="1" />
+  <rect
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill-opacity:1;fill:{Accent};opacity:0.1;"
+     id="rect25"
+     width="15"
+     height="4"
+     x="0"
+     y="1" />
+  <rect
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;stroke-width:1;fill-opacity:1;fill:{Accent};opacity:0.2;"
+     id="rect25-8"
+     width="15"
+     height="4.5"
+     x="0"
+     y="5.5" />
+  <path
+     id="rect23"
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill-opacity:1;fill:{ButtonText};opacity:1;"
+     d="M 1,0 C 0.446,0 0,0.446 0,1 H 1.5 2 13 13.5 15 C 15,0.446 14.554,0 14,0 Z M 0,5 V 5.5 H 1.5 2 10 C 10.277,5.5 10.5,5.723 10.5,6 V 7 C 10.5,7.277 10.277,7.5 10,7.5 H 0 V 8 H 6 C 6.277,8 6.5,8.223 6.5,8.5 V 9.5 C 6.5,9.777 6.277,10 6,10 H 2 1.5 0 C 0,10.554 0.446,11 1,11 H 14 C 14.554,11 15,10.554 15,10 H 13.5 13 7.5 C 7.223,10 7,9.777 7,9.5 V 8.5 C 7,8.223 7.223,8 7.5,8 H 15 V 7.5 H 11.5 C 11.223,7.5 11,7.277 11,7 V 6 C 11,5.723 11.223,5.5 11.5,5.5 H 13 13.5 15 V 5 H 13.5 13 2 1.5 Z" />
+</svg>

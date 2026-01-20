@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <path
+     id="rect7"
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill:{Shadow};opacity:0.25;display:inline;"
+     d="M 15,1 H 16 V 11 H 15 Z M 1,11 H 16 V 12 H 1 Z" />
+  <rect
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill:{ButtonText};opacity:1;"
+     id="rect5"
+     width="15"
+     height="11"
+     x="0"
+     y="0" />
+  <g
+     id="layer1">
+    <rect
+       style="opacity:1;fill:#00ffff;stroke-width:0.999995;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1"
+       width="7"
+       height="3"
+       x="1"
+       y="1" />
+    <rect
+       style="opacity:1;fill:#00ffff;stroke-width:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1-1"
+       width="5"
+       height="3"
+       x="9"
+       y="1" />
+    <rect
+       style="opacity:1;fill:#008080;stroke-width:0.999995;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect2"
+       width="7"
+       height="2"
+       x="1"
+       y="5" />
+    <rect
+       style="opacity:1;fill:#008080;stroke-width:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect2-7"
+       width="5"
+       height="2"
+       x="9"
+       y="5" />
+    <rect
+       style="opacity:1;fill:#008080;stroke-width:0.999991;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect3"
+       width="13"
+       height="2"
+       x="1"
+       y="8" />
+  </g>
+</svg>

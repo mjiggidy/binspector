@@ -322,6 +322,8 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 			avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_masterclip.svg",
 			avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_masterclip.svg",
+			avbutils.bins.BinDisplayItemTypes.SUBCLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:          ":/icons/binitems/item_subclip.svg",
+			avbutils.bins.BinDisplayItemTypes.SUBCLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:     ":/icons/binitems/item_subclip.svg",
 			avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP:         ":/icons/binitems/item_timeline.svg",
 			avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:    ":/icons/binitems/item_timeline.svg",
 			avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:            ":/icons/binitems/item_groupclip.svg",

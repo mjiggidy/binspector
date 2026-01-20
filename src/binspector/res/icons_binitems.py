@@ -6,6 +6,113 @@
 from PySide6 import QtCore
 
 qt_resource_data = b"\
+\x00\x00\x06\x87\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22UTF\
+-8\x22 standalone=\x22\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   width=\x22\
+16\x22\x0a   height=\x221\
+2\x22\x0a   viewBox=\x220\
+ 0 16 12\x22\x0a   ver\
+sion=\x221.1\x22\x0a   id\
+=\x22svg1\x22\x0a   xmlns\
+=\x22http://www.w3.\
+org/2000/svg\x22\x0a  \
+ xmlns:svg=\x22http\
+://www.w3.org/20\
+00/svg\x22>\x0a  <defs\
+\x0a     id=\x22defs1\x22\
+ />\x0a  <g\x0a     id\
+=\x22layer1\x22>\x0a    <\
+path\x0a       id=\x22\
+rect1-0-0-2-3\x22\x0a \
+      style=\x22pai\
+nt-order:markers\
+ fill stroke;str\
+oke-opacity:0.79\
+5367;stroke-widt\
+h:0.999999;fill:\
+{Shadow};opacity\
+:0.25;\x22\x0a       d\
+=\x22M 3 2 L 3 10 L\
+ 3 10.5 L 12 10.\
+5 L 14 10.5 L 14\
+ 10 L 14 2.5 L 1\
+2 2.5 L 12 2 L 3\
+ 2 z M 1 2.5 L 1\
+ 3 L 1 9.5 A 1 1\
+ 0 0 0 2 10.5 L \
+2 10 L 2 3 L 2 2\
+.5 L 1 2.5 z M 1\
+5 2.5 L 15 10 L \
+15 10.5 A 1 1 0 \
+0 0 16 9.5 L 16 \
+3 A 0.5 0.5 0 0 \
+0 15.5 2.5 L 15 \
+2.5 z \x22 />\x0a    <\
+rect\x0a       styl\
+e=\x22opacity:0.8;f\
+ill:#635549;fill\
+-opacity:1;strok\
+e-width:1;stroke\
+-opacity:0.79536\
+7;paint-order:ma\
+rkers fill strok\
+e\x22\x0a       id=\x22re\
+ct2\x22\x0a       widt\
+h=\x229\x22\x0a       hei\
+ght=\x228\x22\x0a       x\
+=\x223\x22\x0a       y=\x221\
+.5\x22 />\x0a    <path\
+\x0a       id=\x22path\
+69\x22\x0a       style\
+=\x22paint-order:ma\
+rkers fill strok\
+e;stroke-opacity\
+:0.795367;fill-o\
+pacity:1;fill:{B\
+uttonText};\x22\x0a   \
+    d=\x22M 1 1.5 A\
+ 1 1 0 0 0 0 2.5\
+ L 0 8.5 A 1 1 0\
+ 0 0 1 9.5 L 1 9\
+ L 1 8 L 2 8 L 2\
+ 9 L 2 9.5 L 13 \
+9.5 L 13 9 L 13 \
+8 L 14 8 L 14 9 \
+L 14 9.5 A 1 1 0\
+ 0 0 15 8.5 L 15\
+ 2.5 A 1 1 0 0 0\
+ 14 1.5 L 14 2 L\
+ 14 3 L 13 3 L 1\
+3 2 L 13 1.5 L 2\
+ 1.5 L 2 2 L 2 3\
+ L 1 3 L 1 2 L 1\
+ 1.5 z M 3.5 2 L\
+ 11.5 2 C 11.777\
+ 2 12 2.223 12 2\
+.5 L 12 8.5 C 12\
+ 8.777 11.777 9 \
+11.5 9 L 3.5 9 C\
+ 3.223 9 3 8.777\
+ 3 8.5 L 3 2.5 C\
+ 3 2.223 3.223 2\
+ 3.5 2 z M 1 4 L\
+ 2 4 L 2 5 L 1 5\
+ L 1 4 z M 13 4 \
+L 14 4 L 14 5 L \
+13 5 L 13 4 z M \
+1 6 L 2 6 L 2 7 \
+L 1 7 L 1 6 z M \
+13 6 L 14 6 L 14\
+ 7 L 13 7 L 13 6\
+ z \x22 />\x0a  </g>\x0a<\
+/svg>\x0a\
 \x00\x00\x06s\
 <\
 ?xml version=\x221.\
@@ -112,40 +219,131 @@ markers fill str\
 oke\x22\x0a     id=\x22pa\
 th20-0\x22 />\x0a</svg\
 >\x0a\
-\x00\x00\x01\xeb\
-\x00\
-\x00\x08\xdex\xda\xd5\xd6\xcd\x8e\xdb \x10\x00\xe0\xbb\x9f\
-\x82\xd2K{\xc0\x06\xffl\x1c\xc7\xceJ\xadT\xa9R\
-om\x1f\x00\xc5\xac\x8d\xe25\x11F\xf1ZU\xdf\xbd\
-@\xec\x90\x1fuw\xa36\x8d\xea\x133\x8c\x81\xf9B\
-\x94\xe4\xf7O\x8f\x0d\xd82\xd9q\xd1\x16\x90\xf8\x18\x02\
-\xd6\xaeD\xc9\xdb\xaa\x80\xdf\xbf}B)\x04\x9d\xa2m\
-I\x1b\xd1\xb2\x02\xb6\x02\xde/\xbd\xfc\x0dB\xe0\xa3d\
-T\xb1\x12\xf4\x5c\xd5\xe0s\xbb\xeeVt\xc3\xc0\xbbZ\
-\xa9M\x16\x04}\xdf\xfb|L\xfaBV\xc1{\x80\xd0\
-\xd2\xf3\xf2n[y\x00\xe8\xb7JU\x170\x8c\xa1\x89\
-j\xc6\xabZ\xe9\x03\xa46\xdcr\xd6\x7f\x10O\x05\xc4\
-\x00\x830\x06S\xda\x9d\x93\xd8\x04/\x0b\xa8\xd7\xdb\x05\
-\xba\x93\xb6+\xe0\xc1\xfe}dw\x0e1\xc6\x81.s\
-U\x99\x8e\x9e\xad\x5c\xea\xd2\xbcd\x0f\x9dye\xb7\x8f\
-\x89\x08\x04\x81\x9d\x92l\xa5vS\x9d\x1a\x1a\xed\xf2\xc0\
-\x9b&\xfb\xf1\xb5\xa6\xa5\xe8\x7f.L\x84\xc4\x86\xae\xb8\
-\x1a2\xec\x87\xc9\xa2SR\xacY\xd6j\xc4q\x8c\xac\
-@F\xa6\xb0\xa4]M\xa5\xa4\xc3Q\x91[d6O\
-\xa2\xbb\xd9bCy\xab\x90\x90%\x93\xd9#\x95kM\
-\x02\xccv`\xf7\x02t\x076g\x8c\xd0|\xccL\xde\
-\xe1\x18\xef\xc5\xef\xc6\x84\xd6\x9e\xe6\x067\x94\x87c[\
-\xf2\xbc\xc0\x17\xb3\xea\x09\x00\xb9Y\xf7\x17\xf4N\x5c\xef\
-\xe4\xa8\xf7\xb1\xdf\xca-\xdd\xd0\x81Ib\xef\xc8\x11\xc4\
-1\xc5[l\x9f\xbfMA^i\xe0\x14\xc8>3:\
-\x10\x97\x99$\xd2}\xe6\x80\xc2b`\x7fn\x9f\xd4\x95\
-\x98{@\xfc\xc4\xc5\xc6\xcc\x8fwe\xa3\xd7\x7f\x01\x83\
-\xa2\x8bi\xc2C\x1br+\x92\xf1CI\xae(\x83f\
-\xa76axf\x13\xfd\xf6\xda\x10|c\x9b\xf8\xaa6\
-(=\xbb9\xf1%:\xf1\xa9\x8e\xed\x91\xfcc\xa3\xd9\
-\x95\x8d\xce\xbf_\xe9\x0bH\xc9\x1f+\xe5A\xa5\xff\x9f\
-\x98\x1f\xf1\xa5\xf7\x0bHL\x82\xed\
-\x00\x00\x05\xc0\
+\x00\x00\x07\x91\
+<\
+?xml version=\x221.\
+0\x22 encoding=\x22UTF\
+-8\x22 standalone=\x22\
+no\x22?>\x0a<!-- Creat\
+ed with Inkscape\
+ (http://www.ink\
+scape.org/) -->\x0a\
+\x0a<svg\x0a   width=\x22\
+16\x22\x0a   height=\x221\
+2\x22\x0a   viewBox=\x220\
+ 0 16 12\x22\x0a   ver\
+sion=\x221.1\x22\x0a   id\
+=\x22svg1\x22\x0a   xmlns\
+=\x22http://www.w3.\
+org/2000/svg\x22\x0a  \
+ xmlns:svg=\x22http\
+://www.w3.org/20\
+00/svg\x22>\x0a  <defs\
+\x0a     id=\x22defs1\x22\
+ />\x0a  <path\x0a    \
+ id=\x22rect24\x22\x0a   \
+  style=\x22paint-o\
+rder:markers fil\
+l stroke;stroke-\
+opacity:0.795367\
+;stroke-width:1;\
+fill-opacity:1;f\
+ill:{Shadow};opa\
+city:0.25;\x22\x0a    \
+ d=\x22M 15,1 C 14.\
+446,1 14.5,1.446\
+ 14.5,2 V 10 H 2\
+ C 1.446,10 1,10\
+.446 1,11 1,11.5\
+54 1.446,12 2,12\
+ H 15 C 15.554,1\
+2 16,11.554 16,1\
+1 V 2 C 16,1.446\
+ 15.554,1 15,1 Z\
+\x22 />\x0a  <g\x0a     i\
+d=\x22layer1\x22 />\x0a  \
+<rect\x0a     style\
+=\x22paint-order:ma\
+rkers fill strok\
+e;stroke-opacity\
+:0.795367;fill-o\
+pacity:1;fill:{H\
+ighlight};opacit\
+y:0.5;\x22\x0a     id=\
+\x22rect25\x22\x0a     wi\
+dth=\x2214\x22\x0a     he\
+ight=\x224\x22\x0a     x=\
+\x220.5\x22\x0a     y=\x221\x22\
+ />\x0a  <rect\x0a    \
+ style=\x22paint-or\
+der:markers fill\
+ stroke;stroke-o\
+pacity:0.795367;\
+stroke-width:1;f\
+ill-opacity:1;fi\
+ll:{Accent};opac\
+ity:0.5;\x22\x0a     i\
+d=\x22rect25-8\x22\x0a   \
+  width=\x2214\x22\x0a   \
+  height=\x224.5\x22\x0a \
+    x=\x220.5\x22\x0a    \
+ y=\x225.5\x22 />\x0a  <p\
+ath\x0a     id=\x22rec\
+t23\x22\x0a     style=\
+\x22paint-order:mar\
+kers fill stroke\
+;stroke-opacity:\
+0.795367;fill-op\
+acity:1;fill:{Bu\
+ttonText};opacit\
+y:1;\x22\x0a     d=\x22M \
+1,0 C 0.446,0 0,\
+0.446 0,1 V 10 C\
+ 0,10.554 0.446,\
+11 1,11 H 14 C 1\
+4.554,11 15,10.5\
+54 15,10 V 1 C 1\
+5,0.446 14.554,0\
+ 14,0 Z M 0.5,1 \
+H 10.008909 A 0.\
+49109126,0.49109\
+126 45 0 1 10.5,\
+1.4910913 V 4.5 \
+A 0.5,0.5 135 0 \
+1 10,5 H 0.5 Z M\
+ 11.482183,1 H 1\
+4.5 V 5 H 11.491\
+091 A 0.49109126\
+,0.49109126 45 0\
+ 1 11,4.5089087 \
+V 1.4821825 A 0.\
+48218253,0.48218\
+253 135 0 1 11.4\
+82183,1 Z M 0.5,\
+5.5 H 10 C 10.27\
+7,5.5 10.5,5.723\
+ 10.5,6 V 7 C 10\
+.5,7.277 10.277,\
+7.5 10,7.5 H 0.5\
+ Z M 11.5,5.5 H \
+14.5 V 7.5 H 11.\
+5 C 11.223,7.5 1\
+1,7.277 11,7 V 6\
+ C 11,5.723 11.2\
+23,5.5 11.5,5.5 \
+Z M 0.5,8 H 6 C \
+6.277,8 6.5,8.22\
+3 6.5,8.5 V 9.5 \
+C 6.5,9.777 6.27\
+7,10 6,10 H 0.5 \
+Z M 7.5,8 H 14.5\
+ V 10 H 7.5 C 7.\
+223,10 7,9.777 7\
+,9.5 V 8.5 C 7,8\
+.223 7.223,8 7.5\
+,8 Z\x22 />\x0a</svg>\x0a\
+\
+\x00\x00\x05\xdd\
 <\
 ?xml version=\x221.\
 0\x22 encoding=\x22UTF\
@@ -168,77 +366,79 @@ org/2000/svg\x22\x0a  \
 \x0a     id=\x22defs1\x22\
  />\x0a  <g\x0a     id\
 =\x22layer1\x22>\x0a    <\
-rect\x0a       styl\
-e=\x22opacity:0.5;f\
-ill-opacity:1;st\
-roke-width:1;str\
-oke-opacity:0.79\
-5367;paint-order\
+path\x0a       id=\x22\
+rect1\x22\x0a       st\
+yle=\x22paint-order\
 :markers fill st\
-roke;fill:{Midli\
-ght}\x22\x0a       id=\
-\x22rect69\x22\x0a       \
-width=\x2213\x22\x0a     \
-  height=\x2211\x22\x0a  \
-     x=\x220.999999\
-88\x22\x0a       y=\x220\x22\
- />\x0a    <path\x0a  \
-     d=\x22M 0,0 V \
-11 H 1 V 10 H 2 \
-V 11 H 3 V 10.5 \
-C 3,10.223 3.223\
-,10 3.5,10 H 11.\
-5 C 11.777,10 12\
-,10.223 12,10.5 \
-V 11 H 13 V 10 H\
- 14 V 11 H 15 V \
-0 H 14 V 1 H 13 \
-V 0 H 12 V 0.5 C\
- 12,0.777 11.777\
-,1 11.5,1 H 3.5 \
-C 3.223,1 3,0.77\
-7 3,0.5 V 0 H 2 \
-V 1 H 1 V 0 Z M \
-1,2 H 2 V 3 H 1 \
-Z M 3.5,2 H 11.5\
- C 11.777,2 12,2\
-.223 12,2.5 V 8.\
-5 C 12,8.777 11.\
-777,9 11.5,9 H 3\
-.5 C 3.223,9 3,8\
-.777 3,8.5 V 2.5\
- C 3,2.223 3.223\
-,2 3.5,2 Z M 13,\
-2 H 14 V 3 H 13 \
-Z M 1,4 H 2 V 5 \
-H 1 Z M 13,4 H 1\
-4 V 5 H 13 Z M 1\
-,6 H 2 V 7 H 1 Z\
- M 13,6 H 14 V 7\
- H 13 Z M 1,8 H \
-2 V 9 H 1 Z M 13\
-,8 H 14 V 9 H 13\
- Z\x22\x0a       style\
-=\x22stroke-opacity\
-:0.795367;paint-\
-order:markers fi\
-ll stroke;fill-o\
-pacity:1;fill:{W\
-indowText}\x22\x0a    \
-   id=\x22path70\x22 /\
->\x0a    <path\x0a    \
-   id=\x22path73\x22\x0a \
-      style=\x22opa\
-city:0.25;stroke\
--opacity:0.79536\
-7;paint-order:ma\
-rkers fill strok\
-e;fill-opacity:1\
-;fill:{Shadow}\x22\x0a\
-       d=\x22M 15,0\
- V 11 H 1 V 12 H\
- 15 16 V 0 Z\x22 />\
-\x0a  </g>\x0a</svg>\x0a\
+roke;stroke-opac\
+ity:0.795367;fil\
+l-opacity:1;fill\
+:{Shadow};opacit\
+y:0.25;\x22\x0a       \
+d=\x22M 3,11 H 13 V\
+ 12 H 3 Z M 1,1 \
+H 2 V 12 H 1 Z M\
+ 13,1 H 14 V 12 \
+H 13 Z M 15,1 H \
+16 V 12 H 15 Z\x22 \
+/>\x0a    <rect\x0a   \
+    style=\x22opaci\
+ty:0.8;fill:#635\
+549;stroke-opaci\
+ty:0.795367;pain\
+t-order:markers \
+fill stroke;fill\
+-opacity:1\x22\x0a    \
+   id=\x22rect2\x22\x0a  \
+     width=\x229\x22\x0a \
+      height=\x2211\
+\x22\x0a       x=\x223\x22\x0a \
+      y=\x220\x22 />\x0a \
+   <path\x0a       \
+d=\x22M 0,0 V 11 H \
+1 V 10 H 2 V 11 \
+H 3 V 10.5 C 3,1\
+0.223 3.223,10 3\
+.5,10 H 11.5 C 1\
+1.777,10 12,10.2\
+23 12,10.5 V 11 \
+H 13 V 10 H 14 V\
+ 11 H 15 V 0 H 1\
+4 V 1 H 13 V 0 H\
+ 12 V 0.5 C 12,0\
+.777 11.777,1 11\
+.5,1 H 3.5 C 3.2\
+23,1 3,0.777 3,0\
+.5 V 0 H 2 V 1 H\
+ 1 V 0 Z M 1,2 H\
+ 2 V 3 H 1 Z M 3\
+.5,2 H 11.5 C 11\
+.777,2 12,2.223 \
+12,2.5 V 8.5 C 1\
+2,8.777 11.777,9\
+ 11.5,9 H 3.5 C \
+3.223,9 3,8.777 \
+3,8.5 V 2.5 C 3,\
+2.223 3.223,2 3.\
+5,2 Z M 13,2 H 1\
+4 V 3 H 13 Z M 1\
+,4 H 2 V 5 H 1 Z\
+ M 13,4 H 14 V 5\
+ H 13 Z M 1,6 H \
+2 V 7 H 1 Z M 13\
+,6 H 14 V 7 H 13\
+ Z M 1,8 H 2 V 9\
+ H 1 Z M 13,8 H \
+14 V 9 H 13 Z\x22\x0a \
+      style=\x22pai\
+nt-order:markers\
+ fill stroke;str\
+oke-opacity:0.79\
+5367;fill-opacit\
+y:1;fill:{Button\
+Text};\x22\x0a       i\
+d=\x22path69\x22 />\x0a  \
+</g>\x0a</svg>\x0a\
 "
 
 qt_resource_name = b"\
@@ -250,6 +450,10 @@ qt_resource_name = b"\
 \x00P\xa9c\
 \x00b\
 \x00i\x00n\x00i\x00t\x00e\x00m\x00s\
+\x00\x10\
+\x05\xca\x00\x87\
+\x00i\
+\x00t\x00e\x00m\x00_\x00s\x00u\x00b\x00c\x00l\x00i\x00p\x00.\x00s\x00v\x00g\
 \x00\x12\
 \x02\x05\xdaG\
 \x00i\
@@ -272,14 +476,16 @@ qt_resource_struct = b"\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x02\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\x10\x00\x02\x00\x00\x00\x03\x00\x00\x00\x03\
+\x00\x00\x00\x10\x00\x02\x00\x00\x00\x04\x00\x00\x00\x03\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00x\x00\x00\x00\x00\x00\x01\x00\x00\x08f\
-\x00\x00\x01\x9b\xc0\x12\x93M\
-\x00\x00\x00&\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
+\x00\x00\x00\x9e\x00\x00\x00\x00\x00\x01\x00\x00\x14\x97\
+\x00\x00\x01\x9b\xdc\xe8\x93#\
+\x00\x00\x00L\x00\x00\x00\x00\x00\x01\x00\x00\x06\x8b\
 \x00\x00\x01\x9aoq\xd9j\
-\x00\x00\x00P\x00\x01\x00\x00\x00\x01\x00\x00\x06w\
-\x00\x00\x01\x9b\xbd\xfc\xc0L\
+\x00\x00\x00v\x00\x00\x00\x00\x00\x01\x00\x00\x0d\x02\
+\x00\x00\x01\x9b\xddFa\x7f\
+\x00\x00\x00&\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
+\x00\x00\x01\x9b\xdd\x05@\xae\
 "
 
 def qInitResources():
