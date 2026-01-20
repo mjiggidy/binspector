@@ -379,11 +379,24 @@ class TRTMarkerViewItem(LBAbstractViewItem):
 		self._prepare_data()
 	
 	def _prepare_data(self):
+		
 		super()._prepare_data()
+		
+		marker_color = QtGui.QColor(self._data.color.name) if self._data is not None else QtGui.QColor()
+		
+		marker_info:avbutils.markers.MarkerInfo = self._data
+		
+		tooltip = f"""\
+			<b>Color</b>: {marker_info.color.value}<br/>
+			<b>Comment</b>: {marker_info.comment}<br/>
+			<b>Track</b>: {marker_info.track_label}<br/>
+			<b>Frame Offset</b>: {marker_info.frm_offset}\
+		""" if self._data else "No Marker"
+		
 		self._data_roles.update({
 			QtCore.Qt.ItemDataRole.DisplayRole: None,
-			QtCore.Qt.ItemDataRole.DecorationRole: QtGui.QColor(self._data.color.name).toTuple() if self._data.color else -1,
-			#QtCore.Qt.ItemDataRole.UserRole: QtGui.QColor(self._data.color.name),
+			QtCore.Qt.ItemDataRole.DecorationRole: marker_color,
+			QtCore.Qt.ItemDataRole.ToolTipRole: tooltip,
 		})
 
 class TRTBinLockViewItem(LBAbstractViewItem):
@@ -439,4 +452,3 @@ def _(item:datetime.datetime):
 @get_viewitem_for_item.register
 def _(item:Timecode):
 	return TRTTimecodeViewItem(item)
-

@@ -129,11 +129,12 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		self.initStyleOption(option, index)
 		style = option.widget.style() if option.widget else QtWidgets.QApplication.style()
 		
-		user_data = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
+		decoration_role = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
+		#user_role = index.data(QtCore.Qt.ItemDataRole.UserRole)
 		
 		
 		# TODO: Get Icon WITH PALETTE
-		icon      = self._icon_provider.getIcon(user_data, option.palette)
+		icon      = self._icon_provider.getIcon(decoration_role, option.palette)
 
 		# Center, size and shape the canvas QRect
 		canvas_active = self.activeRectFromRect(option.rect)#.marginsRemoved(self._padding)

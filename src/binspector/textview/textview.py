@@ -341,7 +341,11 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		# Markers
 		self._delegate_provider.setUniqueDelegateForField(
 			132,
-			itemdelegates.BSIconLookupItemDelegate(parent=self)
+			itemdelegates.BSIconLookupItemDelegate(
+				parent=self,
+				aspect_ratio=self.ICON_ASPECT_RATIO,
+				icon_provider=icon_providers.BSStyledMarkerIconProvider(),
+			)
 		)
 
 		# Bin Display Item Icon

@@ -6,11 +6,11 @@ from ..utils import drawing
 class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 	"""Abstract icon engine that supports dynamic colors from a `QtGui.QPalette`"""
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, palette:QtGui.QPalette|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._palette = QtGui.QGuiApplication.palette()
+		self._palette = QtGui.QPalette(palette or QtGui.QGuiApplication.palette())
 		self._cache:dict[int,QtGui.QPixmap] = dict()
 
 	def setPalette(self, palette:QtGui.QPalette):
@@ -68,7 +68,7 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 			canvas       = rect,
 			clip_color   = self._clip_color,
 			border_width = self._border_width,
-			border_color = self._palette.brightText().color() if mode == QtGui.QIcon.Mode.Selected else self._palette.windowText().color(),
+			border_color = self._palette.brightText().color() if mode == QtGui.QIcon.Mode.Selected else self._palette.buttonText().color(),
 			shadow_color = self._palette.shadow().color(),
 		)
 
@@ -96,7 +96,7 @@ class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
 			painter      = painter,
 			canvas       = active_rect,
 			marker_color = self._marker_color,
-			border_color = self._palette.buttonText().color(),
+			border_color = self._palette.brightText().color() if mode == QtGui.QIcon.Mode.Selected else self._palette.buttonText().color(),
 			border_width = self._border_width,
 			#border_color = self._palette.windowText().color(),
 			#shadow_color = self._palette.shadow().color(),
