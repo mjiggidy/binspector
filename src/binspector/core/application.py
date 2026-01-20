@@ -376,4 +376,4 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		self.closeAllWindows()
 
-		logging.getLogger(__name__).debug("Thank you for everything.  I love you.")
+		#logging.getLogger(__name__).debug("Thank you for everything.  I love you.")

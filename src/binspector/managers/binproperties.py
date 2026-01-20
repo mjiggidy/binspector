@@ -32,7 +32,7 @@ class BSBinViewModeManager(QtCore.QObject):
 
 class BSBinViewManager(base.LBItemDefinitionView):
 
-	sig_bin_view_changed = QtCore.Signal(object, object, int)
+	sig_bin_view_changed = QtCore.Signal(object, object, int, int)
 	"""Binview has been reset"""
 
 	sig_view_mode_toggled = QtCore.Signal(object)
@@ -65,8 +65,8 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		#self.sig_all_columns_toggled.connect(lambda all_columns: print(f"{all_columns=}")) #Not?
 		#self.sig_all_items_toggled.connect(lambda all_visible: print(f"{all_visible=}")) # Firing
 
-	@QtCore.Slot(object, object, object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start):
+	@QtCore.Slot(object, object, object, object)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start, script_view_scale:int=avbutils.THUMB_SCRIPT_MODE_RANGE.start):
 		"""Set columns and their widths"""
 
 		self.viewModel().clear()
@@ -91,7 +91,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 				
 			self.addColumnDefinition(column)
 		
-		self.sig_bin_view_changed.emit(bin_view, column_widths, frame_view_scale)
+		self.sig_bin_view_changed.emit(bin_view, column_widths, frame_view_scale, script_view_scale)
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):

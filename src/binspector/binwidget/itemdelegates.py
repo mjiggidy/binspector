@@ -1,15 +1,16 @@
-import logging
+import logging, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core  import icons
+from ..core  import icon_providers
+
 
 class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
-	def __init__(self, padding:QtCore.QMargins|None=None, *args, **kwargs):
+	def __init__(self, padding:QtCore.QMarginsF|None=None, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._padding = padding or QtCore.QMargins()
+		self._padding = padding or QtCore.QMarginsF()
 
 	def sizeHint(self, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> QtCore.QSize:
 		"""Return size hint with padding factored in"""
@@ -25,14 +26,18 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 	def setItemPadding(self, padding:QtCore.QMargins):
 		"""Set padding around individual items"""
 
-		if self._padding != padding:
+		if self._padding == padding:
+			return
 
-			self._padding = padding
+		self._padding = QtCore.QMarginsF(padding)
 
-			# NOTE: Binding to sizeHintChanged here to trigger redraw
-			# Passing invalid model index seems to work ok
-			self.sizeHintChanged.emit(QtCore.QModelIndex())
-			
+		# NOTE: Binding to sizeHintChanged here to trigger redraw
+		# Passing invalid model index seems to work ok
+		self.sizeHintChanged.emit(QtCore.QModelIndex())
+	
+	def itemPadding(self) -> QtCore.QMargins:
+
+		return self._padding
 
 	def activeRectFromRect(self, rect:QtCore.QRectF) -> QtCore.QRectF:
 		"""The active area without padding and such"""
@@ -59,8 +64,6 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 
 		fm = QtGui.QFontMetrics(kewl_options.font)
 		elided_text = fm.elidedText(kewl_text, kewl_options.textElideMode, kewl_options.rect.width())
-
-		#print)
 		
 		# NOTE HERE: Uh so yeah this is redrawing a bunch at the smaller rect and I only really need text but lol
 		painter.setFont(kewl_options.font)
@@ -74,54 +77,69 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 			QtGui.QPalette.ColorRole.HighlightedText if bool(kewl_options.state & QtWidgets.QStyle.StateFlag.State_Selected) else QtGui.QPalette.ColorRole.Text
 		)
 
+		# DEBUG:
+		#painter.drawRect(kewl_options.rect)
+
 		#return super().paint(painter, kewl_options, index)
+
+	def clone(self, *args, **kwargs) -> typing.Self:
+
+		return self.__class__(QtCore.QMarginsF(self._padding), *args, **kwargs)
 
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
 	"""Displays an icon centered in its item rect, with padding and aspect ratio preservation or something"""
 
-	def __init__(self, *args, aspect_ratio:QtCore.QSize|None=None, icon_provider:icons.BSIconProvider|None=None, **kwargs):
+	def __init__(self, *args, aspect_ratio:QtCore.QSizeF|None=None, icon_provider:icon_providers.BSStyledIconProvider|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._aspect_ratio  = aspect_ratio  or QtCore.QSize(1,1)
-		self._icon_provider = icon_provider or icons.BSIconProvider()
+		self._aspect_ratio  = aspect_ratio  or QtCore.QSizeF(1,1)
+		self._icon_provider = icon_provider or icon_providers.BSStyledIconProvider()
 
-	def iconProvider(self) -> icons.BSIconProvider:
+	def iconProvider(self) -> icon_providers.BSStyledIconProvider:
 		return self._icon_provider
 
 	def sizeWithAspectRatio(self, rect:QtCore.QSize) -> QtCore.QSize:
 		"""Over-engineering?  Probably.  Return a size corrected for aspect ratio with priority given to height."""
 
+		# NOTE: Holy moly this had me cranky.  Two things to remember here:
+		# 1: All these BS lookups apply padding to their sizeHint
+		# 2: The aspect ratio is based on the fixed height of the row so we can vary the width of the column
+		# 3: HOWEVER Because Script View has "unbalaced" vertical padding, so...
+		# 4: We need to remove it first so the height doesn't throw off aspect ratio calculations.
+
+		rect_height_no_padding = rect.height() - self._padding.top() - self._padding.bottom()
+
+		rect_width_aspect_corrected = rect_height_no_padding * self._aspect_ratio.width()/self._aspect_ratio.height()
+
 		return QtCore.QSize(
-			rect.height() * (self._aspect_ratio.width()/self._aspect_ratio.height()),
-			rect.height()
+			rect_width_aspect_corrected + self._padding.left() + self._padding.right(),
+			rect_height_no_padding + self._padding.top() + self._padding.bottom()
 		)
 
 	def sizeHint(self, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex) -> QtCore.QSize:
 		"""Return aspect ratio-corrected width x original height"""
 
 		orig_size = super().sizeHint(option, index)
-		adj_size  = self.sizeWithAspectRatio(orig_size)
-		
-		# NOTE: This was killing me for a while.  Adding back in the horizontal padding
-		# after correcting horizontal aspect ratio based on height.  I'm dumb.
-		adj_size += QtCore.QSize(self._padding.left() + self._padding.right(), 0)
-		
-		return adj_size
+
+		return self.sizeWithAspectRatio(orig_size)
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
-		opt_styled = QtWidgets.QStyleOptionViewItem(option)
-		self.initStyleOption(opt_styled, index)
-		style = opt_styled.widget.style() if opt_styled.widget else QtWidgets.QApplication.style()
+		self.initStyleOption(option, index)
+		style = option.widget.style() if option.widget else QtWidgets.QApplication.style()
 		
-		user_data = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
-		icon      = self._icon_provider.getIcon(user_data)
+		decoration_role = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
+		#user_role = index.data(QtCore.Qt.ItemDataRole.UserRole)
+		
+		
+		# TODO: Get Icon WITH PALETTE
+		icon      = self._icon_provider.getIcon(decoration_role, option.palette)
 
 		# Center, size and shape the canvas QRect
-		canvas_active = self.activeRectFromRect(opt_styled.rect)
+		canvas_active = self.activeRectFromRect(option.rect)#.marginsRemoved(self._padding)
 		
-		# Based on the active canvas area, bind the width to
+		# NOTE: Based on the active canvas area, bind the width to
 		# Min: Same as height (square)
 		# Max: Aspect ratio (w * w/h)
 		w_min = canvas_active.height()
@@ -134,19 +152,23 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 			w_active = canvas_active.width()
 		
 		canvas_active.setWidth(w_active)
-		canvas_active.moveCenter(opt_styled.rect.center())
+		canvas_active.moveCenter(QtCore.QRectF(option.rect).marginsRemoved(self._padding).center())
 		
 		painter.save()
-		painter.setClipRect(opt_styled.rect)
+		painter.setClipRect(option.rect)
+		
+		# DEBUG
+		#painter.drawRect(QtCore.QRect(option.rect.topLeft(), self.sizeHint(option, index)))
+		#painter.drawRect()
 		
 		try:
-			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, opt_styled, painter, opt_styled.widget)
+			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, option, painter, option.widget)
 
 			icon.paint(
 				painter,
 				canvas_active.toRect(),
-				mode=QtGui.QIcon.Mode.Selected if opt_styled.state & QtWidgets.QStyle.StateFlag.State_Selected else QtGui.QIcon.Mode.Active,
-				state=QtGui.QIcon.State.On     if opt_styled.state & QtWidgets.QStyle.StateFlag.State_On       else QtGui.QIcon.State.Off,
+				mode=QtGui.QIcon.Mode.Selected if option.state & QtWidgets.QStyle.StateFlag.State_Selected else QtGui.QIcon.Mode.Active,
+				state=QtGui.QIcon.State.On     if option.state & QtWidgets.QStyle.StateFlag.State_On       else QtGui.QIcon.State.Off,
 			)
 		
 		except Exception as e:
@@ -154,13 +176,10 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		
 		painter.restore()
 
-class LBTimecodeItemDelegate(BSGenericItemDelegate):
-	"""Eventually imma want to"""
+	def clone(self) -> typing.Self:
 
-	def __init__(self, *args, **kwargs):
-		
-		super().__init__(*args, **kwargs)
-
-	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOption, index:QtCore.QModelIndex):
-		
-		super().paint(painter, option, index)
+		return self.__class__(
+			aspect_ratio  = QtCore.QSizeF(self._aspect_ratio),
+			icon_provider = self._icon_provider,
+			padding       = QtCore.QMarginsF(self._padding),
+		)

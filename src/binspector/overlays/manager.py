@@ -120,7 +120,7 @@ class BSGraphicsOverlayManager(QtCore.QObject):
 		overlay._setEnabled(is_enabled)
 		overlay.blockSignals(not is_enabled)
 
-		logging.getLogger(__name__).debug("Overlay %s enabled=%s", overlay.isEnabled())
+		logging.getLogger(__name__).debug("Overlay %s enabled=%s", str(overlay), str(overlay.isEnabled()))
 		self.sig_overlay_toggled.emit(is_enabled)
 
 	def overlayEnabled(self, overlay:abstractoverlay.BSAbstractOverlay) -> bool:

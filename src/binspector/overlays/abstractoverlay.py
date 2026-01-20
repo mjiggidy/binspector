@@ -68,15 +68,25 @@ class BSAbstractOverlay(QtCore.QObject):
 
 		return self.parent()
 	
+	def enabledChanged(self, is_enabled:bool):
+		"""Virtual Method: Enable state was changed"""
+		
+		return
+	
 	@QtCore.Slot(bool)
 	def _setEnabled(self, is_enabled:bool):
 		"""This should be set via the manager"""
 
-		if not self._is_enabled == is_enabled:
+		if self._is_enabled == is_enabled:
+			return
 
-			self._is_enabled = is_enabled
-			self.sig_enabled_changed.emit(is_enabled)
-			self.sig_update_requested.emit()
+		self._is_enabled = is_enabled
+		
+		# Virtual function
+		self.enabledChanged(is_enabled)
+		
+		self.sig_enabled_changed.emit(is_enabled)
+		self.update()
 
 	def update(self, update_rect:QtCore.QRectF|None=None):
 		"""Request update, optionally for a particular `QRectF`"""

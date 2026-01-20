@@ -5,6 +5,34 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from functools import singledispatch
 
 
+class BSBinItemDataRoles(enum.IntEnum):
+	"""Item Data Roles for Bin Items (extends `QtCore.Qt.ItemDataRole`)"""
+
+	BSItemName         = QtCore.Qt.ItemDataRole.UserRole + 1
+	BSItemType         = enum.auto()
+	BSClipColor        = enum.auto()
+	BSFrameCoordinates = enum.auto()
+	BSFrameThumbnail   = enum.auto()
+	BSScriptNotes      = enum.auto()
+
+class BSBinColumnDataRoles(enum.IntEnum):
+	"""Item Data Roles for Bin Column Headers (extends `QtCore.Qt.ItemDataRole`)"""
+
+	BSColumnID         = QtCore.Qt.ItemDataRole.UserRole + 1
+	"""The ID of the column data (Unique for Name, Tape, Start, etc)"""
+
+	BSDataFormat       = enum.auto()
+	"""The ID of the data type (Unique for String, Timecode, etc)"""
+
+	BSColumnIsHidden   = enum.auto()
+	"""Is the column hidden from view"""
+
+	BSColumnWidth      = enum.auto()
+	"""User-specified column width, if set"""
+
+	BSColumnHash       = enum.auto()
+	"""Unique ID for column ID + display text (useful for User fields)"""
+
 class LBAbstractViewHeaderItem:
 	"""An abstract header item for TRT views"""
 
@@ -40,14 +68,14 @@ class LBAbstractViewHeaderItem:
 		"""Precalculate Header Data"""
 
 		self._data_roles.update({
-			QtCore.Qt.ItemDataRole.DisplayRole: str(self._display_name),
-			QtCore.Qt.ItemDataRole.DecorationRole: self._icon,
-			QtCore.Qt.ItemDataRole.UserRole:    self,
-			QtCore.Qt.ItemDataRole.UserRole+1:  self._field_id, # Think I wanna do this for bin headings
-			QtCore.Qt.ItemDataRole.UserRole+2:  self._format_id,
-			QtCore.Qt.ItemDataRole.UserRole+3:  self._is_hidden,
-			QtCore.Qt.ItemDataRole.UserRole+4:  self._field_width,
-			QtCore.Qt.ItemDataRole.UserRole+5:  self._field_name,
+			QtCore.Qt.ItemDataRole.DisplayRole:      str(self._display_name),
+			QtCore.Qt.ItemDataRole.DecorationRole:   self._icon,
+			QtCore.Qt.ItemDataRole.UserRole:         self,
+			BSBinColumnDataRoles  .BSColumnID:       self._field_id, # Think I wanna do this for bin headings
+			BSBinColumnDataRoles  .BSDataFormat:     self._format_id,
+			BSBinColumnDataRoles  .BSColumnIsHidden: self._is_hidden,
+			BSBinColumnDataRoles  .BSColumnWidth:    self._field_width,
+			BSBinColumnDataRoles  .BSColumnHash:     self._field_name,
 		 })
 	
 	def data(self, role:QtCore.Qt.ItemDataRole) -> typing.Any:
@@ -321,7 +349,7 @@ class TRTClipColorViewItem(LBAbstractViewItem):
 		self._data_roles.update({
 			#QtCore.Qt.ItemDataRole.UserRole: self._data,
 			#QtCore.Qt.ItemDataRole.BackgroundRole: self._data,
-			QtCore.Qt.ItemDataRole.DecorationRole: self._data.toTuple() if self._data.isValid() else -1,
+			QtCore.Qt.ItemDataRole.DecorationRole:self._data,
 			QtCore.Qt.ItemDataRole.ToolTipRole: f"R: {self._data.red()} G: {self._data.green()} B: {self._data.blue()}" if self._data.isValid() else "No Color",
 			QtCore.Qt.ItemDataRole.InitialSortOrderRole: self.to_string(self._data.getRgb())
 		})
@@ -351,11 +379,24 @@ class TRTMarkerViewItem(LBAbstractViewItem):
 		self._prepare_data()
 	
 	def _prepare_data(self):
+		
 		super()._prepare_data()
+		
+		marker_color = QtGui.QColor(self._data.color.name) if self._data is not None else QtGui.QColor()
+		
+		marker_info:avbutils.markers.MarkerInfo = self._data
+		
+		tooltip = f"""\
+			<b>Color</b>: {marker_info.color.value}<br/>
+			<b>Comment</b>: {marker_info.comment}<br/>
+			<b>Track</b>: {marker_info.track_label}<br/>
+			<b>Frame Offset</b>: {marker_info.frm_offset}\
+		""" if self._data else "No Marker"
+		
 		self._data_roles.update({
 			QtCore.Qt.ItemDataRole.DisplayRole: None,
-			QtCore.Qt.ItemDataRole.DecorationRole: QtGui.QColor(self._data.color.name).toTuple() if self._data.color else -1,
-			#QtCore.Qt.ItemDataRole.UserRole: QtGui.QColor(self._data.color.name),
+			QtCore.Qt.ItemDataRole.DecorationRole: marker_color,
+			QtCore.Qt.ItemDataRole.ToolTipRole: tooltip,
 		})
 
 class TRTBinLockViewItem(LBAbstractViewItem):

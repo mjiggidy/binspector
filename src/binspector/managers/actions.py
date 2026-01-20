@@ -3,7 +3,8 @@ Actions
 """
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..core import icons
+
+from ..core import icon_engines, icon_providers
 from ..res import icons_gui
 
 class ActionsManager(QtCore.QObject):
@@ -72,24 +73,24 @@ class ActionsManager(QtCore.QObject):
 		# View modes
 		self._act_view_list   = QtGui.QAction(self.tr("List View"), checkable=True, checked=True, parent=self._parent)
 		"""Toggle Bin View Mode: List"""
-		self._act_view_list.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/view_list.svg")))
+		self._act_view_list.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/view_list.svg")))
 		self._act_view_list.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_1))
 		self._act_view_list.setToolTip(self.tr("Show items in list view mode"))
-		self._act_view_list.setProperty(icons.PROPERTY_ICON_PALETTED, ":/icons/gui/view_list.svg")
+		self._act_view_list.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/view_list.svg")
 
 		self._act_view_frame  = QtGui.QAction(self.tr("Frame View"), checkable=True, parent=self._parent)
 		"""Toggle Bin View Mode: Frame"""
-		self._act_view_frame.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/view_frame.svg")))
+		self._act_view_frame.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/view_frame.svg")))
 		self._act_view_frame.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_2))
 		self._act_view_frame.setToolTip(self.tr("Show items in frame view mode"))
-		self._act_view_frame.setProperty(icons.PROPERTY_ICON_PALETTED, ":/icons/gui/view_frame.svg")
+		self._act_view_frame.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/view_frame.svg")
 
 		self._act_view_script = QtGui.QAction(self.tr("Script View"), checkable=True, parent=self._parent)
 		"""Toggle Bin View Mode: Script"""
-		self._act_view_script.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/view_script.svg")))
+		self._act_view_script.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/view_script.svg")))
 		self._act_view_script.setShortcut(QtGui.QKeySequence(QtGui.Qt.Modifier.CTRL|QtGui.Qt.Key.Key_3))
 		self._act_view_script.setToolTip(self.tr("Show items in script view mode"))
-		self._act_view_script.setProperty(icons.PROPERTY_ICON_PALETTED, ":/icons/gui/view_script.svg")
+		self._act_view_script.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/view_script.svg")
 
 
 		# Bin settings
@@ -116,22 +117,22 @@ class ActionsManager(QtCore.QObject):
 		self._act_toggle_show_all_items.setCheckable(True)
 		self._act_toggle_show_all_items.setToolTip(self.tr("<b>Show All Bin Items</b><br>Show items normally hidden by filters such as Bin Display, Sift, or Find In Bin"))
 		self._act_toggle_show_all_items.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_2))
-		self._act_toggle_show_all_items.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_rows.svg")))
-		self._act_toggle_show_all_items.setProperty(icons.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_rows.svg")
+		self._act_toggle_show_all_items.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_rows.svg")))
+		self._act_toggle_show_all_items.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_rows.svg")
 
 		self._act_toggle_show_all_columns = QtGui.QAction(self.tr("Show All Columns"))
 		self._act_toggle_show_all_columns.setCheckable(True)
 		self._act_toggle_show_all_columns.setToolTip(self.tr("<b>Show All Bin Columns</b><br>Show columns normally hidden by the current Bin View settings"))
 		self._act_toggle_show_all_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_1))
-		self._act_toggle_show_all_columns.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_columns.svg")))
-		self._act_toggle_show_all_columns.setProperty(icons.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_columns.svg")
+		self._act_toggle_show_all_columns.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_columns.svg")))
+		self._act_toggle_show_all_columns.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_columns.svg")
 
 		self._act_toggle_sys_appearance = QtGui.QAction(self.tr("Use System Appearance"))
 		self._act_toggle_sys_appearance.setCheckable(True)
 		self._act_toggle_sys_appearance.setToolTip(self.tr("<b>Use System Appearance</b><br>Use default system fonts and colors, rather than bin settings"))
 		self._act_toggle_sys_appearance.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_3))
-		self._act_toggle_sys_appearance.setIcon(QtGui.QIcon(icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_appearance.svg")))
-		self._act_toggle_sys_appearance.setProperty(icons.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_appearance.svg")
+		self._act_toggle_sys_appearance.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_appearance.svg")))
+		self._act_toggle_sys_appearance.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_appearance.svg")
 		
 
 		# Tools

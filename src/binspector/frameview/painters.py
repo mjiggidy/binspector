@@ -1,12 +1,9 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core.config import BSFrameViewConfig
+from ..core import grid
 from ..utils import stylewatcher
 
-if TYPE_CHECKING:
-	from ..frameview.frameview import BSBinFrameViewGridInfo
 
 class BSFrameItemBrushManager(QtCore.QObject):
 	"""Pens, brushes and fonts for frame items"""
@@ -120,11 +117,12 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 	
 	sig_enabled_changed          = QtCore.Signal(bool)
 	sig_active_grid_unit_changed = QtCore.Signal(object)
+	sig_visible_tick_info_changed= QtCore.Signal(object)
 
 	def __init__(self,
 		parent:QtWidgets.QWidget,
 		*args,
-		grid_info:BSBinFrameViewGridInfo|None=None,
+		tick_info:dict[QtCore.Qt.Orientation, list[grid.BSGridTickInfo]]|None=None,
 		tick_width_major:float=3,
 		tick_width_minor:float=1.5,
 		**kwargs
@@ -134,10 +132,7 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 		self._is_enabled = True
 
-		self._grid_unit_info = grid_info or BSBinFrameViewGridInfo(
-			unit_size      = BSFrameViewConfig.GRID_UNIT_SIZE,
-			unit_divisions = BSFrameViewConfig.GRID_DIVISIONS,
-		)
+		self._visible_tick_info = tick_info or dict()
 
 		self._active_grid_unit = QtCore.QRectF()
 		"""Rect for highlighting a particular cell"""
@@ -191,25 +186,22 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		self._brush_active_grid.setColor(active_grid_unit_color)
 
 	@QtCore.Slot(object)
-	def setGridInfo(self, grid_info:BSBinFrameViewGridInfo):
+	def setVisibleTickInfo(self, visible_tick_info:dict[QtCore.Qt.Orientation, list[grid.BSGridTickInfo]]):
 
-		self._grid_unit_info = grid_info
+		if self._visible_tick_info == visible_tick_info:
+			return
+		
+		self._visible_tick_info = visible_tick_info
+		self.sig_visible_tick_info_changed.emit(visible_tick_info)
 
 	@QtCore.Slot()
 	@QtCore.Slot(QtCore.QPointF)
-	def setActiveGridUnit(self, grid_unit:QtCore.QPointF|None=None):
+	def setActiveGridUnit(self, grid_unit:QtCore.QRectF|None=None):
 
-		if (self._active_grid_unit is None and grid_unit is None):
+		if self._active_grid_unit == grid_unit:
 			return
-		
-		elif self._active_grid_unit and (self._active_grid_unit.topLeft() == grid_unit):
-			return
-		
-		if grid_unit is None:
-			self._active_grid_unit = None
 
-		else:
-			self._active_grid_unit = QtCore.QRectF(grid_unit, self._grid_unit_info.unit_size)
+		self._active_grid_unit = grid_unit
 			
 		self.sig_active_grid_unit_changed.emit(grid_unit)
 
@@ -227,7 +219,6 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 
 	def drawBackground(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 
-
 		painter.save()
 
 		if self._is_enabled:
@@ -241,47 +232,32 @@ class BSBinFrameBackgroundPainter(QtCore.QObject):
 		painter.restore()
 
 	def _draw_horizontal_grid(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
-		# Horizontal
-		# Align to grid divisions
-		range_scene_start = rect_scene.left() - (rect_scene.left()  % self._grid_unit_info.unit_size.width())
-		range_scene_end   = rect_scene.right()- (rect_scene.right() % self._grid_unit_info.unit_size.width()) + self._grid_unit_info.unit_size.width() # Overshoot by additional unit
+		
+		for tick in self._visible_tick_info.get(QtCore.Qt.Orientation.Horizontal, []):
 
-		x_pos = range_scene_start
-		while x_pos < range_scene_end:
+			x_pos = tick.scene_offset
 
-			if not x_pos % self._grid_unit_info.unit_size.width():
-				painter.setPen(self._pen_tick_major)
-			else:
-				painter.setPen(self._pen_tick_minor)
+			painter.setPen(self._pen_tick_major if tick.tick_type == grid.BSGridTickType.MAJOR else self._pen_tick_minor)
 
 			painter.drawLine(QtCore.QLineF(
 				QtCore.QPointF(x_pos, rect_scene.top()),
 				QtCore.QPointF(x_pos, rect_scene.bottom())
 			))
 
-			x_pos += self._grid_unit_info.unit_step.x()
-
 	def _draw_vertical_grid(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 
 		# Vertical
 		# Align to grid divisions
-		range_scene_start = rect_scene.top() - (rect_scene.top()  % self._grid_unit_info.unit_size.height())
-		range_scene_end   = rect_scene.bottom()- (rect_scene.bottom() % self._grid_unit_info.unit_size.height()) + self._grid_unit_info.unit_size.height() # Overshoot by additional unit
+		for tick in self._visible_tick_info.get(QtCore.Qt.Orientation.Vertical, []):
 
-		y_pos = range_scene_start
-		while y_pos < range_scene_end:
+			y_pos = tick.scene_offset
 
-			if not y_pos % self._grid_unit_info.unit_size.height():
-				painter.setPen(self._pen_tick_major)
-			else:
-				painter.setPen(self._pen_tick_minor)
+			painter.setPen(self._pen_tick_major if tick.tick_type == grid.BSGridTickType.MAJOR else self._pen_tick_minor)
 
 			painter.drawLine(QtCore.QLineF(
 				QtCore.QPointF(rect_scene.left(), y_pos),
 				QtCore.QPointF(rect_scene.right(), y_pos)
 			))
-
-			y_pos += self._grid_unit_info.unit_step.y()
 	
 	def _draw_active_grid_unit(self, painter:QtGui.QPainter, rect_scene:QtCore.QRectF):
 

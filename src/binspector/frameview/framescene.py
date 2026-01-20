@@ -55,6 +55,12 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			self._setupSelectionModel()
 			self.sig_selection_model_changed.emit(selection_model)
 
+	@QtCore.Slot(object)
+	def setSelectedItems(self, item_indexes:list[int]):
+		"""Set selected items"""
+
+		for idx, item in enumerate(self._bin_items):
+			item.setSelected(idx in item_indexes)
 
 	@QtCore.Slot(object,object)
 	def setSelectedItemsFromSelectionModel(self, selected:QtCore.QItemSelection, deselected:QtCore.QItemSelection):
@@ -132,10 +138,10 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			# Resolve source model to ensure we always have relevent columns available
 			proxy_row_index  = self._bin_filter_model.index(row, 0, parent_row_index)
 
-			bin_item_name   = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemName)
-			bin_item_coords = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSFrameCoordinates)
-			bin_item_color  = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSClipColor)
-			bin_item_type   = proxy_row_index.data(viewmodels.BSBinItemDataRoles.BSItemType)
+			bin_item_name   = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSItemName)
+			bin_item_coords = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSFrameCoordinates)
+			bin_item_color  = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSClipColor)
+			bin_item_type   = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSItemType)
 
 			#print(bin_item_color)
 
@@ -143,7 +149,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			bin_item.setName(str(bin_item_name))
 			bin_item.setClipColor(bin_item_color)
 			bin_item.setClipType(bin_item_type)
-			bin_item.setFlags(config.BSFrameViewConfig.DEFAULT_ITEM_FLAGS)
+			bin_item.setFlags(config.BSFrameViewModeConfig.DEFAULT_ITEM_FLAGS)
 			
 			
 

@@ -1,15 +1,8 @@
-import typing, enum
+import typing
 from PySide6 import QtCore
 import avbutils
+
 from . import viewmodelitems
-
-class BSBinItemDataRoles(enum.IntEnum):
-
-	BSItemName         = QtCore.Qt.ItemDataRole.UserRole + 1
-	BSItemType         = enum.auto()
-	BSClipColor        = enum.auto()
-	BSFrameCoordinates = enum.auto()
-	BSFrameThumbnail   = enum.auto()
 
 class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 	"""QSortFilterProxyModel that implements bin view settings and filters"""
@@ -253,6 +246,12 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		self._headers:list[viewmodelitems.LBAbstractViewHeaderItem] = []
 		"""List of view headers"""
+
+	def supportedDropActions(self):
+		return super().supportedDropActions() | QtCore.Qt.DropAction.MoveAction
+	
+	def moveRows(self, sourceParent, sourceRow, count, destinationParent, destinationChild):
+		return super().moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild)
 	
 	def rowCount(self, /, parent:QtCore.QModelIndex=QtCore.QModelIndex()) -> int:
 		"""Number of bin items"""
@@ -298,34 +297,61 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		bin_item_data = self._bin_items[index.row()]
 
 		# Do row stuff first
-		if role == BSBinItemDataRoles.BSItemName:
+		if role == viewmodelitems.BSBinItemDataRoles.BSItemName:
 			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Name"]).data(QtCore.Qt.ItemDataRole.DisplayRole)
 		
-		elif role == BSBinItemDataRoles.BSFrameCoordinates:
+		elif role == viewmodelitems.BSBinItemDataRoles.BSFrameCoordinates:
 			return self._frame_locations[index.row()]
 		
-		elif role == BSBinItemDataRoles.BSClipColor:
+		elif role == viewmodelitems.BSBinItemDataRoles.BSClipColor:
 			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Color"]).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
-		elif role == BSBinItemDataRoles.BSItemType:
+		elif role == viewmodelitems.BSBinItemDataRoles.BSItemType:
 			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES[""]).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
+		
+		elif role == viewmodelitems.BSBinItemDataRoles.BSScriptNotes:
+			return self._getUserColumnItem(index, user_column_name="Comments", role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+1)
+		# For user fields: Look up the thingy
+		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, viewmodelitems.BSBinItemDataRoles.BSItemName)
 
 		if field_id not in bin_item_data:
 			#print(field_id, "Not here in ", list(bin_item_data.keys()))
 			return None
 		
 		elif field_id == 40:
+
 			# Look up user field
 			field_name = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
+
 			if field_name not in bin_item_data.get(field_id):
-				#print("Didnt find", field_name)
 				return None
-			#print("Return user data")
+
 			return bin_item_data.get(field_id).get(field_name).data(role)
 
 		return bin_item_data.get(field_id).data(role)
+	
+	def _getUserColumnItem(self, index:QtCore.QModelIndex, /, user_column_name:str, role:QtCore.Qt.ItemDataRole=QtCore.Qt.ItemDataRole.DisplayRole) -> typing.Any:
+		"""Return the string associated with a specified user column name"""
+
+		# NOTE: Add this to avbutils.bins.BinDataColumnFormats or whatever?
+		USER_FIELD_ID = 40
+
+		bin_item_data = self._bin_items[index.row()]
+		
+		if USER_FIELD_ID not in bin_item_data:
+			return None
+		
+		user_data = self._bin_items[index.row()][USER_FIELD_ID]
+
+		if user_column_name not in user_data:
+			return None
+		
+		return user_data[user_column_name].data(role)
+
+
+		field_name = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
+
 	
 	def flags(self, index:QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
 		

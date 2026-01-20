@@ -1,76 +1,16 @@
-from __future__ import annotations
-import weakref, logging, typing
+import logging
 from os import PathLike
 from PySide6 import QtCore, QtGui, QtSvg
 from ..utils import drawing
 
-PROPERTY_ICON_PALETTED = "icon_paletted"
-
-def getPalettedIconEngine(action:QtGui.QAction) -> BSAbstractPalettedIconEngine|None:
-
-	path_icon = action.property(PROPERTY_ICON_PALETTED)
-	return BSPalettedSvgIconEngine(path_icon) if path_icon else None
-
-
-#class BSPaletteWatcherForSomeReason(QtCore.QObject):
-#	"""Watch for palette changes ugh"""
-#
-#	sig_palette_changed = QtCore.Signal(QtGui.QPalette)
-#	"""Oh look the palette changed"""
-#
-#	def __init__(self, *args, **kwargs):
-#		
-#		super().__init__(*args, **kwargs)
-#
-#		self._icon_engines:set[weakref.ReferenceType["BSPalettedSvgIconEngine"]] = set()
-#
-#	def addIconEngine(self, paletted_engine:"BSPalettedSvgIconEngine"):
-#		self._icon_engines.add(weakref.ref(paletted_engine))
-#	
-#	@QtCore.Slot(QtGui.QPalette)
-#	def setPalette(self, palette:QtGui.QPalette):
-#
-#		# NOTE: Kinda hate this, but need to copy the set to allow the discard during iteration
-#		for icon_engine in self._icon_engines.copy():
-#
-#			if not icon_engine():
-#
-#				logging.getLogger(__name__).debug("Discarding stale weakref: %s", icon_engine)
-#				self._icon_engines.discard(icon_engine)
-#
-#			else:
-#				icon_engine().setPalette(palette)
-#
-#		self.sig_palette_changed.emit(palette)
-
-class BSIconProvider:
-	"""Provide icons based on lookup"""
-
-	def __init__(self):
-
-		self._icons:dict[typing.Hashable, QtGui.QIcon] = dict()
-	
-	def icons(self) -> list[QtGui.QIcon]:
-		return self._icons
-	
-	def addIcon(self, key:typing.Hashable, icon:QtGui.QIcon):
-		self._icons[key] = icon
-
-	def getIcon(self, key:typing.Hashable) -> QtGui.QIcon:
-
-		if key not in self._icons:
-			# TODO: Generate and add icon
-			return QtGui.QIcon()
-		
-		return self._icons[key]
-	
 class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
+	"""Abstract icon engine that supports dynamic colors from a `QtGui.QPalette`"""
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, palette:QtGui.QPalette|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._palette = QtGui.QGuiApplication.palette()
+		self._palette = QtGui.QPalette(palette or QtGui.QGuiApplication.palette())
 		self._cache:dict[int,QtGui.QPixmap] = dict()
 
 	def setPalette(self, palette:QtGui.QPalette):
@@ -85,6 +25,7 @@ class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 		self._cache[h] = pixmap
 
 	def pixmap(self, size, mode, state):
+		"""Get pixmap from cache, or paint it and cache it"""
 
 		# Pull from cache
 		h = self._makeHash(size, mode, state)
@@ -111,6 +52,7 @@ class BSAbstractPalettedIconEngine(QtGui.QIconEngine):
 		))
 	
 class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
+	"""A clip color chip icon engine with customizable clip color"""
 
 	def __init__(self, clip_color:QtGui.QColor, *args, border_width:int=1, **kwargs):
 
@@ -126,7 +68,7 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 			canvas       = rect,
 			clip_color   = self._clip_color,
 			border_width = self._border_width,
-			border_color = self._palette.brightText().color() if mode == QtGui.QIcon.Mode.Selected else self._palette.windowText().color(),
+			border_color = self._palette.brightText().color() if mode == QtGui.QIcon.Mode.Selected else self._palette.buttonText().color(),
 			shadow_color = self._palette.shadow().color(),
 		)
 
@@ -136,6 +78,7 @@ class BSPalettedClipColorIconEngine(BSAbstractPalettedIconEngine):
 		return self.__class__(self._clip_color, border_width=self._border_width)
 	
 class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
+	"""A marker icon engine with customizable marker color"""
 
 	def __init__(self, marker_color:QtGui.QColor, *args, border_width:int=1, **kwargs):
 
@@ -153,7 +96,7 @@ class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
 			painter      = painter,
 			canvas       = active_rect,
 			marker_color = self._marker_color,
-			border_color = self._palette.buttonText().color(),
+			border_color = self._palette.brightText().color() if mode == QtGui.QIcon.Mode.Selected else self._palette.buttonText().color(),
 			border_width = self._border_width,
 			#border_color = self._palette.windowText().color(),
 			#shadow_color = self._palette.shadow().color(),
@@ -168,6 +111,7 @@ class BSPalettedMarkerIconEngine(BSAbstractPalettedIconEngine):
 		return self.__class__(self._marker_color, border_width=self._border_width)
 
 class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
+	"""An SVG icon engine with support for `QPalette` color replacements"""
 	
 	def __init__(self, svg_path:PathLike, *args, **kwargs):
 
@@ -191,7 +135,6 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 		# NOTE: Loads during setPalette now.  Assume it's better performance.
 		#  BUT: Probably need this back here to deal with current mode/state?
 		#self._palette.setCurrentColorGroup(QtGui.QPalette.ColorGroup.Inactive if mode == QtGui.QPalette.ColorGroup.Inactive else QtGui.QPalette.ColorGroup.Active)
-		self._palette_dict = self._paletteToDict(self._palette)
 		
 		if mode == QtGui.QIcon.Mode.Selected:
 			self._palette_dict["ButtonText"] = self._palette.brightText().color().name()
@@ -206,6 +149,7 @@ class BSPalettedSvgIconEngine(BSAbstractPalettedIconEngine):
 	def setPalette(self, palette:QtGui.QPalette):
 
 		super().setPalette(palette)
+		self._palette_dict = self._paletteToDict(self._palette)
 		#self._palette_dict = self._paletteToDict(palette)
 
 		# Moved here from paint()

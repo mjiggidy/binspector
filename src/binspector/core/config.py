@@ -1,7 +1,8 @@
 import avbutils
 from PySide6 import QtCore, QtWidgets
 
-class BSListViewConfig:
+class BSTextViewModeConfig:
+	"""Bin Text View Mode Config"""
 
 	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(16,4,16,4)
 	"""Default padding inside view item"""
@@ -21,7 +22,7 @@ class BSListViewConfig:
 	BINVIEW_COLUMN_WIDTH_ADJUST:int = 64	# NOT USED?
 	"""Adjust binview-specified column widths for better fit"""
 
-class BSFrameViewConfig:
+class BSFrameViewModeConfig:
 	"""Bin Frame View Mode Config"""
 
 	GRID_UNIT_SIZE     = QtCore.QSizeF(17,14) # 18x12 in scene units
@@ -42,8 +43,13 @@ class BSFrameViewConfig:
 	DEFAULT_ITEM_MARGINS = QtCore.QMarginsF(*[0.25]*4)
 
 
-class BSScriptViewConfig:
+class BSScriptViewModeConfig:
 	"""Bin Script View Mode Config"""
 
 	DEFAULT_SCRIPT_ZOOM_RANGE = avbutils.bins.THUMB_SCRIPT_MODE_RANGE
 	DEFAULT_SCRIPT_ZOOM_START = avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start
+	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(16,4,16,4)
+	"""Default padding inside view item"""
+
+	FRAME_SIZE_SCALER = 1.25
+	"""Additional scaler to control frame size -- possibly pixel density-dependent"""

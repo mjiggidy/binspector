@@ -21,6 +21,11 @@ def bin_frame_view_scale_from_bin(bin_content:avb.bin.Bin) -> int:
 
 	return bin_content.mac_image_scale
 
+def bin_scipt_view_scale_from_bin(bin_content:avb.bin.Bin) -> int:
+	"""Get the Script view mode scale"""
+
+	return bin_content.ql_image_scale
+
 def bin_column_widths_from_bin(bin_content:avb.bin.Bin) -> dict[str, int]:
 	"""Decode bin column widths"""
 
@@ -198,7 +203,7 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 			avbutils.BIN_COLUMN_ROLES["Modified Date"]: comp.last_modified,
 			avbutils.BIN_COLUMN_ROLES["Creation Date"]: comp.creation_time,
 			avbutils.BIN_COLUMN_ROLES[""]: mob_types,
-			avbutils.BIN_COLUMN_ROLES["Marker"]: viewmodelitems.TRTMarkerViewItem(marker) if marker else None,
+			avbutils.BIN_COLUMN_ROLES["Marker"]: viewmodelitems.TRTMarkerViewItem(marker),
 			avbutils.BIN_COLUMN_ROLES["Tracks"]: viewmodelitems.TRTStringViewItem(avbutils.timeline.format_track_labels(mob_tracks)) or None,
 			avbutils.BIN_COLUMN_ROLES["Tape"]: tape_name or "",
 			avbutils.BIN_COLUMN_ROLES["Drive"]: source_drive or "",

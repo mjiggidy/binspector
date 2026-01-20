@@ -7,7 +7,7 @@ def draw_marker_tick(
 	*,
 	border_color :QtGui.QColor|None=None,
 	border_width :int=2,
-	border_radius:int=4,
+	border_radius:int=2,
 	shadow_color :QtGui.QColor|None=None,
 	shadow_alpha :float=0.25
 ):
@@ -35,8 +35,8 @@ def draw_marker_tick(
 	# Draw shadow first I guess
 	if shadow_color.isValid() and border_width > 0:
 
-		shadow_offset = QtCore.QPoint(border_width/2,border_width/2)
-		active_rect.translate(shadow_offset)
+		shadow_offset = QtCore.QPointF(border_width/2,border_width/2)
+		active_rect.translate(shadow_offset.toPoint())
 		
 		shadow_color.setAlphaF(shadow_alpha)
 		pen.setColor(shadow_color)
@@ -47,7 +47,7 @@ def draw_marker_tick(
 
 		painter.drawRoundedRect(active_rect, border_radius, border_radius)
 
-		active_rect.translate(-shadow_offset)
+		active_rect.translate(-shadow_offset.toPoint())
 
 	brush.setColor(marker_color)
 	brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern if marker_color.isValid() else QtCore.Qt.BrushStyle.LinearGradientPattern)

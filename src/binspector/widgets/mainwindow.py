@@ -1,12 +1,12 @@
 from os import PathLike
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..binwidget import binwidget
 from ..managers import actions, binproperties, appearance
-from ..widgets import siftwidget, menus, toolboxes, buttons, about
+from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..views import treeview
-from ..core import binloader, icons
+from ..core import binloader, icon_engines, icon_providers
 
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
@@ -68,6 +68,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._btn_toolbox_sifting    = buttons.BSActionPushButton(show_text=False)
 		self._btn_toolbox_binview    = buttons.BSActionPushButton(show_text=False)
 
+		self._drag_drop_overlay = overlaywidget.BSDragDropOverlayWidget(parent=self._bin_widget, is_visible=False)
 
 		# The rest
 		
@@ -82,6 +83,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		"""Configure general widget placement and config"""
 		
 		self.setCentralWidget(self._bin_widget)
+		self.setAcceptDrops(True)
 
 		self._dock_bindisplay.setWidget(self._tool_bindisplay)
 		self._dock_sifting.setWidget(self._tool_sifting)
@@ -107,25 +109,25 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		topbar.setStopLoadAction(self._man_actions._act_stopcurrent)
 		
 		topbar.setViewModeListAction(self._man_actions.viewBinAsList())
-		topbar._btn_viewmode_list.setIconEngine(icons.getPalettedIconEngine(self._man_actions._act_view_list))
+		topbar._btn_viewmode_list.setIconEngine(icon_providers.getPalettedIconEngine(self._man_actions._act_view_list))
 
 		topbar.setViewModeFrameAction(self._man_actions.viewBinAsFrame())
-		topbar._btn_viewmode_frame.setIconEngine(icons.getPalettedIconEngine(self._man_actions._act_view_frame))
+		topbar._btn_viewmode_frame.setIconEngine(icon_providers.getPalettedIconEngine(self._man_actions._act_view_frame))
 
 		topbar.setViewModeScriptAction(self._man_actions.viewBinAsScript())
-		topbar._btn_viewmode_script.setIconEngine(icons.getPalettedIconEngine(self._man_actions._act_view_script))
+		topbar._btn_viewmode_script.setIconEngine(icon_providers.getPalettedIconEngine(self._man_actions._act_view_script))
 
 		self._anim_progress.setTargetObject(topbar.progressBar())
 		self._anim_progress.setPropertyName(QtCore.QByteArray.fromStdString("value"))
 		self._anim_progress.setEasingCurve(QtCore.QEasingCurve.Type.Linear)
 
-		grp = QtWidgets.QSizeGrip(self._bin_widget.listView())
-		self._bin_widget.listView().setCornerWidget(grp)
+		grp = QtWidgets.QSizeGrip(self._bin_widget.textView())
+		self._bin_widget.textView().setCornerWidget(grp)
 		
 		# Apply Bin Settings Toggles
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
 			
-			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icons.getPalettedIconEngine(act_toggle))
+			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(act_toggle))
 			btn.setIconSize(QtCore.QSize(8,8))
 			btn.setFixedSize(QtCore.QSize(
 				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
@@ -134,10 +136,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 				lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
 			)
 			
-			self._bin_widget.listView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+			self._bin_widget.textView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
 
 		# Frame View Toggles
-		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_sys_appearance, show_text=False, icon_engine=icons.getPalettedIconEngine(self._man_actions._act_toggle_sys_appearance))
+		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_sys_appearance, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(self._man_actions._act_toggle_sys_appearance))
 		btn.setIconSize(QtCore.QSize(8,8))
 		btn.setFixedSize(QtCore.QSize(
 			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
@@ -148,7 +150,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False, icon_engine=icons.BSPalettedSvgIconEngine(":/icons/gui/toggle_frame_showall.svg"))
+		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False, icon_engine=icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_frame_showall.svg"))
 		btn.setIconSize(QtCore.QSize(8,8))
 		btn.setFixedSize(QtCore.QSize(
 			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
@@ -161,7 +163,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		for act_toggle in self._bin_widget.frameView().actions().overlayActions().actions(): #lol
 
-			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icons.getPalettedIconEngine(act_toggle))
+			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(act_toggle))
 			btn.setIconSize(QtCore.QSize(8,8))
 			btn.setFixedSize(QtCore.QSize(
 				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
@@ -238,7 +240,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
-		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.listView().model().setBinDisplayItemTypes)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.textView().model().setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		# Appearance to binwidget
@@ -293,7 +295,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
 
 		# Bin Contents Toolbars
-		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.listView().model().setSearchText)
+		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.textView().model().setSearchText)
 
 		#self._main_bincontents.sig_bin_palette_changed.connect(self._man_actions._palette_watcher.setPalette)
 
@@ -388,8 +390,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
 		self._bin_widget.topWidgetBar().progressBar().show()
 
-		self._bin_widget.listView().setSortingEnabled(False)
-		self._bin_widget.listView().model().setDynamicSortFilter(False)
+		self._bin_widget.textView().setSortingEnabled(False)
+		self._bin_widget.textView().model().setDynamicSortFilter(False)
 		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
@@ -443,20 +445,20 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Enabling sorting also performs a sort... sooo
 		# Set invalid sort column first, per the docs
 		# TODO: Set as stored sort column if available from the bin
-		self._bin_widget.listView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
-		self._bin_widget.listView().setSortingEnabled(True)
-		self._bin_widget.listView().model().setDynamicSortFilter(True)
+		self._bin_widget.textView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
+		self._bin_widget.textView().setSortingEnabled(True)
+		self._bin_widget.textView().model().setDynamicSortFilter(True)
 
-		for col in range(self._bin_widget.listView().header().count()):
-			print("Haha...")
-			self._bin_widget.listView().setColumnWidthFromBinView(col, True)
+		for col in range(self._bin_widget.textView().header().count()):
+			#print("Haha...")
+			self._bin_widget.textView().setColumnWidthFromBinView(col, True)
 		
 		if self._man_binview.defaultSortColumns():
 			last_col = self._man_binview.defaultSortColumns()[-1]
 			direction, column_name = QtCore.Qt.SortOrder(last_col[0]), last_col[1]
-			if column_name in self._bin_widget.listView().columnDisplayNames():
-				self._bin_widget.listView().header().setSortIndicator(
-					self._bin_widget.listView().columnDisplayNames().index(column_name),
+			if column_name in self._bin_widget.textView().columnDisplayNames():
+				self._bin_widget.textView().header().setSortIndicator(
+					self._bin_widget.textView().columnDisplayNames().index(column_name),
 					direction
 				)
 		
@@ -544,3 +546,32 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self.cleanupSignals()
 		
 		return super().closeEvent(event)
+	
+	def dragEnterEvent(self, event:QtGui.QDragEnterEvent):
+
+		if not event.mimeData().hasUrls():
+
+			event.ignore()
+			return False
+
+		self._drag_drop_overlay.show()
+		
+		event.accept()
+		return True
+	
+	def dropEvent(self, event:QtGui.QDropEvent):
+
+		for file_path in map(lambda u: QtCore.QDir.toNativeSeparators(u.toLocalFile()), event.mimeData().urls()):
+
+			self.loadBinFromPath(file_path)
+			
+		self._drag_drop_overlay.hide()
+		event.accept()
+		return True
+	
+	def dragLeaveEvent(self, event:QtGui.QDragLeaveEvent):
+
+		self._drag_drop_overlay.hide()
+		
+		event.accept()
+		return True

@@ -4,7 +4,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from binspector.binwidget import scrollwidgets
 from binspector.widgets import buttons
-from binspector.core import icons
+from binspector.core import icon_engines
 from binspector.res import icons_gui
 
 class MyKewlTestWindow(QtWidgets.QWidget):
@@ -52,7 +52,7 @@ if __name__ == "__main__":
 		":/icons/gui/toggle_appearance.svg",
 	]:
 	
-		butt = buttons.BSPalettedActionPushButton(QtGui.QAction(checkable=True), show_text=False, icon_engine=icons.BSPalettedSvgIconEngine(svg))
+		butt = buttons.BSPalettedActionPushButton(QtGui.QAction(checkable=True), show_text=False, icon_engine=icon_engines.BSPalettedSvgIconEngine(svg))
 		butt.setFixedWidth(16)
 		butt.setIconSize(QtCore.QSize(8,8))
 		#butt.setFixedSize(QtCore.QSize(16,16))
