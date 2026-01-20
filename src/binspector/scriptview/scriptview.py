@@ -29,7 +29,6 @@ class BSBinScriptView(textview.BSBinTextView):
 		self.verticalScrollBar()  .valueChanged.connect(self.viewport().update)
 		self.horizontalScrollBar().valueChanged.connect(self.viewport().update)
 
-
 		self.setItemPadding(BSScriptViewModeConfig.DEFAULT_ITEM_PADDING)
 	
 		self.applyHeaderConstraints()
@@ -40,12 +39,15 @@ class BSBinScriptView(textview.BSBinTextView):
 		super().setItemPadding(padding)
 
 		for delegate in self._delegate_provider.delegates():
+
 			padding= delegate.itemPadding()
 			padding.setBottom(self._bottomItemPadding())
 			delegate.setItemPadding(padding)
 
 		self.adjustFirstItemPadding()
 
+		# NOTE: These `scheduleDelayedItemsLayout` calls MIGHT be because
+		# of the proxy delegate not sending update() or something...?
 		self.scheduleDelayedItemsLayout()
 
 	def syncFromHeader(self, header:QtWidgets.QHeaderView):
@@ -130,15 +132,17 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		# Since I copy header from list view to script view, need to restore a lot of constraints
 
-		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
-		
-		first_col_log = self.header().logicalIndex(0)
-		self.header().setSectionResizeMode(first_col_log, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+		# Apply different resize mode to first column (old)
+#		first_col_log = self.header().logicalIndex(0)
+#		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
+#		self.header().setSectionResizeMode(first_col_log, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
 		self.header().setSectionsMovable(False)
 		self.setSortingEnabled(False)
 		self.setSelectionMode(QtWidgets.QTreeView.SelectionMode.SingleSelection)
 		self.setDragEnabled(True)
+
+		self.header().setSectionResizeMode(BSScriptViewModeConfig.DEFAULT_COLUMN_RESIZE_MODE)
 
 	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 		

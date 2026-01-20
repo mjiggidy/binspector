@@ -53,3 +53,6 @@ class BSScriptViewModeConfig:
 
 	FRAME_SIZE_SCALER = 1.25
 	"""Additional scaler to control frame size -- possibly pixel density-dependent"""
+
+	DEFAULT_COLUMN_RESIZE_MODE = QtWidgets.QHeaderView.ResizeMode.ResizeToContents
+	"""Default mode for Script view column resizing"""
