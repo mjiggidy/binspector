@@ -7,9 +7,9 @@
 	<file alias="view_script.svg">../icons/view_script_v04_themed.svg</file>
 
 	<!-- Filter & Style Toggle Buttons -->
-	<file alias="toggle_rows.svg">../icons/toggle_rows_v02_themed.svg</file>
-	<file alias="toggle_columns.svg">../icons/toggle_columns_v02_themed.svg</file>
-	<file alias="toggle_appearance.svg">../icons/toggle_appearance_v02_themed.svg</file>
+	<file alias="toggle_rows.svg">../icons/toggle_rows_v03_themed.svg</file>
+	<file alias="toggle_columns.svg">../icons/toggle_columns_v03_themed.svg</file>
+	<file alias="toggle_appearance.svg">../icons/toggle_appearance_v03_themed.svg</file>
 
 	<file alias="toggle_frame_ruler.svg">../icons/toggle_frame_ruler_v04_themed.svg</file>
 	<file alias="toggle_frame_grid.svg">../icons/toggle_frame_grid_v01_themed.svg</file>
