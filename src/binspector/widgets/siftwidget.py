@@ -103,6 +103,11 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 
+		self.setSizePolicy(
+			QtWidgets.QSizePolicy.Policy.Preferred,
+			QtWidgets.QSizePolicy.Policy.Fixed
+		)
+
 		self.grp_sift_top    = QtWidgets.QGroupBox()
 		self.grp_sift_bottom = QtWidgets.QGroupBox()
 		#self.btn_dialog      = QtWidgets.QDialogButtonBox()

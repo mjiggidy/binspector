@@ -18,6 +18,8 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 
+		self.layout().setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetFixedSize)
+
 		self._spn_geo_x = QtWidgets.QSpinBox()
 		self._spn_geo_x.setSuffix(self.tr(" px"))
 		self._spn_geo_x.setMaximum(9999)
@@ -194,8 +196,10 @@ class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 		super().__init__(bin_items_flags if bin_items_flags is not None else avbutils.BinDisplayItemTypes(0), *args, **kwargs)
 		
 		self.setLayout(QtWidgets.QVBoxLayout())
-		self.layout().setSpacing(0)
-		self.layout().setContentsMargins(3,0,3,0)
+		#self.layout().setSpacing(0)
+		#self.layout().setContentsMargins(3,0,3,0)
+
+		self.layout().setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetFixedSize)
 
 		grp_clips = QtWidgets.QGroupBox(title=self.tr("Clip Types"))
 
@@ -271,6 +275,8 @@ class BSBinSiftSettingsView(QtWidgets.QWidget):
 	"""Bin Sift Settings"""
 
 	def __init__(self, *args, **kwargs):
+
+		raise DeprecationWarning("Nope")
 
 		super().__init__(*args, **kwargs)
 

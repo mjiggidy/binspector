@@ -179,10 +179,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def setupDock(self):
 		"""Add and prepare the dock"""
 		
-		self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self._dock_binview)
-		self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self._dock_bindisplay)
-		self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self._dock_sifting)
-		self.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, self._dock_appearance)
+		self.addDockWidget(QtCore.Qt.DockWidgetArea.NoDockWidgetArea, self._dock_binview)
+		self._dock_binview.setFloating(True)
+		self.addDockWidget(QtCore.Qt.DockWidgetArea.NoDockWidgetArea, self._dock_bindisplay)
+		self._dock_bindisplay.setFloating(True)
+		self.addDockWidget(QtCore.Qt.DockWidgetArea.NoDockWidgetArea, self._dock_sifting)
+		self._dock_sifting.setFloating(True)
+		self.addDockWidget(QtCore.Qt.DockWidgetArea.NoDockWidgetArea, self._dock_appearance)
+		self._dock_appearance.setFloating(True)
 
 	def setupActions(self):
 		"""Add applicable actions"""
