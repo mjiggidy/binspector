@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient17">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.10222223"
+         id="stop14" />
+      <stop
+         style="stop-color:#808080;stop-opacity:0.5;"
+         offset="0.2"
+         id="stop15" />
+      <stop
+         style="stop-color:#808080;stop-opacity:0.5;"
+         offset="0.80666667"
+         id="stop16" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0.90222222"
+         id="stop17" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient13">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.10222222"
+         id="stop10" />
+      <stop
+         style="stop-color:#808080;stop-opacity:0.5;"
+         offset="0.24888888"
+         id="stop11" />
+      <stop
+         style="stop-color:#808080;stop-opacity:0.5;"
+         offset="0.74888891"
+         id="stop12" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0.90222222"
+         id="stop13" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient6">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.05333333"
+         id="stop6" />
+      <stop
+         style="stop-color:#808080;stop-opacity:0.5;"
+         offset="0.10222223"
+         id="stop8" />
+      <stop
+         style="stop-color:#808080;stop-opacity:0.5;"
+         offset="0.89999998"
+         id="stop9" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0.94888884"
+         id="stop7" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient17"
+       id="linearGradient7"
+       x1="7.5"
+       y1="4"
+       x2="7.5"
+       y2="7"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1,0,0,0.66666665,0,0.33333335)" />
+    <linearGradient
+       xlink:href="#linearGradient6"
+       id="linearGradient9"
+       gradientUnits="userSpaceOnUse"
+       x1="7.5"
+       y1="4"
+       x2="7.5"
+       y2="7"
+       gradientTransform="matrix(1,0,0,1.6666667,0,-1.166667)" />
+    <linearGradient
+       xlink:href="#linearGradient13"
+       id="linearGradient10"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1,0,0,0.66666657,0,-2.1666664)"
+       x1="7.5"
+       y1="4"
+       x2="7.5"
+       y2="7" />
+  </defs>
+  <path
+     id="rect1"
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill:{Shadow};opacity:0.15;"
+     d="M 15 1 L 15 11 L 1 11 L 1 12 L 16 12 L 16 11 L 16 1 L 15 1 z " />
+  <rect
+     style="opacity:1;fill:#40bfbf;stroke-width:0.999999;stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1"
+     id="rect3"
+     width="15"
+     height="2"
+     x="0"
+     y="0.49999997" />
+  <rect
+     style="opacity:1;fill:#7740bf;stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1"
+     id="rect4"
+     width="15"
+     height="2"
+     x="0"
+     y="3" />
+  <rect
+     style="opacity:1;fill:#7840bf;stroke-width:0.999999;stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1"
+     id="rect5"
+     width="15"
+     height="5"
+     x="0"
+     y="5.5" />
+  <rect
+     style="opacity:0.75;fill:url(#linearGradient7);stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect6"
+     width="15"
+     height="2"
+     x="0"
+     y="3" />
+  <rect
+     style="opacity:0.75;fill:url(#linearGradient9);stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect6-2"
+     width="15"
+     height="5"
+     x="0"
+     y="5.5" />
+  <rect
+     style="opacity:0.75;fill:url(#linearGradient10);stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect6-2-8"
+     width="15"
+     height="1.9999996"
+     x="0"
+     y="0.49999997" />
+  <rect
+     style="opacity:0.1;fill:#000000;stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1"
+     id="rect17"
+     width="15"
+     height="0.5"
+     x="0"
+     y="7.875" />
+  <rect
+     style="opacity:0.1;fill:#ffffff;stroke-width:0.999997;stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1"
+     id="rect17-6"
+     width="15"
+     height="0.5"
+     x="0"
+     y="7.625" />
+  <path
+     id="rect18"
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill-opacity:1;fill:{ButtonText};opacity:1;"
+     d="M 0,0 V 0.5 H 10 V 2.5 H 0 V 3 H 10 V 5 H 0 V 5.5 H 4 V 10.5 H 0 V 11 H 15 V 10.5 H 4.5 V 5.5 H 15 V 5 H 10.5 V 3 H 15 V 2.5 H 10.5 V 0.5 H 15 V 0 Z" />
+</svg>
