@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <path
+     id="rect24"
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;stroke-width:1;fill-opacity:1;fill:{Shadow};opacity:0.25;"
+     d="M 15,1 C 14.446,1 14.5,1.446 14.5,2 V 10 H 2 C 1.446,10 1,10.446 1,11 1,11.554 1.446,12 2,12 H 15 C 15.554,12 16,11.554 16,11 V 2 C 16,1.446 15.554,1 15,1 Z" />
+  <g
+     id="layer1" />
+  <rect
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill-opacity:1;fill:{Highlight};opacity:0.5;"
+     id="rect25"
+     width="14"
+     height="4"
+     x="0.5"
+     y="1" />
+  <rect
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;stroke-width:1;fill-opacity:1;fill:{Accent};opacity:0.5;"
+     id="rect25-8"
+     width="14"
+     height="4.5"
+     x="0.5"
+     y="5.5" />
+  <path
+     id="rect23"
+     style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill-opacity:1;fill:{ButtonText};opacity:1;"
+     d="M 1,0 C 0.446,0 0,0.446 0,1 V 10 C 0,10.554 0.446,11 1,11 H 14 C 14.554,11 15,10.554 15,10 V 1 C 15,0.446 14.554,0 14,0 Z M 0.5,1 H 10.008909 A 0.49109126,0.49109126 45 0 1 10.5,1.4910913 V 4.5 A 0.5,0.5 135 0 1 10,5 H 0.5 Z M 11.482183,1 H 14.5 V 5 H 11.491091 A 0.49109126,0.49109126 45 0 1 11,4.5089087 V 1.4821825 A 0.48218253,0.48218253 135 0 1 11.482183,1 Z M 0.5,5.5 H 10 C 10.277,5.5 10.5,5.723 10.5,6 V 7 C 10.5,7.277 10.277,7.5 10,7.5 H 0.5 Z M 11.5,5.5 H 14.5 V 7.5 H 11.5 C 11.223,7.5 11,7.277 11,7 V 6 C 11,5.723 11.223,5.5 11.5,5.5 Z M 0.5,8 H 6 C 6.277,8 6.5,8.223 6.5,8.5 V 9.5 C 6.5,9.777 6.277,10 6,10 H 0.5 Z M 7.5,8 H 14.5 V 10 H 7.5 C 7.223,10 7,9.777 7,9.5 V 8.5 C 7,8.223 7.223,8 7.5,8 Z" />
+</svg>
