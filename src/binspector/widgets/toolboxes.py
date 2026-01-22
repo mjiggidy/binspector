@@ -4,6 +4,8 @@ Bin settings views, typically used as toolboxes or sidebars
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..views import treeview, enumview
+from ..core import icon_providers, icon_engines
+from ..textview import textview
 import avbutils
 
 class BSBinAppearanceSettingsView(QtWidgets.QWidget):
@@ -191,9 +193,11 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 	"""Flags for setting Bin Item Display filter"""
 
-	def __init__(self, bin_items_flags:avbutils.BinDisplayItemTypes|None=None, *args, **kwargs):
+	def __init__(self, bin_items_flags:avbutils.BinDisplayItemTypes|None=None, *args, icon_registry:textview.IconRegistryType|None=None, **kwargs):
 		
 		super().__init__(bin_items_flags if bin_items_flags is not None else avbutils.BinDisplayItemTypes(0), *args, **kwargs)
+
+		self._registry = icon_registry or dict()
 		
 		self.setLayout(QtWidgets.QVBoxLayout())
 		#self.layout().setSpacing(0)
@@ -269,7 +273,34 @@ class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 
 		self.layout().addWidget(grp_origins)
 
+		self.setupIcons()
+
 		self.layout().addStretch()
+	
+	def setIconRegistry(self, registry:textview.IconRegistryType):
+
+		if self._registry == registry:
+			return
+		
+		self._registry = registry
+		self.setupIcons()
+	
+	def setupIcons(self):
+
+		for item_flag, chk in self._option_mappings.items():
+
+			item_flag     |= avbutils.BinDisplayItemTypes.USER_CLIP 
+			item_icon_path = self._registry.get(item_flag, None)
+
+			chk.setIcon(
+				QtGui.QIcon(
+					icon_engines.BSPalettedSvgIconEngine(item_icon_path)
+					  if   item_icon_path
+					  else None
+				)
+			)
+
+			chk.setIconSize(QtCore.QSize(chk.iconSize().width(), chk.iconSize().height() * 3/4))
 
 class BSBinSiftSettingsView(QtWidgets.QWidget):
 	"""Bin Sift Settings"""

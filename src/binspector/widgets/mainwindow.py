@@ -51,7 +51,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Define widgets
 		self._bin_widget = binwidget.BSBinContentsWidget()
 
-		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView()
+		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(
+			icon_registry=binwidget.BIN_ITEM_TYPE_ICON_REGISTRY
+		)
 		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
 		self._tool_sifting     = siftwidget.BSSiftSettingsWidget()

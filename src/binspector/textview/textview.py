@@ -1,4 +1,5 @@
-import logging
+from __future__ import annotations
+import logging, enum, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core.config import BSTextViewModeConfig
@@ -10,6 +11,12 @@ from . import proxydelegates
 from ..binwidget import itemdelegates
 from ..core import icon_providers
 from .proxydelegates import FieldLookupDict, FormatLookupDict
+
+if typing.TYPE_CHECKING:
+	import avbutils
+	from os import PathLike
+
+type IconRegistryType = dict[avbutils.bins.BinDisplayItemTypes, PathLike[str]]
 
 class BSBinTextView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
@@ -23,7 +30,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 	sig_item_padding_changed         = QtCore.Signal(object)
 
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, bin_item_icon_registry:IconRegistryType|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -38,8 +45,10 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setDropIndicatorShown(True)
 		self.setDragDropMode(QtWidgets.QAbstractItemView.DragDropMode.InternalMove)
 
-		self._delegate_provider     = proxydelegates.BSBinColumnDelegateProvider(view=self)
-		self._proxy_delegate        = proxydelegates.BSBinColumnProxyDelegate(delegate_provider=self._delegate_provider)
+		self._bin_item_icon_registry = bin_item_icon_registry or dict()
+		self._delegate_provider      = proxydelegates.BSBinColumnDelegateProvider(view=self)
+		self._proxy_delegate         = proxydelegates.BSBinColumnProxyDelegate(delegate_provider=self._delegate_provider)
+
 		self.registerCustomDelegates()
 		self.setItemDelegate(self._proxy_delegate)
 
@@ -50,12 +59,16 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 		self.setItemPadding(self._item_padding)
 
-		#self.header().sectionCountChanged.connect(lambda: self.refreshDelegates())
 
+	def setBinItemIconRegistry(self, registry:IconRegistryType):
+		"""Register bin item icon paths"""
 
-#	def rowHeight(self, index):
-#		first_col_logical = self.header().logicalIndex(0)
-#		return self._delegate_provider.delegateForColumn(first_col_logical).sizeHint(None, index)
+		if self._bin_item_icon_registry == registry:
+			return
+		
+		self._bin_item_icon_registry = registry
+		
+		self.registerCustomDelegates()
 #
 	def setSelectionModel(self, selectionModel):
 
@@ -218,40 +231,6 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		return super().mousePressEvent(event)
 
-#	def setCustomDelegates(self):
-#		"""Temp"""
-#
-#		# Clip color chips
-#		clip_color_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[51]
-#		clip_color_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icon_engines.BSPalettedClipColorIconEngine(clip_color=QtGui.QColor())))
-#		for color in avbutils.get_default_clip_colors():
-#
-#			icon_color = QtGui.QColor.fromRgba64(*color.as_rgba16())
-#			icon = QtGui.QIcon(icon_engines.BSPalettedClipColorIconEngine(clip_color=icon_color))
-#			clip_color_delegate.iconProvider().addIcon(icon_color.toTuple(), icon)
-#
-#		# Marker icons
-#		marker_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[132]
-#		marker_delegate.iconProvider().addIcon(-1, QtGui.QIcon(icon_engines.BSPalettedMarkerIconEngine(marker_color=QtGui.QColor())))
-#		for marker_color in avbutils.MarkerColors:
-#
-#			marker_color = QtGui.QColor(marker_color.value)
-#			icon = QtGui.QIcon(icon_engines.BSPalettedMarkerIconEngine(marker_color=marker_color))
-#			marker_delegate.iconProvider().addIcon(marker_color.toTuple(), icon)
-#
-#		# Bin item type icons
-#		# TODO/TEMP: Prep bin display item type icons
-#		item_type_delegate = delegate_lookup.ITEM_DELEGATES_PER_FIELD_ID[200]
-#		for item_type in avbutils.bins.BinDisplayItemTypes:
-#			item_type_delegate.iconProvider().addIcon(
-#				item_type|avbutils.bins.BinDisplayItemTypes.USER_CLIP,
-#				QtGui.QIcon(
-#					icon_engines.BSPalettedSvgIconEngine(
-#					":/icons/binitems/item_masterclip.svg",
-#					)
-#				)
-#			)
-
 
 	@QtCore.Slot(object, int)
 	@QtCore.Slot(object, int, int)
@@ -316,20 +295,6 @@ class BSBinTextView(treeview.BSTreeViewBase):
 	def registerCustomDelegates(self):
 		"""Register custom delegates, but probably not here"""
 
-		import avbutils
-
-		BIN_ITEM_TYPE_ICON_REGISTRY = {
-
-			avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_masterclip.svg",
-			avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_masterclip.svg",
-			avbutils.bins.BinDisplayItemTypes.SUBCLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:          ":/icons/binitems/item_subclip.svg",
-			avbutils.bins.BinDisplayItemTypes.SUBCLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:     ":/icons/binitems/item_subclip.svg",
-			avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP:         ":/icons/binitems/item_timeline.svg",
-			avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:    ":/icons/binitems/item_timeline.svg",
-			avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:            ":/icons/binitems/item_groupclip.svg",
-			avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:       ":/icons/binitems/item_groupclip.svg",
-		}
-
 		# Clip Color
 		self._delegate_provider.setUniqueDelegateForField(
 			51, itemdelegates.BSIconLookupItemDelegate(
@@ -356,7 +321,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 			itemdelegates.BSIconLookupItemDelegate(
 				parent=self,
 				aspect_ratio=self.ICON_ASPECT_RATIO,
-				icon_provider=icon_providers.BSStyledBinItemTypeIconProvider(path_registry=BIN_ITEM_TYPE_ICON_REGISTRY),
+				icon_provider=icon_providers.BSStyledBinItemTypeIconProvider(path_registry=self._bin_item_icon_registry),
 			)
 
 		)
