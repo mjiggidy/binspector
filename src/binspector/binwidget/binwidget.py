@@ -27,6 +27,8 @@ BIN_ITEM_TYPE_ICON_REGISTRY:textview.IconRegistryType = {
 	avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:    ":/icons/binitems/item_timeline.svg",
 	avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:            ":/icons/binitems/item_groupclip.svg",
 	avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:       ":/icons/binitems/item_groupclip.svg",
+	avbutils.bins.BinDisplayItemTypes.SOURCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP:            ":/icons/binitems/item_source.svg",
+	avbutils.bins.BinDisplayItemTypes.SOURCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:       ":/icons/binitems/item_source.svg",
 }
 
 

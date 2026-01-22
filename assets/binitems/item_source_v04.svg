@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   sodipodi:docname="item_source_v04.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:clip-to-page="false"
+     showgrid="true"
+     inkscape:zoom="65.25"
+     inkscape:cx="7.0038314"
+     inkscape:cy="5.6858238"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="2"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path1-0"
+       style="fill:#000000;stroke-opacity:0.795367;paint-order:markers fill stroke;opacity:0.25"
+       d="M 8.5,1 A 5.5,5.5 0 0 0 3,6.5 5.5,5.5 0 0 0 8.5,12 5.5,5.5 0 0 0 14,6.5 5.5,5.5 0 0 0 8.5,1 Z M 8.5,2.3320312 A 1,1 0 0 1 9.5,3.3320312 1,1 0 0 1 8.5,4.3320312 1,1 0 0 1 7.5,3.3320312 1,1 0 0 1 8.5,2.3320312 Z M 5.3339844,5.5 A 1,1 0 0 1 6.3339844,6.5 1,1 0 0 1 5.3339844,7.5 1,1 0 0 1 4.3339844,6.5 1,1 0 0 1 5.3339844,5.5 Z M 8.5,5.5 A 1,1 0 0 1 9.5,6.5 1,1 0 0 1 8.5,7.5 1,1 0 0 1 7.5,6.5 1,1 0 0 1 8.5,5.5 Z M 11.666016,5.5 A 1,1 0 0 1 12.666016,6.5 1,1 0 0 1 11.666016,7.5 1,1 0 0 1 10.666016,6.5 1,1 0 0 1 11.666016,5.5 Z M 8.5,8.6660156 A 1,1 0 0 1 9.5,9.6660156 1,1 0 0 1 8.5,10.666016 1,1 0 0 1 7.5,9.6660156 1,1 0 0 1 8.5,8.6660156 Z" />
+    <path
+       id="path1"
+       style="fill:#000000;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       d="M 7.5 0 A 5.5 5.5 0 0 0 2 5.5 A 5.5 5.5 0 0 0 7.5 11 A 5.5 5.5 0 0 0 13 5.5 A 5.5 5.5 0 0 0 7.5 0 z M 7.5 1.3320312 A 1 1 0 0 1 8.5 2.3320312 A 1 1 0 0 1 7.5 3.3320312 A 1 1 0 0 1 6.5 2.3320312 A 1 1 0 0 1 7.5 1.3320312 z M 4.3339844 4.5 A 1 1 0 0 1 5.3339844 5.5 A 1 1 0 0 1 4.3339844 6.5 A 1 1 0 0 1 3.3339844 5.5 A 1 1 0 0 1 4.3339844 4.5 z M 7.5 4.5 A 1 1 0 0 1 8.5 5.5 A 1 1 0 0 1 7.5 6.5 A 1 1 0 0 1 6.5 5.5 A 1 1 0 0 1 7.5 4.5 z M 10.666016 4.5 A 1 1 0 0 1 11.666016 5.5 A 1 1 0 0 1 10.666016 6.5 A 1 1 0 0 1 9.6660156 5.5 A 1 1 0 0 1 10.666016 4.5 z M 7.5 7.6660156 A 1 1 0 0 1 8.5 8.6660156 A 1 1 0 0 1 7.5 9.6660156 A 1 1 0 0 1 6.5 8.6660156 A 1 1 0 0 1 7.5 7.6660156 z " />
+  </g>
+</svg>

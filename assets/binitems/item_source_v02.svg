@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   sodipodi:docname="item_source_v02.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:clip-to-page="false"
+     showgrid="true"
+     inkscape:zoom="30.625"
+     inkscape:cx="5.1918367"
+     inkscape:cy="7.3632653"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="2"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient33"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#bfbfbf;stop-opacity:0;"
+         offset="0.39477125"
+         id="stop37" />
+      <stop
+         style="stop-color:#bfbfbf;stop-opacity:1;"
+         offset="0.49281046"
+         id="stop36" />
+      <stop
+         style="stop-color:#bfbfbf;stop-opacity:1;"
+         offset="0.87320262"
+         id="stop34" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0.89673203"
+         id="stop35" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient28"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.39130434;"
+         offset="0.37254903"
+         id="stop33" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.66797388"
+         id="stop31" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="0.75032681"
+         id="stop30" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient22"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="0.1124183"
+         id="stop28" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.12941177"
+         id="stop27" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.22091505"
+         id="stop22" />
+      <stop
+         style="stop-color:#bfbfbf;stop-opacity:1;"
+         offset="0.24575165"
+         id="stop26" />
+      <stop
+         style="stop-color:#bfbfbf;stop-opacity:1;"
+         offset="0.86535949"
+         id="stop25" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.92287582"
+         id="stop24" />
+      <stop
+         style="stop-color:#fafafa;stop-opacity:1;"
+         offset="1"
+         id="stop23" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient22"
+       id="radialGradient23"
+       cx="7.5"
+       cy="5.5"
+       fx="7.5"
+       fy="5.5"
+       r="5.5"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient28"
+       id="radialGradient30"
+       cx="7.5"
+       cy="2.3329999"
+       fx="7.5"
+       fy="2.3329999"
+       r="1"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient28"
+       id="radialGradient30-7"
+       cx="7.5"
+       cy="2.3329999"
+       fx="7.5"
+       fy="2.3329999"
+       r="1"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(3.6571045e-8,6.2629185)" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient28"
+       id="radialGradient30-7-6"
+       cx="7.5"
+       cy="2.3329999"
+       fx="7.5"
+       fy="2.3329999"
+       r="1"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-2.0379283,-6.6663302)" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient28"
+       id="radialGradient30-5"
+       cx="7.5"
+       cy="2.3329999"
+       fx="7.5"
+       fy="2.3329999"
+       r="1"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-2.0379283,-12.929248)" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient33"
+       id="radialGradient35"
+       cx="8.5"
+       cy="6.5"
+       fx="8.5"
+       fy="6.5"
+       r="5.5"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <circle
+       style="fill:url(#radialGradient35);fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="path1-5"
+       cx="8.5"
+       cy="6.5"
+       r="5.5" />
+    <circle
+       style="opacity:1;fill:url(#radialGradient23);stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="path1"
+       cx="7.5"
+       cy="5.5"
+       r="5.5" />
+    <circle
+       style="opacity:1;fill:url(#radialGradient30);fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="path28"
+       cx="7.5"
+       cy="2.3329999"
+       r="1" />
+    <circle
+       style="fill:url(#radialGradient30-7);fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="path28-2"
+       cx="7.5"
+       cy="8.5959187"
+       r="1"
+       inkscape:transform-center-x="0.32653061"
+       inkscape:transform-center-y="-1.077551" />
+    <circle
+       style="fill:url(#radialGradient30-5);fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="path28-5"
+       cx="5.4620719"
+       cy="-10.596249"
+       r="1"
+       transform="rotate(90)" />
+    <circle
+       style="fill:url(#radialGradient30-7-6);fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="path28-2-3"
+       cx="5.4620719"
+       cy="-4.3333302"
+       r="1"
+       inkscape:transform-center-x="-1.0775512"
+       inkscape:transform-center-y="-0.32653064"
+       transform="rotate(90)" />
+  </g>
+</svg>
