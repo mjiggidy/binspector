@@ -459,14 +459,17 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			#print("Haha...")
 			self._bin_widget.textView().setColumnWidthFromBinView(col, True)
 		
-		if self._man_binview.defaultSortColumns():
-			last_col = self._man_binview.defaultSortColumns()[-1]
-			direction, column_name = QtCore.Qt.SortOrder(last_col[0]), last_col[1]
-			if column_name in self._bin_widget.textView().columnDisplayNames():
-				self._bin_widget.textView().header().setSortIndicator(
-					self._bin_widget.textView().columnDisplayNames().index(column_name),
-					direction
-				)
+		# NOTE: Don't want to sort -- want to maintain order which I think is Script View order
+		# Would still like to set indicator somehow tho....
+		
+#		if self._man_binview.defaultSortColumns():
+#			last_col = self._man_binview.defaultSortColumns()[-1]
+#			direction, column_name = QtCore.Qt.SortOrder(last_col[0]), last_col[1]
+#			if column_name in self._bin_widget.textView().columnDisplayNames():
+#				self._bin_widget.textView().header().setSortIndicator(
+#					self._bin_widget.textView().columnDisplayNames().index(column_name),
+#					direction
+#				)
 		
 		self._man_actions._act_reloadcurrent.setEnabled(True)
 		self._man_actions._act_reloadcurrent.setVisible(True)
