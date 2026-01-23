@@ -21,6 +21,10 @@ BIN_ITEM_TYPE_ICON_REGISTRY:textview.IconRegistryType = {
 
 	avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_masterclip.svg",
 	avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_masterclip.svg",
+	avbutils.bins.BinDisplayItemTypes.LINKED_MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_linkedclip.svg",
+	avbutils.bins.BinDisplayItemTypes.LINKED_MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_linkedclip.svg",
+	avbutils.bins.BinDisplayItemTypes.STEREOSCOPIC_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP: ":/icons/binitems/item_stereoclip.svg",
+	avbutils.bins.BinDisplayItemTypes.STEREOSCOPIC_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_stereoclip.svg",
 	avbutils.bins.BinDisplayItemTypes.SUBCLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:          ":/icons/binitems/item_subclip.svg",
 	avbutils.bins.BinDisplayItemTypes.SUBCLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:     ":/icons/binitems/item_subclip.svg",
 	avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP:         ":/icons/binitems/item_timeline.svg",

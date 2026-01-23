@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient7">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0.26666668"
+         id="stop7" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.78562093"
+         id="stop8" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient7"
+       id="linearGradient8"
+       x1="7.5"
+       y1="10"
+       x2="7.5"
+       y2="1"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <path
+     style="opacity:0.5;fill:#ff0000;stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1"
+     id="rect4"
+     width="4.5"
+     height="7"
+     x="3"
+     y="2"
+     d="M 3.5,2 H 7.5 V 9 H 3.5 A 0.5,0.5 45 0 1 3,8.5 V 2.5 A 0.5,0.5 135 0 1 3.5,2 Z" />
+  <path
+     style="opacity:0.5;fill:#0000ff;stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1"
+     id="rect4-3"
+     width="4.5"
+     height="7"
+     x="7.5"
+     y="2"
+     d="M 7.5,2 H 11.5 A 0.5,0.5 45 0 1 12,2.5 V 8.5 A 0.5,0.5 135 0 1 11.5,9 H 7.5 Z" />
+  <rect
+     style="opacity:0.25;fill:url(#linearGradient8);fill-opacity:1;stroke-opacity:0.795367;paint-order:markers fill stroke"
+     id="rect7"
+     width="9"
+     height="7"
+     x="3"
+     y="2"
+     rx="0.5"
+     ry="0.5" />
+</svg>

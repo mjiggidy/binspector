@@ -1,9 +1,17 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icons/binitems">
-	<file alias="item_masterclip.svg">../binitems/item_masterclip_v23_themed.svg</file>
-	<file alias="item_subclip.svg">../binitems/item_subclip_v04_themed.svg</file>
+
+	<file alias="item_masterclip.svg">../binitems/item_masterclip_v24_themed.svg</file>
+	<file alias="item_linkedclip.svg">../binitems/item_linkedclip_v02_themed.svg</file>
+	<file alias="item_stereoclip.svg">../binitems/item_stereoclip_v01_themed.svg</file>
+	<file alias="item_subclip.svg">../binitems/item_subclip_v06_themed.svg</file>
 	<file alias="item_timeline.svg">../binitems/item_timeline_v12_themed.svg</file>
-	<file alias="item_groupclip.svg">../binitems/item_groupclip_v01_themed.svg</file>
+	<file alias="item_groupclip.svg">../binitems/item_groupclip_v02_themed.svg</file>
 	<file alias="item_source.svg">../binitems/item_source_v04_themed.svg</file>
+
+	<!-- TODO: Thinking of superimposing these elements (Not Yet Implemented) -->
+	<file alias="deco_audio.svg">../binitems/deco_audio_v01_themed.svg</file>
+	<file alias="deco_group.svg">../binitems/deco_group_v01_themed.svg</file>
+	
 </qresource>
 </RCC>
