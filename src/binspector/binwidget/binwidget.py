@@ -33,6 +33,8 @@ BIN_ITEM_TYPE_ICON_REGISTRY:textview.IconRegistryType = {
 	avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:       ":/icons/binitems/item_groupclip.svg",
 	avbutils.bins.BinDisplayItemTypes.SOURCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP:            ":/icons/binitems/item_source.svg",
 	avbutils.bins.BinDisplayItemTypes.SOURCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:       ":/icons/binitems/item_source.svg",
+	avbutils.bins.BinDisplayItemTypes.EFFECT|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_effect.svg",
+	avbutils.bins.BinDisplayItemTypes.EFFECT|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_effect.svg",
 }
 
 
