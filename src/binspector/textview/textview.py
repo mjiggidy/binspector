@@ -34,6 +34,8 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
+		#self.setAllColumnsShowFocus(True)
+
 		self.setDragEnabled(True)
 		self.setAcceptDrops(True)
 		self.setDropIndicatorShown(True)
@@ -86,6 +88,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		# TODO: Disconnect old model...?
 		
 		model.columnsInserted.connect(self.setColumnWidthsFromBinView)
+		model.rowsInserted.connect(self.updateMinimumSectionWidths)
 
 		super().setModel(model)
 
@@ -275,10 +278,26 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		logging.getLogger(__name__).debug("Setting padding to %s", str(self._item_padding))
 		
+		self.updateMinimumSectionWidths()
 		self.scheduleDelayedItemsLayout()
 
 		#self.update()
 		self.sig_item_padding_changed.emit(padding)
+
+	@QtCore.Slot()
+	def updateMinimumSectionWidths(self):
+
+		# If no rows
+		if not self.model().hasIndex(0, 0, QtCore.QModelIndex()):
+			return
+		
+		for col_logical in range(self.header().count()):
+
+			title = self.model().headerData(col_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
+
+			og_size = self.sizeHintForIndex(self.model().index(0, 0, QtCore.QModelIndex()))
+			self.header().minimumSectionSize()
+			logging.getLogger(__name__).debug("Set minimum section width for %s to %s for size hint %s", str(title), int(og_size.width()), repr(og_size))
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_columns:list[list[int,str]]):

@@ -118,8 +118,6 @@ class BSStyledBinItemTypeIconProvider(BSStyledIconProvider):
 	def iconPathForBinItemType(self, bin_item:avbutils.bins.BinDisplayItemTypes) -> os.PathLike[str]|None:
 		"""Get the path for a given bin item type"""
 
-		
-
 		# Remove any extra flags before lookup
 		bin_item_flags = bin_item & ~self.EXTRA_FLAGS
 		

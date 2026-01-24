@@ -46,41 +46,44 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 	
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
-		kewl_options = QtWidgets.QStyleOptionViewItem(option)
-		self.initStyleOption(kewl_options, index)
+		# NOTE: Since items can be offset asymetrically (such as pushed up top in Script View), need to 
+		# separate drawing the base elements (row background, selection, etc) from the item elements 
+		# (text, decoration, etc)
 
-		kewl_text = kewl_options.text
-
-		# Remove focus and text for a generic paint from drawControl()
-		kewl_options.state &= ~QtWidgets.QStyle.State_HasFocus
-		kewl_options.text = ""
-
-		style = kewl_options.widget.style() if kewl_options.widget else QtWidgets.QApplication.style()
-		style.drawControl(QtWidgets.QStyle.ControlElement.CE_ItemViewItem, kewl_options, painter)
-
-		# Pull in rect adjusted for padding; text for paint
-		kewl_options.rect = self.activeRectFromRect(option.rect).toRect()
-		kewl_options.text = option.text
-
-		fm = QtGui.QFontMetrics(kewl_options.font)
-		elided_text = fm.elidedText(kewl_text, kewl_options.textElideMode, kewl_options.rect.width())
+		self.initStyleOption(option, index)
 		
-		# NOTE HERE: Uh so yeah this is redrawing a bunch at the smaller rect and I only really need text but lol
-		painter.setFont(kewl_options.font)
+		# BACKGROUND STUFF
+		# Setup style option to draw the background stuff, then draw it using the app's style (hey look! I learned!)
+		# NOTE: Original style option will have padding baked in
+
+		bg_options = QtWidgets.QStyleOptionViewItem(option)
+		bg_options.text = ""
+		bg_options.state = option.state &~ QtWidgets.QStyle.StateFlag.State_HasFocus	# Don't paint focus indicator
+
+		style = bg_options.widget.style() if bg_options.widget else QtWidgets.QApplication.style()
+		style.drawControl(QtWidgets.QStyle.ControlElement.CE_ItemViewItem, bg_options, painter)
+
+		# FOREGROUND STUFF
+		# Pull in rect with padding removed so we've got just our active area
+		# and re-elide text to the smaller, active rect area
+
+		option.rect = self.activeRectFromRect(option.rect).toRect()
+		option.text = QtGui.QFontMetrics(option.font).elidedText(option.text, option.textElideMode, option.rect.width())
+		
+		painter.setFont(option.font)
+		
 		style.drawItemText(
 			painter,
-			kewl_options.rect,
-			int(kewl_options.displayAlignment),
-			kewl_options.palette,
-			bool(kewl_options.state & QtWidgets.QStyle.StateFlag.State_Enabled),
-			elided_text,
-			QtGui.QPalette.ColorRole.HighlightedText if bool(kewl_options.state & QtWidgets.QStyle.StateFlag.State_Selected) else QtGui.QPalette.ColorRole.Text
+			option.rect,
+			int(option.displayAlignment),
+			option.palette,
+			bool(option.state & QtWidgets.QStyle.StateFlag.State_Enabled),
+			option.text,
+			QtGui.QPalette.ColorRole.HighlightedText if bool(option.state & QtWidgets.QStyle.StateFlag.State_Selected) else QtGui.QPalette.ColorRole.Text
 		)
 
 		# DEBUG:
 		#painter.drawRect(kewl_options.rect)
-
-		#return super().paint(painter, kewl_options, index)
 
 	def clone(self, *args, **kwargs) -> typing.Self:
 
