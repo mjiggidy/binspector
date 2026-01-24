@@ -9,14 +9,8 @@ from ..utils import columnselect
 from ..res import icons_binitems
 from . import proxydelegates
 from ..binwidget import itemdelegates
-from ..core import icon_providers
+from ..core import icon_providers, icon_registry
 from .proxydelegates import FieldLookupDict, FormatLookupDict
-
-if typing.TYPE_CHECKING:
-	import avbutils
-	from os import PathLike
-
-type IconRegistryType = dict[avbutils.bins.BinDisplayItemTypes, PathLike[str]]
 
 class BSBinTextView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
@@ -30,7 +24,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 	sig_item_padding_changed         = QtCore.Signal(object)
 
 
-	def __init__(self, *args, bin_item_icon_registry:IconRegistryType|None=None, **kwargs):
+	def __init__(self, *args, bin_item_icon_registry:icon_registry.IconRegistryType|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -60,7 +54,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setItemPadding(self._item_padding)
 
 
-	def setBinItemIconRegistry(self, registry:IconRegistryType):
+	def setBinItemIconRegistry(self, registry:icon_registry.IconRegistryType):
 		"""Register bin item icon paths"""
 
 		if self._bin_item_icon_registry == registry:

@@ -102,6 +102,9 @@ class BSStyledBinItemTypeIconProvider(BSStyledIconProvider):
 
 	# TODO: More like a generic SVG lookup probably
 
+	EXTRA_FLAGS = avbutils.bins.BinDisplayItemTypes.USER_CLIP | avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP
+	"""Extra bin item flags to remove before icon lookup"""
+
 	def __init__(self, *args, path_registry:dict[avbutils.bins.BinDisplayItemTypes, os.PathLike[str]]|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -114,9 +117,15 @@ class BSStyledBinItemTypeIconProvider(BSStyledIconProvider):
 	
 	def iconPathForBinItemType(self, bin_item:avbutils.bins.BinDisplayItemTypes) -> os.PathLike[str]|None:
 		"""Get the path for a given bin item type"""
+
+		
+
+		# Remove any extra flags before lookup
+		bin_item_flags = bin_item & ~self.EXTRA_FLAGS
 		
 		# NOTE: Being that `BinDisplayItemTypes` is a flag, maybe do this fancier
-		return self._item_paths_registry.get(bin_item, self._default_svg_path)
+		# by compositing different decorations together
+		return self._item_paths_registry.get(bin_item_flags, self._default_svg_path)
 	
 	def setIconPathForBinItemType(self, bin_item:avbutils.bins.BinDisplayItemTypes, icon_path:os.PathLike[str]):
 		"""Set an icon path for a given bin item type"""

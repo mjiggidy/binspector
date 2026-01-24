@@ -7,6 +7,8 @@ import avb, avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from ..core import icon_registry
+
 from . import proxystyles, scrollwidgets, widgetbars
 
 from ..textview import textview
@@ -16,27 +18,6 @@ from ..scriptview import scriptview
 from ..models import viewmodels
 
 from ..core.config import BSFrameViewModeConfig, BSScriptViewModeConfig
-
-BIN_ITEM_TYPE_ICON_REGISTRY:textview.IconRegistryType = {
-
-	avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_masterclip.svg",
-	avbutils.bins.BinDisplayItemTypes.MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_masterclip.svg",
-	avbutils.bins.BinDisplayItemTypes.LINKED_MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_linkedclip.svg",
-	avbutils.bins.BinDisplayItemTypes.LINKED_MASTER_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_linkedclip.svg",
-	avbutils.bins.BinDisplayItemTypes.STEREOSCOPIC_CLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP: ":/icons/binitems/item_stereoclip.svg",
-	avbutils.bins.BinDisplayItemTypes.STEREOSCOPIC_CLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_stereoclip.svg",
-	avbutils.bins.BinDisplayItemTypes.SUBCLIP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:          ":/icons/binitems/item_subclip.svg",
-	avbutils.bins.BinDisplayItemTypes.SUBCLIP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:     ":/icons/binitems/item_subclip.svg",
-	avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP:         ":/icons/binitems/item_timeline.svg",
-	avbutils.bins.BinDisplayItemTypes.SEQUENCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:    ":/icons/binitems/item_timeline.svg",
-	avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.USER_CLIP:            ":/icons/binitems/item_groupclip.svg",
-	avbutils.bins.BinDisplayItemTypes.GROUP|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:       ":/icons/binitems/item_groupclip.svg",
-	avbutils.bins.BinDisplayItemTypes.SOURCE|avbutils.bins.BinDisplayItemTypes.USER_CLIP:            ":/icons/binitems/item_source.svg",
-	avbutils.bins.BinDisplayItemTypes.SOURCE|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP:       ":/icons/binitems/item_source.svg",
-	avbutils.bins.BinDisplayItemTypes.EFFECT|avbutils.bins.BinDisplayItemTypes.USER_CLIP:      ":/icons/binitems/item_effect.svg",
-	avbutils.bins.BinDisplayItemTypes.EFFECT|avbutils.bins.BinDisplayItemTypes.REFERENCE_CLIP: ":/icons/binitems/item_effect.svg",
-}
-
 
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
@@ -108,11 +89,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		
 		self._viewmode_text.setModel(self._bin_filter_model)
-		self._viewmode_text.setBinItemIconRegistry(BIN_ITEM_TYPE_ICON_REGISTRY)
+		self._viewmode_text.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
 		self._viewmode_text.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
 		self._viewmode_script.setModel(self._bin_filter_model)
-		self._viewmode_script.setBinItemIconRegistry(BIN_ITEM_TYPE_ICON_REGISTRY)
+		self._viewmode_script.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
 		self._viewmode_script.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		
 		# NOTE: Set AFTER `view.setModel()`.  Got me good.

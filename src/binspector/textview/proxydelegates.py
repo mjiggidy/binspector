@@ -11,8 +11,6 @@ from PySide6 import QtCore, QtWidgets
 from ..binwidget import itemdelegates
 
 from ..models import viewmodelitems
-from ..core   import icon_providers
-from ..res    import icons_binitems
 
 if typing.TYPE_CHECKING:
 	from PySide6 import QtGui

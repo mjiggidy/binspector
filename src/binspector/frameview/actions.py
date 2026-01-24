@@ -1,5 +1,4 @@
 from PySide6 import QtCore, QtGui
-#from ..res import icons_gui
 
 class BSFrameViewActions(QtCore.QObject):
 	

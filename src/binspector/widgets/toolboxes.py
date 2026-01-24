@@ -4,8 +4,7 @@ Bin settings views, typically used as toolboxes or sidebars
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from ..views import treeview, enumview
-from ..core import icon_providers, icon_engines
-from ..textview import textview
+from ..core import icon_providers, icon_engines, icon_registry
 import avbutils
 
 class BSBinAppearanceSettingsView(QtWidgets.QWidget):
@@ -193,7 +192,7 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 	"""Flags for setting Bin Item Display filter"""
 
-	def __init__(self, bin_items_flags:avbutils.BinDisplayItemTypes|None=None, *args, icon_registry:textview.IconRegistryType|None=None, **kwargs):
+	def __init__(self, bin_items_flags:avbutils.BinDisplayItemTypes|None=None, *args, icon_registry:icon_registry.IconRegistryType|None=None, **kwargs):
 		
 		super().__init__(bin_items_flags if bin_items_flags is not None else avbutils.BinDisplayItemTypes(0), *args, **kwargs)
 
@@ -277,7 +276,7 @@ class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 
 		self.layout().addStretch()
 	
-	def setIconRegistry(self, registry:textview.IconRegistryType):
+	def setIconRegistry(self, registry:icon_registry.IconRegistryType):
 
 		if self._registry == registry:
 			return
@@ -289,7 +288,6 @@ class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 
 		for item_flag, chk in self._option_mappings.items():
 
-			item_flag     |= avbutils.BinDisplayItemTypes.USER_CLIP 
 			item_icon_path = self._registry.get(item_flag, None)
 
 			chk.setIcon(

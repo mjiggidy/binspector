@@ -2,6 +2,8 @@ from os import PathLike
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from ..core import icon_registry
+
 from ..binwidget import binwidget
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
@@ -52,7 +54,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._bin_widget = binwidget.BSBinContentsWidget()
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(
-			icon_registry=binwidget.BIN_ITEM_TYPE_ICON_REGISTRY
+			icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY
 		)
 		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
@@ -461,7 +463,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		# NOTE: Don't want to sort -- want to maintain order which I think is Script View order
 		# Would still like to set indicator somehow tho....
-		
+
 #		if self._man_binview.defaultSortColumns():
 #			last_col = self._man_binview.defaultSortColumns()[-1]
 #			direction, column_name = QtCore.Qt.SortOrder(last_col[0]), last_col[1]
