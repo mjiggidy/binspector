@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="swatch16">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop16" />
+    </linearGradient>
+  </defs>
+  <g
+     id="layer1">
+    <path
+       id="path11"
+       style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill-opacity:1;fill:{Shadow};opacity:0.25;"
+       d="M 13 1.5 L 13 10 L 2.5 10 L 2.5 10.5 L 13.5 10.5 L 13.5 1.5 L 13 1.5 z M 7.5 2.5 L 5 6 L 5.75 6 L 7.5 3.5 L 7.5 2.5 z M 8 5 L 8 5.5 L 9.6503906 5.5 L 10 5 L 8 5 z M 7.5 6.5 L 7.5 8.5 L 8 7.8007812 L 8 6.5 L 7.5 6.5 z " />
+    <path
+       d="M 2,1 V 10 H 13 V 1 Z M 3.5,2 H 11.5 C 11.777,2 12,2.223 12,2.5 V 8.5 C 12,8.777 11.777,9 11.5,9 H 3.5 C 3.223,9 3,8.777 3,8.5 V 2.5 C 3,2.223 3.223,2 3.5,2 Z"
+       style="paint-order:markers fill stroke;stroke-opacity:0.795367;stroke:none;fill-opacity:1;fill:{ButtonText};"
+       id="path13" />
+    <path
+       id="path12"
+       style="paint-order:markers fill stroke;stroke-opacity:0.795367;fill-opacity:1;fill:{Mid};opacity:0.75;"
+       d="M 3.5 2 C 3.223 2 3 2.223 3 2.5 L 3 8.5 C 3 8.777 3.223 9 3.5 9 L 11.5 9 C 11.777 9 12 8.777 12 8.5 L 12 2.5 C 12 2.223 11.777 2 11.5 2 L 3.5 2 z M 7.5 2.5 L 7.5 5 L 10 5 L 7.5 8.5 L 7.5 6 L 5 6 L 7.5 2.5 z " />
+    <path
+       style="paint-order:markers fill stroke;stroke-opacity:1;stroke-width:0.2;stroke:none;fill-opacity:1;fill:{Accent};opacity:1;"
+       d="M 7.5,2.5 5,6 H 7.5 V 8.5 L 10,5 H 7.5 Z"
+       id="path16" />
+  </g>
+</svg>
