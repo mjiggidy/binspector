@@ -8,6 +8,7 @@
 	<file alias="item_timeline.svg">../binitems/item_timeline_v12_themed.svg</file>
 	<file alias="item_groupclip.svg">../binitems/item_groupclip_v02_themed.svg</file>
 	<file alias="item_source.svg">../binitems/item_source_v04_themed.svg</file>
+	<file alias="item_effect.svg">../binitems/item_effect_v01_themed.svg</file>
 
 	<!-- TODO: Thinking of superimposing these elements (Not Yet Implemented) -->
 	<file alias="deco_audio.svg">../binitems/deco_audio_v01_themed.svg</file>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient7">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.5;"
+         offset="0"
+         id="stop7" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.5;"
+         offset="1"
+         id="stop8" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0.13826367"
+         id="stop5" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.85530549"
+         id="stop6" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient4"
+       id="linearGradient6"
+       x1="7.5"
+       y1="9"
+       x2="7.5"
+       y2="2"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#linearGradient7"
+       id="linearGradient8"
+       x1="8"
+       y1="3.5"
+       x2="8"
+       y2="7.5"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1,0,0,0.83333334,0,0.91666666)" />
+  </defs>
+  <g
+     id="layer1">
+    <rect
+       style="paint-order:markers fill stroke;stroke-opacity:0.795367;stroke-width:1;fill:{Shadow};opacity:0.25;"
+       id="rect1-9-7"
+       width="11"
+       height="9"
+       x="2.5"
+       y="1.5"
+       rx="1.5"
+       ry="1.5" />
+    <rect
+       style="paint-order:markers fill stroke;stroke-opacity:0.795367;stroke-width:1;fill:{ButtonText};"
+       id="rect1-9"
+       width="11"
+       height="9"
+       x="2"
+       y="1"
+       rx="1.5"
+       ry="1.5" />
+    <rect
+       style="opacity:1;fill:#800080;stroke-opacity:0.795367;paint-order:markers fill stroke"
+       id="rect1"
+       width="9"
+       height="7"
+       x="3"
+       y="2"
+       rx="0.5"
+       ry="0.5" />
+    <rect
+       style="fill:url(#linearGradient6);stroke-opacity:0.795367;paint-order:markers fill stroke;fill-opacity:1;opacity:0.21501706"
+       id="rect1-5"
+       width="9"
+       height="7"
+       x="3"
+       y="2"
+       rx="0.5"
+       ry="0.5" />
+    <path
+       style="paint-order:markers fill stroke;stroke-opacity:0.795367;stroke-width:0.2;stroke:url(#linearGradient8);fill-opacity:1;fill:{ButtonText};opacity:1;"
+       d="M 9,2.5 8,5 H 10 L 7,8.5 8,6 H 6 Z"
+       id="path6" />
+  </g>
+</svg>
