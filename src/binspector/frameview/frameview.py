@@ -485,6 +485,12 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 			)
 		)
 
+
+		# NOTE: Started getting errors at exit here, setting rect when scene is None.
+		# Investigate root cause.  For now, ignore lol
+		if not self.scene():
+			return
+
 		if self._overlay_map.sceneRect() != bin_map_rect:
 			self._overlay_map.setSceneRect(bin_map_rect)
 			self._overlay_map.setThumbnailRects([item.sceneBoundingRect() for item in self.scene().items()])
