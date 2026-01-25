@@ -1,6 +1,29 @@
 import avbutils
 from PySide6 import QtCore, QtWidgets
 
+class BSApplicationConfig:
+	"""Binspector Global Config"""
+
+	APPLICATION_NAME    = "Binspector"
+	"""Name o' the app"""
+
+	APPLICATION_VERSION = "0.0.15"
+	"""Version Number (major.minor.revision)"""
+
+	APPLICATION_STORAGE_PATH = QtCore.QStandardPaths.StandardLocation.AppDataLocation
+	"""`QtCore.QStandardPaths.StandardLocation` for settings, logs, and databases"""
+
+	LOG_FILE_NAME            = "bs_main.log"
+	
+	ORGANIZATION_NAME   = "GlowingPixel"
+	"""Maybe it should just be Michael"""
+
+	ORGANIZATION_DOMAIN = "glowingixel.com"
+	"""NOT reverse-domain I guess"""
+
+	UI_THEME            = "Fusion"
+	"""`QStyle` theme name"""
+
 class BSTextViewModeConfig:
 	"""Bin Text View Mode Config"""
 

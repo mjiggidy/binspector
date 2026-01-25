@@ -6,7 +6,7 @@ import qtlogrelay
 from   PySide6 import QtCore, QtGui, QtWidgets
 from   os import PathLike
 
-from . import settings
+from . import settings, config
 from ..managers import windows, software_updates
 from ..widgets  import mainwindow, logwidget, settingswindow
 from ..models   import logmodels
@@ -19,19 +19,21 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		super().__init__(*args, **kwargs)
 
-		self.setApplicationName("Binspector")
-		self.setApplicationVersion("0.0.15")
-		self.setStyle("Fusion")
+		self.setApplicationName(config.BSApplicationConfig.APPLICATION_NAME)
+		self.setApplicationVersion(config.BSApplicationConfig.APPLICATION_VERSION)
+		self.setStyle(config.BSApplicationConfig.UI_THEME)
 
-		self.setOrganizationName("GlowingPixel")
-		self.setOrganizationDomain("com.glowingpixel")
+		self.setOrganizationName(config.BSApplicationConfig.ORGANIZATION_NAME)
+		self.setOrganizationDomain(config.BSApplicationConfig.ORGANIZATION_DOMAIN)
 		self.setDesktopFileName(self.organizationDomain() + "." + self.applicationName())
 
 		self._man_settings         = None
 		self._man_binwindows       = windows.BSWindowManager()
 		self._man_software_updates = software_updates.BSUpdatesManager()
 
-		self._path_local_storage   = None
+		self._path_local_storage   = QtCore.QDir(
+			QtCore.QStandardPaths.writableLocation(config.BSApplicationConfig.APPLICATION_STORAGE_PATH)
+		)
 		self._qt_log_handler       = qtlogrelay.QtLogRelayHandler()
 		self._qt_log_model         = logmodels.BSLogDataModel()
 
@@ -82,11 +84,11 @@ class BSMainApplication(QtWidgets.QApplication):
 	def _setupLocalStorage(self, local_path:PathLike|None=None):
 		"""Setup local storage for user data"""
 		
-		self._path_local_storage = local_path or QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
+#		self._path_local_storage = local_path or QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
 
-		if not QtCore.QDir().mkpath(self._path_local_storage):
+		if not QtCore.QDir().mkpath(self._path_local_storage.path()):
 			raise OSError(
-				"Cannot set up local storage path at {local_storage_path}".format(local_storage_path=self._path_local_storage)
+				self.tr("Cannot set up local storage path at {local_storage_path}").format(local_storage_path=self._path_local_storage)
 			)
 		
 		# NOTE: Logging not set up at this point lol but hey man you know
@@ -107,7 +109,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		# File handler
 		from logging import handlers
 		file_handler = handlers.RotatingFileHandler(
-			filename    = QtCore.QDir(self._path_local_storage).filePath("bs_main.log"),
+			filename    = QtCore.QDir(self._path_local_storage).filePath(config.BSApplicationConfig.LOG_FILE_NAME),
 			maxBytes    = 1_000_000,
 			backupCount = 5,
 		)
@@ -144,13 +146,13 @@ class BSMainApplication(QtWidgets.QApplication):
 	def localStoragePath(self) -> PathLike[str]:
 		"""Get the local user storage path"""
 
-		return self._path_local_storage
+		return self._path_local_storage.path()
 	
 	def showLocalStorage(self):
 		"""Open local user storage folder"""
 
 		QtGui.QDesktopServices.openUrl(
-			QtCore.QUrl.fromLocalFile(self.localStoragePath())
+			QtCore.QUrl.fromLocalFile(self._path_local_storage.path())
 		)
 	
 	def settingsManager(self) -> settings.BSSettingsManager:
