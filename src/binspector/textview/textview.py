@@ -291,13 +291,17 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		if not self.model().hasIndex(0, 0, QtCore.QModelIndex()):
 			return
 		
-		for col_logical in range(self.header().count()):
+		# Gon set minimum column width based on row height, but adjusted for icon aspect ratio
+		row_height = self.rowHeight(self.model().index(0, 0, QtCore.QModelIndex())) - self._item_padding.top() - self._item_padding.bottom()
+		col_width  = row_height * self.ICON_ASPECT_RATIO.width() / self.ICON_ASPECT_RATIO.height() + self._item_padding.left() + self._item_padding.right()
 
-			title = self.model().headerData(col_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
-
-			og_size = self.sizeHintForIndex(self.model().index(0, 0, QtCore.QModelIndex()))
-			self.header().minimumSectionSize()
-			logging.getLogger(__name__).debug("Set minimum section width for %s to %s for size hint %s", str(title), int(og_size.width()), repr(og_size))
+		self.header().setMinimumSectionSize(col_width)
+		
+#		for col_logical in range(self.header().count()):
+#
+#			title = self.model().headerData(col_logical, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
+#			og_size = self.sizeHintForIndex(self.model().index(0, 0, QtCore.QModelIndex()))
+#			logging.getLogger(__name__).debug("Set minimum section width for %s to %s for size hint %s", str(title), int(og_size.width()), repr(og_size))
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_columns:list[list[int,str]]):
