@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/translations">
 	<file alias="bs.zh_CN.qm">../translations/bs_v01.zh_CN.qm</file>
+<!--	<file alias="bs.zh_CN.qm">../translations/bs_v01.zh_US.qm</file> -->
 </qresource>
 </RCC>
