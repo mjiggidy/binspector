@@ -21,11 +21,12 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		self.setApplicationName(config.BSApplicationConfig.APPLICATION_NAME)
 		self.setApplicationVersion(config.BSApplicationConfig.APPLICATION_VERSION)
-		self.setStyle(config.BSApplicationConfig.UI_THEME)
 
 		self.setOrganizationName(config.BSApplicationConfig.ORGANIZATION_NAME)
 		self.setOrganizationDomain(config.BSApplicationConfig.ORGANIZATION_DOMAIN)
+		
 		self.setDesktopFileName(self.organizationDomain() + "." + self.applicationName())
+		self.setStyle(config.BSApplicationConfig.UI_THEME)
 
 		self._man_settings         = None
 		self._man_binwindows       = windows.BSWindowManager()
