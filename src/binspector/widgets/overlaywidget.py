@@ -5,20 +5,22 @@ An overlay widget for drawing above a widget and its children
 from PySide6 import QtCore, QtGui, QtWidgets
 
 class BSAbstractOverlayWidget(QtWidgets.QWidget):
-	"""A transparent widget for drawing above a given widget.  Note: Installs itself as an `eventFilter`."""
+	"""A transparent widget for drawing above a given widget.."""
 
-	def __init__(self, parent:QtWidgets.QWidget):
+	def __init__(self, parent:QtWidgets.QWidget, install_event_filter:bool=True):
 
 		super().__init__(parent=parent)
 
 		self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 		self.setAttribute(QtCore.Qt.WidgetAttribute.WA_NoSystemBackground)
 
-		self.parent().installEventFilter(self)
+		if install_event_filter:
+			self.parent().installEventFilter(self)
 
 	def eventFilter(self, watched:QtWidgets.QWidget, event:QtCore.QEvent):
 		
 		if event.type() == QtCore.QEvent.Type.Resize:
+
 			self.resize(event.size())
 			return True
 		
@@ -29,15 +31,14 @@ class BSDragDropOverlayWidget(BSAbstractOverlayWidget):
 	sig_margins_changed = QtCore.Signal(QtCore.QMarginsF)
 	sig_enabled_changed = QtCore.Signal(bool)
 
-	def __init__(self, parent:QtWidgets.QWidget, *args, margins:QtCore.QMarginsF|None=None, is_visible:bool=True, **kwargs):
+	def __init__(self, parent:QtWidgets.QWidget, *args, margins:QtCore.QMarginsF|None=None, is_visible:bool=True, install_event_filter:bool=True, **kwargs):
 
-		super().__init__(parent=parent)
+		super().__init__(parent=parent, install_event_filter=install_event_filter)
 
 		self._margins = margins or QtCore.QMarginsF(32,32,32,32)
 		self._lerp_margins = QtCore.QMarginsF(0,0,0,0)
 
 		self._animator = QtCore.QVariantAnimation(parent=self)
-
 		
 		self._animator.setStartValue(0.0)
 		self._animator.setEndValue(1.0)
