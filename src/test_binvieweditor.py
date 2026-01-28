@@ -1,25 +1,33 @@
 from __future__ import annotations
 import sys, enum, typing, os, dataclasses
 import avb, avbutils
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from binspector.models import viewmodelitems
 
+class BSBinViewColumnEditorColumns(enum.Enum):
+
+	GRIPPER     = enum.auto()
+	COLUMN_NAME = enum.auto()
+	DATA_FORMAT = enum.auto()
+	VISIBILITY  = enum.auto()
+	DELETE      = enum.auto()
+
 class BSBinViewModel(QtCore.QAbstractItemModel):
-
-	class BSBinViewEditorColumns(enum.IntEnum):
-
-		POSITION    = enum.auto()
-		NAME        = enum.auto()
-		DATA_FORMAT = enum.auto()
-		DELETE      = enum.auto()
-		VISIBILITY  = enum.auto()
 
 	def __init__(self, *args, items:list[viewmodelitems.LBAbstractViewHeaderItem]|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
+
+		self._bin_view_column_columns:list[BSBinViewColumnEditorColumns] = [
+			BSBinViewColumnEditorColumns.GRIPPER,
+			BSBinViewColumnEditorColumns.COLUMN_NAME,
+			BSBinViewColumnEditorColumns.DELETE,
+			BSBinViewColumnEditorColumns.DATA_FORMAT,
+			BSBinViewColumnEditorColumns.VISIBILITY,
+		]
 		
-		self._bin_view_columns:list[viewmodelitems.LBAbstractViewHeaderItem] = items or list()
+		self._bin_view_column_items:list[viewmodelitems.LBAbstractViewHeaderItem] = items or list()
 
 	def parent(self, child:QtCore.QModelIndex) -> QtCore.QModelIndex:
 
@@ -30,27 +38,137 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		if parent.isValid():
 			return 0
 
-		return len(self._bin_view_columns)
+		return len(self._bin_view_column_items)
 	
 	def columnCount(self, parent:QtCore.QModelIndex) -> int:
 
-		return 1
+		return len(self._bin_view_column_columns)
+	
+	def headerRoleForIndex(self, index:QtCore.QModelIndex) -> BSBinViewColumnEditorColumns|None:
+		"""Given an index, figure out which header (as in, the listview editor section) it's under"""
+
+		if not index.isValid() or index.column() > self.columnCount(index.parent()):
+			return None
+		
+		return self._bin_view_column_columns[index.column()]
+	
+	def itemForIndex(self, index:QtCore.QModelIndex) -> viewmodelitems.LBAbstractViewHeaderItem:
+		"""Given an index, return the item"""
+		
+		if not index.isValid() or index.row() > self.rowCount(index.parent()):
+			return None
+		
+		return self._bin_view_column_items[index.row()]
 	
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
-
 		
 		if not index.isValid():
 			return None
 		
-		return self._bin_view_columns[index.row()].data(role)
+		# User role returns header view item
+		if role == QtCore.Qt.ItemDataRole.UserRole:
+			return self.itemForIndex(index)
+		
+		column_data_role = self.headerRoleForIndex(index)
+		item             = self.itemForIndex(index)
 
+		if not column_data_role:
+			raise ValueError(f"Strange index requesting data: {index=} {role=}")
+		
+		# Column Name
+		if column_data_role == BSBinViewColumnEditorColumns.COLUMN_NAME:
+
+			if role == QtCore.Qt.ItemDataRole.DisplayRole:
+				return item.data(QtCore.Qt.ItemDataRole.DisplayRole)
+		
+		# Data Format
+		elif column_data_role == BSBinViewColumnEditorColumns.DATA_FORMAT:
+
+			if role == QtCore.Qt.ItemDataRole.DisplayRole:
+				return str(item.data(viewmodelitems.BSBinColumnDataRoles.BSDataFormat))[0]
+		
+		# Visibility Button
+		elif column_data_role == BSBinViewColumnEditorColumns.VISIBILITY:
+
+			is_hidden = item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+			
+			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove)
+			
+		# Delete Button
+		elif column_data_role == BSBinViewColumnEditorColumns.DELETE:
+
+			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+
+				is_user = item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnID) == avbutils.BinColumnFieldIDs.User
+				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WindowClose) if is_user else QtGui.QIcon()
+			
+		elif column_data_role == BSBinViewColumnEditorColumns.GRIPPER:
+			
+			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewFullscreen)
+			
+	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole|viewmodelitems.BSBinColumnDataRoles):
+		
+		if orientation == QtCore.Qt.Orientation.Vertical or role != QtCore.Qt.ItemDataRole.UserRole:
+			return super().headerData(section, orientation, role)
+		
+		return self._bin_view_column_columns[section]
+			
 	def index(self, row:int, column:int, /, parent:QtCore.QModelIndex) -> QtCore.QModelIndex:
 
 		if parent.isValid():
 			return QtCore.QModelIndex()
 
 		return self.createIndex(row, column, None)
+	
+	def flags(self, index:QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
 
+		role = self.headerRoleForIndex(index)
+		item = self.itemForIndex(index)
+
+		base_flags = super().flags(index)
+		base_flags |= QtCore.Qt.ItemFlag.ItemIsDragEnabled
+		
+		
+#		if role == BSBinViewColumnEditorColumns.GRIPPER:
+#			base_flags |= QtCore.Qt.ItemFlag.ItemIsSelectable | QtCore.Qt.ItemFlag.ItemIsDragEnabled
+#			return base_flags
+#		
+		if role == BSBinViewColumnEditorColumns.COLUMN_NAME and item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnID) == avbutils.bins.BinColumnFieldIDs.User:
+			base_flags |= QtCore.Qt.ItemFlag.ItemIsEditable
+#		
+#		elif role == BSBinViewColumnEditorColumns.VISIBILITY:
+#			return base_flags & QtCore.Qt.ItemFlag.ItemIsUserCheckable
+		
+
+		return base_flags
+
+class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
+
+
+	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+
+		# NOTE: This gets confusing
+		# The column editor view model returns the bin view column view item from its UserRole
+		# which isn't even clear as I write it here. lol TODO: Refactor
+		
+		item:viewmodelitems.LBAbstractViewHeaderItem = index.data(QtCore.Qt.ItemDataRole.UserRole)
+		role =index.model().headerRoleForIndex(index)
+		
+		is_hidden = item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+
+		#option.state &= ~QtWidgets.QStyle.StateFlag.State_HasFocus
+
+		# Show hidden as dimmed
+		if is_hidden:
+			option.state &= ~QtWidgets.QStyle.StateFlag.State_Enabled
+
+		if role == BSBinViewColumnEditorColumns.VISIBILITY and option.state & QtWidgets.QStyle.StateFlag.State_HasFocus:
+			option.palette.setCurrentColorGroup(QtGui.QPalette.ColorGroup.Active)
+		
+		super().paint(painter, option, index)
+		
 
 @dataclasses.dataclass(frozen=True)
 class BSBinViewColumnInfo:
@@ -72,7 +190,7 @@ class BSBinViewColumnInfo:
 
 		return cls(
 			name = column_info["title"],
-			field_id = avbutils.bins.BinColumnFieldIDs(column_info["type"]),
+			field_id  = avbutils.bins.BinColumnFieldIDs(column_info["type"]),
 			format_id = avbutils.bins.BinColumnFormat(column_info["format"]),
 			is_hidden = column_info["hidden"],
 			width = width
@@ -104,8 +222,6 @@ class BSBinViewInfo:
 
 def get_binview(bin_path:os.PathLike[str]) -> BSBinViewInfo:
 
-
-
 	with avb.open(bin_path) as bin_handle:
 
 		bin_contents = bin_handle.content
@@ -113,10 +229,70 @@ def get_binview(bin_path:os.PathLike[str]) -> BSBinViewInfo:
 
 		return BSBinViewInfo.from_binview(bin_view)
 	
+class BSBinViewColumnListView(QtWidgets.QTableView):
+
+	def __init__(self):
+
+		super().__init__()
+
+		self.setItemDelegate(BSBinViewColumnDelegate())
+		self.setShowGrid(False)
+		self.setAlternatingRowColors(True)
+		self.setWordWrap(False)
+		
+		self.setSelectionBehavior(QtWidgets.QTableView.SelectionBehavior.SelectRows)
+		self.setSelectionMode(QtWidgets.QTableView.SelectionMode.SingleSelection)
+		
+		self.setDropIndicatorShown(True)
+		self.setDragDropMode(QtWidgets.QAbstractItemView.DragDropMode.InternalMove)
+		
+		self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+		self.verticalHeader().hide()
+		self.horizontalHeader().hide()
+
+		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
+		
+
+
+class BSBinViewColumnEditor(QtWidgets.QWidget):
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self.setLayout(QtWidgets.QVBoxLayout())
+
+		self._view_editor = BSBinViewColumnListView()
+
+		self.layout().addWidget(self._view_editor)
+	
+	def setBinViewModel(self, bin_view_model:BSBinViewModel):
+
+		self._view_editor.setModel(bin_view_model)
+
+		for col in range(self._view_editor.horizontalHeader().count()):
+
+			column_type = self._view_editor.model().headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
+
+			print(column_type)
+			
+			if column_type == BSBinViewColumnEditorColumns.COLUMN_NAME:
+				print(f"Set {column_type} to {QtWidgets.QHeaderView.ResizeMode.Stretch}")
+				self._view_editor.horizontalHeader().setSectionResizeMode(col, QtWidgets.QHeaderView.ResizeMode.Stretch)
+			
+			else:
+				print(f"Set {column_type} to {QtWidgets.QHeaderView.ResizeMode.ResizeToContents}")
+				self._view_editor.horizontalHeader().setSectionResizeMode(col, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+	
+
+
+
 	
 def main(bin_path:os.PathLike[str]):
 
 	app = QtWidgets.QApplication()
+	app.setStyle("Fusion")
 	
 	binview_info = get_binview(bin_path)
 
@@ -136,10 +312,9 @@ def main(bin_path:os.PathLike[str]):
 
 	model_binview = BSBinViewModel(items=binview_col_views)
 
-	columns_list = QtWidgets.QListView()
-	columns_list.setAlternatingRowColors(True)
-	columns_list.setModel(model_binview)
-	columns_list.show()
+	wnd_editor = BSBinViewColumnEditor()
+	wnd_editor.setBinViewModel(model_binview)
+	wnd_editor.show()
 
 	
 	return app.exec()
