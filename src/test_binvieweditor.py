@@ -10,7 +10,7 @@ class BSBinViewColumnEditorColumns(enum.Enum):
 	GRIPPER     = enum.auto()
 	COLUMN_NAME = enum.auto()
 	DATA_FORMAT = enum.auto()
-	VISIBILITY  = enum.auto()
+	HIDDEN  = enum.auto()
 	DELETE      = enum.auto()
 
 class BSBinViewModel(QtCore.QAbstractItemModel):
@@ -26,7 +26,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 			BSBinViewColumnEditorColumns.COLUMN_NAME,
 			BSBinViewColumnEditorColumns.DELETE,
 			BSBinViewColumnEditorColumns.DATA_FORMAT,
-			BSBinViewColumnEditorColumns.VISIBILITY,
+			BSBinViewColumnEditorColumns.HIDDEN,
 		]
 
 		print("Name was", name)
@@ -79,6 +79,17 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		return self._bin_view_column_items[index.row()]
 	
+	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole|viewmodelitems.BSBinColumnDataRoles):
+
+		display_item = self._bin_view_column_items[index.row()]
+		display_item.setData(value, role)
+		
+		print("Set ", value, " for role ", role," on ", display_item.display_name())
+		self.dataChanged.emit(index.siblingAtColumn(0), index.siblingAtColumn(self.columnCount(index.parent())-1), [role])
+		return True
+
+		#return super().setData(index, value, role)
+	
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
 		
 		if not index.isValid():
@@ -107,7 +118,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 				return str(item.data(viewmodelitems.BSBinColumnDataRoles.BSDataFormat))[0]
 		
 		# Visibility Button
-		elif column_data_role == BSBinViewColumnEditorColumns.VISIBILITY:
+		elif column_data_role == BSBinViewColumnEditorColumns.HIDDEN:
 
 			is_hidden = item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
 			
@@ -199,10 +210,50 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		if is_hidden:
 			option.state &= ~QtWidgets.QStyle.StateFlag.State_Enabled
 
-		if role == BSBinViewColumnEditorColumns.VISIBILITY and option.state & QtWidgets.QStyle.StateFlag.State_HasFocus:
+		if role == BSBinViewColumnEditorColumns.HIDDEN and option.state & QtWidgets.QStyle.StateFlag.State_HasFocus:
 			option.palette.setCurrentColorGroup(QtGui.QPalette.ColorGroup.Active)
 		
 		super().paint(painter, option, index)
+
+	def handleEditorEvent(self, object, event):
+		print("Editor", event)
+		return super().handleEditorEvent(object, event)
+
+	def editorEvent(self, event:QtCore.QEvent, model:BSBinViewModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+
+		role = model.headerRoleForIndex(index)
+		item = model.itemForIndex(index)
+
+		if role == BSBinViewColumnEditorColumns.HIDDEN:  # TODO: Use checked State?
+
+			if event.type() == QtCore.QEvent.Type.MouseButtonRelease:
+
+				is_hidden = not item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+				model.setData(index, is_hidden, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+
+			return True
+
+		return super().editorEvent(event, model, option, index)
+	
+	def setModelData(self, editor:QtWidgets.QWidget, model:BSBinViewModel, index:QtCore.QModelIndex):
+		
+		role = model.headerRoleForIndex(index)
+
+		if role == BSBinViewColumnEditorColumns.COLUMN_NAME:
+
+			column_name = editor.text()
+			model.setData(index, column_name, viewmodelitems.BSBinColumnDataRoles.BSColumnDisplayName)
+
+		return super().setModelData(editor, model, index)
+	
+	def setEditorData(self, editor:QtWidgets.QLineEdit, index:QtCore.QModelIndex):
+		
+		role = index.model().headerRoleForIndex(index)
+
+		if role == BSBinViewColumnEditorColumns.COLUMN_NAME:
+			column_name = index.data(QtCore.Qt.ItemDataRole.DisplayRole)
+			editor.setText(column_name)
+		#return super().setEditorData(editor, index)
 		
 
 @dataclasses.dataclass(frozen=True)

@@ -18,6 +18,8 @@ class BSBinItemDataRoles(enum.IntEnum):
 class BSBinColumnDataRoles(enum.IntEnum):
 	"""Item Data Roles for Bin Column Headers (extends `QtCore.Qt.ItemDataRole`)"""
 
+	BSColumnDisplayName = QtCore.Qt.ItemDataRole.DisplayRole
+
 	BSColumnID         = QtCore.Qt.ItemDataRole.UserRole + 1
 	"""The ID of the column data (Unique for Name, Tape, Start, etc)"""
 
@@ -77,6 +79,10 @@ class LBAbstractViewHeaderItem:
 			BSBinColumnDataRoles  .BSColumnWidth:    self._field_width,
 			BSBinColumnDataRoles  .BSColumnHash:     self._field_name,
 		 })
+		
+	def setData(self, value:typing.Any, role:QtCore.Qt.ItemDataRole|BSBinColumnDataRoles):
+		print(self, " updated ", role , " to ", value)
+		self._data_roles.update({role: value})
 	
 	def data(self, role:QtCore.Qt.ItemDataRole) -> typing.Any:
 		return self._data_roles.get(role, None)
