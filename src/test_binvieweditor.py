@@ -147,7 +147,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		item = self.itemForIndex(index)
 
 		base_flags = super().flags(index)
-		base_flags |= QtCore.Qt.ItemFlag.ItemIsDragEnabled
+		base_flags |= QtCore.Qt.ItemFlag.ItemIsDragEnabled | QtCore.Qt.ItemFlag.ItemIsDropEnabled
 		
 		
 #		if role == BSBinViewColumnEditorColumns.GRIPPER:
@@ -162,6 +162,22 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 
 		return base_flags
+	
+	def supportedDropActions(self):
+		
+		return QtCore.Qt.DropAction.MoveAction
+	
+#	def dropMimeData(self, data, action, row, column, parent) -> bool:
+#		print("Drop Mime")
+#		return True
+#		return super().dropMimeData(data, action, row, column, parent)
+#	
+#	def canDropMimeData(self, data, action, row, column, parent):
+#		print("Can Drop", data.data(data.formats()[0]))
+#		
+#		return True
+	
+		return super().canDropMimeData(data, action, row, column, parent)
 
 class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
@@ -258,12 +274,15 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		self.setShowGrid(False)
 		self.setAlternatingRowColors(True)
 		self.setWordWrap(False)
+		self.setAutoScroll(True)
 		
 		self.setSelectionBehavior(QtWidgets.QTableView.SelectionBehavior.SelectRows)
-		self.setSelectionMode(QtWidgets.QTableView.SelectionMode.SingleSelection)
+		self.setSelectionMode(QtWidgets.QTableView.SelectionMode.ExtendedSelection)
 		
 		self.setDropIndicatorShown(True)
 		self.setDragDropMode(QtWidgets.QAbstractItemView.DragDropMode.InternalMove)
+		self.setDefaultDropAction(QtCore.Qt.DropAction.MoveAction)
+		self.setDragEnabled(True)
 		
 		self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		self.verticalHeader().hide()
