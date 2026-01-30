@@ -12,7 +12,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		# which isn't even clear as I write it here. lol TODO: Refactor
 		
 		#item:viewmodelitems.LBAbstractViewHeaderItem = index.data(QtCore.Qt.ItemDataRole.UserRole)
-		role =index.model().headerRoleForIndex(index)
+		role =index.model().featureForIndex(index)
 		
 		is_hidden = index.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
 
@@ -33,7 +33,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 	def editorEvent(self, event:QtCore.QEvent, model:editorproxymodel.BSBinViewColumnEditorProxyModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
-		role = model.headerRoleForIndex(index)
+		role = model.featureForIndex(index)
 		
 
 		if role == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
@@ -49,7 +49,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 	
 	def setModelData(self, editor:QtWidgets.QWidget, model:editorproxymodel.BSBinViewColumnEditorProxyModel, index:QtCore.QModelIndex):
 		
-		role = model.headerRoleForIndex(index)
+		role = model.featureForIndex(index)
 
 		if role == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
 
@@ -60,7 +60,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 	
 	def setEditorData(self, editor:QtWidgets.QLineEdit, index:QtCore.QModelIndex):
 		
-		role = index.model().headerRoleForIndex(index)
+		role = index.model().featureForIndex(index)
 
 		if role == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
 			column_name = index.data(QtCore.Qt.ItemDataRole.DisplayRole)

@@ -32,8 +32,8 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		# Headers
 		self.verticalHeader()  .setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
-		self.verticalHeader()  .hide()
-		self.horizontalHeader().hide()
+#		self.verticalHeader()  .hide()
+#		self.horizontalHeader().hide()
 
 		# Scrolling
 		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -43,5 +43,5 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 	
 	def model(self) -> editorproxymodel.BSBinViewColumnEditorProxyModel:
 		"""This model returns a proxy model"""
-		
+
 		return super().model()
