@@ -8,6 +8,7 @@ class BSBinColumnInfoRole(enum.IntEnum):
 	"""Bin column info available as a row"""
 
 	DisplayNameRole = QtCore.Qt.ItemDataRole.DisplayRole
+	IconRole        = QtCore.Qt.ItemDataRole.DecorationRole
 	FieldIdRole     = QtCore.Qt.ItemDataRole.UserRole + 1
 	FormatIdRole    = FieldIdRole + 1
 	IsHiddenRole    = FieldIdRole + 2
@@ -15,6 +16,7 @@ class BSBinColumnInfoRole(enum.IntEnum):
 
 @dataclasses.dataclass
 class BSBinViewInfo:
+	"""BinView Data"""
 
 	name:str
 	columns:list[BSBinViewColumnInfo]
@@ -36,14 +38,50 @@ class BSBinViewInfo:
 			columns = columns
 		)
 
-@dataclasses.dataclass
+@dataclasses.dataclass()
 class BSBinViewColumnInfo:
+	"""BinView Column Data"""
 
 	field_id     :avbutils.bins.BinColumnFieldIDs
 	format_id    :avbutils.bins.BinColumnFormat
 	display_name :str
 	column_width :int
 	is_hidden    :bool
+	_data_roles  :dict[BSBinColumnInfoRole, typing.Any] = dataclasses.field(init=False)
+
+	def __post_init__(self):
+
+		self._data_roles = {
+			BSBinColumnInfoRole.DisplayNameRole:    self.display_name,
+			BSBinColumnInfoRole.ColumnWidthRole:    self.column_width,
+			BSBinColumnInfoRole.FieldIdRole:        self.field_id,
+			BSBinColumnInfoRole.FormatIdRole:       self.format_id,
+			BSBinColumnInfoRole.IsHiddenRole:       self.is_hidden,
+		}
+
+
+	def data(self, role:BSBinColumnInfoRole) -> typing.Any:
+		return self._data_roles.get(role, None)
+	
+	def setData(self, value:typing.Any, role:BSBinColumnInfoRole):
+
+		# NOTE: I think `self._data_roles` is updated for free since it's refs?
+
+		if role == BSBinColumnInfoRole.DisplayNameRole:
+			self.field_id = value
+
+		elif role == BSBinColumnInfoRole.ColumnWidthRole:
+			self.column_width = value
+
+		elif role == BSBinColumnInfoRole.FieldIdRole:
+			self.field_id = value
+
+		elif role == BSBinColumnInfoRole.FormatIdRole:
+			self.format_id = value
+		
+		elif role == BSBinColumnInfoRole.IsHiddenRole:
+			self.is_hidden = value
+	
 
 	@classmethod
 	def from_column(cls, bin_column_info:dict, width:int|None=None) -> typing.Self:
@@ -55,26 +93,6 @@ class BSBinViewColumnInfo:
 			column_width = width,
 			is_hidden    = bool(bin_column_info["hidden"]),
 		)
-
-	def data(self, role:BSBinColumnInfoRole):
-
-		if role == BSBinColumnInfoRole.DisplayNameRole:
-			return self.display_name
-		
-		elif role == BSBinColumnInfoRole.FieldIdRole:
-			return self.field_id
-		
-		elif role == BSBinColumnInfoRole.FormatIdRole:
-			return self.format_id
-		
-		elif role == BSBinColumnInfoRole.IsHiddenRole:
-			return self.is_hidden
-		
-		elif role == BSBinColumnInfoRole.ColumnWidthRole:
-			return self.column_width
-		
-		else:
-			return None
 		
 
 class BSBinViewModel(QtCore.QAbstractItemModel):
@@ -155,6 +173,6 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		return self.createIndex(row, column)
 	
-	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole|BSBinColumnInfoRole):
+	def data(self, index:QtCore.QModelIndex, /, role:BSBinColumnInfoRole):
 
 		return self._bin_view_columns[index.row()].data(role)

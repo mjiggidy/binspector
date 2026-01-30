@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets, QtGui, QtCore
-from . import editorview, editormodel
+from . import editorproxymodel, editorview
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
 
@@ -50,10 +50,10 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if self._view_editor.model() == bin_view_model:
 			return
 		
-		print("Adding bin view", bin_view_model.binViewName())
+		#print("Adding bin view", bin_view_model.binViewName())
 
-		bin_view_model.sig_bin_view_name_changed.connect(self._cmb_bin_view_list.addItem)
-		self._cmb_bin_view_list.addItem(bin_view_model.binViewName())
+#		bin_view_model.sig_bin_view_name_changed.connect(self._cmb_bin_view_list.addItem)
+#		self._cmb_bin_view_list.addItem(bin_view_model.binViewName())
 		self._view_editor.setModel(bin_view_model)
 
 		for col in range(self._view_editor.horizontalHeader().count()):
@@ -62,7 +62,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 			#print(column_type)
 			
-			if column_type == editormodel.BSBinViewColumnEditorColumns.NameColumn:
+			if column_type == editorproxymodel.BSBinViewColumnEditorColumns.NameColumn:
 			#	print(f"Set {column_type} to {QtWidgets.QHeaderView.ResizeMode.Stretch}")
 				self._view_editor.horizontalHeader().setSectionResizeMode(col, QtWidgets.QHeaderView.ResizeMode.Stretch)
 			
