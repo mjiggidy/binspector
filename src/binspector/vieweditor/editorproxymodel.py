@@ -25,13 +25,24 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			BSBinViewColumnEditorFeature.VisibilityColumn,
 		]
 
-		self.modelReset.connect(print)
+		
+		#self.modelReset.connect(print)
+
+		self._default_flags = QtCore.Qt.ItemFlag.ItemIsSelectable|QtCore.Qt.ItemFlag.ItemIsEnabled
 
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 		"""Set the source bin view model to edit (just an alias for `setSourceModel()`)"""
 
 		self.setSourceModel(bin_view_model)
 
+	def features(self) -> list[BSBinViewColumnEditorFeature]:
+
+		return list(self._editor_columns)
+
+	def featureForColumn(self, column:int) -> BSBinViewColumnEditorFeature|None:
+		"""Return the editor feature for a given logical column"""
+
+		return self._editor_columns[column]
 	
 	def featureForIndex(self, index:QtCore.QModelIndex) -> BSBinViewColumnEditorFeature|None:
 		"""Determine editor column feature for a given index"""
@@ -39,7 +50,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		if not index.isValid():
 			return None
 
-		return self._editor_columns[index.column()]
+		return self.featureForColumn(index.column())
 	
 	def binViewColumnForIndex(self, index:QtCore.QModelIndex) -> binviewitems.BSBinViewColumnInfo:
 		"""Get the `BSBinViewColumnInfo` for a given index"""
@@ -49,21 +60,22 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		
 		return self.sourceModel().data(binviewitems.BSBinColumnInfoRole.RawColumnInfo)
 	
-#	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
-#		
-#		feature = self.featureForIndex(proxyIndex)
-#		
-#		if feature == BSBinViewColumnEditorFeature.NameColumn:
-#			return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(role)
-#
-#		elif feature == BSBinViewColumnEditorFeature.VisibilityColumn:
-#			return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binviewitems.BSBinColumnInfoRole.IsHiddenRole)
-#
-#		elif feature == BSBinViewColumnEditorFeature.DataFormatColumn:
-#			return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binviewitems.BSBinColumnInfoRole.FormatIdRole)
-#		
-#		elif feature == BSBinViewColumnEditorFeature.DeleteColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
-#			return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditDelete)
+	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
+		
+		feature = self.featureForIndex(proxyIndex)
+		
+		if feature == BSBinViewColumnEditorFeature.NameColumn:
+			return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(role)
+
+		elif feature == BSBinViewColumnEditorFeature.VisibilityColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
+			is_hidden = self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binviewitems.BSBinColumnInfoRole.IsHiddenRole)
+			return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.UserOffline) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FolderDragAccept)
+
+		elif feature == BSBinViewColumnEditorFeature.DataFormatColumn and role == QtCore.Qt.ItemDataRole.DisplayRole:
+			return str(self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binviewitems.BSBinColumnInfoRole.FormatIdRole))[0]
+		
+		elif feature == BSBinViewColumnEditorFeature.DeleteColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
+			return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove)
 	
 
 	###
@@ -95,6 +107,22 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 	def parent(self, index:QtCore.QModelIndex) -> QtCore.QModelIndex:
 
 		return QtCore.QModelIndex()
+	
+	def flags(self, index:QtCore.QModelIndex):
+		
+		source_index    = self.mapToSource(index)
+		editor_feature  = self.featureForIndex(index)
+
+		# Start With Base Flags
+		
+		flags = self.sourceModel().flags(source_index) if source_index.isValid() else self._default_flags
+
+		flags |= QtCore.Qt.ItemFlag.ItemIsDropEnabled | QtCore.Qt.ItemFlag.ItemIsDragEnabled
+		import avbutils
+		if editor_feature == BSBinViewColumnEditorFeature.NameColumn and index.data(binviewitems.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User:
+			flags |= QtCore.Qt.ItemFlag.ItemIsEditable
+			
+		return flags
 	
 	def mapFromSource(self, sourceIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		
