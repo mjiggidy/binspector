@@ -1,24 +1,26 @@
 import sys
-from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6 import QtWidgets
 
-from binspector.binview import binviewmodel
-import avb, avbutils
+from binspector.binview import binviewmodel, binviewitems
+from binspector.vieweditor import editorwidget
+import avb
 
 
 if __name__ == "__main__":
 
 	app = QtWidgets.QApplication()
+	app.setStyle("Fusion")
 
-	wnd_test = QtWidgets.QListView()
+	wnd_test = editorwidget.BSBinViewColumnEditor()
 
 	with avb.open(sys.argv[1]) as bin_handle:
-		bin_view_info = binviewmodel.BSBinViewInfo.from_binview(bin_handle.content.view_setting)
+		bin_view_info = binviewitems.BSBinViewInfo.from_binview(bin_handle.content.view_setting)
 	
 	bin_view_model = binviewmodel.BSBinViewModel(bin_view_info)
 
 
 	
-	wnd_test.setModel(bin_view_model)
+	wnd_test.setBinViewModel(bin_view_model)
 	wnd_test.show()
 
 	app.exec()

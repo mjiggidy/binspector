@@ -1,0 +1,1 @@
+"""Column editor for bin views"""

@@ -1,113 +1,25 @@
 from __future__ import annotations
-import enum, typing, dataclasses
+import typing
 from PySide6 import QtCore
 
-import avbutils, avb
-
-class BSBinColumnInfoRole(enum.IntEnum):
-	"""Bin column info available as a row"""
-
-	DisplayNameRole = QtCore.Qt.ItemDataRole.DisplayRole
-	IconRole        = QtCore.Qt.ItemDataRole.DecorationRole
-	FieldIdRole     = QtCore.Qt.ItemDataRole.UserRole + 1
-	FormatIdRole    = FieldIdRole + 1
-	IsHiddenRole    = FieldIdRole + 2
-	ColumnWidthRole = FieldIdRole + 3
-
-@dataclasses.dataclass
-class BSBinViewInfo:
-	"""BinView Data"""
-
-	name:str
-	columns:list[BSBinViewColumnInfo]
-
-	@classmethod
-	def from_binview(cls, binview:avb.bin.BinViewSetting) -> typing.Self:
-
-		columns = []
-
-		for col in binview.columns:
-			try:
-				columns.append(BSBinViewColumnInfo.from_column(col))
-			except ValueError as e:
-				print("Passing value error: ", e)
-				continue
-
-		return cls(
-			name    = binview.name,
-			columns = columns
-		)
-
-@dataclasses.dataclass()
-class BSBinViewColumnInfo:
-	"""BinView Column Data"""
-
-	field_id     :avbutils.bins.BinColumnFieldIDs
-	format_id    :avbutils.bins.BinColumnFormat
-	display_name :str
-	column_width :int
-	is_hidden    :bool
-	_data_roles  :dict[BSBinColumnInfoRole, typing.Any] = dataclasses.field(init=False)
-
-	def __post_init__(self):
-
-		self._data_roles = {
-			BSBinColumnInfoRole.DisplayNameRole:    self.display_name,
-			BSBinColumnInfoRole.ColumnWidthRole:    self.column_width,
-			BSBinColumnInfoRole.FieldIdRole:        self.field_id,
-			BSBinColumnInfoRole.FormatIdRole:       self.format_id,
-			BSBinColumnInfoRole.IsHiddenRole:       self.is_hidden,
-		}
-
-
-	def data(self, role:BSBinColumnInfoRole) -> typing.Any:
-		return self._data_roles.get(role, None)
-	
-	def setData(self, value:typing.Any, role:BSBinColumnInfoRole):
-
-		# NOTE: I think `self._data_roles` is updated for free since it's refs?
-
-		if role == BSBinColumnInfoRole.DisplayNameRole:
-			self.field_id = value
-
-		elif role == BSBinColumnInfoRole.ColumnWidthRole:
-			self.column_width = value
-
-		elif role == BSBinColumnInfoRole.FieldIdRole:
-			self.field_id = value
-
-		elif role == BSBinColumnInfoRole.FormatIdRole:
-			self.format_id = value
-		
-		elif role == BSBinColumnInfoRole.IsHiddenRole:
-			self.is_hidden = value
-	
-
-	@classmethod
-	def from_column(cls, bin_column_info:dict, width:int|None=None) -> typing.Self:
-
-		return cls(
-			field_id     = avbutils.bins.BinColumnFieldIDs(bin_column_info["type"]),
-			format_id    = avbutils.bins.BinColumnFormat(bin_column_info["format"]),
-			display_name = str(bin_column_info["title"]),
-			column_width = width,
-			is_hidden    = bool(bin_column_info["hidden"]),
-		)
-		
+from . import binviewitems
 
 class BSBinViewModel(QtCore.QAbstractItemModel):
 	"""Main Bin View Model"""
 
+	DEFAULT_BIN_VIEW_NAME = "Untitled"
+
 	sig_bin_view_name_changed = QtCore.Signal(str)
 
-	def __init__(self, /, bin_view:BSBinViewInfo|None=None, parent:QtCore.QObject|None=None):
+	def __init__(self, /, bin_view:binviewitems.BSBinViewInfo|None=None, parent:QtCore.QObject|None=None):
 		
 		super().__init__(parent)
 
-		self._bin_view_name:str
-		self._bin_view_columns:list[BSBinViewColumnInfo] = list()
-
+		self._bin_view_name:str = self.DEFAULT_BIN_VIEW_NAME
+		self._bin_view_columns:list[binviewitems.BSBinViewColumnInfo] = list()
+		
 		if bin_view:
+
 			self._bin_view_name    = bin_view.name
 			self._bin_view_columns = bin_view.columns
 
@@ -120,7 +32,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		self.sig_bin_view_name_changed.emit(name)
 
-	def addBinColumn(self, bin_column:BSBinViewColumnInfo, row:int|None=None):
+	def addBinColumn(self, bin_column:binviewitems.BSBinViewColumnInfo, row:int|None=None):
 
 		if row:
 			self.beginInsertRows(QtCore.QModelIndex(), row, row)
@@ -131,7 +43,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		self.endInsertRows()
 
-	def addBinColumns(self, bin_columns:typing.Iterable[BSBinViewColumnInfo], row:int|None=None):
+	def addBinColumns(self, bin_columns:typing.Iterable[binviewitems.BSBinViewColumnInfo], row:int|None=None):
 
 		bin_columns = list(bin_columns)
 
@@ -144,9 +56,13 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		self.endInsertRows()
 
-	def binColumns(self) -> list[BSBinViewColumnInfo]:
+	def binColumns(self) -> list[binviewitems.BSBinViewColumnInfo]:
 
 		return self._bin_view_columns
+
+
+	###
+
 
 	def parent(self, child_index:QtCore.QModelIndex) -> QtCore.QModelIndex:
 
@@ -173,6 +89,6 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		return self.createIndex(row, column)
 	
-	def data(self, index:QtCore.QModelIndex, /, role:BSBinColumnInfoRole):
+	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
 
 		return self._bin_view_columns[index.row()].data(role)
