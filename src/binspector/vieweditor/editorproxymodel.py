@@ -57,7 +57,28 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		
 		return self.sourceModel().data(binviewitems.BSBinColumnInfoRole.RawColumnInfo)
 	
+	def binColumnIsHiddenForIndex(self, index:QtCore.QModelIndex) -> bool:
+		return self.data(index, binviewitems.BSBinColumnInfoRole.IsHiddenRole)
+
+	def setBinColumnHiddenForIndex(self, index:QtCore.QModelIndex, is_hidden:bool=True):
+
+		source_index = self.mapToSource(index.siblingAtColumn(0))
+		new_is_hidden = not source_index.data(binviewitems.BSBinColumnInfoRole.IsHiddenRole)
+		return self.setData(index, new_is_hidden, binviewitems.BSBinColumnInfoRole.IsHiddenRole)
+
+
+	@QtCore.Slot(QtCore.QModelIndex)
+	def toggleBinColumnVisibiltyForIndex(self, index:QtCore.QModelIndex):
+		
+		is_hidden = self.binColumnIsHiddenForIndex(index)
+		self.setBinColumnVisibleForIndex(index, is_hidden)
+
+
+	def setBinColumnVisibleForIndex(self, index:QtCore.QModelIndex, is_visible:bool=True):
+		self.setBinColumnHiddenForIndex(index, not is_visible)
+	
 	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
+
 		
 		feature = self.featureForIndex(proxyIndex)
 

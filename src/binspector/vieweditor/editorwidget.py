@@ -21,7 +21,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._view_editor = editorview.BSBinViewColumnListView()
 
 		# Action Buttons
-		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Show All/None"))
+		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Select All/None"))
 		self._btn_add_col    = QtWidgets.QPushButton(self.tr("Add User Column"))
 
 
@@ -50,7 +50,14 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._lay_buttons.addWidget(self._btn_toggle_all)
 
 		self.layout().addLayout(self._lay_buttons)
+
+		self._btn_toggle_all.clicked.connect(self.toggleSelectedColumns)
 	
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
 		self._view_editor.model().setSourceModel(bin_view_model)
+	
+	@QtCore.Slot()
+	def toggleSelectedColumns(self):
+
+		self._view_editor.selectionModel().clearSelection() if self._view_editor.selectionModel().hasSelection() else self._view_editor.selectAll()

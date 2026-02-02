@@ -42,7 +42,12 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 
 	def setModel(self, model:editorproxymodel.BSBinViewColumnEditorProxyModel):
 		
+		if self.model() == model:
+			return
+
 		super().setModel(model)
+
+		self.itemDelegate().sig_hide_column_index.connect(self.model().toggleBinColumnVisibiltyForIndex)
 		
 		self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		
@@ -54,3 +59,15 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		"""This model returns a proxy model"""
 
 		return super().model()
+	
+	def itemDelegate(self) -> editordelegates.BSBinViewColumnDelegate:
+		return super().itemDelegate()
+	
+#	def setItemDelegate(self, delegate:editordelegates.BSBinViewColumnDelegate):
+#		
+#		if self.itemDelegate() == delegate:
+#			return
+#
+#		delegate.sig_hide_column_index.connect(self.model().toggleBinColumnVisibiltyForIndex)
+#		
+#		super().setItemDelegate(delegate)

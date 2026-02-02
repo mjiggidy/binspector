@@ -10,6 +10,8 @@ if typing.TYPE_CHECKING:
 
 class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
+	sig_hide_column_index = QtCore.Signal(QtCore.QModelIndex)
+
 
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
@@ -41,13 +43,17 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 		if role == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn and event.type() == QtCore.QEvent.Type.MouseButtonRelease: # TODO: Use checked State?
 
-			# Toggle visibility
+			self.sig_hide_column_index.emit(index)
 
-			# NOTE: Getting `None` from `proxyIndex.data(role)`... is that... right...?
-			source_index = model.mapToSource(index)
-			new_is_hidden = not source_index.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
-			return model.setData(index, new_is_hidden, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
-		
+#			# NOTE: Maybe just shoot a signal, and have the model do any model editing.
+#
+#			# Toggle visibility
+#
+#			# NOTE: Getting `None` from `proxyIndex.data(role)`... is that... right...?
+#			source_index = model.mapToSource(index)
+#			new_is_hidden = not source_index.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+#			return model.setData(index, new_is_hidden, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+			return True
 		return False
 
 	
