@@ -98,7 +98,7 @@ class BSBinViewColumnInfo:
 		# NOTE: I think `self._data_roles` is updated for free since it's refs?
 		# TODO: Verify
 
-		print(f"item bfore: {self.data(role)} but set to {value}")
+		#print(f"item before: {self.data(role)} but set to {value}")
 
 		if role == BSBinColumnInfoRole.DisplayNameRole:
 			self.field_id = value
@@ -117,9 +117,9 @@ class BSBinViewColumnInfo:
 		
 		self._refresh_data_roles()
 
-		print(f"item after: {self.data(role)}")
+#		print(f"item after: {self.data(role)}")
 
-		print(self._data_roles)
+#		print(self._data_roles)
 
 	@classmethod
 	def from_column(cls, bin_column_info:dict, width:int|None=None) -> typing.Self:
