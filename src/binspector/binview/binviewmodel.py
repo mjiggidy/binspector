@@ -92,3 +92,14 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
 
 		return self._bin_view_columns[index.row()].data(role)
+	
+	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:binviewitems.BSBinColumnInfoRole):
+		print("In the big bin view model setData====")
+		print(index.row())
+		item = self._bin_view_columns[index.column()]
+
+		print(item)
+		
+		self.dataChanged.emit(index, index)
+		
+		return super().setData(index, value, role)

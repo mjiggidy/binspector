@@ -1,6 +1,12 @@
+from __future__ import annotations
+import typing
+
 from PySide6 import QtWidgets, QtGui, QtCore
 from ..models import viewmodelitems
 from . import editorproxymodel
+
+if typing.TYPE_CHECKING:
+	from . import editorwidget
 
 class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
@@ -27,25 +33,23 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		
 		super().paint(painter, option, index)
 
-	def handleEditorEvent(self, object, event):
-		print("Editor", event)
-		return super().handleEditorEvent(object, event)
+	def editorEvent(self, event:QtCore.QEvent, model:editorproxymodel.BSBinViewColumnEditorProxyModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
 
-	def editorEvent(self, event:QtCore.QEvent, model:editorproxymodel.BSBinViewColumnEditorProxyModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+		print(model.featureForIndex(index))
 
 		role = model.featureForIndex(index)
-		
 
 		if role == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
 
-			if event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 
+			if event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 				is_hidden = not index.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
 				model.setData(index, is_hidden, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
 
 			return True
+		
+		return False
 
-		return super().editorEvent(event, model, option, index)
 	
 	def setModelData(self, editor:QtWidgets.QWidget, model:editorproxymodel.BSBinViewColumnEditorProxyModel, index:QtCore.QModelIndex):
 		
@@ -65,4 +69,3 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		if role == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
 			column_name = index.data(QtCore.Qt.ItemDataRole.DisplayRole)
 			editor.setText(column_name)
-		#return super().setEditorData(editor, index)
