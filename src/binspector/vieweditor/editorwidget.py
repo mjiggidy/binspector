@@ -21,7 +21,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._view_editor = editorview.BSBinViewColumnListView()
 
 		# Action Buttons
-		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Select All/None"))
+		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Toggle Visibility"))
 		self._btn_add_col    = QtWidgets.QPushButton(self.tr("Add User Column"))
 
 
