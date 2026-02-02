@@ -33,6 +33,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		"""Set the source bin view model to edit (just an alias for `setSourceModel()`)"""
 
 		self.setSourceModel(bin_view_model)
+		self.sourceModel().dataChanged.connect(self.sourceDataChanged)
 
 	def features(self) -> list[BSBinViewColumnEditorFeature]:
 
@@ -81,7 +82,6 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		
 	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole):
 
-
 		if not super().setData(index, value, role):
 			return False
 		
@@ -91,6 +91,28 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		self.dataChanged.emit(index_start, index_end)
 		return True
 	
+	def updateRowForIndex(self, index:QtCore.QModelIndex):
+		"""Emit `dataChanged` for the entire row"""
+
+		index_start = index.siblingAtColumn(0)
+		index_end   = index.siblingAtColumn(self.columnCount(index.parent())-1)
+
+		self.dataChanged.emit(index_start, index_end)
+		print("HEEE")
+
+	@QtCore.Slot(object, object, object)
+	def sourceDataChanged(self, source_index_start:QtCore.QModelIndex, source_index_end:QtCore.QModelIndex, roles:list):
+
+		# NOTE: Haven't needed/tested this yet.  Maybe just rewrite instead of making this work because you know.
+		# But I'm guessing when the sourceModel is changed via other means, I'll need to intercept its dataChanged
+		# map the proxy and re-emit)
+
+		# Map source index to proxy and get new first/last order based on row
+		proxy_first_row, proxy_last_row = sorted(self.mapFromSource(source_index_start).row(), self.mapFromSource(source_index_end).row())
+
+		for proxy_row in range(proxy_first_row, proxy_last_row+1):
+			self.updateRowForIndex(self.index(proxy_first_row, 0, QtCore.QModelIndex()))
+			print("Update proxy row", proxy_row)
 
 	###
 	
