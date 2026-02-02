@@ -82,9 +82,14 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole):
 
 
-		print(f"====EDITOR PROXY MODEL setDATA: {index=} {value=} {role=}")
+		if not super().setData(index, value, role):
+			return False
+		
+		index_start = index.siblingAtColumn(0)
+		index_end = index.siblingAtColumn(self.columnCount(index.parent())-1)
 
-		return super().setData(index, value, role)
+		self.dataChanged.emit(index_start, index_end)
+		return True
 	
 
 	###
