@@ -76,6 +76,9 @@ class BSBinViewColumnInfo:
 	"""View Item Data Roles for `QAbstractItemModel` access via `.data()`"""
 
 	def __post_init__(self):
+		self._refresh_data_roles()
+
+	def _refresh_data_roles(self):
 
 		self._data_roles = {
 			BSBinColumnInfoRole.DisplayNameRole:    self.display_name,
@@ -95,6 +98,8 @@ class BSBinViewColumnInfo:
 		# NOTE: I think `self._data_roles` is updated for free since it's refs?
 		# TODO: Verify
 
+		print(f"item bfore: {self.data(role)} but set to {value}")
+
 		if role == BSBinColumnInfoRole.DisplayNameRole:
 			self.field_id = value
 
@@ -109,6 +114,12 @@ class BSBinViewColumnInfo:
 		
 		elif role == BSBinColumnInfoRole.IsHiddenRole:
 			self.is_hidden = value
+		
+		self._refresh_data_roles()
+
+		print(f"item after: {self.data(role)}")
+
+		print(self._data_roles)
 
 	@classmethod
 	def from_column(cls, bin_column_info:dict, width:int|None=None) -> typing.Self:

@@ -1,5 +1,5 @@
 from PySide6 import QtCore, QtGui
-import enum
+import enum, typing
 from ..binview import binviewmodel, binviewitems
 
 import avbutils
@@ -78,6 +78,13 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		elif feature == BSBinViewColumnEditorFeature.DeleteColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
 
 			return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove)
+		
+	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole):
+
+
+		print(f"====EDITOR PROXY MODEL setDATA: {index=} {value=} {role=}")
+
+		return super().setData(index, value, role)
 	
 
 	###

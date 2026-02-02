@@ -35,18 +35,18 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 	def editorEvent(self, event:QtCore.QEvent, model:editorproxymodel.BSBinViewColumnEditorProxyModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
 
-		print(model.featureForIndex(index))
+		#print(model.featureForIndex(index))
 
 		role = model.featureForIndex(index)
 
-		if role == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
+		if role == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn and event.type() == QtCore.QEvent.Type.MouseButtonRelease: # TODO: Use checked State?
 
+			# Toggle visibility
 
-			if event.type() == QtCore.QEvent.Type.MouseButtonRelease:
-				is_hidden = not index.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
-				model.setData(index, is_hidden, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
-
-			return True
+			# NOTE: Getting `None` from `proxyIndex.data(role)`... is that... right...?
+			source_index = model.mapToSource(index)
+			new_is_hidden = not source_index.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+			return model.setData(index, new_is_hidden, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
 		
 		return False
 
