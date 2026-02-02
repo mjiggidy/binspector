@@ -51,13 +51,8 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self.layout().addLayout(self._lay_buttons)
 
-		self._btn_toggle_all.clicked.connect(self.toggleSelectedColumns)
+		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
 	
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
 		self._view_editor.model().setSourceModel(bin_view_model)
-	
-	@QtCore.Slot()
-	def toggleSelectedColumns(self):
-
-		self._view_editor.selectionModel().clearSelection() if self._view_editor.selectionModel().hasSelection() else self._view_editor.selectAll()

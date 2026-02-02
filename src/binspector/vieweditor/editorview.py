@@ -40,6 +40,21 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		# Model
 		self.setModel(editorproxymodel.BSBinViewColumnEditorProxyModel())
 
+	@QtCore.Slot()
+	def toggleColumnSelection(self):
+
+		# NOTE: Unused?
+
+		self.selectionModel().clearSelection() if self.selectionModel().hasSelection() else self.selectAll()
+
+	@QtCore.Slot()
+	def toggleSelectedVisibility(self):
+
+		for row_index in self.selectionModel().selectedRows():
+	
+			self.model().toggleBinColumnVisibiltyForIndex(row_index)
+	###
+
 	def setModel(self, model:editorproxymodel.BSBinViewColumnEditorProxyModel):
 		
 		if self.model() == model:
@@ -47,6 +62,7 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 
 		super().setModel(model)
 
+		# NOTE: Need better way to do this for model/delegate reassignments
 		self.itemDelegate().sig_hide_column_index.connect(self.model().toggleBinColumnVisibiltyForIndex)
 		
 		self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)

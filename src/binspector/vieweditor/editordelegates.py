@@ -30,6 +30,11 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		if is_hidden:
 			option.state &= ~QtWidgets.QStyle.StateFlag.State_Enabled
 
+			font = QtGui.QFont(option.font)
+			font.setItalic(True)
+			option.font = font
+			option.fontmetrics = QtGui.QFontMetrics(font)
+			
 		if role == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn and option.state & QtWidgets.QStyle.StateFlag.State_HasFocus:
 			option.palette.setCurrentColorGroup(QtGui.QPalette.ColorGroup.Active)
 		
