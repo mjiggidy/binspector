@@ -106,29 +106,28 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		return True
 	
-	def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
-		"""Remove a given row (convience for `self.removeRows()`)"""
-		
-		if parent.isValid():
-			return False
-		
-		print(f"Source model says remove row {row}: {self.index(row, 0, parent).data(QtCore.Qt.ItemDataRole.DisplayRole)}")
-		
-		self.removeRows(row, 1, parent)
+#	def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
+#		"""Remove a given row (convience for `self.removeRows()`)"""
+#		
+#		if parent.isValid():
+#			return False
+#		
+#		print(f"Source model says remove row {row}: {self.index(row, 0, parent).data(QtCore.Qt.ItemDataRole.DisplayRole)}")
+#		
+#		self.removeRows(row, 1, parent)
 	
 	@QtCore.Slot(int, int, object)
 	def removeRows(self, row:int, count:int, /, parent:QtCore.QModelIndex):
 		"""Remove given rows"""
 
-		row_start_index = self.index(row, 0, parent)
-		row_end_index   = self.index(row + count-1, 0, parent)
+		if count < 1 or parent.isValid():
+			return False
 
-		self.beginRemoveRows(parent, row_start_index.row(), row_end_index.row())
+		for bin_column_index in range(row, row + count):
+			print(f"Data model removing row {bin_column_index}: {self.index(bin_column_index, 0, parent).data(QtCore.Qt.ItemDataRole.DisplayRole)}")
 
-		for bin_column_index in range(row_start_index.row(), row_start_index.row() + count):
-			removed = self._bin_view_columns.pop(bin_column_index)
-			print(f"Data model removed row {bin_column_index}: {removed.display_name}")
-		
+		self.beginRemoveRows(parent, row, row + count-1)
+		del self._bin_view_columns[row:row+count]
 		self.endRemoveRows()
 
 		return True

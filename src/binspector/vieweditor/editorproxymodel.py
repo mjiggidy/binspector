@@ -34,7 +34,35 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 		self.setSourceModel(bin_view_model)
 
-		self.sourceModel().rowsRemoved.connect(self.sourceRowsRemoved)
+		self.sourceModel().rowsAboutToBeRemoved.connect(self.sourceModelAboutToRemoveRows)
+		self.sourceModel().rowsRemoved.connect(self.sourceModelRowsRemoved)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceModelAboutToRemoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
+
+		if self.mapFromSource(parent).isValid():
+			return
+		
+		# NOTE: Big ol' caveat here that I'm just gonna pretend won't be a terrible problem in the future:
+		# I'm trusting that row numbers remain contiguous between the source and proxy so I can still say "start at 
+		# row 5 and delete the next 5" without worrying about there being any breaks in the run between the source  
+		# and proxy due to different proxy row mappings.
+		# I've been writing code since 1990 but I think I'm still a terrible programmer probably.
+		# 12 year old kids on YouTube do it better than me
+		# I'm too old to change
+		# What do I do
+		
+		self.beginRemoveRows(QtCore.QModelIndex(), row_start, row_end)
+		print("I begin")
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceModelRowsRemoved(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
+
+		if self.mapFromSource(parent).isValid():
+			return
+		
+		self.endRemoveRows()
+		print("I end")
 
 	def features(self) -> list[BSBinViewColumnEditorFeature]:
 
@@ -77,18 +105,11 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 	@QtCore.Slot(QtCore.QModelIndex)
 	def removeBinColumnForIndex(self, index:QtCore.QModelIndex):
 
-		if not self.userCanDelete(index):
+		if not self.userCanDelete(index) or not index.isValid():
 			# Nice try fella
 			return
-
-		self.removeRow(index.row(), QtCore.QModelIndex())
-	
-	def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
 		
-		if parent.isValid():
-			return False
-
-		src_idx = self.mapToSource(self.index(row, 0, parent))
+		src_idx = self.mapToSource(index)
 
 		if not src_idx.isValid():
 			print("Map to source returned invalid index")
@@ -97,8 +118,23 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		print(f"Source model to remove row {src_idx.row()}: {src_idx.data(QtCore.Qt.ItemDataRole.DisplayRole)}")
 
 		self.sourceModel().removeRow(src_idx.row(), src_idx.parent())
-
-		return True
+	
+#def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
+#	
+#	if parent.isValid():
+#		return False
+#
+#	src_idx = self.mapToSource(self.index(row, 0, parent))
+#
+#	if not src_idx.isValid():
+#		print("Map to source returned invalid index")
+#		return False
+#	
+#	print(f"Source model to remove row {src_idx.row()}: {src_idx.data(QtCore.Qt.ItemDataRole.DisplayRole)}")
+#
+#	self.sourceModel().removeRow(src_idx.row(), src_idx.parent())
+#
+#	return True
 
 
 	def setBinColumnVisibleForIndex(self, index:QtCore.QModelIndex, is_visible:bool=True):
@@ -161,7 +197,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		index_end   = index.siblingAtColumn(self.columnCount(index.parent())-1)
 
 		self.dataChanged.emit(index_start, index_end)
-		print("HEEE")
+		print("updateRowForIndex says HEEE")
 
 	@QtCore.Slot(object, object, object)
 	def sourceDataChanged(self, source_index_start:QtCore.QModelIndex, source_index_end:QtCore.QModelIndex, roles:list):
@@ -176,18 +212,6 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		for proxy_row in range(proxy_first_row, proxy_last_row+1):
 			self.updateRowForIndex(self.index(proxy_first_row, 0, QtCore.QModelIndex()))
 			print("Update proxy row", proxy_row)
-
-	@QtCore.Slot(object, int, int)
-	@QtCore.Slot()
-	def sourceRowsRemoved(self, parent:QtCore.QModelIndex, row_start:int, count:int):
-
-		proxy_row_start = self.mapFromSource(self.sourceModel().index(row_start, 0, parent)).row()
-		proxy_row_end   =  self.mapFromSource(self.sourceModel().index(row_start+count-1, 0, parent)).row()
-
-		self.beginRemoveRows(QtCore.QModelIndex(), proxy_row_start, proxy_row_end)
-		self.removeRows(proxy_row_start, count, QtCore.QModelIndex())
-		self.endRemoveRows()
-	###
 	
 	def columnCount(self, /, parent:QtCore.QModelIndex):
 		
