@@ -64,6 +64,7 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 
 		# NOTE: Need better way to do this for model/delegate reassignments
 		self.itemDelegate().sig_hide_column_index.connect(self.model().toggleBinColumnVisibiltyForIndex)
+		self.itemDelegate().sig_remove_column_index.connect(self.model().removeBinColumnForIndex)
 		
 		self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		

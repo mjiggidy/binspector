@@ -55,4 +55,4 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
-		self._view_editor.model().setSourceModel(bin_view_model)
+		self._view_editor.model().setBinViewModel(bin_view_model)

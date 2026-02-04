@@ -24,8 +24,8 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 		self._editor_columns:list[BSBinViewColumnEditorFeature] = [
 			BSBinViewColumnEditorFeature.NameColumn,
-			BSBinViewColumnEditorFeature.DataFormatColumn,
 			BSBinViewColumnEditorFeature.DeleteColumn,
+			BSBinViewColumnEditorFeature.DataFormatColumn,
 			BSBinViewColumnEditorFeature.VisibilityColumn,
 		]
 
@@ -33,7 +33,8 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		"""Set the source bin view model to edit (just an alias for `setSourceModel()`)"""
 
 		self.setSourceModel(bin_view_model)
-		self.sourceModel().dataChanged.connect(self.sourceDataChanged)
+
+		self.sourceModel().rowsRemoved.connect(self.sourceRowsRemoved)
 
 	def features(self) -> list[BSBinViewColumnEditorFeature]:
 
@@ -73,11 +74,48 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		is_hidden = self.binColumnIsHiddenForIndex(index)
 		self.setBinColumnVisibleForIndex(index, is_hidden)
 
+	@QtCore.Slot(QtCore.QModelIndex)
+	def removeBinColumnForIndex(self, index:QtCore.QModelIndex):
+
+		if not self.userCanDelete(index):
+			# Nice try fella
+			return
+
+		self.removeRow(index.row(), QtCore.QModelIndex())
+	
+	def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
+		
+		if parent.isValid():
+			return False
+
+		src_idx = self.mapToSource(self.index(row, 0, parent))
+
+		if not src_idx.isValid():
+			print("Map to source returned invalid index")
+			return False
+		
+		print(f"Source model to remove row {src_idx.row()}: {src_idx.data(QtCore.Qt.ItemDataRole.DisplayRole)}")
+
+		self.sourceModel().removeRow(src_idx.row(), src_idx.parent())
+
+		return True
+
 
 	def setBinColumnVisibleForIndex(self, index:QtCore.QModelIndex, is_visible:bool=True):
 		self.setBinColumnHiddenForIndex(index, not is_visible)
+
+	def userCanDelete(self, index:QtCore.QModelIndex) -> bool:
+		"""Rules for user-deletable field"""
+
+		return self.mapToSource(index).data(binviewitems.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User
 	
 	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
+		"""
+		Editor proxy index data uses (row,feature) to access editor bin column data, and (row,0) for bin column info's data roles
+		
+		Example data model access: `self.index(5, 0).data(binviewitems.BSBinColumnInfoRole.IsHiddenRole)`  
+		Example editor proxy access: `self.index(5,  BSBinViewColumnEditorFeature.VisibilityColumn).data(QtCore.Qt.ItemDataRole.DecorationRole)`
+		"""
 
 		
 		feature = self.featureForIndex(proxyIndex)
@@ -99,7 +137,11 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		
 		elif feature == BSBinViewColumnEditorFeature.DeleteColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
 
-			return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove)
+			# Allow delete if user field
+			if self.userCanDelete(proxyIndex):
+				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove)
+			else:
+				return QtGui.QIcon()
 		
 	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole):
 
@@ -135,6 +177,16 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			self.updateRowForIndex(self.index(proxy_first_row, 0, QtCore.QModelIndex()))
 			print("Update proxy row", proxy_row)
 
+	@QtCore.Slot(object, int, int)
+	@QtCore.Slot()
+	def sourceRowsRemoved(self, parent:QtCore.QModelIndex, row_start:int, count:int):
+
+		proxy_row_start = self.mapFromSource(self.sourceModel().index(row_start, 0, parent)).row()
+		proxy_row_end   =  self.mapFromSource(self.sourceModel().index(row_start+count-1, 0, parent)).row()
+
+		self.beginRemoveRows(QtCore.QModelIndex(), proxy_row_start, proxy_row_end)
+		self.removeRows(proxy_row_start, count, QtCore.QModelIndex())
+		self.endRemoveRows()
 	###
 	
 	def columnCount(self, /, parent:QtCore.QModelIndex):

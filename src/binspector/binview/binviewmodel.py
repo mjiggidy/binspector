@@ -85,8 +85,8 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 	def index(self, row:int, column:int, /, parent:QtCore.QModelIndex) -> QtCore.QModelIndex:
 
 		if parent.isValid():
-			return None
-
+			return  QtCore.QModelIndex()
+		
 		return self.createIndex(row, column)
 	
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
@@ -104,4 +104,46 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		item.setData(value, role)
 		self.dataChanged.emit(index, index)
 		
+		return True
+	
+	def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
+		
+		if parent.isValid():
+			return False
+		
+
+	
+	@QtCore.Slot(int, int, object)
+	def removeRows(self, row:int, count:int, /, parent:QtCore.QModelIndex):
+
+		row_start_index = self.index(row, 0, parent)
+		row_end_index   = self.index(row + count-1, 0, parent)
+
+		self.beginRemoveRows(parent, row_start_index.row(), row_end_index.row())
+
+		for bin_column_index in range(count):
+			removed = self._bin_view_columns.pop(bin_column_index)
+			print(f"Removed {removed.display_name}")
+		
+		self.endRemoveRows()
+
+		return True
+
+
+
+		##
+		row_start_index = self.index(row, 0, parent).row()
+		row_end_index   = self.index(row-count, 0, parent).row()
+
+		self.beginRemoveRows(parent, row, row+count-1)
+		
+		for column_index in map(lambda r: self.index(r, 0, parent), range(row, row+count)):
+			
+			self._bin_view_columns.pop(column_index.row())
+
+#		self.rowsRemoved.emit(QtCore.QModelIndex(), row_start, row_end)
+		print("Ok...")
+		
+		self.endRemoveRows()
+
 		return True
