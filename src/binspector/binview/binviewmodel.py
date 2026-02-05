@@ -116,7 +116,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 #		
 #		self.removeRows(row, 1, parent)
 	
-	@QtCore.Slot(int, int, object)
+	@QtCore.Slot(int, int, QtCore.QModelIndex)
 	def removeRows(self, row:int, count:int, /, parent:QtCore.QModelIndex):
 		"""Remove given rows"""
 
@@ -129,5 +129,26 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		self.beginRemoveRows(parent, row, row + count-1)
 		del self._bin_view_columns[row:row+count]
 		self.endRemoveRows()
+
+		return True
+	
+	@QtCore.Slot(int, int, QtCore.QModelIndex)
+	def insertRows(self, row:int, count:int, /, parent:QtCore.QModelIndex):
+
+		import avbutils
+		
+		self.beginInsertRows(parent, row, row + count-1)
+
+		self._bin_view_columns.append(binviewitems.BSBinViewColumnInfo(
+			field_id = avbutils.bins.BinColumnFieldIDs.User,
+			format_id = avbutils.bins.BinColumnFormat.USER_TEXT,
+			display_name = "New Column",
+			column_width = -1,
+			is_hidden = False
+		))
+
+		self.endInsertRows()
+
+		#print("Okee at ",row, self._bin_view_columns[-1])
 
 		return True

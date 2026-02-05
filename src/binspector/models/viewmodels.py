@@ -454,14 +454,16 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		
 		self.beginResetModel()
 		self._header_model= bin_view_model
-		self._header_model.dataChanged.connect(self.notifyColumnChanges)
+		self._header_model.dataChanged.connect(self.notifyColumnChanged)
 		self._header_model.rowsAboutToBeRemoved.connect(self.notifyColumnsAboutToBeRemoved)
 		self._header_model.rowsRemoved.connect(self.notifyColumnsRemoved)
+		self._header_model.rowsAboutToBeInserted.connect(self.notifyColumnsAboutToBeInserted)
+		self._header_model.rowsInserted.connect(self.notifyColumnsInserted)
 
 		self.endResetModel()
 		
 	@QtCore.Slot(QtCore.QModelIndex,QtCore.QModelIndex,QtCore.Qt.ItemDataRole)
-	def notifyColumnChanges(self, header_index_start:QtCore.QModelIndex, header_index_end:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]|None=None):
+	def notifyColumnChanged(self, header_index_start:QtCore.QModelIndex, header_index_end:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]|None=None):
 		
 		# Map
 		logical_col_start = header_index_start.row()
@@ -484,7 +486,20 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 			return
 
 		self.columnsRemoved.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
-		
 
-		
-		#self.sig_bin_view_model_changed.emit(bin_view_model)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def notifyColumnsAboutToBeInserted(self, parent:QtCore.QModelIndex, header_col_start, header_col_end):
+
+		if parent.isValid():
+			return
+
+		self.columnsAboutToBeInserted.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def notifyColumnsInserted(self, parent:QtCore.QModelIndex, header_col_start, header_col_end):
+
+		if parent.isValid():
+			return
+
+		self.columnsInserted.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
