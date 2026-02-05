@@ -10,8 +10,9 @@ if typing.TYPE_CHECKING:
 
 class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
-	sig_hide_column_index   = QtCore.Signal(QtCore.QModelIndex)
-	sig_remove_column_index = QtCore.Signal(QtCore.QModelIndex)
+	sig_hide_column_index       = QtCore.Signal(QtCore.QModelIndex)
+	sig_remove_column_index     = QtCore.Signal(QtCore.QModelIndex)
+	sig_rename_column_for_index = QtCore.Signal(QtCore.QModelIndex, str)
 
 
 	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
@@ -69,9 +70,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		if role == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
 
 			column_name = editor.text()
-			model.setData(index, column_name, viewmodelitems.BSBinColumnDataRoles.BSColumnDisplayName)
-
-		return super().setModelData(editor, model, index)
+			self.sig_rename_column_for_index.emit(index, column_name)
 	
 	def setEditorData(self, editor:QtWidgets.QLineEdit, index:QtCore.QModelIndex):
 		

@@ -103,7 +103,8 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		item.setData(value, role)
 		self.dataChanged.emit(index, index)
-		
+#		print(f"{value=}, {binviewitems.BSBinColumnInfoRole(role)=}")
+#		print("ITEM NOW ", item)
 		return True
 	
 #	def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:

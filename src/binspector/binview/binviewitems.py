@@ -101,7 +101,7 @@ class BSBinViewColumnInfo:
 		#print(f"item before: {self.data(role)} but set to {value}")
 
 		if role == BSBinColumnInfoRole.DisplayNameRole:
-			self.field_id = value
+			self.display_name = value
 
 		elif role == BSBinColumnInfoRole.ColumnWidthRole:
 			self.column_width = value
@@ -116,10 +116,6 @@ class BSBinViewColumnInfo:
 			self.is_hidden = value
 		
 		self._refresh_data_roles()
-
-#		print(f"item after: {self.data(role)}")
-
-#		print(self._data_roles)
 
 	@classmethod
 	def from_column(cls, bin_column_info:dict, width:int|None=None) -> typing.Self:
