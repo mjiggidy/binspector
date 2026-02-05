@@ -35,7 +35,10 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		self.setSourceModel(bin_view_model)
 
 		self.sourceModel().rowsAboutToBeRemoved.connect(self.sourceModelAboutToRemoveRows)
-		self.sourceModel().rowsRemoved.connect(self.sourceModelRowsRemoved)
+		self.sourceModel().rowsRemoved.connect(self.sourceModelRemovedRows)
+		
+		self.sourceModel().rowsAboutToBeInserted.connect(self.sourceModelAboutToInsertRows)
+		self.sourceModel().rowsInserted.connect(self.sourceModelInsertedRows)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def sourceModelAboutToRemoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
@@ -53,16 +56,30 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		# What do I do
 		
 		self.beginRemoveRows(QtCore.QModelIndex(), row_start, row_end)
-		print("I begin")
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def sourceModelRowsRemoved(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
+	def sourceModelRemovedRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
 
 		if self.mapFromSource(parent).isValid():
 			return
 		
 		self.endRemoveRows()
-		print("I end")
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceModelAboutToInsertRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
+		
+		if self.mapFromSource(parent).isValid():
+			return
+		
+		self.beginInsertRows(QtCore.QModelIndex(), row_start, row_end)
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceModelInsertedRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
+
+		if self.mapFromSource(parent).isValid():
+			return
+		
+		self.endInsertRows()
 
 	def features(self) -> list[BSBinViewColumnEditorFeature]:
 
@@ -118,6 +135,14 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		print(f"Source model to remove row {src_idx.row()}: {src_idx.data(QtCore.Qt.ItemDataRole.DisplayRole)}")
 
 		self.sourceModel().removeRow(src_idx.row(), src_idx.parent())
+	
+	@QtCore.Slot()
+	def appendUserColumn(self):
+		"""Add a user-text column"""
+
+		parent = QtCore.QModelIndex()
+
+		self.sourceModel().insertRow(self.sourceModel().rowCount(parent), parent)
 	
 #def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
 #	

@@ -52,7 +52,9 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self.layout().addLayout(self._lay_buttons)
 
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
+		
 	
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
 		self._view_editor.model().setBinViewModel(bin_view_model)
+		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn) # Move to view?
