@@ -1,8 +1,10 @@
+from __future__ import annotations
 import typing
 from PySide6 import QtCore
 import avbutils
 
 from . import viewmodelitems
+from ..binview import binviewmodel
 
 class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 	"""QSortFilterProxyModel that implements bin view settings and filters"""
@@ -25,6 +27,23 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		self._use_filters  = True
 
 		self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
+		self.setSourceModel(BSBinItemViewModel())
+
+	def setSourceModel(self, sourceModel:BSBinItemViewModel):
+
+		if self.sourceModel() == sourceModel:
+			return
+		
+		# Disconnect old sigs
+		if self.sourceModel():
+			self.sourceModel().headerDataChanged.disconnect(self.invalidateColumnsFilter)
+
+		# Invalidate column filters on header data change (label/visibility edited via column editor)
+		sourceModel.headerDataChanged.connect(self.invalidateColumnsFilter)
+
+
+
+		return super().setSourceModel(sourceModel)
 
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 		"""Filter rows based on all the applicable sift/bin display/search stuff"""
@@ -247,6 +266,8 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		self._headers:list[viewmodelitems.LBAbstractViewHeaderItem] = []
 		"""List of view headers"""
 
+		self._header_model:binviewmodel.BSBinViewModel = binviewmodel.BSBinViewModel()
+
 	def supportedDropActions(self):
 		return super().supportedDropActions() | QtCore.Qt.DropAction.MoveAction
 	
@@ -267,7 +288,7 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		if parent.isValid():
 			return 0
 		
-		return len(self._headers)
+		return self._header_model.rowCount(parent)
 
 	def parent(self, /, child:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		"""Get the parent of the given bin item (invalid for now -- flat model)"""
@@ -285,8 +306,10 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
 		"""Get the data for the given role of a specified column index"""
 
-		if orientation == QtCore.Qt.Orientation.Horizontal:
-			return self._headers[section].data(role)
+		if not orientation == QtCore.Qt.Orientation.Horizontal:
+			return None
+		
+		return self._header_model.index(section, 0, QtCore.QModelIndex()).data(role)
 		
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
 		"""Get the data for the given role of a specified item index"""
@@ -419,3 +442,49 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		self.endInsertRows()
 
 		return True
+	
+	###
+
+	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
+
+		if self._header_model == bin_view_model:
+			return
+		
+		# TODO: Disconnect from old
+		
+		self.beginResetModel()
+		self._header_model= bin_view_model
+		self._header_model.dataChanged.connect(self.notifyColumnChanges)
+		self._header_model.rowsAboutToBeRemoved.connect(self.notifyColumnsAboutToBeRemoved)
+		self._header_model.rowsRemoved.connect(self.notifyColumnsRemoved)
+
+		self.endResetModel()
+		
+	@QtCore.Slot(QtCore.QModelIndex,QtCore.QModelIndex,QtCore.Qt.ItemDataRole)
+	def notifyColumnChanges(self, header_index_start:QtCore.QModelIndex, header_index_end:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]|None=None):
+		
+		# Map
+		logical_col_start = header_index_start.row()
+		logical_col_end   = header_index_end.row()
+
+		self.headerDataChanged.emit(QtCore.Qt.Orientation.Horizontal, logical_col_start, logical_col_end)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def notifyColumnsAboutToBeRemoved(self, parent:QtCore.QModelIndex, header_col_start, header_col_end):
+
+		if parent.isValid():
+			return
+
+		self.columnsAboutToBeRemoved.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def notifyColumnsRemoved(self, parent:QtCore.QModelIndex, header_col_start, header_col_end):
+
+		if parent.isValid():
+			return
+
+		self.columnsRemoved.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
+		
+
+		
+		#self.sig_bin_view_model_changed.emit(bin_view_model)

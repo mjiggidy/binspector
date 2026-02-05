@@ -13,21 +13,27 @@ if __name__ == "__main__":
 	app = QtWidgets.QApplication()
 	app.setStyle("Fusion")
 
-	wnd_test = editorwidget.BSBinViewColumnEditor()
+	wnd_editor = editorwidget.BSBinViewColumnEditor()
 
 	
+	wnd_bin = textview.BSBinTextView()
 
-	bin_window = textview.BSBinTextView()
+	bin_item_model = viewmodels.BSBinItemViewModel()
+	
+	wnd_bin.model().setSourceModel(bin_item_model)
 
 
 	with avb.open(sys.argv[1]) as bin_handle:
 		bin_view_info = binviewitems.BSBinViewInfo.from_binview(bin_handle.content.view_setting)
 	
 	bin_view_model = binviewmodel.BSBinViewModel(bin_view_info)
+	bin_item_model.setBinViewModel(bin_view_model)
 
 
 	
-	wnd_test.setBinViewModel(bin_view_model)
-	wnd_test.show()
+	wnd_editor.setBinViewModel(bin_view_model)
+	wnd_editor.show()
+
+	wnd_bin.show()
 
 	app.exec()
