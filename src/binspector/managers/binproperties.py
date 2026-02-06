@@ -35,6 +35,9 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	sig_bin_view_changed = QtCore.Signal(object, object, int, int)
 	"""Binview has been reset"""
 
+	sig_neue_bin_view_changed = QtCore.Signal(object)
+	"""Neueu BinView Model thing"""
+
 	sig_view_mode_toggled = QtCore.Signal(object)
 	"""Binview has been toggled on/off"""
 
@@ -62,36 +65,13 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		self.sig_view_mode_toggled  .connect(lambda bv_enabled: self.sig_all_columns_toggled.emit(not bv_enabled))
 		self.sig_bin_filters_toggled.connect(lambda fl_enabled: self.sig_all_items_toggled  .emit(not fl_enabled))
 
-		#self.sig_all_columns_toggled.connect(lambda all_columns: print(f"{all_columns=}")) #Not?
-		#self.sig_all_items_toggled.connect(lambda all_visible: print(f"{all_visible=}")) # Firing
 
 	@QtCore.Slot(object, object, object, object)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start, script_view_scale:int=avbutils.THUMB_SCRIPT_MODE_RANGE.start):
 		"""Set columns and their widths"""
 
-		self.viewModel().clear()
-
-		headers = [
-			viewmodelitems.LBAbstractViewHeaderItem("order",  self.tr("Order")),
-			viewmodelitems.LBAbstractViewHeaderItem("title",  self.tr("Title")),
-			viewmodelitems.LBAbstractViewHeaderItem("format", self.tr("Format")),
-			viewmodelitems.LBAbstractViewHeaderItem("type",   self.tr("Type")),
-			viewmodelitems.LBAbstractViewHeaderItem("width",  self.tr("Width")),
-			viewmodelitems.LBAbstractViewHeaderItem("hidden", self.tr("Is Hidden")),
-		]
-		
-		for header in headers:
-			super().addHeader(header)
-
-		for idx, column in enumerate(bin_view.columns):
-			column.update({
-				"order": idx,
-				"width": column_widths.get(column["title"],None)
-			})
-				
-			self.addColumnDefinition(column)
-		
-		self.sig_bin_view_changed.emit(bin_view, column_widths, frame_view_scale, script_view_scale)
+		from ..binview import binviewitems
+		self.sig_neue_bin_view_changed.emit(binviewitems.BSBinViewInfo.from_binview(bin_view))
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
@@ -168,18 +148,18 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 	@QtCore.Slot(object)
 	def setBinDisplayFlags(self, bin_display:avbutils.BinDisplayItemTypes):
 
-		self.viewModel().clear()
-
-		headers = [
-			viewmodelitems.LBAbstractViewHeaderItem("name",  self.tr("Name")),
-			viewmodelitems.LBAbstractViewHeaderItem("value", self.tr("Value")),
-		]
-		
-		for header in headers:
-			self.addHeader(header)
-		
-		for f in bin_display:
-			self.addRow({"name": f.name, "value": f.value})
+#		self.viewModel().clear()
+#
+#		headers = [
+#			viewmodelitems.LBAbstractViewHeaderItem("name",  self.tr("Name")),
+#			viewmodelitems.LBAbstractViewHeaderItem("value", self.tr("Value")),
+#		]
+#		
+#		for header in headers:
+#			self.addHeader(header)
+#		
+#		for f in bin_display:
+#			self.addRow({"name": f.name, "value": f.value})
 		
 		self.sig_bin_display_changed.emit(bin_display)
 		
@@ -225,16 +205,16 @@ class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 	@QtCore.Slot(bool, object)
 	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avbutils.bins.BinSiftOption]):
 
-		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="string", display_name=self.tr("String")))
-		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="method", display_name=self.tr("Method")))
-		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="column", display_name=self.tr("Column")))
-		for idx, setting in enumerate(reversed(sift_settings)):
-			self.addRow({
-				"order": idx,
-				"method": viewmodelitems.TRTEnumViewItem(setting.sift_method),
-				"string": setting.sift_text,
-				"column": setting.sift_column,
-			})
+#		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="string", display_name=self.tr("String")))
+#		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="method", display_name=self.tr("Method")))
+#		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="column", display_name=self.tr("Column")))
+#		for idx, setting in enumerate(reversed(sift_settings)):
+#			self.addRow({
+#				"order": idx,
+#				"method": viewmodelitems.TRTEnumViewItem(setting.sift_method),
+#				"string": setting.sift_text,
+#				"column": setting.sift_column,
+#			})
 		
 		self.sig_sift_settings_changed.emit(sift_settings)		
 		self.sig_sift_enabled.emit(sift_enabled)
@@ -269,39 +249,6 @@ class BSBinItemsManager(QtCore.QObject):
 	def addRow(self, row_data:dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any], add_new_headers:bool=False):
 		
 		return self.addRows([row_data], add_new_headers)
-
-	@QtCore.Slot(object)
-	def addRows(self, row_data_list:list[dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any]], add_new_headers:bool=False):
-		#print("I HAVE HERE:", row_data_list)
-		pass
-	
-	def addHeader(self, header_data:viewmodelitems.LBAbstractViewHeaderItem):
-		self._view_model.addHeader(header_data)
-
-	def _buildViewHeader(self, term:typing.Any) -> viewmodelitems.LBAbstractViewHeaderItem:
-		if isinstance(term, viewmodelitems.LBAbstractViewHeaderItem):
-			return term
-		return viewmodelitems.LBAbstractViewHeaderItem(field_name=str(term), display_name=str(term).replace("_", " ").title())
-
-	@QtCore.Slot(object, object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int]):
-
-		self.viewModel().clear()
-
-		for column in bin_view.columns:
-
-			self.addHeader(
-				viewmodelitems.LBAbstractViewHeaderItem(
-					field_name="40_"+column["title"] if column["type"] == 40 else str(column["type"]),
-					field_id=column["type"],
-					format_id=column["format"],
-					display_name=column["title"],
-					is_hidden=column["hidden"],
-					field_width=column_widths.get(column["title"])
-				)
-			)
-		
-		self.sig_bin_view_changed.emit(bin_view, column_widths)
 	
 	@QtCore.Slot(object)
 	def addMob(self, mob_info:binparser.BinItemInfo):

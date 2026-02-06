@@ -16,6 +16,7 @@ from ..frameview import frameview
 from ..scriptview import scriptview
 
 from ..models import viewmodels
+from ..binview import binviewmodel, binviewitems
 
 from ..core.config import BSFrameViewModeConfig, BSScriptViewModeConfig
 
@@ -29,7 +30,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_focus_set_on_column = QtCore.Signal(int)	# Logical column index
 	sig_bin_stats_updated   = QtCore.Signal(str)
 
-	def __init__(self, *args, bin_model:viewmodels.BSBinItemViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_item_model:viewmodels.BSBinItemViewModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -39,7 +40,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
 		
-		self._bin_model         = bin_model or viewmodels.BSBinItemViewModel()
+		self._bin_items_model   = bin_item_model or viewmodels.BSBinItemViewModel()
+		self._bin_view_model    = bin_view_model or binviewmodel.BSBinViewModel()
 		self._bin_filter_model  = viewmodels.BSBinViewProxyModel()
 		self._selection_model   = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
@@ -154,22 +156,22 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setBinModel(self, bin_model:viewmodels.BSBinItemViewModel):
 		"""Set the bin item model for the bin"""
 
-		if self._bin_model == bin_model:
+		if self._bin_items_model == bin_model:
 			return
 		
-		self._bin_model = bin_model
+		self._bin_items_model = bin_model
 		self._setupBinModel()
 		
-		logging.getLogger(__name__).debug("Set bin model=%s", self._bin_model)
+		logging.getLogger(__name__).debug("Set bin model=%s", self._bin_items_model)
 		self.sig_bin_model_changed.emit(bin_model)
 	
 	def binModel(self) -> viewmodels.BSBinItemViewModel:
-		return self._bin_model
+		return self._bin_items_model
 	
 	def _setupBinModel(self):
 		"""Connect bin model to all the schtuff"""
 
-		self._bin_filter_model.setSourceModel(self._bin_model)
+		self._bin_filter_model.setSourceModel(self._bin_items_model)
 		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK
 
 	###
@@ -260,6 +262,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
 		
 		self.scriptView().setFrameScale(script_scale)
+
+	@QtCore.Slot(object)
+	def setNeueBinView(self, bin_view_info:binviewitems.BSBinViewInfo):
+		"""Set BinView from bin viiew info"""
+
+		self._bin_view_model = binviewmodel.BSBinViewModel(bin_view_info)
+		self._bin_items_model.setBinViewModel(self._bin_view_model)
 
 
 	@QtCore.Slot(object)

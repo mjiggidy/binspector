@@ -4,7 +4,7 @@ from PySide6 import QtCore
 import avbutils
 
 from . import viewmodelitems
-from ..binview import binviewmodel
+from ..binview import binviewmodel, binviewitems
 
 class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 	"""QSortFilterProxyModel that implements bin view settings and filters"""
@@ -53,8 +53,8 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 
 		return all((
 			self.binDisplayFilter(source_row, source_parent),
-			self.binSiftFilter(source_row, source_parent),
-			self.searchTextFilter(source_row, source_parent),
+#			self.binSiftFilter(source_row, source_parent),
+#			self.searchTextFilter(source_row, source_parent),
 		))
 	
 	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
@@ -76,8 +76,9 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		try:
 			item_type_header_index = next(c
 				for c in range(self.sourceModel().columnCount(source_parent))
-				if self.sourceModel().headerData(c, QtCore.Qt.Orientation.Horizontal, role=QtCore.Qt.ItemDataRole.UserRole+1) == 200
+				if self.sourceModel().headerData(c, QtCore.Qt.Orientation.Horizontal, role=binviewitems.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.BinItemIcon
 			)
+
 		except StopIteration:
 #			print("Item types not available")
 			# TODO: Pass through exception -- in AVB the type should definitely be available
@@ -88,6 +89,7 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		item_types = src_index.data(QtCore.Qt.ItemDataRole.UserRole).raw_data()
 
 		if isinstance(item_types, avbutils.BinDisplayItemTypes):
+#			print(f"{item_types=} in {self._filter_bin_display_items=}")
 			return bool(item_types in self._filter_bin_display_items)
 		else:
 			raise ValueError(f"Invalid data type `{type(item_types).__name__}` for filter (expected `BinDisplayItemTypes`)")
@@ -219,7 +221,6 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 	def setBinDisplayItemTypes(self, types:avbutils.BinDisplayItemTypes):
 
 		self._filter_bin_display_items = types
-		#(self.binDisplayItemTypes().__repr__())
 		self.invalidateRowsFilter()
 	
 	def binDisplayItemTypes(self) -> avbutils.BinDisplayItemTypes:
@@ -303,7 +304,7 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		return self.createIndex(row, column)
 	
-	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
+	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:binviewitems.BSBinViewColumnInfo) -> typing.Any:
 		"""Get the data for the given role of a specified column index"""
 
 		if not orientation == QtCore.Qt.Orientation.Horizontal:
@@ -321,7 +322,7 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		# Do row stuff first
 		if role == viewmodelitems.BSBinItemDataRoles.BSItemName:
-			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Name"]).data(QtCore.Qt.ItemDataRole.DisplayRole)
+			return bin_item_data.get(avbutils.bins.BinColumnFieldIDs.Name).data(QtCore.Qt.ItemDataRole.DisplayRole)
 		
 		elif role == viewmodelitems.BSBinItemDataRoles.BSFrameCoordinates:
 			return self._frame_locations[index.row()]
@@ -336,13 +337,14 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 			return self._getUserColumnItem(index, user_column_name="Comments", role=QtCore.Qt.ItemDataRole.DisplayRole)
 
 		# For user fields: Look up the thingy
-		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, viewmodelitems.BSBinItemDataRoles.BSItemName)
+		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, binviewitems.BSBinColumnInfoRole.FieldIdRole)
+		#print("Field ID is ", field_id)
 
 		if field_id not in bin_item_data:
 			#print(field_id, "Not here in ", list(bin_item_data.keys()))
 			return None
 		
-		elif field_id == 40:
+		elif field_id == avbutils.bins.BinColumnFieldIDs.User:
 
 			# Look up user field
 			field_name = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole)
@@ -358,14 +360,14 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		"""Return the string associated with a specified user column name"""
 
 		# NOTE: Add this to avbutils.bins.BinDataColumnFormats or whatever?
-		USER_FIELD_ID = 40
+		avbutils.bins.BinColumnFieldIDs.User
 
 		bin_item_data = self._bin_items[index.row()]
 		
-		if USER_FIELD_ID not in bin_item_data:
+		if avbutils.bins.BinColumnFieldIDs.User not in bin_item_data:
 			return None
 		
-		user_data = self._bin_items[index.row()][USER_FIELD_ID]
+		user_data = self._bin_items[index.row()][avbutils.bins.BinColumnFieldIDs.User]
 
 		if user_column_name not in user_data:
 			return None
@@ -385,11 +387,6 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		
 		return super().flags(index)
 	
-	def fields(self) -> list[str]:
-		"""Binspecific: Field names for mapping headers and columns, in order"""
-
-		return [x.field_name() for x in self._headers]
-	
 	def clear(self):
 		"""Clear and reset the model"""
 
@@ -400,17 +397,6 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		self._headers = []
 		
 		self.endResetModel()
-	
-	def addHeader(self, header:viewmodelitems.LBAbstractViewHeaderItem) -> bool:
-		"""Binspecific: Add a column header"""
-		
-		new_idx = len(self._headers)
-		
-		self.beginInsertColumns(QtCore.QModelIndex(), new_idx, new_idx)
-		self._headers.append(header)
-		self.endInsertColumns()
-		
-		return True
 
 	def addBinItem(self, bin_item:dict[str,viewmodelitems.LBAbstractViewItem], frame_position:tuple[int,int]|None=None) -> bool:
 		"""Binspecific: Add a bin item"""
