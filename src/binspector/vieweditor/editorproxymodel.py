@@ -289,10 +289,18 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		return QtCore.QModelIndex()
 	
 	def flags(self, index):
-		default_flags = super().flags(index)
+		
+		flags = QtCore.Qt.ItemFlag(self.DEFAULT_FLAGS)
+
+		# Allow dropping between items (invalid indexes)
 		if not index.isValid():
 			return QtCore.Qt.ItemFlag.ItemIsDropEnabled
-		return default_flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled
+		
+		# Column Name Edidiable if user field and we're talkin bout the name column here
+		if self.featureForIndex(index) == BSBinViewColumnEditorFeature.NameColumn and index.data(binviewitems.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User:
+			flags |= QtCore.Qt.ItemFlag.ItemIsEditable
+		
+		return flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled
 	
 	def mapFromSource(self, sourceIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		

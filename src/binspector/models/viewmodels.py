@@ -417,7 +417,6 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		return self.addBinItems([bin_item], [frame_position])
 		
-	
 	def addBinItems(self, bin_items:list[dict[str,viewmodelitems.LBAbstractViewItem]], frame_positions:list[tuple[int,int]]|None=None) -> bool:
 		"""Binspecific: Add a bin items"""
 
@@ -453,14 +452,28 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		# TODO: Disconnect from old
 		
 		self.beginResetModel()
+
 		self._header_model= bin_view_model
+
 		self._header_model.dataChanged.connect(self.notifyColumnChanged)
 		self._header_model.rowsAboutToBeRemoved.connect(self.notifyColumnsAboutToBeRemoved)
 		self._header_model.rowsRemoved.connect(self.notifyColumnsRemoved)
 		self._header_model.rowsAboutToBeInserted.connect(self.notifyColumnsAboutToBeInserted)
 		self._header_model.rowsInserted.connect(self.notifyColumnsInserted)
+		self._header_model.rowsAboutToBeMoved.connect(self.notifyColumnsAboutToBeMoved)
+		self._header_model.rowsMoved.connect(self.notifyColumnsMoved)
 
 		self.endResetModel()
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def notifyColumnsAboutToBeMoved(self, source_parent:QtCore.QModelIndex, source_first:int, source_last:int, dest_parent:QtCore.QModelIndex, dest_first:int):
+
+		self.beginMoveColumns(QtCore.QModelIndex(), source_first, source_last, QtCore.QModelIndex(), dest_first)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def notifyColumnsMoved(self, source_parent:QtCore.QModelIndex, source_first:int, source_last:int, dest_parent:QtCore.QModelIndex, dest_first:int):
+		
+		self.endMoveColumns()
 		
 	@QtCore.Slot(QtCore.QModelIndex,QtCore.QModelIndex,QtCore.Qt.ItemDataRole)
 	def notifyColumnChanged(self, header_index_start:QtCore.QModelIndex, header_index_end:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]|None=None):
@@ -476,8 +489,8 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		if parent.isValid():
 			return
-
-		self.columnsAboutToBeRemoved.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
+		
+		self.beginRemoveColumns(QtCore.QModelIndex(), header_col_start, header_col_end)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def notifyColumnsRemoved(self, parent:QtCore.QModelIndex, header_col_start, header_col_end):
@@ -485,7 +498,7 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		if parent.isValid():
 			return
 
-		self.columnsRemoved.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
+		self.endRemoveColumns()
 
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
@@ -493,13 +506,13 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		if parent.isValid():
 			return
-
-		self.columnsAboutToBeInserted.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
+		
+		self.beginInsertColumns(QtCore.QModelIndex(), header_col_start, header_col_end)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def notifyColumnsInserted(self, parent:QtCore.QModelIndex, header_col_start, header_col_end):
 
 		if parent.isValid():
 			return
-
-		self.columnsInserted.emit(QtCore.QModelIndex(), header_col_start, header_col_end)
+		
+		self.endInsertColumns()
