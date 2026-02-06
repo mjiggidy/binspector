@@ -32,6 +32,8 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 		"""Set the source bin view model to edit (just an alias for `setSourceModel()`)"""
 
+		self.beginResetModel()
+
 		self.setSourceModel(bin_view_model)
 
 		self.sourceModel().rowsAboutToBeRemoved.connect(self.sourceModelAboutToRemoveRows)
@@ -42,6 +44,12 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 		self.sourceModel().rowsAboutToBeMoved.connect(self.sourceModelAboutToMoveRows)
 		self.sourceModel().rowsMoved.connect(self.sourceModelMovedRows)
+
+		self.sourceModel().modelAboutToBeReset.connect(self.modelAboutToBeReset)
+		self.sourceModel().layoutChanged.connect(self.layoutChanged)
+
+		self.endResetModel()
+
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
 	def sourceModelAboutToMoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int, destination:QtCore.QModelIndex, dest_row:int):

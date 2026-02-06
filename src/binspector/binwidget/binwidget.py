@@ -23,12 +23,13 @@ from ..core.config import BSFrameViewModeConfig, BSScriptViewModeConfig
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
-	sig_view_mode_changed   = QtCore.Signal(object)
-	sig_bin_palette_changed = QtCore.Signal(QtGui.QPalette)
-	sig_bin_font_changed    = QtCore.Signal(QtGui.QFont)
-	sig_bin_model_changed   = QtCore.Signal(object)
-	sig_focus_set_on_column = QtCore.Signal(int)	# Logical column index
-	sig_bin_stats_updated   = QtCore.Signal(str)
+	sig_view_mode_changed      = QtCore.Signal(object)
+	sig_bin_palette_changed    = QtCore.Signal(QtGui.QPalette)
+	sig_bin_font_changed       = QtCore.Signal(QtGui.QFont)
+	sig_bin_model_changed      = QtCore.Signal(object)
+	sig_focus_set_on_column    = QtCore.Signal(int)	# Logical column index
+	sig_bin_stats_updated      = QtCore.Signal(str)
+	sig_bin_view_model_changed = QtCore.Signal(object)
 
 	def __init__(self, *args, bin_item_model:viewmodels.BSBinItemViewModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
@@ -269,6 +270,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._bin_view_model = binviewmodel.BSBinViewModel(bin_view_info)
 		self._bin_items_model.setBinViewModel(self._bin_view_model)
+
+		print("Emitting ", self._bin_view_model)
+		self.sig_bin_view_model_changed.emit(self._bin_view_model)
 
 
 	@QtCore.Slot(object)

@@ -64,8 +64,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
 		self._dock_appearance  = QtWidgets.QDockWidget(self.tr("Font & Colors"))
 
-		self._tool_binview     = treeview.BSTreeViewBase()
+		from ..vieweditor import editorwidget
+		self._tool_binview     = editorwidget.BSBinViewColumnEditor()
 		self._dock_binview     = QtWidgets.QDockWidget(self.tr("Bin View Settings"))
+
+		#self._tool_columneditor = editorwidget.BSBinViewColumnEditor()
+		#self._tool_columneditor.show()
 
 		self._btn_toolbox_bindisplay = buttons.BSActionPushButton(show_text=False)
 		self._btn_toolbox_appearance = buttons.BSActionPushButton(show_text=False)
@@ -101,7 +105,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._bin_widget.setBinModel(self._man_binitems.viewModel())
 		
-		self._tool_binview.setModel(self._man_binview.viewModel())
+		#self._tool_binview.setModel(self._man_binview.viewModel())
 
 		#self._main_bincontents.frameView().setScene(self._man_binitems.frameScene())
 
@@ -298,6 +302,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_widget.setNeueBinView)
+		self._bin_widget.sig_bin_view_model_changed          .connect(self._tool_binview.setBinViewModel)
 		#self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.listView().)
 
 		# Update display counts -- Not where where to put this
@@ -327,7 +332,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
 		self._man_appearance.sig_use_system_appearance_toggled  .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
 		
-		self._tool_binview.activated                            .connect(self._man_binview.requestFocusColumn)
+		#self._tool_binview.activated                            .connect(self._man_binview.requestFocusColumn)
 
 	##
 	## Getters & Setters

@@ -56,5 +56,11 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
+		#print("YOOOOOOOO FROM ", bin_view_model)
+
 		self._view_editor.model().setBinViewModel(bin_view_model)
+		
 		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn) # Move to view?
+		
+		self._cmb_bin_view_list.addItem(bin_view_model._bin_view_name)
+		self._cmb_bin_view_list.setCurrentText(bin_view_model._bin_view_name)
