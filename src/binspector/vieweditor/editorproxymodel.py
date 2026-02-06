@@ -40,6 +40,22 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		self.sourceModel().rowsAboutToBeInserted.connect(self.sourceModelAboutToInsertRows)
 		self.sourceModel().rowsInserted.connect(self.sourceModelInsertedRows)
 
+		self.sourceModel().rowsAboutToBeMoved.connect(self.sourceModelAboutToMoveRows)
+		self.sourceModel().rowsMoved.connect(self.sourceModelMovedRows)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def sourceModelAboutToMoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int, destination:QtCore.QModelIndex, dest_row:int):
+		print("He")
+
+		self.beginMoveRows(QtCore.QModelIndex(), row_start, row_end, QtCore.QModelIndex(), dest_row)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def sourceModelMovedRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int, destination:QtCore.QModelIndex, dest_row:int):
+
+		self.endMoveRows()
+
+		
+
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def sourceModelAboutToRemoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
 
@@ -240,6 +256,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		proxy_first_row, proxy_last_row = sorted(self.mapFromSource(source_index_start).row(), self.mapFromSource(source_index_end).row())
 
 		for proxy_row in range(proxy_first_row, proxy_last_row+1):
+
 			self.updateRowForIndex(self.index(proxy_first_row, 0, QtCore.QModelIndex()))
 			print("Update proxy row", proxy_row)
 	
@@ -271,20 +288,11 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 		return QtCore.QModelIndex()
 	
-	def flags(self, index:QtCore.QModelIndex):
-		
-		source_index    = self.mapToSource(index)
-		editor_feature  = self.featureForIndex(index)
-
-		# Start With Base Flags
-		flags = self.sourceModel().flags(source_index) if source_index.isValid() else self.DEFAULT_FLAGS
-
-		flags |= QtCore.Qt.ItemFlag.ItemIsDropEnabled | QtCore.Qt.ItemFlag.ItemIsDragEnabled
-		
-		if editor_feature == BSBinViewColumnEditorFeature.NameColumn and index.data(binviewitems.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User:
-			flags |= QtCore.Qt.ItemFlag.ItemIsEditable
-			
-		return flags
+	def flags(self, index):
+		default_flags = super().flags(index)
+		if not index.isValid():
+			return QtCore.Qt.ItemFlag.ItemIsDropEnabled
+		return default_flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled
 	
 	def mapFromSource(self, sourceIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		
@@ -299,3 +307,30 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			return QtCore.QModelIndex()
 
 		return self.sourceModel().index(proxyIndex.row(), proxyIndex.column(), QtCore.QModelIndex())
+	
+	def supportedDragActions(self) -> QtCore.Qt.DropAction:
+		return QtCore.Qt.DropAction.MoveAction
+	
+	def supportedDropActions(self)-> QtCore.Qt.DropAction:
+		return QtCore.Qt.DropAction.MoveAction
+	
+	def moveRows(self, sourceParent, sourceRow, count, destinationParent, destinationChild):
+		
+		source_row_start = self.mapToSource(self.sourceModel().index(sourceRow, 0, QtCore.QModelIndex())).row()
+		source_row_dest  = self.mapToSource(self.sourceModel().index(destinationChild, 0, QtCore.QModelIndex())).row()
+
+		#print("GON BE MOVAN FROM ", sourceRow, " TO ", destinationChild)
+
+		return self.sourceModel().moveRows(QtCore.QModelIndex(), source_row_start, count, QtCore.QModelIndex(), source_row_dest)
+
+		#return super().moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild)
+	
+	def mimeTypes(self):
+		return ['application/x-qabstractitemmodeldatalist']
+	
+	def canDropMimeData(self, data:QtCore.QMimeData, action:QtCore.Qt.DropAction, row:int, column:int, parent:QtCore.QModelIndex):
+		
+		# Only allow drops *between* items
+		# (Pairs with flags() returning ItemFalgs.ItemAcceptsDrops for invalid QModelIndexes)
+
+		return not parent.isValid()

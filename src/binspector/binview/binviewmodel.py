@@ -153,3 +153,24 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		#print("Okee at ",row, self._bin_view_columns[-1])
 
 		return True
+	
+	def moveRows(self, sourceParent:QtCore.QModelIndex, sourceRow:int, count:int, destinationParent:QtCore.QModelIndex, destinationChild:int):
+		
+		self.beginMoveRows(sourceParent, sourceRow, sourceRow + count-1, destinationParent, destinationChild)
+		
+		moving_rows = self._bin_view_columns[sourceRow: sourceRow+count]
+		del self._bin_view_columns[sourceRow: sourceRow+count]
+
+		destinationChild = destinationChild - count if sourceRow < destinationChild else destinationChild
+
+		self._bin_view_columns[destinationChild:destinationChild] = moving_rows
+
+		self.endMoveRows()
+		
+		return True
+	
+
+	
+	def dropMimeData(self, data, action, row, column, parent):
+		print("Huh")
+		return super().dropMimeData(data, action, row, column, parent)

@@ -26,8 +26,12 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		# Drag n Drop
 		self.setDragEnabled(True)
 		self.setDragDropMode(QtWidgets.QAbstractItemView.DragDropMode.InternalMove)
+		self.setDragDropOverwriteMode(False)
+
 		self.setDefaultDropAction(QtCore.Qt.DropAction.MoveAction)
 		self.setDropIndicatorShown(True)
+		
+
 		
 		# Headers
 		self.verticalHeader()  .setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
