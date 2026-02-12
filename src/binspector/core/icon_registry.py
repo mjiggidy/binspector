@@ -7,10 +7,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import avbutils
+from os import PathLike
 from ..res import icons_binitems
 
-if TYPE_CHECKING:
-	from os import PathLike
+
 
 type IconRegistryType = dict[avbutils.bins.BinDisplayItemTypes, PathLike[str]]
 
