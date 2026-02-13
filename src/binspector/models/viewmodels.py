@@ -95,7 +95,10 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		
 		# Get the item type from the source moddel
 		src_index = self.sourceModel().index(source_row, item_type_header_index, source_parent)
-		item_types = src_index.data(QtCore.Qt.ItemDataRole.UserRole).raw_data()
+		item_types = src_index.data(viewmodelitems.BSBinItemDataRoles.BSItemType)
+		import logging
+		logging.getLogger(__name__).error("Got %s", repr(item_types))
+		print("Got ", item_types)
 
 		if isinstance(item_types, avbutils.BinDisplayItemTypes):
 #			print(f"{item_types=} in {self._filter_bin_display_items=}")
