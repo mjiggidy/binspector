@@ -49,13 +49,22 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		"""Filter rows based on all the applicable sift/bin display/search stuff"""
 
 		if not self._use_filters:
-			return super().filterAcceptsRow(source_row, source_parent)
+			return False
 
-		return all((
-			self.binDisplayFilter(source_row, source_parent),
-#			self.binSiftFilter(source_row, source_parent),
-#			self.searchTextFilter(source_row, source_parent),
-		))
+		try:
+			return all((
+				self.binDisplayFilter(source_row, source_parent),
+	#			self.binSiftFilter(source_row, source_parent),
+	#			self.searchTextFilter(source_row, source_parent),
+			))
+		except Exception as e:
+			import logging
+			logging.getLogger(__name__).error("Error filtering: %s", str(e))
+			return True
+		
+		# I just feel weird not having this somewhere lol even though it does nothing
+		return super().filterAcceptsRow(source_row, source_parent)
+		
 	
 	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
 		
