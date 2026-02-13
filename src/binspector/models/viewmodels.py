@@ -312,7 +312,7 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		return self.createIndex(row, column)
 	
-	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:binviewitems.BSBinViewColumnInfo) -> typing.Any:
+	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:binviewitems.BSBinViewColumn) -> typing.Any:
 		"""Get the data for the given role of a specified column index"""
 
 		if not orientation == QtCore.Qt.Orientation.Horizontal:

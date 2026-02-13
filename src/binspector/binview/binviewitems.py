@@ -30,11 +30,11 @@ class BSBinColumnInfoRole(enum.IntEnum):
 	"""Saved bin column width"""
 
 @dataclasses.dataclass
-class BSBinViewInfo:
+class BSBinView:
 	"""BinView View Item Data"""
 
 	name:str
-	columns:list[BSBinViewColumnInfo]
+	columns:list[BSBinViewColumn]
 
 	@classmethod
 	def from_binview(cls, binview:avb.bin.BinViewSetting) -> typing.Self:
@@ -43,7 +43,7 @@ class BSBinViewInfo:
 
 		for col in binview.columns:
 			try:
-				columns.append(BSBinViewColumnInfo.from_column(col))
+				columns.append(BSBinViewColumn.from_column(col))
 			except ValueError as e:
 				print("Passing value error: ", e)
 				continue
@@ -54,7 +54,7 @@ class BSBinViewInfo:
 		)
 
 @dataclasses.dataclass()
-class BSBinViewColumnInfo:
+class BSBinViewColumn:
 	"""BinView Column Data"""
 
 	field_id     :avbutils.bins.BinColumnFieldIDs

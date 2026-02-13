@@ -119,7 +119,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 		return self.featureForColumn(index.column())
 	
-	def binViewColumnForIndex(self, index:QtCore.QModelIndex) -> binviewitems.BSBinViewColumnInfo:
+	def binViewColumnForIndex(self, index:QtCore.QModelIndex) -> binviewitems.BSBinViewColumn:
 		"""Get the `BSBinViewColumnInfo` for a given index"""
 
 		if not index.isValid():

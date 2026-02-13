@@ -71,7 +71,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		"""Set columns and their widths"""
 
 		from ..binview import binviewitems
-		self.sig_neue_bin_view_changed.emit(binviewitems.BSBinViewInfo.from_binview(bin_view))
+		self.sig_neue_bin_view_changed.emit(binviewitems.BSBinView.from_binview(bin_view))
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
