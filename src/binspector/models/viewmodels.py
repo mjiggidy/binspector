@@ -54,8 +54,8 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		try:
 			return all((
 				self.binDisplayFilter(source_row, source_parent),
-	#			self.binSiftFilter(source_row, source_parent),
-	#			self.searchTextFilter(source_row, source_parent),
+				self.binSiftFilter(source_row, source_parent),
+				self.searchTextFilter(source_row, source_parent),
 			))
 		except Exception as e:
 			#import logging
@@ -95,13 +95,10 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		# Get the item type from the source moddel
 		src_index = self.sourceModel().index(source_row, item_type_header_index, source_parent)
 		item_types = src_index.data(viewmodelitems.BSBinItemDataRoles.BSItemType)
-		#import logging
-		#logging.getLogger(__name__).error("Got %s", repr(item_types))
-		#print("Got ", item_types)
 
 		if isinstance(item_types, avbutils.BinDisplayItemTypes):
-#			print(f"{item_types=} in {self._filter_bin_display_items=}")
 			return bool(item_types in self._filter_bin_display_items)
+		
 		else:
 			raise ValueError(f"Invalid data type `{type(item_types).__name__}` for filter (expected `BinDisplayItemTypes`)")
 	
@@ -134,7 +131,7 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 
 		for source_col in range(self.sourceModel().columnCount()):
 
-			col_is_hidden = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+3)
+			col_is_hidden = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
 
 			if col_is_hidden:
 				#print("Skip hidden col", source_col)
