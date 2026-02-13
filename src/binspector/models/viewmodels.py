@@ -89,7 +89,6 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 			)
 
 		except StopIteration:
-#			print("Item types not available")
 			# TODO: Pass through exception -- in AVB the type should definitely be available
 			return super().filterAcceptsRow(source_row, source_parent)
 		
@@ -330,20 +329,25 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		if not index.isValid():
 			return None
 		
+		# Get the Bin Item
 		bin_item_data = self._bin_items[index.row()]
+
+		import logging
+		logging.getLogger(__name__).error("Got bin itme data %s", repr(bin_item_data))
 
 		# Do row stuff first
 		if role == viewmodelitems.BSBinItemDataRoles.BSItemName:
+			
 			return bin_item_data.get(avbutils.bins.BinColumnFieldIDs.Name).data(QtCore.Qt.ItemDataRole.DisplayRole)
 		
 		elif role == viewmodelitems.BSBinItemDataRoles.BSFrameCoordinates:
 			return self._frame_locations[index.row()]
 		
 		elif role == viewmodelitems.BSBinItemDataRoles.BSClipColor:
-			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES["Color"]).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
+			return bin_item_data.get(avbutils.BinColumnFieldIDs.Color).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
 		elif role == viewmodelitems.BSBinItemDataRoles.BSItemType:
-			return bin_item_data.get(avbutils.BIN_COLUMN_ROLES[""]).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
+			return bin_item_data.get(avbutils.BinColumnFieldIDs.BinItemIcon).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
 		elif role == viewmodelitems.BSBinItemDataRoles.BSScriptNotes:
 			return self._getUserColumnItem(index, user_column_name="Comments", role=QtCore.Qt.ItemDataRole.DisplayRole)
