@@ -2,6 +2,8 @@ from __future__ import annotations
 import logging, enum, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from binspector.textview import textviewproxymodel
+
 from ..core.config import BSTextViewModeConfig
 from ..models import viewmodels
 from ..views  import treeview
@@ -30,7 +32,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		self.ICON_ASPECT_RATIO = QtCore.QSizeF(4,3)
 
-		self.setModel(viewmodels.BSBinViewProxyModel())
+		self.setModel(textviewproxymodel.BSBinViewProxyModel())
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
@@ -77,12 +79,12 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		return super().setSelectionModel(selectionModel)
 
 	@QtCore.Slot(object)
-	def setModel(self, model:viewmodels.BSBinViewProxyModel):
+	def setModel(self, model:textviewproxymodel.BSBinViewProxyModel):
 
 		if self.model() == model:
 			return
 		
-		elif not isinstance(model, viewmodels.BSBinViewProxyModel):
+		elif not isinstance(model, textviewproxymodel.BSBinViewProxyModel):
 			raise TypeError(f"Model must be a BSBinViewProxyModel (got {type(model)})")
 		
 		# TODO: Disconnect old model...?

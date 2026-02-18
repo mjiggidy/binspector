@@ -1,6 +1,8 @@
 import logging
 from PySide6 import QtCore, QtWidgets
 
+from binspector.textview import textviewproxymodel
+
 from ..models import viewmodels
 from ..core import config
 from . import sceneitems, painters
@@ -16,7 +18,7 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 		super().__init__(*args, **kwargs)
 
-		self._bin_filter_model = bin_filter_model or viewmodels.BSBinViewProxyModel()
+		self._bin_filter_model = bin_filter_model or textviewproxymodel.BSBinViewProxyModel()
 		self._selection_model  = QtCore.QItemSelectionModel()
 		self._brushes_manager  = brushes_manager
 
@@ -104,11 +106,11 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 #
 	#	self.blockSignals(False)
 
-	def binFilterModel(self) -> viewmodels.BSBinViewProxyModel:
+	def binFilterModel(self) -> textviewproxymodel.BSBinViewProxyModel:
 		return self._bin_filter_model
 
 	@QtCore.Slot(object)
-	def setBinFilterModel(self, bin_model:viewmodels.BSBinViewProxyModel):
+	def setBinFilterModel(self, bin_model:textviewproxymodel.BSBinViewProxyModel):
 
 		if not self._bin_filter_model == bin_model:
 

@@ -6,6 +6,7 @@ import logging
 import avb, avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
+from binspector.textview import textviewproxymodel
 
 from ..core import icon_registry
 
@@ -43,7 +44,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._bin_items_model   = bin_item_model or viewmodels.BSBinItemViewModel()
 		self._bin_view_model    = bin_view_model or binviewmodel.BSBinViewModel()
-		self._bin_filter_model  = viewmodels.BSBinViewProxyModel()
+		self._bin_filter_model  = textviewproxymodel.BSBinViewProxyModel()
 		self._selection_model   = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
 		# Save initial palette for later togglin'
