@@ -55,6 +55,30 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 		self.setItemPadding(self._item_padding)
 
+		self.header().sectionMoved.connect(self.binColumnDragged)
+
+	@QtCore.Slot(int, int, int)
+	def binColumnDragged(self, idx_log:int, idx_vis_old:int, idx_vis_new:int):
+		"""User reordered a column via header drag"""
+
+		# Find the nearest visual index to the left and map to its logical index
+		if idx_vis_new == 0:
+			idx_log_new = 0
+
+		else:
+			idx_log_new = self.header().logicalIndex(idx_vis_new - 1)
+
+		model:QtCore.QAbstractItemModel = self.model()
+		
+		model.moveBinColumn(idx_log, idx_log_new)
+		# Use that logical index as the insertion index for the parent model
+		# So the column is moved directly after the last (one-to-the-left) VISIBLE
+		
+		
+
+		
+
+
 
 	def setBinItemIconRegistry(self, registry:icon_registry.IconRegistryType):
 		"""Register bin item icon paths"""
