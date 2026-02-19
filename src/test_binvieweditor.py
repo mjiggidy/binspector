@@ -3,7 +3,7 @@ import sys, enum, typing, os, dataclasses
 import avb, avbutils
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from binspector.models import viewmodelitems
+from binspector.binitems import binitemtypes
 
 class BSBinViewColumnEditorColumns(enum.Enum):
 
@@ -17,7 +17,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 	sig_bin_view_name_changed = QtCore.Signal(str)
 
-	def __init__(self, *args, name:str|None, items:list[viewmodelitems.LBAbstractViewHeaderItem]|None=None, **kwargs):
+	def __init__(self, *args, name:str|None, items:list[binitemtypes.BSAbstractViewHeaderItem]|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -32,7 +32,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		print("Name was", name)
 		self._bin_view_name = name or "Poop"
 		
-		self._bin_view_column_items:list[viewmodelitems.LBAbstractViewHeaderItem] = items or list()
+		self._bin_view_column_items:list[binitemtypes.BSAbstractViewHeaderItem] = items or list()
 
 		self.sig_bin_view_name_changed.emit(self._bin_view_name)
 
@@ -71,7 +71,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 	def binViewName(self) -> str:
 		return self._bin_view_name
 	
-	def itemForIndex(self, index:QtCore.QModelIndex) -> viewmodelitems.LBAbstractViewHeaderItem:
+	def itemForIndex(self, index:QtCore.QModelIndex) -> binitemtypes.BSAbstractViewHeaderItem:
 		"""Given an index, return the item"""
 		
 		if not index.isValid() or index.row() > self.rowCount(index.parent()):
@@ -79,7 +79,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		return self._bin_view_column_items[index.row()]
 	
-	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole|viewmodelitems.BSBinColumnDataRoles):
+	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole|binitemtypes.BSBinColumnDataRoles):
 
 		display_item = self._bin_view_column_items[index.row()]
 		display_item.setData(value, role)
@@ -115,12 +115,12 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		elif column_data_role == BSBinViewColumnEditorColumns.DATA_FORMAT:
 
 			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return str(item.data(viewmodelitems.BSBinColumnDataRoles.BSDataFormat))[0]
+				return str(item.data(binitemtypes.BSBinColumnDataRoles.BSDataFormat))[0]
 		
 		# Visibility Button
 		elif column_data_role == BSBinViewColumnEditorColumns.HIDDEN:
 
-			is_hidden = item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+			is_hidden = item.data(binitemtypes.BSBinColumnDataRoles.BSColumnIsHidden)
 			
 			if role == QtCore.Qt.ItemDataRole.DecorationRole:
 				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove)
@@ -130,7 +130,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 			if role == QtCore.Qt.ItemDataRole.DecorationRole:
 
-				is_user = item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnID) == avbutils.BinColumnFieldIDs.User
+				is_user = item.data(binitemtypes.BSBinColumnDataRoles.BSColumnID) == avbutils.BinColumnFieldIDs.User
 				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WindowClose) if is_user else QtGui.QIcon()
 			
 		elif column_data_role == BSBinViewColumnEditorColumns.GRIPPER:
@@ -138,7 +138,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 			if role == QtCore.Qt.ItemDataRole.DecorationRole:
 				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewFullscreen)
 			
-	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole|viewmodelitems.BSBinColumnDataRoles):
+	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole|binitemtypes.BSBinColumnDataRoles):
 		
 		if orientation == QtCore.Qt.Orientation.Vertical or role != QtCore.Qt.ItemDataRole.UserRole:
 			return super().headerData(section, orientation, role)
@@ -165,7 +165,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 #			base_flags |= QtCore.Qt.ItemFlag.ItemIsSelectable | QtCore.Qt.ItemFlag.ItemIsDragEnabled
 #			return base_flags
 #		
-		if role == BSBinViewColumnEditorColumns.COLUMN_NAME and item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnID) == avbutils.bins.BinColumnFieldIDs.User:
+		if role == BSBinViewColumnEditorColumns.COLUMN_NAME and item.data(binitemtypes.BSBinColumnDataRoles.BSColumnID) == avbutils.bins.BinColumnFieldIDs.User:
 			base_flags |= QtCore.Qt.ItemFlag.ItemIsEditable
 #		
 #		elif role == BSBinViewColumnEditorColumns.VISIBILITY:
@@ -199,10 +199,10 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		# The column editor view model returns the bin view column view item from its UserRole
 		# which isn't even clear as I write it here. lol TODO: Refactor
 		
-		item:viewmodelitems.LBAbstractViewHeaderItem = index.data(QtCore.Qt.ItemDataRole.UserRole)
+		item:binitemtypes.BSAbstractViewHeaderItem = index.data(QtCore.Qt.ItemDataRole.UserRole)
 		role =index.model().headerRoleForIndex(index)
 		
-		is_hidden = item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+		is_hidden = item.data(binitemtypes.BSBinColumnDataRoles.BSColumnIsHidden)
 
 		#option.state &= ~QtWidgets.QStyle.StateFlag.State_HasFocus
 
@@ -228,8 +228,8 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 			if event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 
-				is_hidden = not item.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
-				model.setData(index, is_hidden, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+				is_hidden = not item.data(binitemtypes.BSBinColumnDataRoles.BSColumnIsHidden)
+				model.setData(index, is_hidden, binitemtypes.BSBinColumnDataRoles.BSColumnIsHidden)
 
 			return True
 
@@ -242,7 +242,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		if role == BSBinViewColumnEditorColumns.COLUMN_NAME:
 
 			column_name = editor.text()
-			model.setData(index, column_name, viewmodelitems.BSBinColumnDataRoles.BSColumnDisplayName)
+			model.setData(index, column_name, binitemtypes.BSBinColumnDataRoles.BSColumnDisplayName)
 
 		return super().setModelData(editor, model, index)
 	
@@ -425,7 +425,7 @@ def main(bin_path:os.PathLike[str]):
 
 	for col in binview_info.columns:
 
-		col_view = viewmodelitems.LBAbstractViewHeaderItem(
+		col_view = binitemtypes.BSAbstractViewHeaderItem(
 			field_name=str(col.field_id.value) + "_" + col.name,
 			display_name=col.name,
 			field_id = col.field_id,

@@ -1,5 +1,6 @@
-from binspector.binview import binviewitems
-from binspector.models import viewmodelitems, viewmodels
+from binspector.binitems import binitemtypes
+from binspector.binview import binviewitemtypes
+from binspector.models import viewmodels
 
 
 import avbutils
@@ -85,7 +86,7 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		try:
 			item_type_header_index = next(c
 				for c in range(self.sourceModel().columnCount(source_parent))
-				if self.sourceModel().headerData(c, QtCore.Qt.Orientation.Horizontal, role=binviewitems.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.BinItemIcon
+				if self.sourceModel().headerData(c, QtCore.Qt.Orientation.Horizontal, role=binviewitemtypes.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.BinItemIcon
 			)
 
 		except StopIteration:
@@ -94,7 +95,7 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 
 		# Get the item type from the source moddel
 		src_index = self.sourceModel().index(source_row, item_type_header_index, source_parent)
-		item_types = src_index.data(viewmodelitems.BSBinItemDataRoles.BSItemType)
+		item_types = src_index.data(binitemtypes.BSBinItemDataRoles.BSItemType)
 
 		if isinstance(item_types, avbutils.BinDisplayItemTypes):
 			return bool(item_types in self._filter_bin_display_items)
@@ -131,7 +132,7 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 
 		for source_col in range(self.sourceModel().columnCount()):
 
-			col_is_hidden = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+			col_is_hidden = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, binitemtypes.BSBinColumnDataRoles.BSColumnIsHidden)
 
 			if col_is_hidden:
 				#print("Skip hidden col", source_col)

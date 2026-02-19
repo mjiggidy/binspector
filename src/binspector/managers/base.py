@@ -1,6 +1,8 @@
 import typing
 from PySide6 import QtCore
-from ..models import viewmodels, viewmodelitems
+
+from ..binitems import binitemtypes
+from ..models import viewmodels
 
 class LBAbstractPresenter(QtCore.QObject):
 	"""A general manager thing that also maintains a viewmodel of its data"""
@@ -14,25 +16,25 @@ class LBAbstractPresenter(QtCore.QObject):
 		"""Return the internal view model"""
 		return self._view_model
 	
-	def addRow(self, row_data:dict[str,viewmodelitems.LBAbstractViewItem]):
+	def addRow(self, row_data:dict[str,binitemtypes.BSAbstractViewItem]):
 		self.addRows([row_data])
 
-	def addRows(self, row_data_list:list[dict[str,viewmodelitems.LBAbstractViewItem]]):
+	def addRows(self, row_data_list:list[dict[str,binitemtypes.BSAbstractViewItem]]):
 		self._view_model.addBinItems(row_data_list)
 	
-	def addHeader(self, header_data:viewmodelitems.LBAbstractViewHeaderItem):
+	def addHeader(self, header_data:binitemtypes.BSAbstractViewHeaderItem):
 		self._view_model.addHeader(header_data)
 	
 class LBItemDefinitionView(LBAbstractPresenter):
 	"""A general data manager that maintains a key/val viewmodel of its data"""
 
 	@QtCore.Slot(object)
-	def addRow(self, row_data:dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any], add_new_headers:bool=False):
+	def addRow(self, row_data:dict[binitemtypes.BSAbstractViewHeaderItem|str,binitemtypes.BSAbstractViewItem|typing.Any], add_new_headers:bool=False):
 		
 		return self.addRows([row_data], add_new_headers)
 	
 	@QtCore.Slot(object)
-	def addRows(self, row_data_list:list[dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any]], add_new_headers:bool=False):
+	def addRows(self, row_data_list:list[dict[binitemtypes.BSAbstractViewHeaderItem|str,binitemtypes.BSAbstractViewItem|typing.Any]], add_new_headers:bool=False):
 		#print("I HAVE HERE:", row_data_list)
 		processed_row_list = []
 		for row_data in row_data_list:
@@ -51,10 +53,10 @@ class LBItemDefinitionView(LBAbstractPresenter):
 		
 		self._view_model.addBinItems(processed_row_list)
 	
-	def _buildViewHeader(self, term:typing.Any) -> viewmodelitems.LBAbstractViewHeaderItem:
-		if isinstance(term, viewmodelitems.LBAbstractViewHeaderItem):
+	def _buildViewHeader(self, term:typing.Any) -> binitemtypes.BSAbstractViewHeaderItem:
+		if isinstance(term, binitemtypes.BSAbstractViewHeaderItem):
 			return term
-		return viewmodelitems.LBAbstractViewHeaderItem(field_name=str(term), display_name=str(term).replace("_", " ").title())
+		return binitemtypes.BSAbstractViewHeaderItem(field_name=str(term), display_name=str(term).replace("_", " ").title())
 	
-	def _buildViewItem(self, definition:typing.Any) -> viewmodelitems.LBAbstractViewItem:
-		return viewmodelitems.get_viewitem_for_item(definition)
+	def _buildViewItem(self, definition:typing.Any) -> binitemtypes.BSAbstractViewItem:
+		return binitemtypes.get_viewitem_for_item(definition)

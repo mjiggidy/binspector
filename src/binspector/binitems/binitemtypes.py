@@ -35,7 +35,7 @@ class BSBinColumnDataRoles(enum.IntEnum):
 	BSColumnHash       = enum.auto()
 	"""Unique ID for column ID + display text (useful for User fields)"""
 
-class LBAbstractViewHeaderItem:
+class BSAbstractViewHeaderItem:
 	"""An abstract header item for TRT views"""
 
 	def __init__(self,
@@ -45,7 +45,7 @@ class LBAbstractViewHeaderItem:
 			  format_id:int=0,
 			  is_hidden:bool=False,
 			  icon:QtGui.QIcon|None=None,
-			  item_factory:typing.Type["LBAbstractViewItem"]|None=None, 
+			  item_factory:typing.Type["BSAbstractViewItem"]|None=None, 
 			  delegate:QtWidgets.QStyledItemDelegate|None=None,
 			  field_width:int|None=None,
 		):
@@ -111,8 +111,8 @@ class LBAbstractViewHeaderItem:
 	def isHidden(self) -> bool:
 		return self._is_hidden
 
-class LBAbstractViewItem:
-	"""An abstract item for TRT views"""
+class BSAbstractViewItem:
+	"""An abstract view item for bin item models"""
 
 	def __init__(self, raw_data:typing.Any, icon:QtGui.QIcon|None=None, tooltip:QtWidgets.QToolTip|str|None=None):
 
@@ -156,7 +156,7 @@ class LBAbstractViewItem:
 	def to_string(cls, data:typing.Any) -> str:
 		return str(data)
 	
-class TRTStringViewItem(LBAbstractViewItem):
+class BSStringViewItem(BSAbstractViewItem):
 	"""A standard string"""
 
 	def _prepare_data(self):
@@ -166,7 +166,7 @@ class TRTStringViewItem(LBAbstractViewItem):
 			QtCore.Qt.ItemDataRole.DisplayRole: self.to_string(self._data),
 		})
 
-class TRTEnumViewItem(LBAbstractViewItem):
+class BSEnumViewItem(BSAbstractViewItem):
 	"""Represents an Enum"""
 
 	def __init__(self, raw_data:enum.Enum, *args, **kwargs):
@@ -182,7 +182,7 @@ class TRTEnumViewItem(LBAbstractViewItem):
 		})
 	
 
-class TRTNumericViewItem(LBAbstractViewItem):
+class BSNumericViewItem(BSAbstractViewItem):
 	"""A numeric value"""
 
 	STRING_PADDING:int = 0
@@ -208,7 +208,7 @@ class TRTNumericViewItem(LBAbstractViewItem):
 	def to_string(cls, data):
 		return super().to_string(data).rjust(cls.STRING_PADDING)
 
-class TRTPathViewItem(LBAbstractViewItem):
+class BSPathViewItem(BSAbstractViewItem):
 	"""A file path"""
 
 	def __init__(self, raw_data:str|QtCore.QFileInfo):
@@ -227,7 +227,7 @@ class TRTPathViewItem(LBAbstractViewItem):
 	def to_json(self) -> str:
 		return QtCore.QDir.toNativeSeparators(self.data(QtCore.Qt.ItemDataRole.UserRole).absoluteFilePath())
 
-class TRTDateTimeViewItem(LBAbstractViewItem):
+class BSDateTimeViewItem(BSAbstractViewItem):
 	"""A datetime entry"""
 
 	def __init__(self, raw_data:datetime.datetime, format_string:QtCore.Qt.DateFormat|str=QtCore.Qt.DateFormat.TextDate):
@@ -261,7 +261,7 @@ class TRTDateTimeViewItem(LBAbstractViewItem):
 			"formatted": self.data(QtCore.Qt.ItemDataRole.DisplayRole)
 		}
 
-class TRTTimecodeViewItem(TRTNumericViewItem):
+class BSTimecodeViewItem(BSNumericViewItem):
 	"""A timecode"""
 
 	def __init__(self, raw_data:Timecode, *args, **kwargs):
@@ -284,7 +284,7 @@ class TRTTimecodeViewItem(TRTNumericViewItem):
 			"formatted": self.data(QtCore.Qt.ItemDataRole.DisplayRole).strip()
 		}
 
-class TRTDurationViewItem(TRTTimecodeViewItem):
+class BSDurationViewItem(BSTimecodeViewItem):
 	"""A duration (hh:mm:ss:ff), a subset of timecode"""
 
 	def _prepare_data(self):
@@ -308,7 +308,7 @@ class TRTDurationViewItem(TRTTimecodeViewItem):
 
 		return f"{'-' if is_neg else ''}{pre}{post}".rjust(cls.STRING_PADDING)
 
-class TRTFeetFramesViewItem(TRTNumericViewItem):
+class BSFeetFramesViewItem(BSNumericViewItem):
 	"""A frame offset described in feet & frames (f+ff)"""
 
 	def __init__(self, raw_data:int, *args, **kwargs):
@@ -333,7 +333,7 @@ class TRTFeetFramesViewItem(TRTNumericViewItem):
 	def to_string(cls, data):
 		return str(str(data // 16) + "+" + str(data % 16).zfill(2)).rjust(cls.STRING_PADDING)
 
-class TRTClipColorViewItem(LBAbstractViewItem):
+class BSClipColorViewItem(BSAbstractViewItem):
 	"""A clip color"""
 
 	def __init__(self, raw_data:avbutils.ClipColor|QtGui.QRgba64|None, *args, **kwargs):
@@ -376,7 +376,7 @@ class TRTClipColorViewItem(LBAbstractViewItem):
 			"hex": self.data(QtCore.Qt.ItemDataRole.UserRole).name()
 		}
 
-class TRTMarkerViewItem(LBAbstractViewItem):
+class BSMarkerViewItem(BSAbstractViewItem):
 	"""Marker column"""
 
 	def __init__(self, raw_data:avbutils.MarkerInfo, *args, **kwargs):
@@ -405,7 +405,7 @@ class TRTMarkerViewItem(LBAbstractViewItem):
 			QtCore.Qt.ItemDataRole.ToolTipRole: tooltip,
 		})
 
-class TRTBinLockViewItem(LBAbstractViewItem):
+class BSBinLockViewItem(BSAbstractViewItem):
 	"""Bin lock info"""
 
 	# Note: For now I think we'll do a string, but want to expand this later probably
@@ -423,38 +423,38 @@ class TRTBinLockViewItem(LBAbstractViewItem):
 		return self.data(QtCore.Qt.ItemDataRole.DisplayRole) or None
 
 @singledispatch
-def get_viewitem_for_item(item:typing.Any) -> LBAbstractViewItem:
+def get_viewitem_for_item(item:typing.Any) -> BSAbstractViewItem:
 	"""Return the most suitable view item for a given item"""
-	return TRTStringViewItem(item)
+	return BSStringViewItem(item)
 
 @get_viewitem_for_item.register
-def _(item:LBAbstractViewItem):
+def _(item:BSAbstractViewItem):
 	return item
 
 @get_viewitem_for_item.register
 def _(item:str):
-	return TRTStringViewItem(item)
+	return BSStringViewItem(item)
 
 @get_viewitem_for_item.register
 def _(item:int|float):
-	return TRTNumericViewItem(item)
+	return BSNumericViewItem(item)
 
 @get_viewitem_for_item.register
 def _(item:enum.Enum):
-	return TRTEnumViewItem(item)
+	return BSEnumViewItem(item)
 
 @get_viewitem_for_item.register
 def _(item:os.PathLike):
-	return TRTPathViewItem(item)
+	return BSPathViewItem(item)
 
 @get_viewitem_for_item.register
 def _(item:str):
-	return TRTStringViewItem(item)
+	return BSStringViewItem(item)
 
 @get_viewitem_for_item.register
 def _(item:datetime.datetime):
-	return TRTDateTimeViewItem(item)
+	return BSDateTimeViewItem(item)
 
 @get_viewitem_for_item.register
 def _(item:Timecode):
-	return TRTTimecodeViewItem(item)
+	return BSTimecodeViewItem(item)

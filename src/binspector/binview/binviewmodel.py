@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing
 from PySide6 import QtCore
 
-from . import binviewitems
+from . import binviewitemtypes
 
 class BSBinViewModel(QtCore.QAbstractItemModel):
 	"""Main Bin View Model"""
@@ -11,12 +11,12 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 	sig_bin_view_name_changed = QtCore.Signal(str)
 
-	def __init__(self, /, bin_view:binviewitems.BSBinViewInfo|None=None, parent:QtCore.QObject|None=None):
+	def __init__(self, /, bin_view:binviewitemtypes.BSBinViewInfo|None=None, parent:QtCore.QObject|None=None):
 		
 		super().__init__(parent)
 
 		self._bin_view_name:str = self.DEFAULT_BIN_VIEW_NAME
-		self._bin_view_columns:list[binviewitems.BSBinViewColumnInfo] = list()
+		self._bin_view_columns:list[binviewitemtypes.BSBinViewColumnInfo] = list()
 		
 		if bin_view:
 
@@ -32,7 +32,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		self.sig_bin_view_name_changed.emit(name)
 
-	def addBinColumn(self, bin_column:binviewitems.BSBinViewColumnInfo, row:int|None=None):
+	def addBinColumn(self, bin_column:binviewitemtypes.BSBinViewColumnInfo, row:int|None=None):
 
 		if row:
 			self.beginInsertRows(QtCore.QModelIndex(), row, row)
@@ -43,7 +43,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		self.endInsertRows()
 
-	def addBinColumns(self, bin_columns:typing.Iterable[binviewitems.BSBinViewColumnInfo], row:int|None=None):
+	def addBinColumns(self, bin_columns:typing.Iterable[binviewitemtypes.BSBinViewColumnInfo], row:int|None=None):
 
 		bin_columns = list(bin_columns)
 
@@ -56,7 +56,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		self.endInsertRows()
 
-	def binColumns(self) -> list[binviewitems.BSBinViewColumnInfo]:
+	def binColumns(self) -> list[binviewitemtypes.BSBinViewColumnInfo]:
 
 		return self._bin_view_columns
 
@@ -93,7 +93,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		return self._bin_view_columns[index.row()].data(role)
 	
-	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:binviewitems.BSBinColumnInfoRole):
+	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:binviewitemtypes.BSBinColumnInfoRole):
 
 		
 		item = self._bin_view_columns[index.row()]
@@ -140,7 +140,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		self.beginInsertRows(parent, row, row + count-1)
 
-		self._bin_view_columns.append(binviewitems.BSBinViewColumnInfo(
+		self._bin_view_columns.append(binviewitemtypes.BSBinViewColumnInfo(
 			field_id = avbutils.bins.BinColumnFieldIDs.User,
 			format_id = avbutils.bins.BinColumnFormat.USER_TEXT,
 			display_name = "New Column",

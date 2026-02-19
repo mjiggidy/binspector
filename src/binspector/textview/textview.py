@@ -257,7 +257,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		column_width = self.model().headerData(
 			col_index_logical,
 			QtCore.Qt.Orientation.Horizontal,
-			viewmodels.viewmodelitems.BSBinColumnDataRoles.BSColumnWidth # Column width, if specified by bin view
+			viewmodels.binitemtypes.BSBinColumnDataRoles.BSColumnWidth # Column width, if specified by bin view
 		)
 
 		if column_width:

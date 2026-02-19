@@ -1,7 +1,9 @@
 import logging, typing
 import avb, avbutils
 from PySide6 import QtCore
-from ..models import viewmodelitems, viewmodels
+
+from ..binitems import binitemtypes
+from ..models import viewmodels
 from ..core import binparser
 from . import base
 
@@ -70,8 +72,8 @@ class BSBinViewManager(base.LBItemDefinitionView):
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start, script_view_scale:int=avbutils.THUMB_SCRIPT_MODE_RANGE.start):
 		"""Set columns and their widths"""
 
-		from ..binview import binviewitems
-		self.sig_neue_bin_view_changed.emit(binviewitems.BSBinViewInfo.from_binview(bin_view))
+		from ..binview import binviewitemtypes
+		self.sig_neue_bin_view_changed.emit(binviewitemtypes.BSBinViewInfo.from_binview(bin_view))
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
@@ -174,9 +176,9 @@ class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 		self.viewModel().clear()
 
 		headers = [
-			viewmodelitems.LBAbstractViewHeaderItem("order",     self.tr("Order")),
-			viewmodelitems.LBAbstractViewHeaderItem("direction", self.tr("Direction")),
-			viewmodelitems.LBAbstractViewHeaderItem("column",    self.tr("Column"))
+			binitemtypes.BSAbstractViewHeaderItem("order",     self.tr("Order")),
+			binitemtypes.BSAbstractViewHeaderItem("direction", self.tr("Direction")),
+			binitemtypes.BSAbstractViewHeaderItem("column",    self.tr("Column"))
 		]
 
 		for header in headers:
@@ -246,7 +248,7 @@ class BSBinItemsManager(QtCore.QObject):
 		return self._view_model
 	
 	@QtCore.Slot(object)
-	def addRow(self, row_data:dict[viewmodelitems.LBAbstractViewHeaderItem|str,viewmodelitems.LBAbstractViewItem|typing.Any], add_new_headers:bool=False):
+	def addRow(self, row_data:dict[binitemtypes.BSAbstractViewHeaderItem|str,binitemtypes.BSAbstractViewItem|typing.Any], add_new_headers:bool=False):
 		
 		return self.addRows([row_data], add_new_headers)
 	
@@ -278,12 +280,12 @@ class BSBinItemsManager(QtCore.QObject):
 				if field_id == 40 and isinstance(mob_viewitem, dict): # User column
 
 					mob_viewitem = {
-						str(user_col_name): viewmodelitems.get_viewitem_for_item(user_col_data)
+						str(user_col_name): binitemtypes.get_viewitem_for_item(user_col_data)
 						for user_col_name, user_col_data in mob_viewitem.items()
 					}
 				
 				else:
-					mob_viewitem = viewmodelitems.get_viewitem_for_item(mob_viewitem)
+					mob_viewitem = binitemtypes.get_viewitem_for_item(mob_viewitem)
 					
 				mob_viewitems[field_id] = mob_viewitem
 

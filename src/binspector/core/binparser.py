@@ -4,7 +4,7 @@ Also used by `.binloader`
 """
 
 import avb, avbutils, timecode
-from ..models import viewmodelitems
+from ..binitems import binitemtypes
 
 def bin_display_flags_from_bin(bin_content:avb.bin.Bin) -> avbutils.BinDisplayItemTypes:
 	return avbutils.BinDisplayItemTypes.get_options_from_bin(bin_content)
@@ -84,7 +84,7 @@ class BinItemInfo:
 	name              :str
 	frame_coordinates :tuple[int,int]|None
 	keyframe_offset   :int
-	view_items        :dict[int,viewmodelitems.LBAbstractViewItem|dict[str,str]]	# Field ID -> ViewItem or 40 -> dict[term,def]
+	view_items        :dict[int,binitemtypes.BSAbstractViewItem|dict[str,str]]	# Field ID -> ViewItem or 40 -> dict[term,def]
 
 
 def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
@@ -195,16 +195,16 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 			marker = None
 
 		item = {
-			avbutils.BIN_COLUMN_ROLES["Name"]:  viewmodelitems.TRTStringViewItem(mob_name),
-			avbutils.BIN_COLUMN_ROLES["Color"]: viewmodelitems.TRTClipColorViewItem(mob_color),
+			avbutils.BIN_COLUMN_ROLES["Name"]:  binitemtypes.BSStringViewItem(mob_name),
+			avbutils.BIN_COLUMN_ROLES["Color"]: binitemtypes.BSClipColorViewItem(mob_color),
 			avbutils.BIN_COLUMN_ROLES["Start"]: timecode_range.start if timecode_range else "",
 			avbutils.BIN_COLUMN_ROLES["End"]: timecode_range.end if timecode_range else "",
-			avbutils.BIN_COLUMN_ROLES["Duration"]: viewmodelitems.TRTDurationViewItem(timecode_range.duration) if timecode_range else "",
+			avbutils.BIN_COLUMN_ROLES["Duration"]: binitemtypes.BSDurationViewItem(timecode_range.duration) if timecode_range else "",
 			avbutils.BIN_COLUMN_ROLES["Modified Date"]: comp.last_modified,
 			avbutils.BIN_COLUMN_ROLES["Creation Date"]: comp.creation_time,
 			avbutils.BIN_COLUMN_ROLES[""]: mob_types,
-			avbutils.BIN_COLUMN_ROLES["Marker"]: viewmodelitems.TRTMarkerViewItem(marker),
-			avbutils.BIN_COLUMN_ROLES["Tracks"]: viewmodelitems.TRTStringViewItem(avbutils.timeline.format_track_labels(mob_tracks)) or None,
+			avbutils.BIN_COLUMN_ROLES["Marker"]: binitemtypes.BSMarkerViewItem(marker),
+			avbutils.BIN_COLUMN_ROLES["Tracks"]: binitemtypes.BSStringViewItem(avbutils.timeline.format_track_labels(mob_tracks)) or None,
 			avbutils.BIN_COLUMN_ROLES["Tape"]: tape_name or "",
 			avbutils.BIN_COLUMN_ROLES["Drive"]: source_drive or "",
 			avbutils.BIN_COLUMN_ROLES["Source File"]: source_file_name or "",

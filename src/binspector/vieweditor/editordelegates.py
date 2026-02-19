@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing
 
 from PySide6 import QtWidgets, QtGui, QtCore
-from ..models import viewmodelitems
+from ..binitems import binitemtypes
 from . import editorproxymodel
 
 if typing.TYPE_CHECKING:
@@ -24,7 +24,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		#item:viewmodelitems.LBAbstractViewHeaderItem = index.data(QtCore.Qt.ItemDataRole.UserRole)
 		role =index.model().featureForIndex(index)
 		
-		is_hidden = index.data(viewmodelitems.BSBinColumnDataRoles.BSColumnIsHidden)
+		is_hidden = index.data(binitemtypes.BSBinColumnDataRoles.BSColumnIsHidden)
 
 		#option.state &= ~QtWidgets.QStyle.StateFlag.State_HasFocus
 

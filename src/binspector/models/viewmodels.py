@@ -3,8 +3,8 @@ import typing
 from PySide6 import QtCore
 import avbutils
 
-from . import viewmodelitems
-from ..binview import binviewmodel, binviewitems
+from ..binitems import binitemtypes
+from ..binview import binviewitemtypes, binviewmodel
 
 class BSBinItemViewModel(QtCore.QAbstractItemModel):
 	"""A view model for timelines"""
@@ -17,10 +17,10 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		self._frame_locations:list[tuple[int,int]] = []
 		"""List of frame view mode position tuples `(x:int, y:int)`"""
 
-		self._bin_items:list[dict[str, viewmodelitems.LBAbstractViewItem]] = []
+		self._bin_items:list[dict[str, binitemtypes.BSAbstractViewItem]] = []
 		"""List of view items by key"""
 
-		self._headers:list[viewmodelitems.LBAbstractViewHeaderItem] = []
+		self._headers:list[binitemtypes.BSAbstractViewHeaderItem] = []
 		"""List of view headers"""
 
 		self._header_model:binviewmodel.BSBinViewModel = binviewmodel.BSBinViewModel()
@@ -60,7 +60,7 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 
 		return self.createIndex(row, column)
 	
-	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:binviewitems.BSBinViewColumnInfo) -> typing.Any:
+	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:binviewitemtypes.BSBinViewColumnInfo) -> typing.Any:
 		"""Get the data for the given role of a specified column index"""
 
 		if not orientation == QtCore.Qt.Orientation.Horizontal:
@@ -81,24 +81,24 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		#logging.getLogger(__name__).error("Got bin itme data %s", repr(bin_item_data))
 
 		# Do row stuff first
-		if role == viewmodelitems.BSBinItemDataRoles.BSItemName:
+		if role == binitemtypes.BSBinItemDataRoles.BSItemName:
 			
 			return bin_item_data.get(avbutils.bins.BinColumnFieldIDs.Name).data(QtCore.Qt.ItemDataRole.DisplayRole)
 		
-		elif role == viewmodelitems.BSBinItemDataRoles.BSFrameCoordinates:
+		elif role == binitemtypes.BSBinItemDataRoles.BSFrameCoordinates:
 			return self._frame_locations[index.row()]
 		
-		elif role == viewmodelitems.BSBinItemDataRoles.BSClipColor:
+		elif role == binitemtypes.BSBinItemDataRoles.BSClipColor:
 			return bin_item_data.get(avbutils.BinColumnFieldIDs.Color).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
-		elif role == viewmodelitems.BSBinItemDataRoles.BSItemType:
+		elif role == binitemtypes.BSBinItemDataRoles.BSItemType:
 			return bin_item_data.get(avbutils.BinColumnFieldIDs.BinItemIcon).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
-		elif role == viewmodelitems.BSBinItemDataRoles.BSScriptNotes:
+		elif role == binitemtypes.BSBinItemDataRoles.BSScriptNotes:
 			return self._getUserColumnItem(index, user_column_name="Comments", role=QtCore.Qt.ItemDataRole.DisplayRole)
 
 		# For user fields: Look up the thingy
-		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, binviewitems.BSBinColumnInfoRole.FieldIdRole)
+		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinColumnInfoRole.FieldIdRole)
 		#print("Field ID is ", field_id)
 
 		if field_id not in bin_item_data:
@@ -159,12 +159,12 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		
 		self.endResetModel()
 
-	def addBinItem(self, bin_item:dict[str,viewmodelitems.LBAbstractViewItem], frame_position:tuple[int,int]|None=None) -> bool:
+	def addBinItem(self, bin_item:dict[str,binitemtypes.BSAbstractViewItem], frame_position:tuple[int,int]|None=None) -> bool:
 		"""Binspecific: Add a bin item"""
 
 		return self.addBinItems([bin_item], [frame_position])
 		
-	def addBinItems(self, bin_items:list[dict[str,viewmodelitems.LBAbstractViewItem]], frame_positions:list[tuple[int,int]]|None=None) -> bool:
+	def addBinItems(self, bin_items:list[dict[str,binitemtypes.BSAbstractViewItem]], frame_positions:list[tuple[int,int]]|None=None) -> bool:
 		"""Binspecific: Add a bin items"""
 
 		# Ignore empty lists

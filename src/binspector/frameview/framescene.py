@@ -140,10 +140,10 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			# Resolve source model to ensure we always have relevent columns available
 			proxy_row_index  = self._bin_filter_model.index(row, 0, parent_row_index)
 
-			bin_item_name   = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSItemName)
-			bin_item_coords = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSFrameCoordinates)
-			bin_item_color  = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSClipColor)
-			bin_item_type   = proxy_row_index.data(viewmodels.viewmodelitems.BSBinItemDataRoles.BSItemType)
+			bin_item_name   = proxy_row_index.data(viewmodels.binitemtypes.BSBinItemDataRoles.BSItemName)
+			bin_item_coords = proxy_row_index.data(viewmodels.binitemtypes.BSBinItemDataRoles.BSFrameCoordinates)
+			bin_item_color  = proxy_row_index.data(viewmodels.binitemtypes.BSBinItemDataRoles.BSClipColor)
+			bin_item_type   = proxy_row_index.data(viewmodels.binitemtypes.BSBinItemDataRoles.BSItemType)
 
 			#print(bin_item_color)
 

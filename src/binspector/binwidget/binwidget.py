@@ -17,7 +17,7 @@ from ..frameview import frameview
 from ..scriptview import scriptview
 
 from ..models import viewmodels
-from ..binview import binviewmodel, binviewitems
+from ..binview import binviewitemtypes, binviewmodel
 
 from ..core.config import BSFrameViewModeConfig, BSScriptViewModeConfig
 
@@ -266,7 +266,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.scriptView().setFrameScale(script_scale)
 
 	@QtCore.Slot(object)
-	def setNeueBinView(self, bin_view_info:binviewitems.BSBinViewInfo):
+	def setNeueBinView(self, bin_view_info:binviewitemtypes.BSBinViewInfo):
 		"""Set BinView from bin viiew info"""
 
 		self._bin_view_model = binviewmodel.BSBinViewModel(bin_view_info)

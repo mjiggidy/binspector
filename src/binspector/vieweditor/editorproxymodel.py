@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtGui
 import enum, typing
-from ..binview import binviewmodel, binviewitems
+from ..binview import binviewitemtypes, binviewmodel
 
 import avbutils
 
@@ -119,28 +119,28 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 		return self.featureForColumn(index.column())
 	
-	def binViewColumnForIndex(self, index:QtCore.QModelIndex) -> binviewitems.BSBinViewColumnInfo:
+	def binViewColumnForIndex(self, index:QtCore.QModelIndex) -> binviewitemtypes.BSBinViewColumnInfo:
 		"""Get the `BSBinViewColumnInfo` for a given index"""
 
 		if not index.isValid():
 			return None
 		
-		return self.sourceModel().data(binviewitems.BSBinColumnInfoRole.RawColumnInfo)
+		return self.sourceModel().data(binviewitemtypes.BSBinColumnInfoRole.RawColumnInfo)
 	
 	def binColumnIsHiddenForIndex(self, index:QtCore.QModelIndex) -> bool:
-		return self.data(index, binviewitems.BSBinColumnInfoRole.IsHiddenRole)
+		return self.data(index, binviewitemtypes.BSBinColumnInfoRole.IsHiddenRole)
 
 	def setBinColumnHiddenForIndex(self, index:QtCore.QModelIndex, is_hidden:bool=True):
 
 		source_index = self.mapToSource(index.siblingAtColumn(0))
-		new_is_hidden = not source_index.data(binviewitems.BSBinColumnInfoRole.IsHiddenRole)
-		return self.setData(index, new_is_hidden, binviewitems.BSBinColumnInfoRole.IsHiddenRole)
+		new_is_hidden = not source_index.data(binviewitemtypes.BSBinColumnInfoRole.IsHiddenRole)
+		return self.setData(index, new_is_hidden, binviewitemtypes.BSBinColumnInfoRole.IsHiddenRole)
 
 	@QtCore.Slot(QtCore.QModelIndex, str)
 	def renameColumnForIndex(self, index:QtCore.QModelIndex, name:str) -> bool:
 
 		source_index = self.mapToSource(index.siblingAtColumn(0))
-		return self.sourceModel().setData(source_index, name, binviewitems.BSBinColumnInfoRole.DisplayNameRole)
+		return self.sourceModel().setData(source_index, name, binviewitemtypes.BSBinColumnInfoRole.DisplayNameRole)
 
 	@QtCore.Slot(QtCore.QModelIndex)
 	def toggleBinColumnVisibiltyForIndex(self, index:QtCore.QModelIndex):
@@ -197,7 +197,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 	def userCanDelete(self, index:QtCore.QModelIndex) -> bool:
 		"""Rules for user-deletable field"""
 
-		return self.mapToSource(index).data(binviewitems.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User
+		return self.mapToSource(index).data(binviewitemtypes.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User
 	
 	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
 		"""
@@ -218,12 +218,12 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 		elif feature == BSBinViewColumnEditorFeature.VisibilityColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
 
-			is_hidden =source_index.data(binviewitems.BSBinColumnInfoRole.IsHiddenRole)
+			is_hidden =source_index.data(binviewitemtypes.BSBinColumnInfoRole.IsHiddenRole)
 			return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.UserOffline) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FolderDragAccept)
 
 		elif feature == BSBinViewColumnEditorFeature.DataFormatColumn and role == QtCore.Qt.ItemDataRole.DisplayRole:
 
-			return str(source_index.data(binviewitems.BSBinColumnInfoRole.FormatIdRole))[0]
+			return str(source_index.data(binviewitemtypes.BSBinColumnInfoRole.FormatIdRole))[0]
 		
 		elif feature == BSBinViewColumnEditorFeature.DeleteColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
 
@@ -305,7 +305,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			return QtCore.Qt.ItemFlag.ItemIsDropEnabled
 		
 		# Column Name Edidiable if user field and we're talkin bout the name column here
-		if self.featureForIndex(index) == BSBinViewColumnEditorFeature.NameColumn and index.data(binviewitems.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User:
+		if self.featureForIndex(index) == BSBinViewColumnEditorFeature.NameColumn and index.data(binviewitemtypes.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User:
 			flags |= QtCore.Qt.ItemFlag.ItemIsEditable
 		
 		return flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled

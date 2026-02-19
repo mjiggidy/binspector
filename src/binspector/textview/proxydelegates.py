@@ -10,7 +10,7 @@ from PySide6 import QtCore, QtWidgets
 
 from ..binwidget import itemdelegates
 
-from ..models import viewmodelitems
+from ..binitems import binitemtypes
 
 if typing.TYPE_CHECKING:
 	from PySide6 import QtGui
@@ -137,8 +137,8 @@ class BSBinColumnDelegateProvider(QtCore.QObject):
 		model       = self._view.model()
 		orientation = QtCore.Qt.Orientation.Horizontal
 
-		field  = model.headerData(logical_column_index, orientation, viewmodelitems.BSBinColumnDataRoles.BSColumnID)
-		format = model.headerData(logical_column_index, orientation, viewmodelitems.BSBinColumnDataRoles.BSDataFormat)
+		field  = model.headerData(logical_column_index, orientation, binitemtypes.BSBinColumnDataRoles.BSColumnID)
+		format = model.headerData(logical_column_index, orientation, binitemtypes.BSBinColumnDataRoles.BSDataFormat)
 
 		if self._view.itemDelegateForColumn(logical_column_index) == item_delegate:
 			return
@@ -154,8 +154,8 @@ class BSBinColumnDelegateProvider(QtCore.QObject):
 
 		model  = self._view.model()
 
-		field  = model.headerData(logical_column_index, orientation, viewmodelitems.BSBinColumnDataRoles.BSColumnID)
-		format = model.headerData(logical_column_index, orientation, viewmodelitems.BSBinColumnDataRoles.BSDataFormat)
+		field  = model.headerData(logical_column_index, orientation, binitemtypes.BSBinColumnDataRoles.BSColumnID)
+		format = model.headerData(logical_column_index, orientation, binitemtypes.BSBinColumnDataRoles.BSDataFormat)
 
 		if field_delegate := self.delegateForField(field):
 			return field_delegate
