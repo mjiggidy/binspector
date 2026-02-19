@@ -14,6 +14,8 @@ from ..binwidget import itemdelegates
 from ..core import icon_providers, icon_registry
 from .proxydelegates import FieldLookupDict, FormatLookupDict
 
+from ..binview import binviewitemtypes
+
 class BSBinTextView(treeview.BSTreeViewBase):
 	"""QTreeView but nicer"""
 
@@ -257,7 +259,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		column_width = self.model().headerData(
 			col_index_logical,
 			QtCore.Qt.Orientation.Horizontal,
-			viewmodels.binitemtypes.BSBinColumnDataRoles.BSColumnWidth # Column width, if specified by bin view
+			binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole # Column width, if specified by bin view
 		)
 
 		if column_width:

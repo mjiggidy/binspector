@@ -5,8 +5,11 @@ import avb, avbutils
 
 from PySide6 import QtCore
 
-class BSBinColumnInfoRole(enum.IntEnum):
+class BSBinViewColumnInfoRole(enum.IntEnum):
 	"""View item data roles available for a given column (extends `QtCore.Qt.ItemDataRole`)"""
+
+	# NOTE: This is good I'mma stick with this.
+	# Replaces anything from old view models / binitemtypes whatever
 
 	DisplayNameRole = QtCore.Qt.ItemDataRole.DisplayRole
 	"""The name displayed on the bin column header"""
@@ -20,13 +23,13 @@ class BSBinColumnInfoRole(enum.IntEnum):
 	FieldIdRole     = QtCore.Qt.ItemDataRole.UserRole + 1
 	"""Bin column field identifier"""
 
-	FormatIdRole    = FieldIdRole + 1
+	FormatIdRole    = QtCore.Qt.ItemDataRole.UserRole + 2
 	"""Bin column data format identifier"""
 
-	IsHiddenRole    = FieldIdRole + 2
+	IsHiddenRole    = QtCore.Qt.ItemDataRole.UserRole + 3
 	"""Bin column visibility"""
 
-	ColumnWidthRole = FieldIdRole + 3
+	ColumnWidthRole = QtCore.Qt.ItemDataRole.UserRole + 4
 	"""Saved bin column width"""
 
 @dataclasses.dataclass
@@ -72,7 +75,7 @@ class BSBinViewColumnInfo:
 	is_hidden    :bool
 	"""Column is hidden"""
 
-	_data_roles  :dict[BSBinColumnInfoRole, typing.Any] = dataclasses.field(init=False)
+	_data_roles  :dict[BSBinViewColumnInfoRole, typing.Any] = dataclasses.field(init=False)
 	"""View Item Data Roles for `QAbstractItemModel` access via `.data()`"""
 
 	def __post_init__(self):
@@ -81,38 +84,37 @@ class BSBinViewColumnInfo:
 	def _refresh_data_roles(self):
 
 		self._data_roles = {
-			BSBinColumnInfoRole.DisplayNameRole:    self.display_name,
-			BSBinColumnInfoRole.ColumnWidthRole:    self.column_width,
-			BSBinColumnInfoRole.FieldIdRole:        self.field_id,
-			BSBinColumnInfoRole.FormatIdRole:       self.format_id,
-			BSBinColumnInfoRole.IsHiddenRole:       self.is_hidden,
-			BSBinColumnInfoRole.RawColumnInfo:      self,
+			BSBinViewColumnInfoRole.DisplayNameRole:    self.display_name,
+			BSBinViewColumnInfoRole.ColumnWidthRole:    self.column_width,
+			BSBinViewColumnInfoRole.FieldIdRole:        self.field_id,
+			BSBinViewColumnInfoRole.FormatIdRole:       self.format_id,
+			BSBinViewColumnInfoRole.IsHiddenRole:       self.is_hidden,
+			BSBinViewColumnInfoRole.RawColumnInfo:      self,
 		}
 
 
-	def data(self, role:BSBinColumnInfoRole) -> typing.Any:
+	def data(self, role:BSBinViewColumnInfoRole) -> typing.Any:
 		return self._data_roles.get(role, None)
 	
-	def setData(self, value:typing.Any, role:BSBinColumnInfoRole):
+	def setData(self, value:typing.Any, role:BSBinViewColumnInfoRole):
 
 		# NOTE: I think `self._data_roles` is updated for free since it's refs?
 		# TODO: Verify
+		# NOTE: Nope.
 
-		#print(f"item before: {self.data(role)} but set to {value}")
-
-		if role == BSBinColumnInfoRole.DisplayNameRole:
+		if role == BSBinViewColumnInfoRole.DisplayNameRole:
 			self.display_name = value
 
-		elif role == BSBinColumnInfoRole.ColumnWidthRole:
+		elif role == BSBinViewColumnInfoRole.ColumnWidthRole:
 			self.column_width = value
 
-		elif role == BSBinColumnInfoRole.FieldIdRole:
+		elif role == BSBinViewColumnInfoRole.FieldIdRole:
 			self.field_id = value
 
-		elif role == BSBinColumnInfoRole.FormatIdRole:
+		elif role == BSBinViewColumnInfoRole.FormatIdRole:
 			self.format_id = value
 		
-		elif role == BSBinColumnInfoRole.IsHiddenRole:
+		elif role == BSBinViewColumnInfoRole.IsHiddenRole:
 			self.is_hidden = value
 		
 		self._refresh_data_roles()

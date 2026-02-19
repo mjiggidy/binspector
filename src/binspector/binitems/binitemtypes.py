@@ -15,102 +15,6 @@ class BSBinItemDataRoles(enum.IntEnum):
 	BSFrameThumbnail   = enum.auto()
 	BSScriptNotes      = enum.auto()
 
-class BSBinColumnDataRoles(enum.IntEnum):
-	"""Item Data Roles for Bin Column Headers (extends `QtCore.Qt.ItemDataRole`)"""
-
-	BSColumnDisplayName = QtCore.Qt.ItemDataRole.DisplayRole
-
-	BSColumnID         = QtCore.Qt.ItemDataRole.UserRole + 1
-	"""The ID of the column data (Unique for Name, Tape, Start, etc)"""
-
-	BSDataFormat       = enum.auto()
-	"""The ID of the data type (Unique for String, Timecode, etc)"""
-
-	BSColumnIsHidden   = enum.auto()
-	"""Is the column hidden from view"""
-
-	BSColumnWidth      = enum.auto()
-	"""User-specified column width, if set"""
-
-	BSColumnHash       = enum.auto()
-	"""Unique ID for column ID + display text (useful for User fields)"""
-
-class BSAbstractViewHeaderItem:
-	"""An abstract header item for TRT views"""
-
-	def __init__(self,
-			  field_name:str,
-			  display_name:str,
-			  field_id:int=0,
-			  format_id:int=0,
-			  is_hidden:bool=False,
-			  icon:QtGui.QIcon|None=None,
-			  item_factory:typing.Type["BSAbstractViewItem"]|None=None, 
-			  delegate:QtWidgets.QStyledItemDelegate|None=None,
-			  field_width:int|None=None,
-		):
-
-		self._field_name   = field_name
-		self._field_id     = field_id # Think I wanna do this for bin headings
-		self._field_width  = field_width
-		self._format_id    = format_id
-		self._display_name = display_name
-		self._is_hidden    = is_hidden
-
-
-		self._item_factory = item_factory
-		self._icon = icon
-
-		self._delgate = delegate
-
-		self._data_roles = {}
-		self._prepare_data()
-	
-	def _prepare_data(self):
-		"""Precalculate Header Data"""
-
-		self._data_roles.update({
-			QtCore.Qt.ItemDataRole.DisplayRole:      str(self._display_name),
-			QtCore.Qt.ItemDataRole.DecorationRole:   self._icon,
-			QtCore.Qt.ItemDataRole.UserRole:         self,
-			BSBinColumnDataRoles  .BSColumnID:       self._field_id, # Think I wanna do this for bin headings
-			BSBinColumnDataRoles  .BSDataFormat:     self._format_id,
-			BSBinColumnDataRoles  .BSColumnIsHidden: self._is_hidden,
-			BSBinColumnDataRoles  .BSColumnWidth:    self._field_width,
-			BSBinColumnDataRoles  .BSColumnHash:     self._field_name,
-		 })
-		
-	def setData(self, value:typing.Any, role:QtCore.Qt.ItemDataRole|BSBinColumnDataRoles):
-		print(self, " updated ", role , " to ", value)
-		self._data_roles.update({role: value})
-	
-	def data(self, role:QtCore.Qt.ItemDataRole) -> typing.Any:
-		return self._data_roles.get(role, None)
-	
-	def itemData(self) -> dict[QtCore.Qt.ItemDataRole, typing.Any]:
-		return self._data_roles
-	
-	def item_factory(self) -> typing.Type:
-		return self._item_factory
-	
-	def field_name(self) -> str:
-		return self._field_name
-	
-	def format_id(self) -> avbutils.BinColumnFormat:
-		return avbutils.BinColumnFormat(self._format_id)
-	
-	def field_width(self) -> int|None:
-		return self._field_width
-	
-	def display_name(self) -> str:
-		return self._display_name
-	
-	def delegate(self) -> QtWidgets.QStyledItemDelegate:
-		return self._delgate
-	
-	def isHidden(self) -> bool:
-		return self._is_hidden
-
 class BSAbstractViewItem:
 	"""An abstract view item for bin item models"""
 
@@ -181,7 +85,6 @@ class BSEnumViewItem(BSAbstractViewItem):
 			QtCore.Qt.ItemDataRole.InitialSortOrderRole: self.to_string(self._data.value),
 		})
 	
-
 class BSNumericViewItem(BSAbstractViewItem):
 	"""A numeric value"""
 

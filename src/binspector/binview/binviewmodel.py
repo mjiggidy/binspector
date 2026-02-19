@@ -93,7 +93,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		return self._bin_view_columns[index.row()].data(role)
 	
-	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:binviewitemtypes.BSBinColumnInfoRole):
+	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:binviewitemtypes.BSBinViewColumnInfoRole):
 
 		
 		item = self._bin_view_columns[index.row()]

@@ -6,6 +6,9 @@ import avbutils
 from ..binitems import binitemtypes
 from ..binview import binviewitemtypes, binviewmodel
 
+# NOTE: THIS GON BE GONE WOW
+# Replace with BinItemsModel and BinViewModel, combined into BinTextViewModel
+
 class BSBinItemViewModel(QtCore.QAbstractItemModel):
 	"""A view model for timelines"""
 
@@ -98,7 +101,7 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 			return self._getUserColumnItem(index, user_column_name="Comments", role=QtCore.Qt.ItemDataRole.DisplayRole)
 
 		# For user fields: Look up the thingy
-		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinColumnInfoRole.FieldIdRole)
+		field_id      = self.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
 		#print("Field ID is ", field_id)
 
 		if field_id not in bin_item_data:

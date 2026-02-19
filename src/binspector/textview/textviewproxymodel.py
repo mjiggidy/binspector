@@ -86,7 +86,7 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 		try:
 			item_type_header_index = next(c
 				for c in range(self.sourceModel().columnCount(source_parent))
-				if self.sourceModel().headerData(c, QtCore.Qt.Orientation.Horizontal, role=binviewitemtypes.BSBinColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.BinItemIcon
+				if self.sourceModel().headerData(c, QtCore.Qt.Orientation.Horizontal, role=binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.BinItemIcon
 			)
 
 		except StopIteration:
@@ -132,7 +132,7 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 
 		for source_col in range(self.sourceModel().columnCount()):
 
-			col_is_hidden = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, binitemtypes.BSBinColumnDataRoles.BSColumnIsHidden)
+			col_is_hidden = self.sourceModel().headerData(source_col, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
 			if col_is_hidden:
 				#print("Skip hidden col", source_col)
