@@ -45,7 +45,7 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		if column > self.columnCount(parent):
 			return QtCore.QModelIndex()
 		
-		if row > self.rowCount(self.parent):
+		if row > self.rowCount(parent):
 			return QtCore.QModelIndex()
 		
 		return self.createIndex(row, column)
@@ -57,19 +57,57 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		
 		bin_item = self._bin_items[index.row()]
 		
-		# Map BinItemDataRoles to their avbutils counterparts
+		# Map specialized BinItemDataRoles to their avbutils counterparts
+
 		if role == binitemtypes.BSBinItemDataRoles.ItemNameRole:
 			return bin_item.get(bins.BinColumnFieldIDs.Name).raw_data()
-		
-		elif role == binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole:
-			# NOTE: TODO
-			return [100,100]
-		
+				
 		elif role == binitemtypes.BSBinItemDataRoles.ClipColorRole:
 			return bin_item.get(bins.BinColumnFieldIDs.Color).raw_data()
 		
 		elif role == binitemtypes.BSBinItemDataRoles.ItemTypesRole:
 			return bin_item.get(bins.BinColumnFieldIDs.BinItemIcon).raw_data()
 		
-		elif role == binitemtypes.BSBinItemDataRoles.ScriptNotesRole:
-			return self._getUserColumnItem(index, user_column_name="Comments", role=QtCore.Qt.ItemDataRole.DisplayRole)
+		elif role == QtCore.Qt.ItemDataRole.DisplayRole:
+			if  bin_item.get(bins.BinColumnFieldIDs.Name) is not None:
+				return bin_item.get(bins.BinColumnFieldIDs.Name).data(QtCore.Qt.ItemDataRole.DisplayRole)
+			else:
+				print(bin_item)
+				return str(bin_item)
+		
+		else:
+			return None
+
+#		elif role == binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole:
+#			# NOTE: TODO
+#			return [100,100]
+		
+#		elif role == binitemtypes.BSBinItemDataRoles.ScriptNotesRole:
+#			# NOTE: Maybe rethink
+#			return self._getUserColumnItem(index, user_column_name="Comments", role=QtCore.Qt.ItemDataRole.DisplayRole)
+
+	@QtCore.Slot(object)
+	def addBinItem(self, bin_item:BSBinItemModelEntry):
+		"""Add a bin item and its properties to the model"""
+
+		self.addBinItems([bin_item])
+
+	@QtCore.Slot(object)
+	def addBinItems(self, bin_items:typing.Iterable[BSBinItemModelEntry]):
+		"""Add bin items and their properties to the model"""
+
+		self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(QtCore.QModelIndex()), self.rowCount(QtCore.QModelIndex()) + len(bin_items)-1)
+
+		self._bin_items.extend(bin_items)
+
+		self.endInsertRows()
+
+	@QtCore.Slot()
+	def clearBinItems(self):
+		"""Clear and reset the bin items model"""
+
+		self.beginResetModel()
+		
+		self._bin_items = []
+		
+		self.endResetModel()
