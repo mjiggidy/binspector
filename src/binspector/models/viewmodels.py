@@ -84,20 +84,20 @@ class BSBinItemViewModel(QtCore.QAbstractItemModel):
 		#logging.getLogger(__name__).error("Got bin itme data %s", repr(bin_item_data))
 
 		# Do row stuff first
-		if role == binitemtypes.BSBinItemDataRoles.BSItemName:
+		if role == binitemtypes.BSBinItemDataRoles.ItemNameRole:
 			
 			return bin_item_data.get(avbutils.bins.BinColumnFieldIDs.Name).data(QtCore.Qt.ItemDataRole.DisplayRole)
 		
-		elif role == binitemtypes.BSBinItemDataRoles.BSFrameCoordinates:
+		elif role == binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole:
 			return self._frame_locations[index.row()]
 		
-		elif role == binitemtypes.BSBinItemDataRoles.BSClipColor:
+		elif role == binitemtypes.BSBinItemDataRoles.ClipColorRole:
 			return bin_item_data.get(avbutils.BinColumnFieldIDs.Color).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
-		elif role == binitemtypes.BSBinItemDataRoles.BSItemType:
+		elif role == binitemtypes.BSBinItemDataRoles.ItemTypesRole:
 			return bin_item_data.get(avbutils.BinColumnFieldIDs.BinItemIcon).raw_data()#.data(QtCore.Qt.ItemDataRole.UserRole)
 		
-		elif role == binitemtypes.BSBinItemDataRoles.BSScriptNotes:
+		elif role == binitemtypes.BSBinItemDataRoles.ScriptNotesRole:
 			return self._getUserColumnItem(index, user_column_name="Comments", role=QtCore.Qt.ItemDataRole.DisplayRole)
 
 		# For user fields: Look up the thingy

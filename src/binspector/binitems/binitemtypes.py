@@ -4,16 +4,15 @@ from timecode import Timecode
 from PySide6 import QtCore, QtGui, QtWidgets
 from functools import singledispatch
 
-
 class BSBinItemDataRoles(enum.IntEnum):
 	"""Item Data Roles for Bin Items (extends `QtCore.Qt.ItemDataRole`)"""
 
-	BSItemName         = QtCore.Qt.ItemDataRole.UserRole + 1
-	BSItemType         = enum.auto()
-	BSClipColor        = enum.auto()
-	BSFrameCoordinates = enum.auto()
-	BSFrameThumbnail   = enum.auto()
-	BSScriptNotes      = enum.auto()
+	ItemNameRole         = QtCore.Qt.ItemDataRole.UserRole + 1
+	ItemTypesRole        = enum.auto()
+	ClipColorRole        = enum.auto()
+	FrameCoordinatesRole = enum.auto()
+	FrameThumbnailRole   = enum.auto()
+	ScriptNotesRole      = enum.auto()
 
 class BSAbstractViewItem:
 	"""An abstract view item for bin item models"""

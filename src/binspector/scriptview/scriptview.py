@@ -151,7 +151,7 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		# Gather required data
 
-		script_text     = index.data(role=binitemtypes.BSBinItemDataRoles.BSScriptNotes)
+		script_text     = index.data(role=binitemtypes.BSBinItemDataRoles.ScriptNotesRole)
 		item_delegate   = self._delegate_provider.delegateForColumn(index.column())
 		row_is_selected = self.selectionModel().isSelected(index)
 

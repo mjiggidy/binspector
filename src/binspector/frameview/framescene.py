@@ -7,6 +7,8 @@ from ..models import viewmodels
 from ..core import config
 from . import sceneitems, painters
 
+from ..binitems import binitemtypes
+
 class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	"""Graphics scene based on a bin model"""
 
@@ -140,10 +142,10 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			# Resolve source model to ensure we always have relevent columns available
 			proxy_row_index  = self._bin_filter_model.index(row, 0, parent_row_index)
 
-			bin_item_name   = proxy_row_index.data(viewmodels.binitemtypes.BSBinItemDataRoles.BSItemName)
-			bin_item_coords = proxy_row_index.data(viewmodels.binitemtypes.BSBinItemDataRoles.BSFrameCoordinates)
-			bin_item_color  = proxy_row_index.data(viewmodels.binitemtypes.BSBinItemDataRoles.BSClipColor)
-			bin_item_type   = proxy_row_index.data(viewmodels.binitemtypes.BSBinItemDataRoles.BSItemType)
+			bin_item_name   = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.ItemNameRole)
+			bin_item_coords = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole)
+			bin_item_color  = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
+			bin_item_type   = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.ItemTypesRole)
 
 			#print(bin_item_color)
 
