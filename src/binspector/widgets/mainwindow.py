@@ -5,10 +5,13 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from ..core import icon_registry
 
 from ..binwidget import binwidget
+from ..binitems import binitemsmodel, binitemtypes
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..views import treeview
-from ..core import binloader, icon_engines, icon_providers
+from ..core import binloader, icon_engines, icon_providers, binparser
+
+import avbutils
 
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
@@ -27,6 +30,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def __init__(self):
 
 		super().__init__()
+
+
+		# TEMP
+		self._test_binitems_model = binitemsmodel.BSBinItemModel()
+
+		self._test_binitems_tree = QtWidgets.QTreeView()
+		self._test_binitems_tree.setModel(self._test_binitems_model)
+		self._test_binitems_tree.show()
 
 		self._settings         = QtCore.QSettings()
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
@@ -284,6 +295,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
 		self._sigs_binloader.sig_got_mobs                    .connect(self._man_binitems.addMobs, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
+		self._sigs_binloader.sig_got_mobs    .connect(self.mobsToViewItems)
 		#self._sigs_binloader.sig_got_mobs.connect(print)
 		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
 		#self._sigs_binloader.sig_got_mob                    .connect(self._man_binitems.addMob)
@@ -337,6 +349,37 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 	## Getters & Setters
 	##
+
+	@QtCore.Slot()
+	def mobsToViewItems(self, mobs:list[binparser.BinItemInfo]):
+
+		#print(mobs)
+
+		bin_items = []
+
+		for view_item in filter(lambda m: m.view_items, mobs):
+			
+			fields = dict()
+
+			for field_id, field_value in view_item.view_items.items():
+			
+
+				if field_id != avbutils.BinColumnFieldIDs.User:
+					fields[field_id] = binitemtypes.get_viewitem_for_item(field_value)
+				
+				else:
+					user_col_data = {}
+					
+					for user_col_name, user_col_value in field_value.items():
+						user_col_data[user_col_name] = binitemtypes.get_viewitem_for_item(user_col_value)
+					
+					fields[field_id] = user_col_data
+				
+			bin_items.append(fields)
+		
+		self._test_binitems_model.addBinItems(bin_items)
+			
+					
 	
 	def actionsManager(self) -> actions.ActionsManager:
 		return self._man_actions
