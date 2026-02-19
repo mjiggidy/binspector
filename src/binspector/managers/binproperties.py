@@ -5,7 +5,6 @@ from PySide6 import QtCore
 from ..binitems import binitemtypes
 from ..models import viewmodels
 from ..core import binparser
-from . import base
 
 TEMP_POSITION_OFFSET_THING = 10
 
@@ -32,7 +31,7 @@ class BSBinViewModeManager(QtCore.QObject):
 	def viewMode(self) -> avbutils.BinDisplayModes:
 		return self._current_mode
 
-class BSBinViewManager(base.LBItemDefinitionView):
+class BSBinViewManager(QtCore.QObject):
 
 	sig_bin_view_changed = QtCore.Signal(object, object, int, int)
 	"""Binview has been reset"""
@@ -139,7 +138,7 @@ class BSBinViewManager(base.LBItemDefinitionView):
 		self.sig_focus_bin_column.emit(selected_field_name)
 
 
-class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
+class BSBinDisplaySettingsManager(QtCore.QObject):
 
 	sig_bin_display_changed = QtCore.Signal(object)
 
@@ -149,23 +148,10 @@ class BSBinDisplaySettingsManager(base.LBItemDefinitionView):
 
 	@QtCore.Slot(object)
 	def setBinDisplayFlags(self, bin_display:avbutils.BinDisplayItemTypes):
-
-#		self.viewModel().clear()
-#
-#		headers = [
-#			viewmodelitems.LBAbstractViewHeaderItem("name",  self.tr("Name")),
-#			viewmodelitems.LBAbstractViewHeaderItem("value", self.tr("Value")),
-#		]
-#		
-#		for header in headers:
-#			self.addHeader(header)
-#		
-#		for f in bin_display:
-#			self.addRow({"name": f.name, "value": f.value})
 		
 		self.sig_bin_display_changed.emit(bin_display)
 		
-class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
+class BSBinSortingPropertiesManager(QtCore.QObject):
 	"""Bin sorting"""
 
 	sig_bin_sorting_changed   = QtCore.Signal(object)
@@ -173,27 +159,9 @@ class BSBinSortingPropertiesManager(base.LBItemDefinitionView):
 	@QtCore.Slot(object)
 	def setBinSortingProperties(self, sorting:list[int,str]):
 		
-		self.viewModel().clear()
-
-		headers = [
-			binitemtypes.BSAbstractViewHeaderItem("order",     self.tr("Order")),
-			binitemtypes.BSAbstractViewHeaderItem("direction", self.tr("Direction")),
-			binitemtypes.BSAbstractViewHeaderItem("column",    self.tr("Column"))
-		]
-
-		for header in headers:
-			self.addHeader(header)
-		
-		for order, (direction, column_name) in enumerate(sorting):
-			self.addRow({
-				"order": order,
-				"direction": QtCore.Qt.SortOrder(direction),
-				"column": column_name
-			})
-		
 		self.sig_bin_sorting_changed.emit([(QtCore.Qt.SortOrder(direction), column_name) for direction, column_name in sorting])
 
-class BSBinSiftSettingsManager(base.LBItemDefinitionView):
+class BSBinSiftSettingsManager(QtCore.QObject):
 
 	sig_sift_enabled          = QtCore.Signal(bool)
 	sig_bin_view_changed      = QtCore.Signal(object)
@@ -206,17 +174,6 @@ class BSBinSiftSettingsManager(base.LBItemDefinitionView):
 
 	@QtCore.Slot(bool, object)
 	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avbutils.bins.BinSiftOption]):
-
-#		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="string", display_name=self.tr("String")))
-#		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="method", display_name=self.tr("Method")))
-#		self.addHeader(viewmodelitems.LBAbstractViewHeaderItem(field_name="column", display_name=self.tr("Column")))
-#		for idx, setting in enumerate(reversed(sift_settings)):
-#			self.addRow({
-#				"order": idx,
-#				"method": viewmodelitems.TRTEnumViewItem(setting.sift_method),
-#				"string": setting.sift_text,
-#				"column": setting.sift_column,
-#			})
 		
 		self.sig_sift_settings_changed.emit(sift_settings)		
 		self.sig_sift_enabled.emit(sift_enabled)
@@ -232,7 +189,7 @@ class BSBinItemsManager(QtCore.QObject):
 	sig_bin_view_changed = QtCore.Signal(object, object)
 
 	def __init__(self, *args, **kwargs):
-
+ 
 		super().__init__(*args, **kwargs)
 
 		self._view_model = viewmodels.BSBinItemViewModel()
@@ -247,10 +204,10 @@ class BSBinItemsManager(QtCore.QObject):
 		"""Return the internal view model"""
 		return self._view_model
 	
-	@QtCore.Slot(object)
-	def addRow(self, row_data:dict[binitemtypes.BSAbstractViewHeaderItem|str,binitemtypes.BSAbstractViewItem|typing.Any], add_new_headers:bool=False):
-		
-		return self.addRows([row_data], add_new_headers)
+#	@QtCore.Slot(object)
+#	def addRow(self, row_data:dict[binitemtypes.BSAbstractViewHeaderItem|str,binitemtypes.BSAbstractViewItem|typing.Any], add_new_headers:bool=False):
+#		
+#		return self.addRows([row_data], add_new_headers)
 	
 	@QtCore.Slot(object)
 	def addMob(self, mob_info:binparser.BinItemInfo):

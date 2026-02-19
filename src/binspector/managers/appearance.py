@@ -1,7 +1,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
-from . import base
 
-class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
+
+class BSBinAppearanceSettingsManager(QtCore.QObject):
 
 	# Mostly use these -- will update with bin or system appearance
 	sig_font_changed                  = QtCore.Signal(QtGui.QFont)
@@ -56,7 +56,7 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 	
 		# Appearance settings from avb
 
-		self.setColumnWidths(column_widths)
+#		self.setColumnWidths(column_widths)
 		self.setWindowRect(window_rect)
 		self.sig_was_iconic_changed.emit(was_iconic)
 
@@ -130,16 +130,9 @@ class BSBinAppearanceSettingsManager(base.LBItemDefinitionView):
 	def setColumnWidths(self, column_widths:dict[str,int]):
 		"""Display column width settings"""
 
+		# NOTE: DEPRECATE TO BIN VIEW
+
 		self.sig_column_widths_changed.emit(column_widths)
-
-		# Oh wow
-		self.viewModel().clear()
-
-		for col, width in column_widths.items():
-			self.addRow({
-				self.tr("Width"):  width,
-				self.tr("Column"): col,
-			}, add_new_headers=True)
 
 	@QtCore.Slot(object)
 	def setUseBinAppearance(self, use_bin:bool):
