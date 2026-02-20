@@ -14,16 +14,16 @@ class BSTreeViewBase(QtWidgets.QTreeView):
 		self.header().setFirstSectionMovable(True)
 		self.header().setDefaultAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-	def columnDisplayNames(self) -> list[str]:
-		"""Get all column display names, in order"""
-		
-		return [
-			self.model().headerData(idx,
-				QtCore.Qt.Orientation.Horizontal,
-				QtCore.Qt.ItemDataRole.DisplayRole
-			)
-			for idx in range(self.header().count())
-		]
+#	def columnDisplayNames(self) -> list[str]:
+#		"""Get all column display names, in order"""
+#		
+#		return [
+#			self.model().headerData(idx,
+#				QtCore.Qt.Orientation.Horizontal,
+#				QtCore.Qt.ItemDataRole.DisplayRole
+#			)
+#			for idx in range(self.header().count())
+#		]
 	
 	@QtCore.Slot()
 	def resizeAllColumnsToContents(self):
@@ -32,15 +32,15 @@ class BSTreeViewBase(QtWidgets.QTreeView):
 		for idx in range(self.header().count()):
 			self.resizeColumnToContents(idx)
 	
-	@QtCore.Slot(str, QtCore.Qt.SortOrder)
-	def sortByColumnName(self, column_name:str, sort_order:QtCore.Qt.SortOrder) -> bool:
-		"""Sort by a column's display name"""
-
-		try:
-			header_index = self.columnDisplayNames().index(column_name)
-		except ValueError:
-			return False
-
-		self.sortByColumn(header_index, sort_order)
-		
-		return True
+#	@QtCore.Slot(str, QtCore.Qt.SortOrder)
+#	def sortByColumnName(self, column_name:str, sort_order:QtCore.Qt.SortOrder) -> bool:
+#		"""Sort by a column's display name"""
+#
+#		try:
+#			header_index = self.columnDisplayNames().index(column_name)
+#		except ValueError:
+#			return False
+#
+#		self.sortByColumn(header_index, sort_order)
+#		
+#		return True
