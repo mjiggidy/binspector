@@ -25,38 +25,37 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		self._item_model.rowsAboutToBeInserted.connect(self.binItemsAboutToBeInserted)
 		self._item_model.rowsInserted.connect(self.binItemsInserted)
 
-		self._item_model.rowsAboutToBeMoved.connect(self.rowsAboutToBeMoved)
-		self._item_model.rowsMoved.connect(self.rowsMoved)
+		self._item_model.rowsAboutToBeMoved.connect(self.binItemsAboutToBeMoved)
+		self._item_model.rowsMoved.connect(self.binItemsMoved)
 		
-		self._item_model.rowsAboutToBeRemoved.connect(self.rowsAboutToBeRemoved)
-		self._item_model.rowsRemoved.connect(self.rowsRemoved)
+		self._item_model.rowsAboutToBeRemoved.connect(self.binItemsAboutToBeRemoved)
+		self._item_model.rowsRemoved.connect(self.binItemsRemoved)
 
-		self._item_model.layoutAboutToBeChanged.connect(lambda: self.layoutAboutToBeChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.VerticalSortHint))
-		self._item_model.layoutChanged.connect(lambda: self.layoutChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.VerticalSortHint))
+		self._item_model.layoutAboutToBeChanged.connect(self.binItemLayoutAboutToChange)
+		self._item_model.layoutChanged.connect(self.binItemLayoutChanged)
 
-		self._item_model.modelAboutToBeReset.connect(self.modelAboutToBeReset)
-		self._item_model.modelReset.connect(self.modelReset)
+		self._item_model.modelAboutToBeReset.connect(self.beginResetModel)
+		self._item_model.modelReset.connect(self.endResetModel)
 
 	def _setupViewModel(self):
 
-		self._view_model.rowsAboutToBeInserted.connect(self.columnsAboutToBeInserted)
-		self._view_model.rowsInserted.connect(self.columnsInserted)
+		self._view_model.rowsAboutToBeInserted.connect(self.binColumnsAboutToBeInserted)
+		self._view_model.rowsInserted.connect(self.binColumnsInserted)
 
-		self._view_model.rowsAboutToBeMoved.connect(self.columnsAboutToBeMoved)
-		self._view_model.rowsMoved.connect(self.columnsMoved)
+		self._view_model.rowsAboutToBeMoved.connect(self.binColumnsAboutToBeMoved)
+		self._view_model.rowsMoved.connect(self.binColumnsMoved)
 
-		self._view_model.rowsAboutToBeRemoved.connect(self.columnsAboutToBeRemoved)
-		self._view_model.rowsRemoved.connect(self.columnsRemoved)
+		self._view_model.rowsAboutToBeRemoved.connect(self.binColumnsAboutToBeRemoved)
+		self._view_model.rowsRemoved.connect(self.binColumnsRemoved)
 
-		self._view_model.layoutAboutToBeChanged.connect(lambda: self.layoutAboutToBeChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint))
-		self._view_model.layoutChanged.connect(lambda: self.layoutChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint))
+		self._view_model.layoutAboutToBeChanged.connect(self.binColumnLayoutAboutToChange)
+		self._view_model.layoutChanged.connect(self.binColumnLayoutChanged)
 
-		self._view_model.modelAboutToBeReset.connect(self.modelAboutToBeReset)
-		self._view_model.modelReset.connect(self.modelReset)
+		self._view_model.modelAboutToBeReset.connect(self.beginResetModel)
+		self._view_model.modelReset.connect(self.endResetModel)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def binItemsAboutToBeInserted(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
-		
 
 		self.beginInsertRows(QtCore.QModelIndex(), row_start, row_end)
 
@@ -64,6 +63,80 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 	def binItemsInserted(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
 		
 		self.endInsertRows()
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def binItemsAboutToBeMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int):
+
+		self.beginMoveRows(QtCore.QModelIndex(), sourceStart, sourceEnd, QtCore.QModelIndex(), destinationRow)
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def binItemsMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int):
+
+		self.endMoveRows()
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def binItemsAboutToBeRemoved(self, parent:QtCore.QModelIndex, start:int, end:int):
+		
+		self.beginRemoveRows(QtCore.QModelIndex(), start, end)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def binItemsRemoved(self, parent:QtCore.QModelIndex, start:int, end:int):
+		
+		self.endRemoveRows()
+
+	@QtCore.Slot()
+	def binItemLayoutAboutToChange(self):
+
+		self.layoutAboutToBeChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.VerticalSortHint)
+
+	@QtCore.Slot()
+	def binItemLayoutChanged(self):
+
+		self.layoutChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.VerticalSortHint)
+
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def binColumnsAboutToBeInserted(self, parent:QtCore.QModelIndex, col_start:int, col_end:int):
+
+		self.beginInsertColumns(QtCore.QModelIndex(), col_start, col_end)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def binColumnsInserted(self, parent:QtCore.QModelIndex, col_start:int, col_end:int):
+		
+		self.endInsertColumns()
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def binColumnsAboutToBeRemoved(self, parent:QtCore.QModelIndex, start:int, end:int):
+		
+		self.beginRemoveColumns(QtCore.QModelIndex(), start, end)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def binColumnsRemoved(self, parent:QtCore.QModelIndex, start:int, end:int):
+		
+		self.endRemoveColumns()
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def binColumnsAboutToBeMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int):
+
+		self.beginMoveColumns(QtCore.QModelIndex(), sourceStart, sourceEnd, QtCore.QModelIndex(), destinationRow)
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def binColumnsMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int):
+
+		self.endMoveColumns()
+
+
+	@QtCore.Slot()
+	def binColumnLayoutAboutToChange(self):
+
+		self.layoutAboutToBeChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint)
+
+	@QtCore.Slot()
+	def binColumnLayoutChanged(self):
+
+		self.layoutChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint)
+
+	
 
 
 	def setBinItemModel(self, item_model:binitemsmodel.BSBinItemModel):
