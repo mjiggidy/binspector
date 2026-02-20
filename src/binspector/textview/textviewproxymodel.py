@@ -1,10 +1,28 @@
-from binspector.binitems import binitemtypes
-from binspector.binview import binviewitemtypes
-from binspector.models import viewmodels
+from ..binitems import binitemtypes
+from ..binview import binviewitemtypes
+from ..models import viewmodels
 
+from . import textviewmodel
 
 import avbutils
 from PySide6 import QtCore
+
+class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
+	"""The New One For The New Thing"""
+
+	def __init__(self, *args, text_view_model:textviewmodel.BSTextViewModel|None=None, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
+	
+	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
+		
+		return not self.sourceModel().headerData(source_column, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+		
+		return super().filterAcceptsColumn(source_column, source_parent)
+
+
 
 
 class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):

@@ -38,13 +38,13 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# TEMP
 		self._test_binitems_model = binitemsmodel.BSBinItemModel()
 		self._test_binview_model  = binviewmodel.BSBinViewModel()
-
 		
-		from ..textview import textviewmodel
+		from ..textview import textviewmodel, textviewproxymodel
 		self._test_textview_model = textviewmodel.BSTextViewModel(item_model=self._test_binitems_model, view_model=self._test_binview_model)
+		self._test_textview_proxy_model = textviewproxymodel.BSBTextViewSortFilterProxyModel(text_view_model=self._test_textview_model)
 
 		self._test_binitems_tree = QtWidgets.QTreeView()
-		self._test_binitems_tree.setModel(self._test_textview_model)
+		self._test_binitems_tree.setModel(self._test_textview_proxy_model)
 		self._test_binitems_tree.show()
 		self._test_binitems_tree.setAlternatingRowColors(True)
 
@@ -453,6 +453,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
 		self._man_binitems.viewModel().clear()
+
+		self._test_binitems_model.clearBinItems()
 		
 		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
 		self._bin_widget.topWidgetBar().progressBar().show()
