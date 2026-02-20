@@ -42,10 +42,7 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		if parent.isValid():
 			return QtCore.QModelIndex()
 		
-		if column > self.columnCount(parent):
-			return QtCore.QModelIndex()
-		
-		if row > self.rowCount(parent):
+		if not column < self.columnCount(parent) or not row < self.rowCount(parent):
 			return QtCore.QModelIndex()
 		
 		return self.createIndex(row, column)
@@ -67,6 +64,9 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		
 		elif role == binitemtypes.BSBinItemDataRoles.ItemTypesRole:
 			return bin_item.get(bins.BinColumnFieldIDs.BinItemIcon).raw_data()
+		
+		elif role == binitemtypes.BSBinItemDataRoles.ViewItemRole:
+			return bin_item
 		
 		elif role == QtCore.Qt.ItemDataRole.DisplayRole:
 			if  bin_item.get(bins.BinColumnFieldIDs.Name) is not None:

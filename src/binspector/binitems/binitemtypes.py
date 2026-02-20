@@ -13,6 +13,8 @@ class BSBinItemDataRoles(enum.IntEnum):
 	FrameCoordinatesRole = enum.auto()
 	FrameThumbnailRole   = enum.auto()
 	ScriptNotesRole      = enum.auto()
+	ViewItemRole         = enum.auto()
+	"""Return the view item dict"""
 
 class BSAbstractViewItem:
 	"""An abstract view item for bin item models"""
