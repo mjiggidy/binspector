@@ -6,10 +6,13 @@ from ..core import icon_registry
 
 from ..binwidget import binwidget
 from ..binitems import binitemsmodel, binitemtypes
+from ..binview import binviewmodel, binviewitemtypes
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..views import treeview
 from ..core import binloader, icon_engines, icon_providers, binparser
+
+
 
 import avbutils
 
@@ -34,10 +37,16 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# TEMP
 		self._test_binitems_model = binitemsmodel.BSBinItemModel()
+		self._test_binview_model  = binviewmodel.BSBinViewModel()
+
+		
+		from ..textview import textviewmodel
+		self._test_textview_model = textviewmodel.BSTextViewModel(item_model=self._test_binitems_model, view_model=self._test_binview_model)
 
 		self._test_binitems_tree = QtWidgets.QTreeView()
-		self._test_binitems_tree.setModel(self._test_binitems_model)
+		self._test_binitems_tree.setModel(self._test_textview_model)
 		self._test_binitems_tree.show()
+		self._test_binitems_tree.setAlternatingRowColors(True)
 
 		self._settings         = QtCore.QSettings()
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
@@ -314,6 +323,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_widget.setNeueBinView)
+		self._man_binview.sig_neue_bin_view_changed    .connect(self._test_binview_model.setBinView)
 		self._bin_widget.sig_bin_view_model_changed          .connect(self._tool_binview.setBinViewModel)
 		#self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.listView().)
 
