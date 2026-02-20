@@ -15,12 +15,34 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		super().__init__(*args, **kwargs)
 
 		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
-	
+
+	def setSourceModel(self, sourceModel:textviewmodel.BSTextViewModel):
+
+		if self.sourceModel() == sourceModel:
+			return
+
+		if not isinstance(sourceModel, textviewmodel.BSTextViewModel):
+			raise ValueError(f"Source model must be `BSTextViewModel`; got {repr(sourceModel)}")
+		
+		sourceModel.headerDataChanged.connect(self.binColumnDataChanged)
+		
+		super().setSourceModel(sourceModel)
+
+	@QtCore.Slot(QtCore.Qt.Orientation, int, int)
+	def binColumnDataChanged(self, orientation:QtCore.Qt.Orientation, first:int, last:int):
+		
+		# NOTE: I feel weird calling `begin` AFTER the data has changed
+
+		self.beginFilterChange()
+		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Columns)
+
+
 	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
+
+		if source_parent.isValid():
+			return False
 		
 		return not self.sourceModel().headerData(source_column, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
-		
-		return super().filterAcceptsColumn(source_column, source_parent)
 
 
 
@@ -86,6 +108,8 @@ class BSBinViewProxyModel(QtCore.QSortFilterProxyModel):
 
 
 	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
+
+		
 
 		# Pass through if BinView is disabled, or looking up a child element (makes no sense)
 		if not self._use_binview or source_parent.isValid():

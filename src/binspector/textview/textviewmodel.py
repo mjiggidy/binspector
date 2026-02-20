@@ -54,6 +54,9 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		self._view_model.modelAboutToBeReset.connect(self.beginResetModel)
 		self._view_model.modelReset.connect(self.endResetModel)
 
+		self._view_model.dataChanged.connect(self.binColumnDataChanged)
+		#self._view_model.dataChanged.connect(print)
+
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def binItemsAboutToBeInserted(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
 
@@ -136,7 +139,11 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 
 		self.layoutChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint)
 
-	
+	@QtCore.Slot(QtCore.QModelIndex, QtCore.QModelIndex, object)
+	def binColumnDataChanged(self, topLeft:QtCore.QModelIndex, bottomRight:QtCore.QModelIndex, roles:typing.Sequence[QtCore.Qt.ItemDataRole]):
+		"""Bin column data was changed"""
+
+		self.headerDataChanged.emit(QtCore.Qt.Orientation.Horizontal, topLeft.row(), bottomRight.row())
 
 
 	def setBinItemModel(self, item_model:binitemsmodel.BSBinItemModel):
@@ -148,7 +155,10 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		self._item_model.disconnect(self)
 
 		self.beginResetModel()
+		
 		self._item_model = item_model
+		self._setupItemModel()
+
 		self.endResetModel()
 
 	def setBinViewModel(self, view_model:binviewmodel.BSBinViewModel):
@@ -160,7 +170,10 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		self._view_model.disconnect(self)
 
 		self.beginResetModel()
+		
 		self._view_model = view_model
+		self._setupViewModel()
+
 		self.endResetModel()
 
 

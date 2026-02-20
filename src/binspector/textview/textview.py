@@ -34,7 +34,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		self.ICON_ASPECT_RATIO = QtCore.QSizeF(4,3)
 
-		self.setModel(textviewproxymodel.BSBinViewProxyModel())
+		self.setModel(textviewproxymodel.BSBTextViewSortFilterProxyModel())
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
@@ -81,12 +81,12 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		return super().setSelectionModel(selectionModel)
 
 	@QtCore.Slot(object)
-	def setModel(self, model:textviewproxymodel.BSBinViewProxyModel):
+	def setModel(self, model:textviewproxymodel.BSBTextViewSortFilterProxyModel):
 
 		if self.model() == model:
 			return
 		
-		elif not isinstance(model, textviewproxymodel.BSBinViewProxyModel):
+		elif not isinstance(model, textviewproxymodel.BSBTextViewSortFilterProxyModel):
 			raise TypeError(f"Model must be a BSBinViewProxyModel (got {type(model)})")
 		
 		# TODO: Disconnect old model...?
