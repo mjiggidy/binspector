@@ -15,13 +15,19 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		super().__init__(parent)
 
-		self._bin_view_name:str = self.DEFAULT_BIN_VIEW_NAME
-		self._bin_view_columns:list[binviewitemtypes.BSBinViewColumnInfo] = list()
-		
-		if bin_view:
+		self._bin_view_name:str = bin_view.name if bin_view else self.DEFAULT_BIN_VIEW_NAME
+		self._bin_view_columns:list[binviewitemtypes.BSBinViewColumnInfo] = bin_view.columns if bin_view else []
+	
+	@QtCore.Slot(object)
+	def setBinView(self, bin_view_info:binviewitemtypes.BSBinViewInfo):
 
-			self._bin_view_name    = bin_view.name
-			self._bin_view_columns = bin_view.columns
+		self.beginResetModel()
+
+		self._bin_view_name = bin_view_info.name
+		self._bin_view_columns = bin_view_info.columns
+
+		self.endResetModel()
+
 
 	def setBinViewName(self, name:str):
 
