@@ -36,6 +36,29 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		self.beginFilterChange()
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Columns)
 
+	@QtCore.Slot(QtCore.QModelIndex, int, QtCore.QModelIndex, int)
+	def moveColumn(self, sourceParent:QtCore.QModelIndex, col_start:int, destinationParent:QtCore.QModelIndex, col_dest:int):
+
+		# Need to map the logical proxy columns here to logical source columns
+		# But without a row available, indexes come back as invalid
+
+		source_col_start = self.mapToSourceColumn(col_start)
+		source_col_end   = self.mapToSourceColumn(col_dest)
+
+		source_start_name = self.sourceModel().headerData(source_col_start, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+		source_start_end  = self.sourceModel().headerData(source_col_end-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if source_col_end > 0 else "<<FRONT>>"
+
+		print(f"Proxy model wants to move {source_start_name} to before {source_start_end}")
+
+
+		#self.sourceModel().moveColumn(QtCore.QModelIndex(), col_start, QtCore.QModelIndex(), col_dest)
+
+	def mapToSourceColumn(self, proxy_column:int) -> int:
+
+		# TODO: THIS SUCKS
+
+		return proxy_column
+
 
 	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
 
