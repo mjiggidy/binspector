@@ -120,13 +120,24 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
 	def binColumnsAboutToBeMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int):
-
+		print("BIN")
 		self.beginMoveColumns(QtCore.QModelIndex(), sourceStart, sourceEnd, QtCore.QModelIndex(), destinationRow)
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
 	def binColumnsMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int):
 
 		self.endMoveColumns()
+
+	def moveColumn(self, sourceParent:QtCore.QModelIndex, sourceColumn:int, destinationParent:QtCore.QModelIndex, destinationColumn:int):
+		
+		column_to_move = self.headerData(sourceColumn, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+		column_before  = self.headerData(destinationColumn - 1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationColumn > 0 else "<FRONT>"
+		
+		print(f"Text view model got move {column_to_move=} {sourceColumn=} to after {column_before=} {destinationColumn=}")
+
+
+		return self.binViewModel().moveRow(QtCore.QModelIndex(), sourceColumn, QtCore.QModelIndex(), destinationColumn)
+		#return super().moveColumn(sourceParent, sourceColumn, destinationParent, destinationChild)
 
 
 	@QtCore.Slot()
@@ -176,6 +187,10 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 
 		self.endResetModel()
 
+	def binViewModel(self) -> binviewmodel.BSBinViewModel:
+
+		return self._view_model
+
 
 	def rowCount(self, /, parent:QtCore.QModelIndex) -> int:
 		"""Get bin item count"""
@@ -208,8 +223,8 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		if parent.isValid():
 			return QtCore.QModelIndex()
 		
-		if not row < self._item_model.rowCount(QtCore.QModelIndex()) or not column < self._view_model.rowCount(QtCore.QModelIndex()):
-			return QtCore.QModelIndex()
+#		if not row < self._item_model.rowCount(QtCore.QModelIndex()) or not column < self._view_model.rowCount(QtCore.QModelIndex()):
+#			return QtCore.QModelIndex()
 		
 		return self.createIndex(row, column)
 	
