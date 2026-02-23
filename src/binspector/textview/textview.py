@@ -59,6 +59,31 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 		self.setItemPadding(self._item_padding)
 
+		self.header().sectionMoved.connect(self.binColumnDragged)
+
+	@QtCore.Slot(int, int, int)
+	def binColumnDragged(self, col_logical_old:int, col_vis_old:int, col_vis_new:int):
+		"""User dragged column to reorder"""
+
+		# NOTE: This method I think is alright
+		
+		if col_vis_old == col_vis_new:
+			logging.getLogger(__name__).error("Source and destination visual indexes are the same")
+			return
+
+		col_logical_new = (self.header().logicalIndex(col_vis_new - 1) + 1) if col_vis_new > 0 else 0
+
+		if col_logical_old == col_logical_new:
+			print("Source and destination logical indeces are the same")
+			return
+
+		moving_column_name = self.model().headerData(col_logical_old, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+		left_column_name   = self.model().headerData(col_logical_new-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if col_logical_new > 0 else "<<FRONT>>"
+
+		print(f"Treeview asks the proxy model to move {moving_column_name} to after {left_column_name} ({col_logical_old} -> {col_logical_new})")
+		self.model().moveColumn(QtCore.QModelIndex(), col_logical_old, QtCore.QModelIndex(), col_logical_new)
+		
+		return False
 
 	def setBinItemIconRegistry(self, registry:icon_registry.IconRegistryType):
 		"""Register bin item icon paths"""
@@ -69,7 +94,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self._bin_item_icon_registry = registry
 		
 		self.registerCustomDelegates()
-#
+
 	def setSelectionModel(self, selectionModel):
 
 		if selectionModel == self.selectionModel():
