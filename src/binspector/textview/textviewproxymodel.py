@@ -66,7 +66,8 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 			elif self.filterAcceptsColumn(source_col, QtCore.QModelIndex()):
 				visible_source_columns.append(source_col)
 
-		# Mapping failed
+		# I guess just go to the end man I dunno
+		return self.sourceModel().columnCount(QtCore.QModelIndex())
 		raise ValueError(f"Could not map proxy column {proxy_column} to source model")
 
 
