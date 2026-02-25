@@ -53,11 +53,21 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		#self.sourceModel().moveColumn(QtCore.QModelIndex(), col_start, QtCore.QModelIndex(), col_dest)
 
-	def mapToSourceColumn(self, proxy_column:int) -> int:
+	def mapToSourceColumn(self, proxy_column:int) -> int|None:
+		"""Map a logical column to its parent model column"""
 
-		# TODO: THIS SUCKS
+		visible_source_columns = []
+		
+		for source_col in range(self.sourceModel().columnCount(QtCore.QModelIndex())):
+			
+			if len(visible_source_columns) > proxy_column:
+				return visible_source_columns[-1]
+			
+			elif self.filterAcceptsColumn(source_col, QtCore.QModelIndex()):
+				visible_source_columns.append(source_col)
 
-		return proxy_column
+		# Mapping failed
+		raise ValueError(f"Could not map proxy column {proxy_column} to source model")
 
 
 	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
