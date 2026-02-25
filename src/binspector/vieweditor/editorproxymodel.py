@@ -1,6 +1,7 @@
 from PySide6 import QtCore, QtGui
 import enum, typing
 from ..binview import binviewitemtypes, binviewmodel
+from ..res import icons_gui
 
 import avbutils
 
@@ -216,22 +217,37 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 			return source_index.data(role)
 
-		elif feature == BSBinViewColumnEditorFeature.VisibilityColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
-
+		elif feature == BSBinViewColumnEditorFeature.VisibilityColumn:
+			
 			is_hidden =source_index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
-			return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.UserOffline) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.FolderDragAccept)
+			
+			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+				return QtGui.QIcon(":/icons/gui/toggle_visibilty_off.svg") if is_hidden else  QtGui.QIcon(":/icons/gui/toggle_visibilty_on.svg")
+			if role == QtCore.Qt.ItemDataRole.ToolTipRole:
+				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}").format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
 
-		elif feature == BSBinViewColumnEditorFeature.DataFormatColumn and role == QtCore.Qt.ItemDataRole.DisplayRole:
+		elif feature == BSBinViewColumnEditorFeature.DataFormatColumn:
 
-			return str(source_index.data(binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole))[0]
+			data_format:avbutils.bins.BinColumnFormat = source_index.data(binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
+
+			if role == QtCore.Qt.ItemDataRole.DisplayRole:
+				return str(data_format)[0]
+			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
+				return self.tr("<strong>Column Data Format</strong><br/>{data_format_name}").format(data_format_name = data_format.name.title())
 		
-		elif feature == BSBinViewColumnEditorFeature.DeleteColumn and role == QtCore.Qt.ItemDataRole.DecorationRole:
+		elif feature == BSBinViewColumnEditorFeature.DeleteColumn:
 
-			# Allow delete if user field
-			if self.userCanDelete(proxyIndex):
-				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove)
-			else:
-				return QtGui.QIcon()
+			can_delete = self.userCanDelete(proxyIndex)
+
+			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+				
+				# Allow delete if user field
+				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove) if can_delete else QtGui.QIcon()
+		
+			if role == QtGui.Qt.ItemDataRole.ToolTipRole:
+
+				if can_delete:
+					return self.tr("<strong>Remove User Column</strong><br/>Remove this user column from the current bin view")
 		
 	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole):
 
