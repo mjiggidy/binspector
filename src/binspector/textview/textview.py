@@ -118,7 +118,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 			return
 		
 		elif not isinstance(model, textviewproxymodel.BSBTextViewSortFilterProxyModel):
-			raise TypeError(f"Model must be a BSBinViewProxyModel (got {type(model)})")
+			raise TypeError(f"Model must be a BSBTextViewSortFilterProxyModel (got {type(model)})")
 		
 		# TODO: Disconnect old model...?
 		
