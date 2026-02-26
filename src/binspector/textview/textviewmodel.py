@@ -120,7 +120,15 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
 	def binColumnsAboutToBeMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int):
-		print("BIN")
+		#print("BIN")
+
+		source_name = self.headerData(sourceStart, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+		dest_name   = self.headerData(destinationRow-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationRow > 0 else "<<FRONT>>"
+
+		print(f"Text view model knows it's about to move {source_name} to before {dest_name}")
+
+		# NOTE: I THINK it's ok?
+
 		self.beginMoveColumns(QtCore.QModelIndex(), sourceStart, sourceEnd, QtCore.QModelIndex(), destinationRow)
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
@@ -128,13 +136,15 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 
 		self.endMoveColumns()
 
-	def moveColumn(self, sourceParent:QtCore.QModelIndex, sourceColumn:int, destinationParent:QtCore.QModelIndex, destinationColumn:int):
+	def moveColumn(self, sourceParent:QtCore.QModelIndex, sourceColumn:int, destinationParent:QtCore.QModelIndex, destinationColumn:int) -> bool:
 		
 		column_to_move = self.headerData(sourceColumn, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
-		column_before  = self.headerData(destinationColumn - 1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationColumn > 0 else "<FRONT>"
-		
+		column_before  = self.headerData(destinationColumn - 1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationColumn > 0 else "<<FRONT>>"
+
+
 		print(f"Text view model got move {column_to_move=} {sourceColumn=} to after {column_before=} {destinationColumn=}")
 
+		# NOTE: Good at this point, save for dragging-to-last-position stuff
 
 		return self.binViewModel().moveRow(QtCore.QModelIndex(), sourceColumn, QtCore.QModelIndex(), destinationColumn)
 		#return super().moveColumn(sourceParent, sourceColumn, destinationParent, destinationChild)

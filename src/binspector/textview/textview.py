@@ -81,7 +81,13 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		left_column_name   = self.model().headerData(col_logical_new-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if col_logical_new > 0 else "<<FRONT>>"
 
 		print(f"Treeview asks the proxy model to move {moving_column_name} to after {left_column_name} ({col_logical_old} -> {col_logical_new})")
-		self.model().moveColumn(QtCore.QModelIndex(), col_logical_old, QtCore.QModelIndex(), col_logical_new)
+		
+		was_moved = self.model().moveColumn(QtCore.QModelIndex(), col_logical_old, QtCore.QModelIndex(), col_logical_new)
+
+		if was_moved:
+			# AAAAAAAAAH HA HA HAAAAA I FUCKIN GOT IT BITCCHCHCHCHCHCHHHHHHHH YEAAAAAH BOIIIIIII
+			# Undo the visual move here.  Yes this triggers another move request but it gets stopped there because of identical indexes yesssss
+			self.header().moveSection(col_vis_new, col_vis_old)
 		
 		return False
 

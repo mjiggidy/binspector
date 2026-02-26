@@ -163,15 +163,23 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 	def moveRows(self, sourceParent:QtCore.QModelIndex, sourceRow:int, count:int, destinationParent:QtCore.QModelIndex, destinationChild:int):
 		
 		self.beginMoveRows(sourceParent, sourceRow, sourceRow + count-1, destinationParent, destinationChild)
+
+		# NOTE: This confuses me every time I look at it.  Imanita do better here.
+		# That said, it DOES work lol
 		
+		# Pull out the range of column items and remove them from the master list
 		moving_rows = self._bin_view_columns[sourceRow: sourceRow+count]
 		del self._bin_view_columns[sourceRow: sourceRow+count]
 
+		# If destination is after the removed items, adjust the destination for the amount removed since that'll throw off the destination
 		destinationChild = destinationChild - count if sourceRow < destinationChild else destinationChild
 
+		# Insert at the adjusted destination
 		self._bin_view_columns[destinationChild:destinationChild] = moving_rows
 
 		self.endMoveRows()
+
+		# NOTE: I think this all works at this point from any entry point
 		
 		return True
 	
