@@ -12,12 +12,13 @@ from ..core import icon_registry
 
 from . import proxystyles, scrollwidgets, widgetbars
 
-from ..textview import textview
+from ..textview import textview, textviewmodel
 from ..frameview import frameview
 from ..scriptview import scriptview
 
 from ..models import viewmodels
 from ..binview import binviewitemtypes, binviewmodel
+from ..binitems import binitemtypes, binitemsmodel
 
 from ..core.config import BSFrameViewModeConfig, BSScriptViewModeConfig
 
@@ -42,10 +43,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
 		
-		self._bin_items_model   = bin_item_model or viewmodels.BSBinItemViewModel()
-		self._bin_view_model    = bin_view_model or binviewmodel.BSBinViewModel()
-		self._bin_filter_model  = textviewproxymodel.BSBinViewProxyModel()
-		self._selection_model   = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
+		# Gaze upon these data models!  Very professional!
+
+		# NOTE: IDEA IS GON BE THIS:
+		# - binwdiget owns the composite model
+		# - binwidget allows you to set the view model and the items model
+		
+		self._bin_items_model     = bin_item_model or binitemsmodel.BSBinItemModel()
+		self._bin_view_model      = bin_view_model or binviewmodel .BSBinViewModel()
+		self._bin_composite_model = textviewmodel.BSTextViewModel(item_model=self._bin_items_model, view_model=self._bin_view_model)
+		
+		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModel()
+		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
 		# Save initial palette for later togglin'
 		self._default_palette   = self.palette()
@@ -57,10 +66,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top       = widgetbars.BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
 		
+		# Main View Mode Widgets
 		self._viewmode_text     = textview.BSBinTextView()
 		self._viewmode_frame    = frameview.BSBinFrameView()
 		self._viewmode_script   = scriptview.BSBinScriptView()
 
+		# Footers
 		self._binstats_text     = scrollwidgets.BSBinStatsLabel()
 		self._binstats_frame    = scrollwidgets.BSBinStatsLabel()
 
@@ -155,7 +166,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 
 	@QtCore.Slot(object)
-	def setBinModel(self, bin_model:viewmodels.BSBinItemViewModel):
+	def setBinItemsModel(self, bin_model:binitemsmodel.BSBinItemModel):
 		"""Set the bin item model for the bin"""
 
 		if self._bin_items_model == bin_model:
@@ -167,13 +178,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		logging.getLogger(__name__).debug("Set bin model=%s", self._bin_items_model)
 		self.sig_bin_model_changed.emit(bin_model)
 	
-	def binModel(self) -> viewmodels.BSBinItemViewModel:
+	def binItemsModel(self) -> binitemsmodel.BSBinItemModel:
 		return self._bin_items_model
 	
 	def _setupBinModel(self):
 		"""Connect bin model to all the schtuff"""
 
-		self._bin_filter_model.setSourceModel(self._bin_items_model)
+		self._bin_filter_model.setSourceModel(self._bin_composite_model)
 		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK
 
 	###
@@ -262,7 +273,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			
 		self.frameView().setZoom(frame_scale)
 		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
-		
 		self.scriptView().setFrameScale(script_scale)
 
 	@QtCore.Slot(object)
@@ -408,8 +418,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot()
 	def updateBinStats(self):
 
-		count_visible = self._bin_filter_model.rowCount()
-		count_all     = self._bin_filter_model.sourceModel().rowCount()
+		count_visible = self._bin_filter_model.rowCount(QtCore.QModelIndex())
+		count_all     = self._bin_filter_model.sourceModel().rowCount(QtCore.QModelIndex())
 
 		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
 			current_item_count=QtCore.QLocale.system().toString(count_visible),
