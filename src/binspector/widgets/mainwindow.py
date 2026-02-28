@@ -5,14 +5,11 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from ..core import icon_registry
 
 from ..binwidget import binwidget
-from ..binitems import binitemsmodel, binitemtypes
-from ..binview import binviewmodel, binviewitemtypes
+from ..binitems import binitemtypes
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
-from ..views import treeview
 from ..core import binloader, icon_engines, icon_providers, binparser
-
-
+from ..vieweditor import editorwidget
 
 import avbutils
 
@@ -36,17 +33,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 
 		# TEMP
-		self._test_binitems_model = binitemsmodel.BSBinItemModel()
-		self._test_binview_model  = binviewmodel.BSBinViewModel()
-		
-		from ..textview import textviewmodel, textviewproxymodel
-		self._test_textview_model = textviewmodel.BSTextViewModel(item_model=self._test_binitems_model, view_model=self._test_binview_model)
-		self._test_textview_proxy_model = textviewproxymodel.BSBTextViewSortFilterProxyModel(text_view_model=self._test_textview_model)
+#		self._test_binitems_model = binitemsmodel.BSBinItemModel()
+#		self._test_binview_model  = binviewmodel.BSBinViewModel()
+#		self._test_textview_model = textviewmodel.BSTextViewModel(item_model=self._test_binitems_model, view_model=self._test_binview_model)
+#		self._test_textview_proxy_model = textviewproxymodel.BSBTextViewSortFilterProxyModel(text_view_model=self._test_textview_model)
 
-		self._test_binitems_tree = QtWidgets.QTreeView()
-		self._test_binitems_tree.setModel(self._test_textview_proxy_model)
-		self._test_binitems_tree.show()
-		self._test_binitems_tree.setAlternatingRowColors(True)
+#		self._test_binitems_tree = QtWidgets.QTreeView()
+#		self._test_binitems_tree.setModel(self._test_textview_proxy_model)
+#		self._test_binitems_tree.show()
+#		self._test_binitems_tree.setAlternatingRowColors(True)
 
 		self._settings         = QtCore.QSettings()
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
@@ -84,7 +79,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
 		self._dock_appearance  = QtWidgets.QDockWidget(self.tr("Font & Colors"))
 
-		from ..vieweditor import editorwidget
+
 		self._tool_binview     = editorwidget.BSBinViewColumnEditor()
 		self._dock_binview     = QtWidgets.QDockWidget(self.tr("Bin View Settings"))
 
@@ -123,7 +118,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_appearance.hide()
 		self._dock_binview.hide()
 
-		self._bin_widget.setBinModel(self._man_binitems.viewModel())
+#		self._bin_widget.setBinModel(self._man_binitems.viewModel())
 		
 		#self._tool_binview.setModel(self._man_binview.viewModel())
 
@@ -272,7 +267,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
-		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.textView().model().setBinDisplayItemTypes)
+#		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.textView().model().setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		# Appearance to binwidget
@@ -323,7 +318,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_widget.setNeueBinView)
-		self._man_binview.sig_neue_bin_view_changed    .connect(self._test_binview_model.setBinView)
+#		self._man_binview.sig_neue_bin_view_changed    .connect(self._test_binview_model.setBinView)
 		self._bin_widget.sig_bin_view_model_changed          .connect(self._tool_binview.setBinViewModel)
 		#self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.listView().)
 
@@ -331,7 +326,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
 
 		# Bin Contents Toolbars
-		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.textView().model().setSearchText)
+#		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.textView().model().setSearchText)
 
 		#self._main_bincontents.sig_bin_palette_changed.connect(self._man_actions._palette_watcher.setPalette)
 
@@ -387,7 +382,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 				
 			bin_items.append(fields)
 		
-		self._test_binitems_model.addBinItems(bin_items)
+		#self._test_binitems_model.addBinItems(bin_items)
+
+		self._bin_widget._bin_items_model.addBinItems(bin_items)
 			
 					
 	
@@ -453,8 +450,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
 		self._man_binitems.viewModel().clear()
-
-		self._test_binitems_model.clearBinItems()
+		self._bin_widget._bin_items_model.clearBinItems()
+#		self._test_binitems_model.clearBinItems()
 		
 		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
 		self._bin_widget.topWidgetBar().progressBar().show()
