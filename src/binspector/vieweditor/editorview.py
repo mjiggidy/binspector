@@ -31,7 +31,7 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		self.setDefaultDropAction(QtCore.Qt.DropAction.MoveAction)
 		self.setDropIndicatorShown(True)
 		
-
+		self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
 		
 		# Headers
 		self.verticalHeader()  .setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
