@@ -16,6 +16,9 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
 
+		self._item_filters_enabled     = True
+		self._column_filters_enabled   = True
+		
 		self._filter_bin_display_items = proxyfilters.BSBinItemDisplayFilter()
 
 	def setSourceModel(self, sourceModel:textviewmodel.BSTextViewModel):
@@ -54,6 +57,34 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 	def binDisplayItemTypes(self) -> avbutils.BinDisplayItemTypes:
 		
 		return self._filter_bin_display_items.acceptedItemTypes()
+	
+	@QtCore.Slot(bool)
+	def setBinItemFiltersEnabled(self, filters_enabled:bool):
+
+		if not self._item_filters_enabled != filters_enabled:
+			return
+
+		self.beginFilterChange()
+		self._item_filters_enabled = filters_enabled
+		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
+
+	def binItemFiltersEnabled(self) -> bool:
+
+		return self._item_filters_enabled
+	
+	def binColumnFiltersEnabled(self) -> bool:
+
+		return self._column_filters_enabled
+
+	@QtCore.Slot(bool)
+	def setBinColumnFiltersEnabled(self, filters_enabled:bool):
+
+		if not self._column_filters_enabled != filters_enabled:
+			return
+
+		self.beginFilterChange()
+		self._column_filters_enabled = filters_enabled
+		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Columns)
 
 	###
 
@@ -93,16 +124,19 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 	def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
 
-		if source_parent.isValid():
-			return False
+		# Allow all if filters are not enabled
+		if not self._column_filters_enabled:
+			return True
 		
 		return not self.sourceModel().headerData(source_column, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 	
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex):
+
+		# Allow all if filters are not enabled
+		if not self._item_filters_enabled:
+			return True
 		
 		return self._filter_bin_display_items.filterAcceptsItem(self, source_row, source_parent)
-		
-		return super().filterAcceptsRow(source_row, source_parent)
 
 
 

@@ -340,11 +340,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Bin Settings Toggles
 		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._man_binview.setAllColumnsVisible)
 		self._man_binview.sig_all_columns_toggled               .connect(self._man_actions._act_toggle_show_all_columns.setChecked)
-		self._man_binview.sig_view_mode_toggled                 .connect(self._bin_widget.setBinViewEnabled)
+		self._man_binview.sig_view_mode_toggled                 .connect(self._bin_widget._bin_filter_model.setBinColumnFiltersEnabled)
 		
 		self._man_actions._act_toggle_show_all_items.toggled    .connect(self._man_binview.setAllItemsVisible)
 		self._man_binview.sig_all_items_toggled                 .connect(self._man_actions._act_toggle_show_all_items.setChecked)
-		self._man_binview.sig_bin_filters_toggled               .connect(self._bin_widget.setBinFiltersEnabled)
+		self._man_binview.sig_bin_filters_toggled               .connect(self._bin_widget._bin_filter_model.setBinItemFiltersEnabled)
 		self._man_binview.sig_focus_bin_column                  .connect(self._bin_widget.focusBinColumn)
 
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
