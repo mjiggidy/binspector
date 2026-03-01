@@ -2,7 +2,7 @@ from ..binitems import binitemtypes
 from ..binview import binviewitemtypes
 from ..models import viewmodels
 
-from . import textviewmodel
+from . import textviewmodel, proxyfilters
 
 import avbutils
 from PySide6 import QtCore
@@ -15,6 +15,8 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		super().__init__(*args, **kwargs)
 
 		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
+
+		self._filter_bin_display_items = proxyfilters.BSBinItemDisplayFilter()
 
 	def setSourceModel(self, sourceModel:textviewmodel.BSTextViewModel):
 
@@ -39,6 +41,21 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		self.beginFilterChange()
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Columns)
+
+	@QtCore.Slot(object)
+	def setBinDisplayItemTypes(self, types:avbutils.BinDisplayItemTypes):
+		
+		if types != self._filter_bin_display_items.acceptedItemTypes():
+
+			self.beginFilterChange()
+			self._filter_bin_display_items.setAcceptedItemTypes(types)
+			self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
+
+	def binDisplayItemTypes(self) -> avbutils.BinDisplayItemTypes:
+		
+		return self._filter_bin_display_items.acceptedItemTypes()
+
+	###
 
 	@QtCore.Slot(QtCore.QModelIndex, int, QtCore.QModelIndex, int)
 	def moveColumn(self, sourceParent:QtCore.QModelIndex, col_start:int, destinationParent:QtCore.QModelIndex, col_dest:int) -> bool:
@@ -80,6 +97,12 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 			return False
 		
 		return not self.sourceModel().headerData(source_column, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+	
+	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex):
+		
+		return self._filter_bin_display_items.filterAcceptsItem(self, source_row, source_parent)
+		
+		return super().filterAcceptsRow(source_row, source_parent)
 
 
 

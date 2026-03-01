@@ -267,6 +267,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget._bin_filter_model.setBinDisplayItemTypes)
 #		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.textView().model().setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
