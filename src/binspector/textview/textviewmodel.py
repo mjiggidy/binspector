@@ -242,6 +242,11 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 
 		#print(f"AKSI INGRG FOR DATAERS {index=} {role=}")
 		#return "NO HAHA"
+		
+		# NOTE: Need to figure out best way to return original data roles
+		# This is eh
+		if role > QtCore.Qt.ItemDataRole.UserRole:
+			return self._item_model.data(self._item_model.index(index.row(), 0, QtCore.QModelIndex()), role)
 
 		bin_item = self._item_model.data(self._item_model.index(index.row(), 0, QtCore.QModelIndex()), binitemtypes.BSBinItemDataRoles.ViewItemRole)
 		
