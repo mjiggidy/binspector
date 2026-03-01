@@ -16,6 +16,11 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
 
+		self._sort_collator = QtCore.QCollator()
+		self._sort_collator.setNumericMode(True)
+		self._sort_collator.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
+		self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
+
 		self._item_filters_enabled     = True
 		self._column_filters_enabled   = True
 		
@@ -87,6 +92,13 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Columns)
 
 	###
+
+	def lessThan(self, source_left:QtCore.QModelIndex, source_right:QtCore.QModelIndex) -> bool:
+
+		return self._sort_collator.compare(
+			source_left.data(self.sortRole()),
+			source_right.data(self.sortRole())
+		) <= 0
 
 	@QtCore.Slot(QtCore.QModelIndex, int, QtCore.QModelIndex, int)
 	def moveColumn(self, sourceParent:QtCore.QModelIndex, col_start:int, destinationParent:QtCore.QModelIndex, col_dest:int) -> bool:
