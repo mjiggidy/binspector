@@ -34,6 +34,14 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		self.ICON_ASPECT_RATIO = QtCore.QSizeF(4,3)
 
+		self.setSortingEnabled(True)
+		self.setRootIsDecorated(False)
+		self.setAlternatingRowColors(True)
+		self.setUniformRowHeights(True)
+
+		self.header().setFirstSectionMovable(True)
+		self.header().setDefaultAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
 		self.setModel(textviewproxymodel.BSBTextViewSortFilterProxyModel())
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
@@ -298,6 +306,13 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		elif autosize_if_undefined:
 			self.resizeColumnToContents(col_index_logical)
+
+	@QtCore.Slot()
+	def resizeAllColumnsToContents(self):
+		"""Generic resize-to-fit"""
+
+		for idx in range(self.header().count()):
+			self.resizeColumnToContents(idx)
 
 	@QtCore.Slot(QtCore.QMarginsF)
 	def setItemPadding(self, padding:QtCore.QMarginsF):

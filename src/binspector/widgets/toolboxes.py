@@ -299,24 +299,3 @@ class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):
 			)
 
 			chk.setIconSize(QtCore.QSize(chk.iconSize().width(), chk.iconSize().height() * 3/4))
-
-class BSBinSiftSettingsView(QtWidgets.QWidget):
-	"""Bin Sift Settings"""
-
-	def __init__(self, *args, **kwargs):
-
-		raise DeprecationWarning("Nope")
-
-		super().__init__(*args, **kwargs)
-
-		self.setContentsMargins(0,0,0,0)
-
-		self.setLayout(QtWidgets.QVBoxLayout())
-		self.layout().setContentsMargins(0,0,0,0)
-
-		self._chk_sift_enabled = QtWidgets.QCheckBox(self.tr("Sift Enabled"))
-
-		self._tree_siftsettings = treeview.BSTreeViewBase()
-
-		self.layout().addWidget(self._chk_sift_enabled)
-		self.layout().addWidget(self._tree_siftsettings)

@@ -1,5 +1,7 @@
 from PySide6 import QtCore, QtWidgets
 
+# NOTE: DEPRECATED
+
 class BSTreeViewBase(QtWidgets.QTreeView):
 	"""QTreeView with muh defaults"""
 
@@ -25,12 +27,12 @@ class BSTreeViewBase(QtWidgets.QTreeView):
 #			for idx in range(self.header().count())
 #		]
 	
-	@QtCore.Slot()
-	def resizeAllColumnsToContents(self):
-		"""Generic resize-to-fit"""
-
-		for idx in range(self.header().count()):
-			self.resizeColumnToContents(idx)
+#	@QtCore.Slot()
+#	def resizeAllColumnsToContents(self):
+#		"""Generic resize-to-fit"""
+#
+#		for idx in range(self.header().count()):
+#			self.resizeColumnToContents(idx)
 	
 #	@QtCore.Slot(str, QtCore.Qt.SortOrder)
 #	def sortByColumnName(self, column_name:str, sort_order:QtCore.Qt.SortOrder) -> bool:
