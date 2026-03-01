@@ -277,3 +277,12 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 			return None
 		
 		return self._view_model.data(self._view_model.index(section, 0, QtCore.QModelIndex()), role)
+	
+	def setHeaderData(self, section:int, orientation:QtCore.Qt.Orientation, value:typing.Any, /, role:binviewitemtypes.BSBinViewColumnInfoRole) -> bool:
+
+		if orientation != QtCore.Qt.Orientation.Horizontal:
+			return False
+		
+		print("Text view model tryna set section value to ", value)
+
+		return self._view_model.setData(self._view_model.index(section, 0, QtCore.QModelIndex()), value, role)
