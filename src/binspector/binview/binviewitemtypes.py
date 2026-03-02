@@ -5,6 +5,9 @@ import avb, avbutils
 
 from PySide6 import QtCore
 
+DEFAULT_OVERFLOW_CHAR = '⬥'
+"""Some bin columns produce a non-printable \x07 character.  Replace those with this for display only."""
+
 class BSBinViewColumnInfoRole(enum.IntEnum):
 	"""View item data roles available for a given column (extends `QtCore.Qt.ItemDataRole`)"""
 
@@ -12,13 +15,16 @@ class BSBinViewColumnInfoRole(enum.IntEnum):
 	# Replaces anything from old view models / binitemtypes whatever
 
 	DisplayNameRole = QtCore.Qt.ItemDataRole.DisplayRole
-	"""The name displayed on the bin column header"""
+	"""Formatted name displayed on the bin column header"""
 
 	IconRole        = QtCore.Qt.ItemDataRole.DecorationRole
 	"""Data expected by a `BSIconProvider`"""
 	
 	RawColumnInfo   = QtCore.Qt.ItemDataRole.UserRole
 	"""Full `BSBinViewColumnInfo` object"""
+
+	FieldNameRole   = QtCore.Qt.ItemDataRole.UserRole + 5
+	"""Raw Field Name"""
 	
 	FieldIdRole     = QtCore.Qt.ItemDataRole.UserRole + 1
 	"""Bin column field identifier"""
@@ -84,14 +90,21 @@ class BSBinViewColumnInfo:
 	def _refresh_data_roles(self):
 
 		self._data_roles = {
-			BSBinViewColumnInfoRole.DisplayNameRole:    self.display_name,
+			BSBinViewColumnInfoRole.DisplayNameRole:    self._sanitize_display_name(self.display_name),
 			BSBinViewColumnInfoRole.ColumnWidthRole:    self.column_width,
 			BSBinViewColumnInfoRole.FieldIdRole:        self.field_id,
+			BSBinViewColumnInfoRole.FieldNameRole:      self.display_name,
 			BSBinViewColumnInfoRole.FormatIdRole:       self.format_id,
 			BSBinViewColumnInfoRole.IsHiddenRole:       self.is_hidden,
 			BSBinViewColumnInfoRole.RawColumnInfo:      self,
 		}
 
+	@staticmethod
+	def _sanitize_display_name(name:str):
+		"""Format the display name for column headers"""
+		
+		return str().join(c if c.isprintable() else ' ' for c in name.replace('\x07', DEFAULT_OVERFLOW_CHAR))
+		
 
 	def data(self, role:BSBinViewColumnInfoRole) -> typing.Any:
 		return self._data_roles.get(role, None)

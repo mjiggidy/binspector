@@ -252,7 +252,7 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		
 		# Determine which field we need for this column
 		field_id   = self._view_model.data(self._view_model.index(index.column(), 0, QtCore.QModelIndex()), binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
-		field_name = self._view_model.data(self._view_model.index(index.column(), 0, QtCore.QModelIndex()), binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+		field_name = self._view_model.data(self._view_model.index(index.column(), 0, QtCore.QModelIndex()), binviewitemtypes.BSBinViewColumnInfoRole.FieldNameRole)
 
 		# No info for requested field ID
 		if field_id not in bin_item:
