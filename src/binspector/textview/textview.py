@@ -68,9 +68,34 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setItemPadding(self._item_padding)
 
 		self.header().sectionMoved.connect(self.binColumnDragged)
+
+		self.header().setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+		self.header().customContextMenuRequested.connect(self.showColumnContextMenu)
 		#self.header().sectionResized.connect(self.setBinColumnWidth)
 
 	
+
+	@QtCore.Slot(QtCore.QPoint)
+	def showColumnContextMenu(self, point:QtCore.QPoint):
+
+		menu = QtWidgets.QMenu("Column Actions", parent=self.header())
+
+		#print("Yo")
+
+		idx_logical = self.header().logicalIndexAt(point)
+		column_name = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+		
+		menu.addAction(QtGui.QAction(f"Hide {column_name}", parent=self.header()))
+		menu.addSeparator()
+		act_choose = QtGui.QAction("Choose Columns...", parent=self.header())
+		menu.addAction(act_choose)
+
+		menu.popup(self.header().mapToGlobal(point))
+
+		#print(menu, "at", point)
+
+
+
 	@QtCore.Slot(int, int, int)
 	def setBinColumnWidth(self, idx_logical:int, old_width:int, new_width:int):
 
