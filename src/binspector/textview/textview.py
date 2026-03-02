@@ -68,6 +68,20 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setItemPadding(self._item_padding)
 
 		self.header().sectionMoved.connect(self.binColumnDragged)
+		#self.header().sectionResized.connect(self.setBinColumnWidth)
+
+	
+	@QtCore.Slot(int, int, int)
+	def setBinColumnWidth(self, idx_logical:int, old_width:int, new_width:int):
+
+		last_known_width = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
+
+		if new_width == last_known_width:
+			return
+		
+		return self.model().setHeaderData(idx_logical, QtCore.Qt.Orientation.Horizontal, new_width, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
+
+	###
 
 	@QtCore.Slot(int, int, int)
 	def binColumnDragged(self, col_logical_old:int, col_vis_old:int, col_vis_new:int):
@@ -132,8 +146,24 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		
 		model.columnsInserted.connect(self.setColumnWidthsFromBinView)
 		model.rowsInserted.connect(self.updateMinimumSectionWidths)
+		model.headerDataChanged.connect(self.updateBinColumns)
 
 		super().setModel(model)
+
+	@QtCore.Slot(QtCore.Qt.Orientation, int, int)
+	def updateBinColumns(self, orientation:QtCore.Qt.Orientation, idx_log_first:int, idx_log_last:int):
+		pass
+#
+#		for idx_logical in range(idx_log_first, idx_log_last+1):
+#
+#			width = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
+#			name  = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+#
+#			if width != self.header().sectionSize(idx_logical):
+#				print(f"RESIZE {name} ({idx_logical}) to {width} from {self.header().sectionSize(idx_logical)}")
+#				self.header().resizeSection(idx_logical, width)
+
+
 
 	@QtCore.Slot(object)
 	def selectSectionFromCoordinates(self, viewport_coords:QtCore.QPoint):
