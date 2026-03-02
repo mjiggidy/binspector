@@ -5,7 +5,7 @@ import avb, avbutils
 
 from PySide6 import QtCore
 
-DEFAULT_OVERFLOW_CHAR = '⬥'
+DEFAULT_NONPRINTABLE_CHAR = '⬥'
 """Some bin columns produce a non-printable \x07 character.  Replace those with this for display only."""
 
 class BSBinViewColumnInfoRole(enum.IntEnum):
@@ -102,8 +102,8 @@ class BSBinViewColumnInfo:
 	@staticmethod
 	def _sanitize_display_name(name:str):
 		"""Format the display name for column headers"""
-		
-		return str().join(c if c.isprintable() else ' ' for c in name.replace('\x07', DEFAULT_OVERFLOW_CHAR))
+
+		return "".join(c if c.isprintable() else DEFAULT_NONPRINTABLE_CHAR for c in name)
 		
 
 	def data(self, role:BSBinViewColumnInfoRole) -> typing.Any:
