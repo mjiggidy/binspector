@@ -54,6 +54,9 @@ class BSBinViewManager(QtCore.QObject):
 	sig_focus_bin_column    = QtCore.Signal(str)
 	"""Focus a given bin column index"""
 
+	sig_neue_text_column_widths_changed = QtCore.Signal(object)
+	"""Bin Columns Test"""
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
@@ -73,6 +76,8 @@ class BSBinViewManager(QtCore.QObject):
 
 		from ..binview import binviewitemtypes
 		self.sig_neue_bin_view_changed.emit(binviewitemtypes.BSBinViewInfo.from_binview(bin_view))
+
+		self.sig_neue_text_column_widths_changed.emit(column_widths)
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
