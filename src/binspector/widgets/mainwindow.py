@@ -319,6 +319,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_widget.setNeueBinView)
+#		self._man_binview.sig_neue_text_column_widths_changed.connect(print)
 #		self._man_binview.sig_neue_bin_view_changed    .connect(self._test_binview_model.setBinView)
 		self._bin_widget.sig_bin_view_model_changed          .connect(self._tool_binview.setBinViewModel)
 		#self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.listView().)
@@ -516,9 +517,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._bin_widget.textView().setSortingEnabled(True)
 		self._bin_widget.textView().model().setDynamicSortFilter(True)
 
-		for col in range(self._bin_widget.textView().header().count()):
-			#print("Haha...")
-			self._bin_widget.textView().setColumnWidthFromBinView(col, True)
+#		for col in range(self._bin_widget.textView().header().count()):
+#			#print("Haha...")
+#			self._bin_widget.textView().setColumnWidthFromBinView(col, True)
 		
 		# NOTE: Don't want to sort -- want to maintain order which I think is Script View order
 		# Would still like to set indicator somehow tho....
