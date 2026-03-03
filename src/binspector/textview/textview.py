@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging, enum, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from binspector.textview import textviewproxymodel
+from . import textviewproxymodel, textviewheader
 
 from ..core.config import BSTextViewModeConfig
 from ..models import viewmodels
@@ -39,8 +39,11 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setAlternatingRowColors(True)
 		self.setUniformRowHeights(True)
 
+		self.setHeader(textviewheader.BSTextViewColumnHeaderView(QtCore.Qt.Orientation.Horizontal))
+
 		self.header().setFirstSectionMovable(True)
 		self.header().setDefaultAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+		self.header().setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
 
 		self.setModel(textviewproxymodel.BSBTextViewSortFilterProxyModel())
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
@@ -67,9 +70,8 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 		self.setItemPadding(self._item_padding)
 
-		self.header().sectionMoved.connect(self.binColumnDragged)
 
-		self.header().setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+		self.header().sectionMoved.connect(self.binColumnDragged)
 		self.header().customContextMenuRequested.connect(self.showColumnContextMenu)
 		#self.header().sectionResized.connect(self.setBinColumnWidth)
 
@@ -168,26 +170,23 @@ class BSBinTextView(treeview.BSTreeViewBase):
 			raise TypeError(f"Model must be a BSBTextViewSortFilterProxyModel (got {type(model)})")
 		
 		# TODO: Disconnect old model...?
-		
-		model.columnsInserted.connect(self.setColumnWidthsFromBinView)
+
+		model.columnsInserted.connect(self.binColumnsInserted, QtCore.Qt.ConnectionType.QueuedConnection) # NOTE: Queued because QHeader needs to update first
 		model.rowsInserted.connect(self.updateMinimumSectionWidths)
-		model.headerDataChanged.connect(self.updateBinColumns)
+#		model.modelReset.connect(lambda: self.binColumnsInserted(QtCore.QModelIndex(), 0, self.model().columnCount(QtCore.QModelIndex())), QtCore.Qt.ConnectionType.QueuedConnection)
+#		model.headerDataChanged.connect(self.updateBinColumns)
 
 		super().setModel(model)
 
-	@QtCore.Slot(QtCore.Qt.Orientation, int, int)
-	def updateBinColumns(self, orientation:QtCore.Qt.Orientation, idx_log_first:int, idx_log_last:int):
-		pass
-#
-#		for idx_logical in range(idx_log_first, idx_log_last+1):
-#
-#			width = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
-#			name  = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
-#
-#			if width != self.header().sectionSize(idx_logical):
-#				print(f"RESIZE {name} ({idx_logical}) to {width} from {self.header().sectionSize(idx_logical)}")
-#				self.header().resizeSection(idx_logical, width)
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def binColumnsInserted(self, parent:QtCore.QModelIndex, idx_log_first:int, idx_log_last:int):
+		"""Handle new columns (NOTE: Needs a `QueuedConnection` for updated logical indexes)"""
 
+		# TODO: Seems to be firing twice...?
+		#print("OK")
+
+		for idx_log_current in range(idx_log_first, idx_log_last+1):
+			self.resizeColumnToContents(idx_log_current)
 
 
 	@QtCore.Slot(object)
@@ -325,42 +324,6 @@ class BSBinTextView(treeview.BSTreeViewBase):
 			#event.accept()
 
 		return super().mousePressEvent(event)
-
-
-	@QtCore.Slot(object, int)
-	@QtCore.Slot(object, int, int)
-	@QtCore.Slot(object, int, int, bool)
-	def setColumnWidthsFromBinView(self, parent_index:QtCore.QModelIndex, source_start:int, source_end:int|None=None, autosize_if_undefined:bool=True):
-
-		if parent_index.isValid():
-			return
-
-		if source_end is None:
-			source_end = source_start
-
-		for col_index_logical in range(source_start, source_end+1):
-
-			self.setColumnWidthFromBinView(
-				col_index_logical,
-				autosize_if_undefined
-			)
-
-	@QtCore.Slot(int)
-	@QtCore.Slot(int, bool)
-	def setColumnWidthFromBinView(self, col_index_logical:int, autosize_if_undefined:bool=True):
-		"""Set column width from stored bin view, or resize to contents"""
-
-		column_width = self.model().headerData(
-			col_index_logical,
-			QtCore.Qt.Orientation.Horizontal,
-			binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole # Column width, if specified by bin view
-		)
-
-		if column_width:
-			self.setColumnWidth(col_index_logical, column_width + self._item_padding.left() + self._item_padding.right())
-
-		elif autosize_if_undefined:
-			self.resizeColumnToContents(col_index_logical)
 
 	@QtCore.Slot()
 	def resizeAllColumnsToContents(self):
