@@ -4,7 +4,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 class BSBinAppearanceSettingsManager(QtCore.QObject):
 
 	# Mostly use these -- will update with bin or system appearance
-	sig_font_changed                  = QtCore.Signal(QtGui.QFont)
+	sig_active_font_changed           = QtCore.Signal(QtGui.QFont)
 	"""Current font to use (may be system or bin font)"""
 
 	sig_palette_changed               = QtCore.Signal(QtGui.QPalette)
@@ -87,7 +87,7 @@ class BSBinAppearanceSettingsManager(QtCore.QObject):
 		
 		self.sig_bin_font_changed.emit(bin_font)
 		if self._use_bin_appearance:
-			self.sig_font_changed.emit(bin_font)
+			self.sig_active_font_changed.emit(bin_font)
 
 
 	@QtCore.Slot(QtGui.QColor, QtGui.QColor)
@@ -145,10 +145,10 @@ class BSBinAppearanceSettingsManager(QtCore.QObject):
 
 		if use_bin:
 			self.sig_palette_changed.emit(self._bin_palette)
-			self.sig_font_changed.emit(self._bin_font)
+			self.sig_active_font_changed.emit(self._bin_font)
 		else:
 			self.sig_palette_changed.emit(QtWidgets.QApplication.palette())
-			self.sig_font_changed.emit(QtWidgets.QApplication.font())
+			self.sig_active_font_changed.emit(QtWidgets.QApplication.font())
 
 		self.sig_use_bin_appearance_toggled   .emit(use_bin)
 		self.sig_use_system_appearance_toggled.emit(not use_bin)
