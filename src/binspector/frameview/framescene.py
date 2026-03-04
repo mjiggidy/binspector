@@ -1,7 +1,7 @@
 import logging
 from PySide6 import QtCore, QtWidgets
 
-from binspector.textview import textviewproxymodel
+from ..textview import textviewproxymodel
 
 from ..models import viewmodels
 from ..core import config
@@ -16,11 +16,11 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	sig_selection_model_changed    = QtCore.Signal(object)
 	sig_bin_item_added             = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_filter_model:viewmodels.BSBinItemViewModel|None=None, brushes_manager:painters.BSFrameItemBrushManager, **kwargs):
+	def __init__(self, *args, bin_filter_model:textviewproxymodel.BSBTextViewSortFilterProxyModel|None=None, brushes_manager:painters.BSFrameItemBrushManager, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._bin_filter_model = bin_filter_model or textviewproxymodel.BSBinViewProxyModel()
+		self._bin_filter_model = bin_filter_model or textviewproxymodel.BSBTextViewSortFilterProxyModel()
 		self._selection_model  = QtCore.QItemSelectionModel()
 		self._brushes_manager  = brushes_manager
 
@@ -108,11 +108,11 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 #
 	#	self.blockSignals(False)
 
-	def binFilterModel(self) -> textviewproxymodel.BSBinViewProxyModel:
+	def binFilterModel(self) -> textviewproxymodel.BSBTextViewSortFilterProxyModel:
 		return self._bin_filter_model
 
 	@QtCore.Slot(object)
-	def setBinFilterModel(self, bin_model:textviewproxymodel.BSBinViewProxyModel):
+	def setBinFilterModel(self, bin_model:textviewproxymodel.BSBTextViewSortFilterProxyModel):
 
 		if not self._bin_filter_model == bin_model:
 

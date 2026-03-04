@@ -52,7 +52,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
 		self._man_appearance   = appearance.BSBinAppearanceSettingsManager()
 		self._man_sorting      = binproperties.BSBinSortingPropertiesManager()
-		self._man_binitems     = binproperties.BSBinItemsManager()
+#		self._man_binitems     = binproperties.BSBinItemsManager()
 		self._man_bindisplay   = binproperties.BSBinDisplaySettingsManager()
 		self._man_viewmode     = binproperties.BSBinViewModeManager()
 
@@ -324,7 +324,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		#self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.listView().)
 
 		# Update display counts -- Not where where to put this
-		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
+#		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
 
 		# Bin Contents Toolbars
 #		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.textView().model().setSearchText)
@@ -404,8 +404,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def sortingManager(self) -> binproperties.BSBinSortingPropertiesManager:
 		return self._man_sorting
 	
-	def binItemsManager(self) -> binproperties.BSBinItemsManager:
-		return self._man_binitems
+#	def binItemsManager(self) -> binproperties.BSBinItemsManager:
+#		return self._man_binitems
 	
 	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
 		return self._sigs_binloader
@@ -450,7 +450,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setEnabled(True)
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
-		self._man_binitems.viewModel().clear()
+#		self._man_binitems.viewModel().clear()
 		self._bin_widget._bin_items_model.clearBinItems()
 #		self._test_binitems_model.clearBinItems()
 		
@@ -458,6 +458,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._bin_widget.topWidgetBar().progressBar().show()
 
 		self._bin_widget.textView().setSortingEnabled(False)
+		self._bin_widget.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 #		self._bin_widget.textView().model().setDynamicSortFilter(False)
 		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
@@ -513,7 +514,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Set invalid sort column first, per the docs
 		# TODO: Set as stored sort column if available from the bin
 #		self._bin_widget.textView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
-		self._bin_widget.textView().setSortingEnabled(True)
+		#self._bin_widget.textView().setSortingEnabled(True)
 		
 		self._man_actions._act_reloadcurrent.setEnabled(True)
 		self._man_actions._act_reloadcurrent.setVisible(True)
@@ -525,6 +526,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self.sig_bin_changed.emit(self.windowFilePath())
 		
+
+		self._bin_widget.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
 

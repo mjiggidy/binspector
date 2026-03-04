@@ -16,7 +16,6 @@ from ..textview import textview, textviewmodel
 from ..frameview import frameview
 from ..scriptview import scriptview
 
-from ..models import viewmodels
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
 
@@ -33,7 +32,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_bin_stats_updated      = QtCore.Signal(str)
 	sig_bin_view_model_changed = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_item_model:viewmodels.BSBinItemViewModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_item_model:binitemsmodel.BSBinItemModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 

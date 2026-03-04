@@ -170,9 +170,11 @@ class BSBinTextView(treeview.BSTreeViewBase):
 			raise TypeError(f"Model must be a BSBTextViewSortFilterProxyModel (got {type(model)})")
 		
 		# TODO: Disconnect old model...?
+		if self.model():
+			self.model().disconnect(self)
 
 		model.columnsInserted.connect(self.binColumnsInserted, QtCore.Qt.ConnectionType.QueuedConnection) # NOTE: Queued because QHeader needs to update first
-		model.rowsInserted.connect(self.updateMinimumSectionWidths)
+		model.rowsInserted.connect(self.binColumnsInserted)
 #		model.modelReset.connect(lambda: self.binColumnsInserted(QtCore.QModelIndex(), 0, self.model().columnCount(QtCore.QModelIndex())), QtCore.Qt.ConnectionType.QueuedConnection)
 #		model.headerDataChanged.connect(self.updateBinColumns)
 
@@ -352,7 +354,17 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		#self.update()
 		self.sig_item_padding_changed.emit(padding)
 
-	@QtCore.Slot()
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def binColumnsInserted(self, parent:QtCore.QModelIndex, row_first:int, row_last:int):
+
+		# If first row is inserted, update minimum widths
+		if row_first == 0:
+			print(f"I UPDATE {row_first=} {row_last=}")
+			self.updateMinimumSectionWidths()
+		else:
+			print("I SKIP")
+
+	
 	def updateMinimumSectionWidths(self):
 
 		# If no rows

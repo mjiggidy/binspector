@@ -96,7 +96,10 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 	def addBinItems(self, bin_items:typing.Iterable[BSBinItemModelEntry]):
 		"""Add bin items and their properties to the model"""
 
-		self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(QtCore.QModelIndex()), self.rowCount(QtCore.QModelIndex()) + len(bin_items)-1)
+		start_row = self.rowCount(QtCore.QModelIndex())
+		end_row   = start_row + len(bin_items)-1
+
+		self.beginInsertRows(QtCore.QModelIndex(), start_row, end_row)
 
 		self._bin_items.extend(bin_items)
 
