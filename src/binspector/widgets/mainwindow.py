@@ -1,3 +1,4 @@
+import logging
 from os import PathLike
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -268,11 +269,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget._bin_filter_model.setBinDisplayItemTypes)
-#		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.textView().model().setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		# Appearance to binwidget
-		self._man_appearance.sig_font_changed                .connect(self._bin_widget.setBinFont)
+		self._man_appearance.sig_active_font_changed          .connect(self._bin_widget.setBinFont)
 		self._man_appearance.sig_palette_changed             .connect(self._bin_widget.setBinPalette)
 		
 		# Appearance to toolbox
@@ -299,9 +299,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
 		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
-		self._sigs_binloader.sig_got_mobs                    .connect(self._man_binitems.addMobs, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
-		self._sigs_binloader.sig_got_mobs    .connect(self.mobsToViewItems)
-		#self._sigs_binloader.sig_got_mobs.connect(print)
+#		self._sigs_binloader.sig_got_mobs                    .connect(self._man_binitems.addMobs, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
+		self._sigs_binloader.sig_got_mobs                    .connect(self.mobsToViewItems)
 		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
 		#self._sigs_binloader.sig_got_mob                    .connect(self._man_binitems.addMob)
 		#self._sigs_binloader.sig_got_mob                    .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
@@ -438,7 +437,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def prepareForBinLoading(self, bin_path:str):
 		"""Bin load is about to begin. Prepare UI elements."""
 
-		import logging
+		
 		logging.getLogger(__name__).info("Begin loading %s", bin_path)
 		
 		self._time_last_load.start()
@@ -459,7 +458,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._bin_widget.topWidgetBar().progressBar().show()
 
 		self._bin_widget.textView().setSortingEnabled(False)
-		self._bin_widget.textView().model().setDynamicSortFilter(False)
+#		self._bin_widget.textView().model().setDynamicSortFilter(False)
 		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
@@ -485,7 +484,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			#print(adjusted_duration)
 			
 			#print(adjusted_duration)
-			#import logging
+			#
 			#logging.getLogger(__name__).debug("Restart animation: start=%s, end=%s, duration=%s", self._anim_progress.startValue(), self._anim_progress.endValue(), self._anim_progress.duration())
 			self._anim_progress.start()
 		else:
@@ -513,25 +512,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Enabling sorting also performs a sort... sooo
 		# Set invalid sort column first, per the docs
 		# TODO: Set as stored sort column if available from the bin
-		self._bin_widget.textView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
+#		self._bin_widget.textView().header().setSortIndicator(-1, QtCore.Qt.SortOrder.AscendingOrder)
 		self._bin_widget.textView().setSortingEnabled(True)
-		self._bin_widget.textView().model().setDynamicSortFilter(True)
-
-#		for col in range(self._bin_widget.textView().header().count()):
-#			#print("Haha...")
-#			self._bin_widget.textView().setColumnWidthFromBinView(col, True)
-		
-		# NOTE: Don't want to sort -- want to maintain order which I think is Script View order
-		# Would still like to set indicator somehow tho....
-
-#		if self._man_binview.defaultSortColumns():
-#			last_col = self._man_binview.defaultSortColumns()[-1]
-#			direction, column_name = QtCore.Qt.SortOrder(last_col[0]), last_col[1]
-#			if column_name in self._bin_widget.textView().columnDisplayNames():
-#				self._bin_widget.textView().header().setSortIndicator(
-#					self._bin_widget.textView().columnDisplayNames().index(column_name),
-#					direction
-#				)
 		
 		self._man_actions._act_reloadcurrent.setEnabled(True)
 		self._man_actions._act_reloadcurrent.setVisible(True)
@@ -548,7 +530,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		total_load_time = self._time_last_load.elapsed()
 		self._time_last_load.invalidate()
-		import logging
+		
 		logging.getLogger(__name__).info("Finished loading %s in %s seconds (queuesize=%s, fancy=%s)", self.windowFilePath(), round(total_load_time/1000,2), self._queue_size, self._use_animation)
 
 	@QtCore.Slot()
@@ -556,7 +538,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def cleanupPartialBin(self, message:str|None=None):
 		"""Do any cleanup for a cancelled bin load"""
 
-		import logging
+		
 		logging.getLogger(__name__).warning("Aborted loading bin")
 		
 		if message:
@@ -567,7 +549,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	@QtCore.Slot(object)
 	def binLoadException(self, exception:Exception):
 
-		import logging
+		
 		logging.getLogger(__name__).error(exception)
 	
 	@QtCore.Slot()
@@ -606,7 +588,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def cleanupSignals(self):
 		"""Disconnect from worker signals on close"""
 
-		import logging
+		
 		logging.getLogger(__name__).debug("Cleaning up signals")
 		
 		self._sigs_binloader.requestStop()
