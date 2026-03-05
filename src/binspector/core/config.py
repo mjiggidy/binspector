@@ -36,6 +36,9 @@ class BSTextViewModeConfig:
 	DEFAULT_SELECTION_MODE     = QtWidgets.QTreeView.SelectionMode    .ExtendedSelection
 	"""Default selection mode (continuous, extended, etc)"""
 
+	USE_BIN_COLUMN_WIDTHS = True
+	"""Apply initial column widths saved with the bin, if available"""
+
 	ALLOW_KEEP_CURRENT_SELECTION_BETWEEN_MODES = False
 	"""Maintain selected items when changing between selection modes (rows/colums/items)"""
 	# NOTE: There's a bool at work in the logic as well -- both'll need to be True

@@ -305,6 +305,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_view_model.setBinView)
+		self._man_binview.sig_neue_text_column_widths_changed.connect(self._bin_widget.setTextColumnWidthsFromBin)
 
 		# Update display counts -- Not where where to put this
 #		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)

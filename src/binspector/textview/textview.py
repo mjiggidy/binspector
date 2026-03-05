@@ -97,7 +97,6 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		#print(menu, "at", point)
 
 
-
 	@QtCore.Slot(int, int, int)
 	def setBinColumnWidth(self, idx_logical:int, old_width:int, new_width:int):
 

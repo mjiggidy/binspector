@@ -19,7 +19,7 @@ from ..scriptview import scriptview
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
 
-from ..core.config import BSFrameViewModeConfig, BSScriptViewModeConfig
+from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
 
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
@@ -61,7 +61,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_palette       = self.palette()
 		self._default_font      = self.font()
 		self._bin_font          = self.font()
-		self._use_bin_appearance= True
+		
+		self._use_bin_appearance    = True
+		self._use_bin_column_widths = BSTextViewModeConfig.USE_BIN_COLUMN_WIDTHS
 
 		self._section_top       = widgetbars.BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
@@ -263,6 +265,27 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	# Bin Views and Filters
 	###
 
+	@QtCore.Slot(dict)
+	def setTextColumnWidthsFromBin(self, column_widths:dict[str,int]):
+		"""Set text view column widths from avid bin `dict[column_name:str, width:int]`"""
+
+		logging.getLogger(__name__).debug("Got column widths: %s", column_widths)
+
+		for idx_logical in range(self.textView().header().count()):
+
+			column_name = self.textView().model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+
+			if column_name in column_widths and self._use_bin_column_widths:
+
+				logging.getLogger(__name__).debug("Setting column %s (%s) to width %s", column_name, idx_logical, column_widths[column_name])
+				
+				self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.Fixed)
+				self.textView().header().resizeSection(idx_logical, column_widths[column_name])
+			
+			else:
+				self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+				logging.getLogger(__name__).debug("Set column %s (%s) to auto-fit width %s", column_name, idx_logical, self.textView().header().sectionSize(idx_logical))
+
 	@QtCore.Slot(object, object, int, int)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int, script_scale:int):
 
@@ -325,6 +348,20 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	###
 	# Bin Appearance
 	###
+
+	def useSavedBinColumnWidths(self) -> bool:
+		"""Initially load saved bin column widths or nah"""
+
+		return self._use_bin_column_widths
+	
+	@QtCore.Slot(bool)
+	def setUseSavedBinColumnWidths(self, use_saved_widths:bool):
+		"""Initially load saved bin column widths or nah.  False will auto-fit columns."""
+
+		if self._use_bin_column_widths == use_saved_widths:
+			return
+		
+		self._use_bin_column_widths = use_saved_widths
 
 	@QtCore.Slot(QtGui.QPalette)
 	def setBinPalette(self, palette:QtGui.QPalette):
