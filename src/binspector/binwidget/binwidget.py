@@ -50,9 +50,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._bin_items_model     = bin_item_model or binitemsmodel.BSBinItemModel()
 		self._bin_view_model      = bin_view_model or binviewmodel .BSBinViewModel()
-		self._bin_composite_model = textviewmodel.BSTextViewModel(item_model=self._bin_items_model, view_model=self._bin_view_model)
 		
+		self._bin_composite_model = textviewmodel.BSTextViewModel(item_model=self._bin_items_model, view_model=self._bin_view_model)
 		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModel()
+		
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
 		# Save initial palette for later togglin'
