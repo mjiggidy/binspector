@@ -33,11 +33,11 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 	def _setupModel(self):
 
-		self._bin_filter_model.rowsInserted  .connect(self.addBinItems)
+		self._bin_filter_model.rowsInserted         .connect(self.addBinItems)
+		self._bin_filter_model.rowsMoved            .connect(self.reloadBinFilterModel)
 		self._bin_filter_model.rowsAboutToBeRemoved .connect(self.removeBinItems)
-		self._bin_filter_model.modelReset    .connect(self.clear)
+		self._bin_filter_model.modelReset           .connect(self.clear)
 
-		self._bin_filter_model.rowsMoved     .connect(self.reloadBinFilterModel)
 		self._bin_filter_model.layoutChanged .connect(self.reloadBinFilterModel)
 
 		self.selectionChanged.connect(self.updateSelectionModel)
@@ -114,15 +114,16 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	@QtCore.Slot(object)
 	def setBinFilterModel(self, bin_model:textviewproxymodel.BSBTextViewSortFilterProxyModel):
 
-		if not self._bin_filter_model == bin_model:
+		if self._bin_filter_model == bin_model:
+			return
 
-			self._bin_filter_model.disconnect(self)
+		self._bin_filter_model.disconnect(self)
 
-			self._bin_filter_model = bin_model
-			self._setupModel()
+		self._bin_filter_model = bin_model
+		self._setupModel()
 
-			logging.getLogger(__name__).debug("Set bin filter model=%s (source model=%s)", self._bin_filter_model, self._bin_filter_model.sourceModel())
-			self.sig_bin_filter_model_changed.emit(bin_model)
+		logging.getLogger(__name__).debug("Set bin filter model=%s (source model=%s)", self._bin_filter_model, self._bin_filter_model.sourceModel())
+		self.sig_bin_filter_model_changed.emit(bin_model)
 
 	@QtCore.Slot()
 	def reloadBinFilterModel(self):
@@ -143,19 +144,16 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 			proxy_row_index  = self._bin_filter_model.index(row, 0, parent_row_index)
 
 			bin_item_name   = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.ItemNameRole)
-			bin_item_coords = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole)
+			bin_item_coords = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole) or [-3000,-3000]
 			bin_item_color  = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
 			bin_item_type   = proxy_row_index.data(binitemtypes.BSBinItemDataRoles.ItemTypesRole)
 
-			#print(bin_item_color)
-
 			bin_item = sceneitems.BSFrameModeItem(brush_manager=self._brushes_manager)
+
 			bin_item.setName(str(bin_item_name))
 			bin_item.setClipColor(bin_item_color)
 			bin_item.setClipType(bin_item_type)
 			bin_item.setFlags(config.BSFrameViewModeConfig.DEFAULT_ITEM_FLAGS)
-			
-			
 
 			x, y, z = *bin_item_coords, self._z_top
 			self._z_top += 1
