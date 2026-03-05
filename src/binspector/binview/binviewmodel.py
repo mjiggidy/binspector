@@ -21,14 +21,14 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot(object)
 	def setBinView(self, bin_view_info:binviewitemtypes.BSBinViewInfo):
 
+		self.setBinViewName(bin_view_info.name)
+
 		self.beginResetModel()
-
-		self._bin_view_name = bin_view_info.name
 		self._bin_view_columns = bin_view_info.columns
-
 		self.endResetModel()
 
 
+	@QtCore.Slot(str)
 	def setBinViewName(self, name:str):
 
 		if self._bin_view_name == name:
@@ -37,6 +37,10 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		self._bin_view_name = name
 
 		self.sig_bin_view_name_changed.emit(name)
+
+	def binViewName(self) -> str:
+
+		return self._bin_view_name
 
 	def addBinColumn(self, bin_column:binviewitemtypes.BSBinViewColumnInfo, row:int|None=None):
 

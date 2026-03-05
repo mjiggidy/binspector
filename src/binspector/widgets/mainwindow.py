@@ -6,7 +6,8 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from ..core import icon_registry
 
 from ..binwidget import binwidget
-from ..binitems import binitemtypes
+from ..binitems import binitemsmodel, binitemtypes
+from ..binview import binviewmodel, binviewitemtypes
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..core import binloader, icon_engines, icon_providers, binparser
@@ -32,17 +33,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		super().__init__()
 
-
-		# TEMP
-#		self._test_binitems_model = binitemsmodel.BSBinItemModel()
-#		self._test_binview_model  = binviewmodel.BSBinViewModel()
-#		self._test_textview_model = textviewmodel.BSTextViewModel(item_model=self._test_binitems_model, view_model=self._test_binview_model)
-#		self._test_textview_proxy_model = textviewproxymodel.BSBTextViewSortFilterProxyModel(text_view_model=self._test_textview_model)
-
-#		self._test_binitems_tree = QtWidgets.QTreeView()
-#		self._test_binitems_tree.setModel(self._test_textview_proxy_model)
-#		self._test_binitems_tree.show()
-#		self._test_binitems_tree.setAlternatingRowColors(True)
+		self._bin_items_model  = binitemsmodel.BSBinItemModel()
+		self._bin_view_model   = binviewmodel.BSBinViewModel()
 
 		self._settings         = QtCore.QSettings()
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
@@ -67,7 +59,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._time_last_load   = QtCore.QElapsedTimer()
 
 		# Define widgets
-		self._bin_widget = binwidget.BSBinContentsWidget()
+		self._bin_widget = binwidget.BSBinContentsWidget(bin_item_model=self._bin_items_model, bin_view_model=self._bin_view_model)
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(
 			icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY
@@ -81,7 +73,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_appearance  = QtWidgets.QDockWidget(self.tr("Font & Colors"))
 
 
-		self._tool_binview     = editorwidget.BSBinViewColumnEditor()
+		self._tool_binview     = editorwidget.BSBinViewColumnEditor(bin_view_model=self._bin_view_model)
 		self._dock_binview     = QtWidgets.QDockWidget(self.tr("Bin View Settings"))
 
 		#self._tool_columneditor = editorwidget.BSBinViewColumnEditor()
@@ -300,7 +292,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
 #		self._sigs_binloader.sig_got_mobs                    .connect(self._man_binitems.addMobs, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
-		self._sigs_binloader.sig_got_mobs                    .connect(self.mobsToViewItems)
+		self._sigs_binloader.sig_got_mobs                    .connect(self.mobsToBinItems)
 		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
 		#self._sigs_binloader.sig_got_mob                    .connect(self._man_binitems.addMob)
 		#self._sigs_binloader.sig_got_mob                    .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
@@ -317,10 +309,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
-		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_widget.setNeueBinView)
+		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_view_model.setBinView)
 #		self._man_binview.sig_neue_text_column_widths_changed.connect(print)
 #		self._man_binview.sig_neue_bin_view_changed    .connect(self._test_binview_model.setBinView)
-		self._bin_widget.sig_bin_view_model_changed          .connect(self._tool_binview.setBinViewModel)
+#		self._bin_widget.sig_bin_view_model_changed          .connect(self._tool_binview.setBinViewModel)
 		#self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.listView().)
 
 		# Update display counts -- Not where where to put this
@@ -357,7 +349,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 
 	@QtCore.Slot()
-	def mobsToViewItems(self, mobs:list[binparser.BinItemInfo]):
+	def mobsToBinItems(self, mobs:list[binparser.BinItemInfo]):
 
 		#print(mobs)
 
@@ -385,7 +377,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		#self._test_binitems_model.addBinItems(bin_items)
 
-		self._bin_widget._bin_items_model.addBinItems(bin_items)
+		self._bin_items_model.addBinItems(bin_items)
 			
 					
 	
@@ -451,15 +443,16 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
 #		self._man_binitems.viewModel().clear()
-		self._bin_widget._bin_items_model.clearBinItems()
+		self._bin_items_model.clear()
 #		self._test_binitems_model.clearBinItems()
 		
 		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
 		self._bin_widget.topWidgetBar().progressBar().show()
 
-		self._bin_widget.textView().setSortingEnabled(False)
+#		self._bin_widget.textView().setSortingEnabled(False)
 		self._bin_widget.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-#		self._bin_widget.textView().model().setDynamicSortFilter(False)
+		self._bin_widget.textView().header().setSectionsMovable(False)
+# self._bin_widget.textView().model().setDynamicSortFilter(False)
 		
 		self.setCursor(QtCore.Qt.CursorShape.BusyCursor)
 		self.setWindowFilePath(bin_path)
@@ -481,12 +474,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			
 			if not self._time_last_chunk.isValid():
 				self._time_last_chunk.start()
-			
-			#print(adjusted_duration)
-			
-			#print(adjusted_duration)
-			#
-			#logging.getLogger(__name__).debug("Restart animation: start=%s, end=%s, duration=%s", self._anim_progress.startValue(), self._anim_progress.endValue(), self._anim_progress.duration())
+
 			self._anim_progress.start()
 		else:
 			self._bin_widget.topWidgetBar().progressBar().setValue(self._bin_widget.topWidgetBar().progressBar().value() + len(mobs_list))
@@ -528,6 +516,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 
 		self._bin_widget.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
+		self._bin_widget.textView().header().setSectionsMovable(True)
 		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
 		QtWidgets.QApplication.instance().alert(self)
 

@@ -106,7 +106,7 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		self.endInsertRows()
 
 	@QtCore.Slot()
-	def clearBinItems(self):
+	def clear(self):
 		"""Clear and reset the bin items model"""
 
 		self.beginResetModel()
