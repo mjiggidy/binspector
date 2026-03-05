@@ -283,6 +283,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				self.textView().header().resizeSection(idx_logical, column_widths[column_name])
 			
 			else:
+				
 				self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 				logging.getLogger(__name__).debug("Set column %s (%s) to auto-fit width %s", column_name, idx_logical, self.textView().header().sectionSize(idx_logical))
 

@@ -173,7 +173,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 			self.model().disconnect(self)
 
 		model.columnsInserted.connect(self.binColumnsInserted, QtCore.Qt.ConnectionType.QueuedConnection) # NOTE: Queued because QHeader needs to update first
-		model.rowsInserted.connect(self.binColumnsInserted)
+		model.rowsInserted.connect(self.binItemsInserted)
 #		model.modelReset.connect(lambda: self.binColumnsInserted(QtCore.QModelIndex(), 0, self.model().columnCount(QtCore.QModelIndex())), QtCore.Qt.ConnectionType.QueuedConnection)
 #		model.headerDataChanged.connect(self.updateBinColumns)
 
@@ -186,6 +186,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		# TODO: Seems to be firing twice...?
 		#print("OK")
 
+		
 		for idx_log_current in range(idx_log_first, idx_log_last+1):
 			self.resizeColumnToContents(idx_log_current)
 
@@ -348,20 +349,26 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		logging.getLogger(__name__).debug("Setting padding to %s", str(self._item_padding))
 		
 		self.updateMinimumSectionWidths()
-		self.scheduleDelayedItemsLayout()
+		#self.scheduleDelayedItemsLayout()
 
 		#self.update()
 		self.sig_item_padding_changed.emit(padding)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binColumnsInserted(self, parent:QtCore.QModelIndex, row_first:int, row_last:int):
+	def binItemsInserted(self, parent:QtCore.QModelIndex, row_first:int, row_last:int):
 
-		# If first row is inserted, update minimum widths
+		# NOTE: Basically we need to set minimum column widths
+		# But the column width for icons depends on the row height, so we need at least one 
+		# row to query the height, then calculate the minimum width from that.  It's probably 
+		# a dumb design that I should rethink.
+
+		# So only if we insert at the first row, recalculate.
+		# I dunno.  Maybe I just do this at the end of the loading?
+
 		if row_first == 0:
 			print(f"I UPDATE {row_first=} {row_last=}")
 			self.updateMinimumSectionWidths()
-		else:
-			print("I SKIP")
+
 
 	
 	def updateMinimumSectionWidths(self):
