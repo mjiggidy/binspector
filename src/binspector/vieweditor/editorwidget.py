@@ -1,10 +1,12 @@
+import logging
+
 from PySide6 import QtWidgets, QtGui, QtCore
 from . import editorproxymodel, editorview
 from ..binview import binviewmodel
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -52,15 +54,26 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self.layout().addLayout(self._lay_buttons)
 
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
+		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
+
+		self.setBinViewModel(bin_view_model or binviewmodel.BSBinViewModel())
 		
 	
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
-		#print("YOOOOOOOO FROM ", bin_view_model)
+		if self._view_editor.model().binViewModel() == bin_view_model:
+			return
 
-		self._view_editor.model().setBinViewModel(bin_view_model)
+		if self._view_editor.model().binViewModel() is not None:
+			self._view_editor.model().binViewModel().sig_bin_view_name_changed.disconnect(self._cmb_bin_view_list.addItem)
 		
-		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn) # Move to view?
+		logging.getLogger(__name__).debug("Setting editor model to %s", bin_view_model.binViewName())
+		
+		#bin_view_model.sig_bin_view_name_changed.connect(self._cmb_bin_view_list.addItem)
+		self._view_editor.model().setSourceModel(bin_view_model)
 		
 		self._cmb_bin_view_list.addItem(bin_view_model._bin_view_name)
 		self._cmb_bin_view_list.setCurrentText(bin_view_model._bin_view_name)
+		
+		
+		

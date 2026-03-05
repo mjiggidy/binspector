@@ -1,3 +1,5 @@
+import logging
+
 from PySide6 import QtCore, QtGui
 import enum, typing
 from ..binview import binviewitemtypes, binviewmodel
@@ -30,12 +32,20 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			BSBinViewColumnEditorFeature.VisibilityColumn,
 		]
 
-	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
-		"""Set the source bin view model to edit (just an alias for `setSourceModel()`)"""
+	def setSourceModel(self, bin_view_model:binviewmodel.BSBinViewModel):
+		"""Set the source bin view model to edit"""
 
+		if self.sourceModel() == bin_view_model:
+			return
+		
 		self.beginResetModel()
 
-		self.setSourceModel(bin_view_model)
+		if self.sourceModel():
+			self.sourceModel().disconnect(self)
+
+		super().setSourceModel(bin_view_model)
+
+		logging.getLogger(__name__).debug("SETTING UP EDITOR FOR %s", bin_view_model.binViewName())
 
 		self.sourceModel().rowsAboutToBeRemoved.connect(self.sourceModelAboutToRemoveRows)
 		self.sourceModel().rowsRemoved.connect(self.sourceModelRemovedRows)
@@ -47,9 +57,15 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		self.sourceModel().rowsMoved.connect(self.sourceModelMovedRows)
 
 		self.sourceModel().modelAboutToBeReset.connect(self.modelAboutToBeReset)
+		self.sourceModel().modelReset.connect(self.modelReset)
 		self.sourceModel().layoutChanged.connect(self.layoutChanged)
 
 		self.endResetModel()
+
+	def binViewModel(self) -> binviewmodel.BSBinViewModel:
+
+		return self.sourceModel()
+	
 
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
