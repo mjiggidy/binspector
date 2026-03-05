@@ -284,18 +284,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_aborted_loading             .connect(self.cleanupPartialBin)
 		self._sigs_binloader.sig_got_mob_count               .connect(self._bin_widget.topWidgetBar().progressBar().setMaximum)
 		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading %v of %m mobs", "%v=current_count; %m=total_count")))
-		#self._sigs_binloader.sig_got_mob_count               .connect(lambda: self.updateLoadingBar([]))
  
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
 		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
-#		self._sigs_binloader.sig_got_mobs                    .connect(self._man_binitems.addMobs, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
-		self._sigs_binloader.sig_got_mobs                    .connect(self.mobsToBinItems)
+		self._sigs_binloader.sig_got_mobs                    .connect(self.mobsToBinItems, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
 		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
-		#self._sigs_binloader.sig_got_mob                    .connect(self._man_binitems.addMob)
-		#self._sigs_binloader.sig_got_mob                    .connect(lambda: self._main_bincontents.topWidgetBar().progressBar().setValue(self._main_bincontents.topWidgetBar().progressBar().value() + 1))
 
 		self._sigs_binloader.sig_got_sift_settings           .connect(self._man_siftsettings.setSiftSettings)
 		self._man_siftsettings.sig_bin_view_changed          .connect(self._tool_sifting.setBinView)
@@ -306,22 +302,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_sifting.sig_options_set                   .connect(self._man_siftsettings.setSiftSettings)
 
 		# Inter-manager relations
-#		self._man_binview.sig_bin_view_changed               .connect(self._man_binitems.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_view_model.setBinView)
-#		self._man_binview.sig_neue_text_column_widths_changed.connect(print)
-#		self._man_binview.sig_neue_bin_view_changed    .connect(self._test_binview_model.setBinView)
-#		self._bin_widget.sig_bin_view_model_changed          .connect(self._tool_binview.setBinViewModel)
-		#self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.listView().)
 
 		# Update display counts -- Not where where to put this
 #		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
 
 		# Bin Contents Toolbars
 #		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.textView().model().setSearchText)
-
-		#self._main_bincontents.sig_bin_palette_changed.connect(self._man_actions._palette_watcher.setPalette)
 
 		# Bin View Modes
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
@@ -341,8 +330,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
 		self._man_appearance.sig_use_system_appearance_toggled  .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
-		
-		#self._tool_binview.activated                            .connect(self._man_binview.requestFocusColumn)
 
 	##
 	## Getters & Setters
