@@ -216,12 +216,14 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		window.setMobQueueSize(self._man_settings.mobQueueSize())
 		window.setUseAnimation(self._man_settings.useFancyProgressBar())
+		window.setUseSavedColumnWidths(self._man_settings.useSavedColumnWidths())
+		
 		window.binContentsWidget().setBottomScrollbarScaleFactor(self._man_settings.bottomScrollbarScale())
+		window.binContentsWidget().setItemPadding(self._man_settings.listItemPadding())
 
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
 
-		window.binContentsWidget().setItemPadding(self._man_settings.listItemPadding())
 
 		logging.getLogger(__name__).debug("Created %s", window.winId())
 		
@@ -348,6 +350,10 @@ class BSMainApplication(QtWidgets.QApplication):
 
 			self._wnd_settings.sig_use_animations_changed.connect(self._man_settings.setUseFancyProgressBar)
 			self._wnd_settings.sig_use_animations_changed.connect(lambda use_animation: [w.setUseAnimation(use_animation) for w in self._man_binwindows.windows()])
+
+			self._wnd_settings.sig_use_column_widths_changed.connect(self._man_settings.setUseSavedColumnWidths)
+			self._wnd_settings.sig_use_column_widths_changed.connect(lambda use_col_widths: [w.setUseSavedColumnWidths(use_col_widths) for w in self._man_binwindows.windows()])
+
 			self._wnd_settings.sig_mob_queue_size_changed.connect(self._man_settings.setMobQueueSize)
 			self._wnd_settings.sig_startup_behavior_changed.connect(self._man_settings.setStartupBehavior)
 			self._wnd_settings.sig_mob_queue_size_changed.connect(lambda queue_size: [w.setMobQueueSize(queue_size) for w in self._man_binwindows.windows()])
@@ -360,6 +366,7 @@ class BSMainApplication(QtWidgets.QApplication):
 
 			# Settings Temp
 			self._wnd_settings.setUseAnimations(self._man_settings.useFancyProgressBar())
+			self._wnd_settings.setUseSavedColumnWidths(self._man_settings.useSavedColumnWidths())
 			self._wnd_settings.setBottomScrollBarScale(self._man_settings.bottomScrollbarScale())
 			self._wnd_settings.setMobQueueSize(self._man_settings.mobQueueSize())
 			self._wnd_settings.setStartupBehavior(self._man_settings.startupBehavior())

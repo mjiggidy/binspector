@@ -165,17 +165,29 @@ class BSSettingsManager:
 		logging.getLogger(__name__).debug("Returning mob_queue_size: %s", queue_size)
 		return queue_size
 	
-	@QtCore.Slot(int)
+	@QtCore.Slot(bool)
 	def setUseFancyProgressBar(self, use_animation:bool):
 
 		self.settings("bs").setValue("UserInterface/fancy_progress_bar", use_animation)
 		logging.getLogger(__name__).debug("Set fancy_progress_bar: %s", use_animation)
 
-	def useFancyProgressBar(self) -> int:
+	def useFancyProgressBar(self) -> bool:
 		
 		use_animation = self.settings("bs").value("UserInterface/fancy_progress_bar", True, bool)
 		logging.getLogger(__name__).debug("Returning fancy_progress_bar: %s", use_animation)
 		return use_animation
+	
+	@QtCore.Slot(bool)
+	def setUseSavedColumnWidths(self, use_column_widths:bool):
+
+		self.settings("bs").setValue("BinLoading/use_column_widths", use_column_widths)
+		logging.getLogger(__name__).debug("Set use_column_widths: %s", use_column_widths)
+
+	def useSavedColumnWidths(self) -> bool:
+		
+		use_column_widths = self.settings("bs").value("BinLoading/use_column_widths", True, bool)
+		logging.getLogger(__name__).debug("Returning use_column_widths: %s", use_column_widths)
+		return use_column_widths
 	
 	@QtCore.Slot(object)
 	def setStartupBehavior(self, behavior:BSStartupBehavior):

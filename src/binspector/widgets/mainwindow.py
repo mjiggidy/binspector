@@ -409,6 +409,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		return self._use_animation
 	
+	@QtCore.Slot(bool)
+	def setUseSavedColumnWidths(self, use_col_widths:bool):
+
+		self._bin_widget.setUseSavedBinColumnWidths(use_col_widths)
+	
 	##
 	## Slots
 	##
