@@ -20,7 +20,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		super().__init__(*args, **kwargs)
 
 		self.setApplicationName(config.BSApplicationConfig.APPLICATION_NAME)
-		self.setApplicationVersion(config.BSApplicationConfig.APPLICATION_VERSION)
+		self.setApplicationVersion(config.BSApplicationConfig.APPLICATION_VERSION.toString())
 
 		self.setOrganizationName(config.BSApplicationConfig.ORGANIZATION_NAME)
 		self.setOrganizationDomain(config.BSApplicationConfig.ORGANIZATION_DOMAIN)

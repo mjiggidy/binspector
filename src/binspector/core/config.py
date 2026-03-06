@@ -7,13 +7,13 @@ class BSApplicationConfig:
 	APPLICATION_NAME    = "Binspector"
 	"""Name o' the app"""
 
-	APPLICATION_VERSION = "0.0.17"
+	APPLICATION_VERSION = QtCore.QVersionNumber(0,0,19)
 	"""Version Number (major.minor.revision)"""
 
 	APPLICATION_STORAGE_PATH = QtCore.QStandardPaths.StandardLocation.AppDataLocation
 	"""`QtCore.QStandardPaths.StandardLocation` for settings, logs, and databases"""
 
-	LOG_FILE_NAME            = "bs_main.log"
+	LOG_FILE_NAME       = "bs_main.log"
 	
 	ORGANIZATION_NAME   = "GlowingPixel"
 	"""Maybe it should just be Michael"""
