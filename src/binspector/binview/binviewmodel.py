@@ -7,7 +7,7 @@ from . import binviewitemtypes
 class BSBinViewModel(QtCore.QAbstractItemModel):
 	"""Main Bin View Model"""
 
-	DEFAULT_BIN_VIEW_NAME = "Untitled"
+	DEFAULT_BIN_VIEW_NAME = "NoNameSet"
 
 	sig_bin_view_name_changed = QtCore.Signal(str)
 
@@ -19,14 +19,21 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		self._bin_view_columns:list[binviewitemtypes.BSBinViewColumnInfo] = bin_view.columns if bin_view else []
 	
 	@QtCore.Slot(object)
-	def setBinView(self, bin_view_info:binviewitemtypes.BSBinViewInfo):
+	def setBinViewInfo(self, bin_view_info:binviewitemtypes.BSBinViewInfo):
 
 		self.setBinViewName(bin_view_info.name)
 
 		self.beginResetModel()
 		self._bin_view_columns = bin_view_info.columns
 		self.endResetModel()
+	
+	def binViewInfo(self) -> binviewitemtypes.BSBinViewInfo:
+		"""Get the bin view info for the current model"""
 
+		return binviewitemtypes.BSBinViewInfo(
+			name    = self.binViewName(),
+			columns = self._bin_view_columns
+		)
 
 	@QtCore.Slot(str)
 	def setBinViewName(self, name:str):
@@ -192,12 +199,3 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 	def dropMimeData(self, data, action, row, column, parent):
 #		print("Huh")
 		return super().dropMimeData(data, action, row, column, parent)
-	
-	def to_json_dict(self) -> dict[str, typing.Any]:
-		"""Output a JSON-ready `dict` of this binview"""
-		
-		return {
-			"name": self.binViewName(),
-			"version": "1.0",
-			"columns": [h.to_json_dict() for h in self._bin_view_columns]
-		}
