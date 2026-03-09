@@ -2,9 +2,12 @@ import logging
 
 from PySide6 import QtWidgets, QtGui, QtCore
 from . import editorproxymodel, editorview
-from ..binview import binviewmodel
+from ..binview import binviewmodel, binviewitemtypes
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
+
+	sig_export_binview_requested = QtCore.Signal(dict)
+	"""Export the given binview"""
 
 	def __init__(self, *args, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
@@ -39,6 +42,9 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_modify.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DocumentSave))
 		self._btn_view_list_add.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
 		self._btn_view_list_delete.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove))
+
+		self._btn_view_list_add.clicked.connect(self.exportBinView)
+
 		self.layout().addLayout(self._lay_view_list)
 
 		self.layout().addWidget(QtWidgets.QLabel(self.tr("Add, Modify, and Rearrange Columns:")))
@@ -69,11 +75,17 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		
 		logging.getLogger(__name__).debug("Setting editor model to %s", bin_view_model.binViewName())
 		
-		#bin_view_model.sig_bin_view_name_changed.connect(self._cmb_bin_view_list.addItem)
+		# NOTE: This was commented out and probably ruining my life but I don't remember why yet.  So hello, future me.
+		bin_view_model.sig_bin_view_name_changed.connect(self._cmb_bin_view_list.addItem)
 		self._view_editor.model().setSourceModel(bin_view_model)
 		
 		self._cmb_bin_view_list.addItem(bin_view_model._bin_view_name)
 		self._cmb_bin_view_list.setCurrentText(bin_view_model._bin_view_name)
-		
-		
-		
+
+	@QtCore.Slot()
+	def exportBinView(self):
+		"""Prepare binview as a dict for export"""
+
+		self.sig_export_binview_requested.emit(
+			self._view_editor.model().to_json_dict()
+		)
