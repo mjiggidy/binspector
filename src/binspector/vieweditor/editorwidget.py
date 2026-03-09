@@ -43,7 +43,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_add.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
 		self._btn_view_list_delete.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove))
 
-		self._btn_view_list_add.clicked.connect(self.exportBinView)
+		self._btn_view_list_modify.clicked.connect(self.exportBinView)
 
 		self.layout().addLayout(self._lay_view_list)
 
