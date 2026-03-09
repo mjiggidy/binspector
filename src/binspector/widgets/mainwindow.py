@@ -1,4 +1,4 @@
-import logging
+import logging, typing
 from os import PathLike
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -25,6 +25,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	sig_request_show_settings     = QtCore.Signal()
 	sig_request_check_updates     = QtCore.Signal()
 	sig_request_visit_discussions = QtCore.Signal()
+	
+	sig_request_export_bin_view   = QtCore.Signal(dict)
+	"""Export the bin view"""
 
 	sig_bin_changed               = QtCore.Signal(str)
 	"""Window is loading a new bin"""
@@ -332,6 +335,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
 		self._man_appearance.sig_use_system_appearance_toggled  .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
 
+
+		# Bin View Editor
+		self._tool_binview.sig_export_binview_requested         .connect(self.exportBinView)
+
+
 	##
 	## Getters & Setters
 	##
@@ -613,3 +621,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		event.accept()
 		return True
+	
+	@QtCore.Slot(dict)
+	def exportBinView(self, bin_view_dict:dict[str, typing.Any]):
+		"""Export a given binview"""
+
+		self.sig_request_export_bin_view.emit(bin_view_dict)

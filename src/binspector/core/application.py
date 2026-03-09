@@ -1,7 +1,7 @@
 """
 Main app controller
 """
-import logging
+import logging, typing
 import qtlogrelay
 from   PySide6 import QtCore, QtGui, QtWidgets
 from   os import PathLike
@@ -11,6 +11,8 @@ from ..managers import windows, software_updates
 from ..widgets  import mainwindow, logwidget, settingswindow
 from ..models   import logmodels
 from ..res      import translations
+
+BIN_VIEW_PATH = "binviews"
 
 class BSMainApplication(QtWidgets.QApplication):
 	"""Main application"""
@@ -193,6 +195,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_visit_discussions .connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
 		window.sig_request_check_updates     .connect(self.showUpdatesWindow)
 		window.sig_bin_changed               .connect(self._man_settings.setLastBinPath)
+		window.sig_request_export_bin_view   .connect(self.exportBinView)
 
 		# Restore Toggle Settings
 		window.binViewManager().setAllColumnsVisible(self._man_settings.allColumnsVisible())
@@ -254,6 +257,25 @@ class BSMainApplication(QtWidgets.QApplication):
 				)
 
 		return window
+	
+	@QtCore.Slot(dict)
+	def exportBinView(self, bin_view_dict:dict[str, typing.Any]):
+
+		import json
+
+		path_binview_dir = QtCore.QDir(self.localStoragePath()).filePath(BIN_VIEW_PATH)
+		QtCore.QDir().mkpath(path_binview_dir)
+		
+		path_binview_file = QtCore.QDir.toNativeSeparators(QtCore.QDir(path_binview_dir).filePath(bin_view_dict["name"] + ".json"))
+
+		with open(path_binview_file, "w") as file_binview:
+
+			print(
+				json.dumps(bin_view_dict, indent="\t"),
+				file=file_binview
+			)
+
+		logging.getLogger(__name__).info("Bin view \"%s\" was saved to %s", bin_view_dict["name"], path_binview_file)
 	
 	@QtCore.Slot()
 	@QtCore.Slot(bool)
