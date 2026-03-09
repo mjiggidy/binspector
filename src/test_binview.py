@@ -1,7 +1,7 @@
 import sys, typing
 from PySide6 import QtCore, QtWidgets
 
-from binspector.binview  import binviewitemtypes, binviewmodel
+from binspector.binview  import binviewitemtypes, binviewmodel, jsonadapter
 from binspector.binitems import binitemsmodel, binitemtypes
 from binspector.textview import textviewmodel, textviewproxymodel
 
@@ -10,24 +10,18 @@ from binspector.textview import textview
 from binspector.models import viewmodels
 import avb
 
+bin_view_model = binviewmodel.BSBinViewModel()
+
 @QtCore.Slot(dict)
-def exportJson(binview_dict:dict[str, typing.Any]):
+def exportJson():
 
-	import pathlib, json
+	binview_info = bin_view_model.binViewInfo()
+	with open(binview_info.name + ".json", "w") as view_handle:
 
-	path_output = pathlib.Path("/Users/mjordan/Desktop", binview_dict["name"]+".json")
+		print(jsonadapter.BSBinViewJsonAdapter.to_json(binview_info), file=view_handle)
+		print("Written to", view_handle.name)
+
 	
-	try:
-		with path_output.open("w") as file_binview:
-			print(
-				json.dumps(binview_dict, indent="\t"),
-				file=file_binview
-			)
-	except Exception as e:
-		print("Couldn't: ", e)
-	else:
-		print(f"Exported to ", path_output)
-
 if __name__ == "__main__":
 
 	app = QtWidgets.QApplication()
@@ -39,12 +33,17 @@ if __name__ == "__main__":
 	tree_binviewer = textview.BSBinTextView()
 
 
-	with avb.open(sys.argv[1]) as bin_handle:
-		bin_view_info = binviewitemtypes.BSBinViewInfo.from_binview(bin_handle.content.view_setting)
-		print("Attributes:", )
-		print(list(bin_handle.content.view_setting.attributes.items()))
-	
-	bin_view_model = binviewmodel.BSBinViewModel(bin_view_info)
+
+
+	if sys.argv[1].lower().endswith(".avb"):
+		
+		with avb.open(sys.argv[1]) as bin_handle:
+			bin_view_model.setBinViewInfo(binviewitemtypes.BSBinViewInfo.from_binview(bin_handle.content.view_setting))
+
+	elif sys.argv[1].lower().endswith(".json"):
+
+		with open(sys.argv[1]) as view_handle:
+			bin_view_model.setBinViewInfo(jsonadapter.BSBinViewJsonAdapter.from_json(view_handle.read()))
 
 	bin_textview_model = textviewmodel.BSTextViewModel()
 	bin_textview_model.setBinViewModel(bin_view_model)
