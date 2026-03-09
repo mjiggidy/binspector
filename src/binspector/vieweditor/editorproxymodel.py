@@ -32,6 +32,13 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			BSBinViewColumnEditorFeature.VisibilityColumn,
 		]
 
+	def binViewName(self):
+
+		if not self.sourceModel():
+			return None
+		
+		return self.sourceModel().binViewName()
+
 	def setSourceModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 		"""Set the source bin view model to edit"""
 
@@ -70,7 +77,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
 	def sourceModelAboutToMoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int, destination:QtCore.QModelIndex, dest_row:int):
-		print("He")
+#		print("He")
 
 		self.beginMoveRows(QtCore.QModelIndex(), row_start, row_end, QtCore.QModelIndex(), dest_row)
 
@@ -382,3 +389,13 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		# (Pairs with flags() returning ItemFalgs.ItemAcceptsDrops for invalid QModelIndexes)
 
 		return not parent.isValid()
+	
+	def to_json_dict(self) -> dict[str,typing.Any]:
+		"""Export a JSON-ready `dict` of this binview"""
+
+		import json
+
+		if not self.sourceModel():
+			raise ValueError("No bin view is currently defined")
+
+		return self.sourceModel().to_json_dict()

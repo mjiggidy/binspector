@@ -190,5 +190,14 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 	
 	def dropMimeData(self, data, action, row, column, parent):
-		print("Huh")
+#		print("Huh")
 		return super().dropMimeData(data, action, row, column, parent)
+	
+	def to_json_dict(self) -> dict[str, typing.Any]:
+		"""Output a JSON-ready `dict` of this binview"""
+		
+		return {
+			"name": self.binViewName(),
+			"version": "1.0",
+			"columns": [h.to_json_dict() for h in self._bin_view_columns]
+		}

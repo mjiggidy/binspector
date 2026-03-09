@@ -132,6 +132,18 @@ class BSBinViewColumnInfo:
 		
 		self._refresh_data_roles()
 
+	def to_json_dict(self) -> dict[str, typing.Any]:
+		"""Export a JSON-ready dict of this column"""
+
+		return {
+			"field_id": self.field_id.name,
+			"format_id": self.format_id.name,
+			"display_name": self.display_name,
+			"is_hidden": self.is_hidden
+		}
+
+
+
 	@classmethod
 	def from_column(cls, bin_column_info:dict, width:int|None=None) -> typing.Self:
 
