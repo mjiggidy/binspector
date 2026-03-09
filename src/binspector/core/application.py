@@ -11,6 +11,7 @@ from ..managers import windows, software_updates
 from ..widgets  import mainwindow, logwidget, settingswindow
 from ..models   import logmodels
 from ..res      import translations
+from ..binview  import binviewitemtypes
 
 BIN_VIEW_PATH = "binviews"
 
@@ -259,23 +260,23 @@ class BSMainApplication(QtWidgets.QApplication):
 		return window
 	
 	@QtCore.Slot(dict)
-	def exportBinView(self, bin_view_dict:dict[str, typing.Any]):
+	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo):
 
-		import json
+		from ..binview import jsonadapter
 
 		path_binview_dir = QtCore.QDir(self.localStoragePath()).filePath(BIN_VIEW_PATH)
 		QtCore.QDir().mkpath(path_binview_dir)
 		
-		path_binview_file = QtCore.QDir.toNativeSeparators(QtCore.QDir(path_binview_dir).filePath(bin_view_dict["name"] + ".json"))
+		path_binview_file = QtCore.QDir.toNativeSeparators(QtCore.QDir(path_binview_dir).filePath(binview_info.name + ".json"))
 
 		with open(path_binview_file, "w") as file_binview:
 
 			print(
-				json.dumps(bin_view_dict, indent="\t"),
+				jsonadapter.BSBinViewJsonAdapter.to_json(binview_info),
 				file=file_binview
 			)
 
-		logging.getLogger(__name__).info("Bin view \"%s\" was saved to %s", bin_view_dict["name"], path_binview_file)
+		logging.getLogger(__name__).info("Bin view \"%s\" was saved to %s", binview_info.name, path_binview_file)
 	
 	@QtCore.Slot()
 	@QtCore.Slot(bool)

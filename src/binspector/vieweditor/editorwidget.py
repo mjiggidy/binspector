@@ -6,7 +6,7 @@ from ..binview import binviewmodel, binviewitemtypes
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
 
-	sig_export_binview_requested = QtCore.Signal(dict)
+	sig_export_binview_requested = QtCore.Signal()
 	"""Export the given binview"""
 
 	def __init__(self, *args, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
@@ -86,6 +86,4 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	def exportBinView(self):
 		"""Prepare binview as a dict for export"""
 
-		self.sig_export_binview_requested.emit(
-			self._view_editor.model().to_json_dict()
-		)
+		self.sig_export_binview_requested.emit()

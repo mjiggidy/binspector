@@ -26,7 +26,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	sig_request_check_updates     = QtCore.Signal()
 	sig_request_visit_discussions = QtCore.Signal()
 	
-	sig_request_export_bin_view   = QtCore.Signal(dict)
+	sig_request_export_bin_view   = QtCore.Signal(object)
 	"""Export the bin view"""
 
 	sig_bin_changed               = QtCore.Signal(str)
@@ -623,7 +623,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		return True
 	
 	@QtCore.Slot(dict)
-	def exportBinView(self, bin_view_dict:dict[str, typing.Any]):
-		"""Export a given binview"""
+	def exportBinView(self):
+		"""Export the current binview"""
 
-		self.sig_request_export_bin_view.emit(bin_view_dict)
+		self.sig_request_export_bin_view.emit(self._bin_view_model.binViewInfo())
