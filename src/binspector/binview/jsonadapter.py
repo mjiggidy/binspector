@@ -10,6 +10,7 @@ class BSBinViewJsonAdapter:
 
 	@staticmethod
 	def to_json(binview_info:binviewitemtypes.BSBinViewInfo) -> str:
+		"""Return a JSON-formatted string  representing a given `BSBinViewInfo`"""
 
 		return json.dumps({
 			"name": binview_info.name,
@@ -19,6 +20,7 @@ class BSBinViewJsonAdapter:
 	
 	@staticmethod
 	def from_json(json_string:str) -> binviewitemtypes.BSBinViewInfo:
+		"""Return a `BSBinViewInfo` object from a given binview JSON string"""
 
 		binview_parsed = json.loads(json_string)
 
@@ -32,6 +34,7 @@ class BSBinViewJsonAdapter:
 		
 	@staticmethod
 	def _column_from_json(column_json:str) -> binviewitemtypes.BSBinViewColumnInfo:
+		"""Column info from JSON string"""
 
 		import avbutils
 
