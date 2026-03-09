@@ -98,15 +98,15 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		#print(menu, "at", point)
 
 
-	@QtCore.Slot(int, int, int)
-	def setBinColumnWidth(self, idx_logical:int, old_width:int, new_width:int):
-
-		last_known_width = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
-
-		if new_width == last_known_width:
-			return
-		
-		return self.model().setHeaderData(idx_logical, QtCore.Qt.Orientation.Horizontal, new_width, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
+#	@QtCore.Slot(int, int, int)
+#	def setBinColumnWidth(self, idx_logical:int, old_width:int, new_width:int):
+#
+#		last_known_width = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
+#
+#		if new_width == last_known_width:
+#			return
+#		
+#		return self.model().setHeaderData(idx_logical, QtCore.Qt.Orientation.Horizontal, new_width, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
 
 	###
 

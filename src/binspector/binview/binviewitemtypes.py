@@ -35,9 +35,6 @@ class BSBinViewColumnInfoRole(enum.IntEnum):
 	IsHiddenRole    = QtCore.Qt.ItemDataRole.UserRole + 3
 	"""Bin column visibility"""
 
-	ColumnWidthRole = QtCore.Qt.ItemDataRole.UserRole + 4
-	"""Saved bin column width"""
-
 @dataclasses.dataclass
 class BSBinViewInfo:
 	"""BinView View Item Data"""
@@ -75,9 +72,6 @@ class BSBinViewColumnInfo:
 	display_name :str
 	"""Column name for header"""
 
-	column_width :int
-	"""Last stored column width"""
-
 	is_hidden    :bool
 	"""Column is hidden"""
 
@@ -91,7 +85,6 @@ class BSBinViewColumnInfo:
 
 		self._data_roles = {
 			BSBinViewColumnInfoRole.DisplayNameRole:    self._sanitize_display_name(self.display_name),
-			BSBinViewColumnInfoRole.ColumnWidthRole:    self.column_width,
 			BSBinViewColumnInfoRole.FieldIdRole:        self.field_id,
 			BSBinViewColumnInfoRole.FieldNameRole:      self.display_name,
 			BSBinViewColumnInfoRole.FormatIdRole:       self.format_id,
@@ -118,9 +111,6 @@ class BSBinViewColumnInfo:
 		if role == BSBinViewColumnInfoRole.DisplayNameRole:
 			self.display_name = value
 
-		elif role == BSBinViewColumnInfoRole.ColumnWidthRole:
-			self.column_width = value
-
 		elif role == BSBinViewColumnInfoRole.FieldIdRole:
 			self.field_id = value
 
@@ -145,12 +135,11 @@ class BSBinViewColumnInfo:
 
 
 	@classmethod
-	def from_column(cls, bin_column_info:dict, width:int|None=None) -> typing.Self:
+	def from_column(cls, bin_column_info:dict) -> typing.Self:
 
 		return cls(
 			field_id     = avbutils.bins.BinColumnFieldIDs(bin_column_info["type"]),
 			format_id    = avbutils.bins.BinColumnFormat(bin_column_info["format"]),
 			display_name = str(bin_column_info["title"]),
-			column_width = width,
 			is_hidden    = bool(bin_column_info["hidden"]),
 		)
