@@ -42,6 +42,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.setHeader(textviewheader.BSTextViewColumnHeaderView(QtCore.Qt.Orientation.Horizontal))
 
 		self.header().setFirstSectionMovable(True)
+		self.header().setSectionsMovable(True)
 		self.header().setDefaultAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		self.header().setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
 
