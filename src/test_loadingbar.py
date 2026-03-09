@@ -1,4 +1,4 @@
-import sys
+import sys, random
 from PySide6 import QtCore, QtWidgets
 from binspector.widgets import loadingbar
 
@@ -10,38 +10,63 @@ class ProgressTester(QtWidgets.QWidget):
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 
-		self._progbar = loadingbar.BSProgressBar(animation_enabled=True, start_hidden=False)
+		self._progbar = loadingbar.BSAnimatedProgressBar()
+		sp = self._progbar.sizePolicy()
+		sp.setRetainSizeWhenHidden(True)
+		self._progbar.setSizePolicy(sp)
+		self._progbar.hide()
 
 		self.layout().addWidget(self._progbar)
 
+		self._timer = QtCore.QTimer()
+		self._timer.timeout.connect(self.incrementMobs)
+
 		self._btn_load_properties = QtWidgets.QPushButton("Start Load Properties")
 		self._btn_start_mobs      = QtWidgets.QPushButton("Start Load Mobs")
-		self._btn_add_mobs        = QtWidgets.QPushButton("Load More Mobs")
-		self._btn_stop            = QtWidgets.QPushButton("Stop")
+		self._btn_reset        = QtWidgets.QPushButton("Reset")
 
-		self._btn_load_properties.clicked.connect(self._progbar.startLoadingBinProperties)
+		self._btn_load_properties.clicked.connect(self.startBinProperties)
 		self._btn_start_mobs.clicked.connect(self.startMobs)
-		self._btn_add_mobs.clicked.connect(self.addMobs)
-		self._btn_stop.clicked.connect(self._progbar.stop)
+		self._btn_reset.clicked.connect(self.reset)
 
 		btn_layout = QtWidgets.QHBoxLayout()
 
 		btn_layout.addWidget(self._btn_load_properties)
 		btn_layout.addWidget(self._btn_start_mobs)
-		btn_layout.addWidget(self._btn_add_mobs)
-		btn_layout.addWidget(self._btn_stop)
+		btn_layout.addWidget(self._btn_reset)
 		
 		self.layout().addLayout(btn_layout)
 
 	@QtCore.Slot()
+	def startBinProperties(self):
+		self._progbar.show()
+		self._progbar.setRange(0,0)
+
+	@QtCore.Slot()
 	def startMobs(self):
 
-		self._progbar.startLoadingBinMobs(12500, 50)
+		self._progbar.show()
+
+		self._progbar.setValue(0)
+		self._progbar.setMaximum(random.randrange(2_500, 25_000))
+		self._progbar.setFormat("Loading mob %v of %m")
+
+		self.incrementMobs()
+
+	@QtCore.Slot()
+	def incrementMobs(self):
+		
+		end_val = self._progbar.value() + random.randrange(50,500)
+		
+		self._progbar.animateToValue(end_val, duration_msec=random.randrange(100, 5_000))
+
+		if end_val <= self._progbar.maximum():
+			self._timer.start(random.randrange(1_000, 10_000))
 	
 	@QtCore.Slot()
-	def addMobs(self):
+	def reset(self):
 
-		self._progbar.accumulateLoadedBinMobsCount(500)
+		self._progbar.hide()
 
 
 if __name__ == "__main__":
