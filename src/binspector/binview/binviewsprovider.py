@@ -66,6 +66,15 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 				self._saved_views.pop(idx_view)
 				self.endRemoveRows()
 
+	def itemForRow(self, row:int) -> binviewsources.BSAbstractBinViewSource:
+		"""Get a bin view source given a model row"""
+
+		if row < len(self._active_views):
+			return self._active_views[row]
+
+		else:
+			return self._saved_views[row - len(self._active_views)]
+
 	###
 
 	def hasChildren(self, /, parent:QtCore.QModelIndex) -> bool:
@@ -93,13 +102,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		if not index.isValid():
 			return
 		
-		# Get item
-		if index.row() < len(self._active_views):
-			item = self._active_views[index.row()]
-
-		else:
-			item = self._saved_views[index.row() - len(self._active_views)]
-
+		item = self.itemForRow(index.row())
 		
 		if role == QtCore.Qt.ItemDataRole.DisplayRole:
 			return item.name()
@@ -109,3 +112,6 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		
 		elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
 			return item.path() if item.sourceType() == binviewsources.BSBinViewSourceType.File else "Loaded From Active Bin"
+		
+		elif role == QtCore.Qt.ItemDataRole.UserRole:
+			return item
