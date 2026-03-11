@@ -11,36 +11,37 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 		super().__init__(*args, **kwargs)
 
-		self._active_views :list[binviewsources.BSAbstractBinViewSource] = []
-		self._saved_views  :list[binviewsources.BSAbstractBinViewSource] = []
+		self._session_views :list[binviewsources.BSAbstractBinViewSource] = []
+		self._stored_views  :list[binviewsources.BSAbstractBinViewSource] = []
 	
-	def addBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource):
-
-		if binview_source.sourceType() == binviewsources.BSBinViewSourceType.Bin:
+	def addSessionBinView(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
+		"""Add a new bin view to session memory."""
 			
-			if binview_source not in self._active_views:
+		if binview_source in self._session_views:
+			return False
 
-				self.beginInsertRows(QtCore.QModelIndex(), 0, 0)
-				self._active_views.insert(0, binview_source)
-				self.endInsertRows()
+		self.beginInsertRows(QtCore.QModelIndex(), 0, 0)
+		self._session_views.insert(0, binview_source)
+		self.endInsertRows()
 
-		elif binview_source.sourceType() == binviewsources.BSBinViewSourceType.File:
+	def addStoredBinView(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
+		"""Add a new bin view to stored collection."""
 			
-			if binview_source not in self._saved_views:
-
-				self.beginInsertRows(QtCore.QModelIndex(), len(self._saved_views), len(self._saved_views))
-				self._saved_views.insert(0, binview_source)
-				self.endInsertRows()
+		if binview_source in self.allBinViews():
+			return False
 		
-		else:
-			raise ValueError(f"Unknown bin view source type: {repr(binview_source.sourceType())}")
+		view_row_offset = self._stored_views_row_offset()
+
+		self.beginInsertRows(QtCore.QModelIndex(), view_row_offset, view_row_offset)
+		self._stored_views.insert(0, binview_source)
+		self.endInsertRows()
 	
 	def removeBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource):
 
 		if binview_source.sourceType() == binviewsources.BSBinViewSourceType.Bin:
 			
 			try:
-				idx_view = self._active_views.index(idx_view)
+				idx_view = self._session_views.index(idx_view)
 
 			except ValueError:
 				return
@@ -48,32 +49,65 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 			else:
 
 				self.beginRemoveRows(QtCore.QModelIndex(), idx_view, idx_view)
-				self._active_views.pop(idx_view)
+				self._session_views.pop(idx_view)
 				self.endRemoveRows()
 
 		elif binview_source.sourceType() == binviewsources.BSBinViewSourceType.File:
 
 			try:
-				idx_view = self._saved_views.index(binview_source)
+				idx_view = self._stored_views.index(binview_source)
 			except ValueError:
 				return
 			
 			else:
 
-				start = len(self._active_views) + idx_view
+				start = len(self._session_views) + idx_view
 				
 				self.beginRemoveRows(QtCore.QModelIndex(), start, start)
-				self._saved_views.pop(idx_view)
+				self._stored_views.pop(idx_view)
 				self.endRemoveRows()
+
+	def clearSessionViews(self):
+		"""Delete any ephemeral binviews"""
+
+		if not len(self._session_views):
+			return
+		
+		self.beginRemoveRows(QtCore.QModelIndex(), 0, len(self._session_views) -1)
+		self._session_views = []
+		self.endRemoveRows()
+
+	def clearStoredViews(self):
+		"""Delete any permanent binviews"""
+
+		if not len(self._stored_views):
+			return
+		
+		view_row_start = self._stored_views_row_offset()
+		view_row_end   = self._stored_views_row_offset() + len(self._stored_views) - 1
+		
+		self.beginRemoveRows(QtCore.QModelIndex(), view_row_start, view_row_end)
+		self._stored_views = []
+		self.endRemoveRows()
 
 	def itemForRow(self, row:int) -> binviewsources.BSAbstractBinViewSource:
 		"""Get a bin view source given a model row"""
 
-		if row < len(self._active_views):
-			return self._active_views[row]
+		if row < len(self._session_views):
+			return self._session_views[row]
 
 		else:
-			return self._saved_views[row - len(self._active_views)]
+			return self._stored_views[row - self._stored_views_row_offset()]
+		
+	def allBinViews(self) -> list[binviewsources.BSAbstractBinViewSource]:
+		"""All binviews in the collection"""
+
+		return [self._session_views] + [self._stored_views]
+		
+	def _stored_views_row_offset(self) -> int:
+		"""Return the row offset between stored views indexes and view row indexes"""
+
+		return len(self._session_views)
 
 	###
 
@@ -84,7 +118,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		return 1
 	
 	def rowCount(self, /, parent:QtCore.QModelIndex) -> int:
-		return len(self._active_views) + len(self._saved_views)
+		return len(self._session_views) + len(self._stored_views)
 	
 	def index(self, row:int, column:int, /, parent:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		
@@ -115,3 +149,13 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		
 		elif role == QtCore.Qt.ItemDataRole.UserRole:
 			return item
+	
+	def clear(self):
+		"""Clear and reset the entire model"""
+
+		self.beginResetModel()
+
+		self._session_views = []
+		self._stored_views  = []
+
+		self.endResetModel()

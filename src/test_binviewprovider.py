@@ -26,6 +26,7 @@ class BinViewSelectorWidget(QtWidgets.QWidget):
 if __name__ == "__main__":
 
 	app = QtWidgets.QApplication()
+	app.setStyle("Fusion")
 
 	wnd_selector = BinViewSelectorWidget()
 	wnd_selector.show()
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
 					with avb.open(source_file.filePath()) as bin_handle:
 
-						binviewprovider.addBinViewSource(
+						binviewprovider.addSessionBinView(
 							binviewsources.BSBinViewSourceBin(
 								binviewitemtypes.BSBinViewInfo.from_binview(
 									bin_handle.content.view_setting
@@ -65,7 +66,7 @@ if __name__ == "__main__":
 
 			else:
 
-				binviewprovider.addBinViewSource(
+				binviewprovider.addStoredBinView(
 					binviewsources.BSBinViewSourceFile(
 						source_file.filePath(), source_file.completeBaseName()
 					)
