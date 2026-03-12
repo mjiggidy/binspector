@@ -107,7 +107,13 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	def _stored_views_row_offset(self) -> int:
 		"""Return the row offset between stored views indexes and view row indexes"""
 
-		return len(self._session_views)
+		session_count = len(self._session_views)
+
+		return len(self._session_views) + (1 if session_count > 0 else 0)
+	
+	def _index_is_separator(self, index:QtCore.QModelIndex) -> bool:
+
+		return self._session_views and index.row() == self._stored_views_row_offset()-1
 
 	###
 
@@ -118,7 +124,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		return 1
 	
 	def rowCount(self, /, parent:QtCore.QModelIndex) -> int:
-		return len(self._session_views) + len(self._stored_views)
+		return len(self._session_views) + len(self._stored_views) + (1 if self._session_views else 0)
 	
 	def index(self, row:int, column:int, /, parent:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		
@@ -136,6 +142,17 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		if not index.isValid():
 			return
 		
+		if self._index_is_separator(index):
+
+	#		if role == QtCore.Qt.ItemDataRole.DisplayRole:
+	#			return "Saved Bin Views ---"
+			if role == QtCore.Qt.ItemDataRole.AccessibleDescriptionRole:
+				return "separator"
+
+
+			else:
+				return None
+		
 		item = self.itemForRow(index.row())
 		
 		if role == QtCore.Qt.ItemDataRole.DisplayRole:
@@ -149,6 +166,13 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		
 		elif role == QtCore.Qt.ItemDataRole.UserRole:
 			return item
+		
+	def flags(self, index:QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
+
+		if self._index_is_separator(index):
+			return QtCore.Qt.ItemFlag.NoItemFlags
+		
+		return super().flags(index)
 	
 	def clear(self):
 		"""Clear and reset the entire model"""
