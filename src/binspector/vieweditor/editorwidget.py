@@ -2,20 +2,21 @@ import logging
 
 from PySide6 import QtWidgets, QtGui, QtCore
 from . import editorproxymodel, editorview
-from ..binview import binviewmodel, binviewitemtypes
+from ..binview import binviewmodel, binviewitemtypes, binviewsprovider
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 	sig_export_binview_requested = QtCore.Signal()
 	"""Export the given binview"""
 
-	def __init__(self, *args, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_view_provider:binviewsprovider.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 		
 		# Bin View Name Display
+		self._bin_view_provider       = None
 		self._cmb_bin_view_list       = QtWidgets.QComboBox()
 
 		self._btn_view_list_add       = QtWidgets.QPushButton()
@@ -62,9 +63,12 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
 		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
 
-		self.setBinViewModel(bin_view_model or binviewmodel.BSBinViewModel())
-		
-	
+		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel())
+		self.setBinViewProvider(bin_view_provider or binviewsprovider.BSBinViewProviderModel())
+
+	def _setupComboBox(self):
+		"""Set up the bin view selector"""
+
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
 		if self._view_editor.model().binViewModel() == bin_view_model:
@@ -81,6 +85,18 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		
 		self._cmb_bin_view_list.addItem(bin_view_model._bin_view_name)
 		self._cmb_bin_view_list.setCurrentText(bin_view_model._bin_view_name)
+	
+	def setBinViewProvider(self, bin_view_provider:binviewsprovider.BSBinViewProviderModel):
+
+		if self._bin_view_provider == bin_view_provider:
+			return
+		
+		if self._bin_view_provider is not None:
+			self._bin_view_provider.disconnect(self)
+		
+		self._bin_view_provider = bin_view_provider
+
+		self._cmb_bin_view_list.setModel(self._bin_view_provider)
 
 	@QtCore.Slot()
 	def exportBinView(self):
