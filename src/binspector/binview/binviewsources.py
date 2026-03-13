@@ -26,6 +26,10 @@ class BSAbstractBinViewSource(abc.ABC):
 		"""This bin view's display name"""
 
 	@abc.abstractmethod
+	def isModified(self) -> bool:
+		"""Is this binview modified from source"""
+
+	@abc.abstractmethod
 	def sourceType(self) -> BSBinViewSourceType:
 		"""The type of bin view source"""
 
@@ -35,13 +39,13 @@ class BSAbstractBinViewSource(abc.ABC):
 class BSBinViewSourceFile(BSAbstractBinViewSource):
 	"""A file-based bin view"""
 
-	def __init__(self, source_file_path:PathLike[str], name:str|None=None):
+	def __init__(self, source_file_path:PathLike[str], name:str|None=None, not_exist_ok:bool=False):
 
 		super().__init__()
 		
 		file_info = QtCore.QFileInfo(source_file_path)
 
-		if not file_info.isFile():
+		if not not_exist_ok and not file_info.isFile():
 			raise FileNotFoundError("The requested bin view is not found")
 
 		self._path = QtCore.QDir.toNativeSeparators(file_info.absoluteFilePath())
@@ -57,6 +61,9 @@ class BSBinViewSourceFile(BSAbstractBinViewSource):
 
 		return self._path
 	
+	def isModified(self) -> bool:
+		return False
+	
 	def sourceType(self) -> BSBinViewSourceType:
 
 		return BSBinViewSourceType.File
@@ -69,17 +76,19 @@ class BSBinViewSourceFile(BSAbstractBinViewSource):
 			return jsonadapter.BSBinViewJsonAdapter.from_json(binview_handle.read())
 		
 	def __hash__(self) -> int:
+		
 		return hash(self.name() + self._path)
 			
 
 class BSBinViewSourceBin(BSAbstractBinViewSource):
 	"""A bin view from an active bin"""
 
-	def __init__(self, binview_info:binviewitemtypes.BSBinViewInfo):
+	def __init__(self, binview_info:binviewitemtypes.BSBinViewInfo, is_modified:bool=False):
 
 		super().__init__()
 
 		self._binview_info = binview_info
+		self._is_modified  = is_modified
 	
 	def name(self) -> str:
 		
@@ -88,6 +97,10 @@ class BSBinViewSourceBin(BSAbstractBinViewSource):
 	def sourceType(self) -> BSBinViewSourceType:
 
 		return BSBinViewSourceType.Bin
+	
+	def isModified(self) -> bool:
+		
+		return self._is_modified
 	
 	def binViewInfo(self) -> binviewitemtypes.BSBinViewInfo:
 

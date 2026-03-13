@@ -11,7 +11,7 @@ from ..managers import windows, software_updates
 from ..widgets  import mainwindow, logwidget, settingswindow
 from ..models   import logmodels
 from ..res      import translations
-from ..binview  import binviewitemtypes
+from ..binview  import binviewitemtypes, binviewstorage
 
 BIN_VIEW_PATH = "binviews"
 
@@ -52,6 +52,9 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._setupLocalization()
 		self._setupSettingsManager()
 		#self._setupApplicationMenu()
+
+		self._man_binview_storage = binviewstorage.BSBinViewStorageManager(base_path=self._path_local_storage)
+		self._man_binview_storage.setRefreshInterval(binviewstorage.DEFAULT_REFRESH_RATE_MSEC)
 
 		self._setupSignals()
 
@@ -227,6 +230,10 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
+
+		window.binViewProviderModel().addStoredBinViews(self._man_binview_storage.lastBinViews())
+		self._man_binview_storage.sig_binviews_added.connect(window.binViewProviderModel().addStoredBinViews)
+		self._man_binview_storage.sig_binviews_removed.connect(window.binViewProviderModel().removeBinViewSources)
 
 
 		logging.getLogger(__name__).debug("Created %s", window.winId())

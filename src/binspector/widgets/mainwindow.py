@@ -1,13 +1,13 @@
-import logging, typing
+import logging, typing, dataclasses
 from os import PathLike
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core import icon_registry
+from ..core import icon_registry, renaming
 
 from ..binwidget import binwidget
 from ..binitems import binitemsmodel, binitemtypes
-from ..binview import binviewmodel, binviewitemtypes
+from ..binview import binviewmodel, binviewitemtypes, binviewsprovider, binviewsources
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..core import binloader, icon_engines, icon_providers, binparser
@@ -43,6 +43,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions      = actions.ActionsManager(self)	# NOTE: Investigate ownership
 
 		# Define managers
+
+		self._binview_provider = binviewsprovider.BSBinViewProviderModel()
+
+
+
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
 		self._man_appearance   = appearance.BSBinAppearanceSettingsManager()
@@ -135,6 +140,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		topbar.setViewModeScriptAction(self._man_actions.viewBinAsScript())
 		topbar._btn_viewmode_script.setIconEngine(icon_providers.getPalettedIconEngine(self._man_actions._act_view_script))
+
+		topbar.binViewSelector().setModel(self._binview_provider)
 
 		self._anim_progress.setTargetObject(topbar.progressBar())
 		self._anim_progress.setPropertyName(QtCore.QByteArray.fromStdString("value"))
@@ -336,6 +343,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_appearance.sig_use_system_appearance_toggled  .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
 
 
+		# Bin View Provider
+		self._bin_view_model.sig_bin_view_info_set              .connect(self.binViewSet)
+		self._bin_view_model.sig_bin_view_modified              .connect(lambda bv: self.binViewSet(bv, True))
+		
 		# Bin View Editor
 		self._tool_binview.sig_export_binview_requested         .connect(self.exportBinView)
 
@@ -343,6 +354,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 	## Getters & Setters
 	##
+
+	def binViewProviderModel(self) -> binviewsprovider.BSBinViewProviderModel:
+
+		return self._binview_provider
 
 	@QtCore.Slot()
 	def mobsToBinItems(self, mobs:list[binparser.BinItemInfo]):
@@ -425,6 +440,50 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 	## Slots
 	##
+
+	@QtCore.Slot(object)
+	def binViewSet(self, binview_info:binviewitemtypes.BSBinViewInfo, is_modified:bool=False):
+		"""BinViewModel informs that the bin view has been set"""
+
+
+		unique_name = None
+
+		if is_modified:
+
+			# If this is a modified view, check for an already-existing, already-modified view
+			# of the same naem and use that for the name
+			
+			for bvs in self._binview_provider.sessionBinViews():
+
+				if bvs.isModified() and bvs.name() == binview_info.name:
+					unique_name = bvs.name()
+					break
+			
+			# Nothing like that found, so build a unique name from whatever is there
+#			if not unique_name:
+#				unique_name = renaming.make_unique_name(binview_info.name, [bvs.name() for bvs in self._binview_provider.sessionBinViews()])
+		
+
+		# Okay now if we don't have a name to go with, determine from the rest of the sessions
+		# (Only checking sessions because a stored binview can become a session without modification)
+
+		if not unique_name:
+			unique_name = renaming.make_unique_name(binview_info.name, [bvs.name() for bvs in self._binview_provider.sessionBinViews()])
+
+		self._binview_provider.clearSessionViews()
+		
+		if unique_name != binview_info.name:
+
+			binview_info = dataclasses.replace(binview_info, name=unique_name)
+			self._bin_view_model.setBinViewName(unique_name)
+
+		# Otherwise, confirm name collision and give a new name
+		
+		binview_source = binviewsources.BSBinViewSourceBin(binview_info, is_modified)
+		self._binview_provider.addSessionBinView(binview_source)
+
+		self._bin_widget.topWidgetBar()._cmb_binviews.setCurrentIndex(0)
+
 
 	@QtCore.Slot(str)
 	def prepareForBinLoading(self, bin_path:str):

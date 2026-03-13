@@ -1,15 +1,37 @@
 from __future__ import annotations
-import typing
+import typing, enum
 from PySide6 import QtCore
 
 from . import binviewitemtypes
 
+class BSBinViewModificationHint(enum.Enum):
+	"""Type of bin view modification"""
+
+	BinViewColumnsAdded      = enum.auto()
+	"""Bin view column(s) were added"""
+
+	BinViewColumnsRemoved    = enum.auto()
+	"""Bin view column(s) were removed"""
+	
+	BinViewColumnsMoved      = enum.auto()
+	"""Bin view column(s) were rearranged"""
+
+	BinViewColumnsDataChange = enum.auto()
+	"""Bin view column(s) data modified in place (renamed, hidden)"""
+
+
 class BSBinViewModel(QtCore.QAbstractItemModel):
 	"""Main Bin View Model"""
 
-	DEFAULT_BIN_VIEW_NAME = "NoNameSet"
+	DEFAULT_BIN_VIEW_NAME     = "NoNameSet"
 
 	sig_bin_view_name_changed = QtCore.Signal(str)
+	
+	sig_bin_view_info_set     = QtCore.Signal(object)
+	"""The model has been set via setBinViewInfo"""
+
+	sig_bin_view_modified     = QtCore.Signal(object, object)
+	"""The current binview has been modified from its source"""
 
 	def __init__(self, /, bin_view:binviewitemtypes.BSBinViewInfo|None=None, parent:QtCore.QObject|None=None):
 		
@@ -17,22 +39,28 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		self._bin_view_name:str = bin_view.name if bin_view else self.DEFAULT_BIN_VIEW_NAME
 		self._bin_view_columns:list[binviewitemtypes.BSBinViewColumnInfo] = bin_view.columns if bin_view else []
+
+		self._is_modified:bool = False
 	
 	@QtCore.Slot(object)
 	def setBinViewInfo(self, bin_view_info:binviewitemtypes.BSBinViewInfo):
-
-		self.setBinViewName(bin_view_info.name)
+		"""Set the bin view model from a `BSBinViewInfo`"""
 
 		self.beginResetModel()
+		self._bin_view_name    = bin_view_info.name
 		self._bin_view_columns = bin_view_info.columns
+		self._is_modified      = False
 		self.endResetModel()
+		
+		self.sig_bin_view_info_set.emit(self.binViewInfo())
+		#self.setBinViewName(bin_view_info.name)
 	
 	def binViewInfo(self) -> binviewitemtypes.BSBinViewInfo:
 		"""Get the bin view info for the current model"""
 
 		return binviewitemtypes.BSBinViewInfo(
-			name    = self.binViewName(),
-			columns = self._bin_view_columns
+			name        = self.binViewName(),
+			columns     = self._bin_view_columns
 		)
 
 	@QtCore.Slot(str)
@@ -42,36 +70,45 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 			return
 		
 		self._bin_view_name = name
-
 		self.sig_bin_view_name_changed.emit(name)
-
+		
 	def binViewName(self) -> str:
 
 		return self._bin_view_name
+	
+	# TODO: Consolidate these addBinColumn(s) methods (or: why did I do it this way...?)
 
 	def addBinColumn(self, bin_column:binviewitemtypes.BSBinViewColumnInfo, row:int|None=None):
 
 		if row:
+
 			self.beginInsertRows(QtCore.QModelIndex(), row, row)
 			self._bin_view_columns.insert(row, bin_column)
+
 		else:
+
 			self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
 			self._bin_view_columns.append(bin_column)
 		
 		self.endInsertRows()
+		# NOTE: insertRows() emits sig_bin_view_modified
 
 	def addBinColumns(self, bin_columns:typing.Iterable[binviewitemtypes.BSBinViewColumnInfo], row:int|None=None):
 
 		bin_columns = list(bin_columns)
 
 		if row:
+
 			self.beginInsertRows(QtCore.QModelIndex(), row, row+len(bin_columns)-1)
 			self._bin_view_columns[row:row] = bin_columns
+
 		else:
+
 			self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount()+len(bin_columns)-1)
 			self._bin_view_columns.extend(bin_columns)
 		
 		self.endInsertRows()
+		# NOTE: insertRows() emits sig_bin_view_modified
 
 	def binColumns(self) -> list[binviewitemtypes.BSBinViewColumnInfo]:
 
@@ -111,7 +148,6 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		return self._bin_view_columns[index.row()].data(role)
 	
 	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:binviewitemtypes.BSBinViewColumnInfoRole):
-
 		
 		item = self._bin_view_columns[index.row()]
 
@@ -120,8 +156,10 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		item.setData(value, role)
 		self.dataChanged.emit(index, index)
-#		print(f"{value=}, {binviewitems.BSBinColumnInfoRole(role)=}")
-#		print("ITEM NOW ", item)
+
+		self._is_modified = True
+		self.sig_bin_view_modified.emit(self.binViewInfo(), BSBinViewModificationHint.BinViewColumnsDataChange)
+
 		return True
 	
 #	def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
@@ -148,6 +186,9 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		del self._bin_view_columns[row:row+count]
 		self.endRemoveRows()
 
+		self._is_modified = True
+		self.sig_bin_view_modified.emit(self.binViewInfo(), BSBinViewModificationHint.BinViewColumnsRemoved)
+
 		return True
 	
 	@QtCore.Slot(int, int, QtCore.QModelIndex)
@@ -167,7 +208,8 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		self.endInsertRows()
 
-		#print("Okee at ",row, self._bin_view_columns[-1])
+		self._is_modified = True
+		self.sig_bin_view_modified.emit(self.binViewInfo(), BSBinViewModificationHint.BinViewColumnsAdded)
 
 		return True
 	
@@ -191,10 +233,11 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		self.endMoveRows()
 
 		# NOTE: I think this all works at this point from any entry point
+
+		self._is_modified = True
+		self.sig_bin_view_modified.emit(self.binViewInfo(), BSBinViewModificationHint.BinViewColumnsMoved)
 		
 		return True
-	
-
 	
 	def dropMimeData(self, data, action, row, column, parent):
 #		print("Huh")
