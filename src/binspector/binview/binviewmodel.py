@@ -201,9 +201,8 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 		self._bin_view_columns.append(binviewitemtypes.BSBinViewColumnInfo(
 			field_id = avbutils.bins.BinColumnFieldIDs.User,
-			format_id = avbutils.bins.BinColumnFormat.USER_TEXT,
-			display_name = "New Column",
-			column_width = -1,
+			format_id = avbutils.bins.BinColumnFormat.UserText,
+			display_name = "New User Column",
 			is_hidden = False
 		))
 
