@@ -81,7 +81,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._dock_appearance  = QtWidgets.QDockWidget(self.tr("Font & Colors"))
 
 
-		self._tool_binview     = editorwidget.BSBinViewColumnEditor(bin_view_model=self._bin_view_model)
+		self._tool_binview     = editorwidget.BSBinViewColumnEditor(bin_view_model=self._bin_view_model, bin_view_provider=self._binview_provider)
 		self._dock_binview     = QtWidgets.QDockWidget(self.tr("Bin View Settings"))
 
 		#self._tool_columneditor = editorwidget.BSBinViewColumnEditor()
@@ -349,6 +349,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		# Bin View Editor
 		self._tool_binview.sig_export_binview_requested         .connect(self.exportBinView)
+		self._tool_binview.binViewSelector().sig_binview_selected.connect(self._man_binview.sig_neue_bin_view_changed.emit)
+		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_selected.connect(self._man_binview.sig_neue_bin_view_changed.emit)
 
 
 	##

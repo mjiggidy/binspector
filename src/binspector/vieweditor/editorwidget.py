@@ -3,6 +3,7 @@ import logging
 from PySide6 import QtWidgets, QtGui, QtCore
 from . import editorproxymodel, editorview
 from ..binview import binviewmodel, binviewitemtypes, binviewsprovider
+from ..widgets import binviewcombobox
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
 
@@ -17,7 +18,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		
 		# Bin View Name Display
 		self._bin_view_provider       = None
-		self._cmb_bin_view_list       = QtWidgets.QComboBox()
+		self._cmb_bin_view_list       = binviewcombobox.BSBinViewSelectorComboBox()
 
 		self._btn_view_list_add       = QtWidgets.QPushButton()
 		self._btn_view_list_modify    = QtWidgets.QPushButton()
@@ -73,18 +74,11 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		if self._view_editor.model().binViewModel() == bin_view_model:
 			return
-
-		if self._view_editor.model().binViewModel() is not None:
-			self._view_editor.model().binViewModel().sig_bin_view_name_changed.disconnect(self._cmb_bin_view_list.addItem)
 		
 		logging.getLogger(__name__).debug("Setting editor model to %s", bin_view_model.binViewName())
 		
 		# NOTE: This was commented out and probably ruining my life but I don't remember why yet.  So hello, future me.
-		bin_view_model.sig_bin_view_name_changed.connect(self._cmb_bin_view_list.addItem)
 		self._view_editor.model().setSourceModel(bin_view_model)
-		
-		self._cmb_bin_view_list.addItem(bin_view_model._bin_view_name)
-		self._cmb_bin_view_list.setCurrentText(bin_view_model._bin_view_name)
 	
 	def setBinViewProvider(self, bin_view_provider:binviewsprovider.BSBinViewProviderModel):
 
@@ -103,3 +97,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		"""Prepare binview as a dict for export"""
 
 		self.sig_export_binview_requested.emit()
+
+	def binViewSelector(self) -> binviewcombobox.BSBinViewSelectorComboBox:
+
+		return self._cmb_bin_view_list

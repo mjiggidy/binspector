@@ -5,7 +5,7 @@ Widget bar for the top o' the bin widget
 import avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..widgets import buttons, sliders
+from ..widgets import buttons, sliders, binviewcombobox
 
 # I Think I Overthought This: The Module
 #
@@ -78,7 +78,7 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 		# View Mode-Specific Controls
 		self._mode_controls       = QtWidgets.QStackedWidget()
-		self._cmb_binviews        = QtWidgets.QComboBox()    # Shown on List and Script
+		self._cmb_binviews        = binviewcombobox.BSBinViewSelectorComboBox()   # Shown on List and Script
 		self._sld_frame_scale     = sliders.ViewModeSlider() # Shown on Frame
 		self._sld_script_scale    = sliders.ViewModeSlider() # Shown on Script
 
@@ -178,7 +178,7 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 
 		return self._txt_search
 
-	def binViewSelector(self) -> QtWidgets.QComboBox:
+	def binViewSelector(self) -> binviewcombobox.BSBinViewSelectorComboBox:
 		"""BinView Selection `QComboBox`"""
 
 		return self._cmb_binviews

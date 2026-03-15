@@ -3,9 +3,10 @@ import avb
 from PySide6 import QtCore, QtWidgets
 
 from binspector.binview import binviewsprovider, binviewsources, binviewitemtypes, binviewstorage
+from binspector.widgets import binviewcombobox
 
 # Hack me bra
-DEFAULT_FOLDER       = "/Users/mjordan/Library/Application Support/GlowingPixel/Binspector/binviews"
+DEFAULT_FOLDER       = "/Users/mjordan/Library/Application Support/GlowingPixel/Binspector"
 SUPPORTED_FILE_TYPES = ["*.avb"]
 
 class BinViewSelectorWidget(QtWidgets.QWidget):
@@ -16,26 +17,21 @@ class BinViewSelectorWidget(QtWidgets.QWidget):
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 
-		self._cmb_binviews = QtWidgets.QComboBox()
+		self._cmb_binviews = binviewcombobox.BSBinViewSelectorComboBox()
 		self.layout().addWidget(self._cmb_binviews)
 
-	def comboBox(self) -> QtWidgets.QComboBox:
+	def comboBox(self) -> binviewcombobox.BSBinViewSelectorComboBox:
 		
 		return self._cmb_binviews
 	
 @QtCore.Slot(object)
-def updateBinViewFileList(bin_files:list[QtCore.QFileInfo]):
+def updateBinViewFileList(binview_sources:list[binviewsources.BSBinViewSourceFile]):
 
 	binview_provider_model.clearStoredViews()
 	
-	for binview_file_info in bin_files:
+	for binview_source_info in binview_sources:
 		
-		binview_provider_model.addStoredBinView(
-			binviewsources.BSBinViewSourceFile(
-				binview_file_info.absoluteFilePath(),
-				binview_file_info.completeBaseName()
-			)
-		)
+		binview_provider_model.addStoredBinView(binview_source_info)
 
 
 if __name__ == "__main__":
@@ -48,7 +44,8 @@ if __name__ == "__main__":
 
 	binview_provider_model = binviewsprovider.BSBinViewProviderModel()
 
-	folder_watcher = binviewstorage.BSBinViewStorageManager(parent=app, folder_path=DEFAULT_FOLDER)
+	folder_watcher = binviewstorage.BSBinViewStorageManager(parent=app, base_path=DEFAULT_FOLDER)
+	folder_watcher.setRefreshInterval(5_000)
 	folder_watcher.sig_binviews_refreshed.connect(updateBinViewFileList)
 
 	updateBinViewFileList(folder_watcher.lastBinViews())
