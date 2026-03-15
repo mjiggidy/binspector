@@ -7,6 +7,9 @@ from ..core import renaming
 
 class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
+	sig_session_sources_changed = QtCore.Signal()
+	sig_stored_sources_changed  = QtCore.Signal()
+
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -20,6 +23,8 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		self.beginInsertRows(QtCore.QModelIndex(), 0, 0)
 		self._session_view_sources.insert(0, binview_source)
 		self.endInsertRows()
+
+		self.sig_session_sources_changed.emit()
 
 	@QtCore.Slot(object)
 	def addStoredBinView(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
@@ -40,6 +45,8 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		self.beginInsertRows(QtCore.QModelIndex(), view_row_offset, view_row_offset + len(new_sources) - 1)
 		self._stored_view_sources = new_sources + self._stored_view_sources
 		self.endInsertRows()
+
+		self.sig_stored_sources_changed.emit()
 
 		return True
 	
@@ -94,6 +101,8 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		self._session_view_sources = []
 		self.endRemoveRows()
 
+		self.sig_session_sources_changed.emit()
+
 	def clearStoredViews(self):
 		"""Delete any permanent binviews"""
 
@@ -106,6 +115,8 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		self.beginRemoveRows(QtCore.QModelIndex(), view_row_start, view_row_end)
 		self._stored_view_sources = []
 		self.endRemoveRows()
+
+		self.sig_stored_sources_changed.emit()
 
 	def itemForRow(self, row:int) -> binviewsources.BSAbstractBinViewSource:
 		"""Get a bin view source given a model row"""
@@ -125,7 +136,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		
 		return self._session_view_sources
 	
-	def storedBinVies(self) -> list[binviewsources.BSAbstractBinViewSource]:
+	def storedBinViews(self) -> list[binviewsources.BSAbstractBinViewSource]:
 
 		return self._stored_view_sources
 		

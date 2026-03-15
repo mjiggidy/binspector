@@ -16,7 +16,7 @@ class BSBinViewModificationHint(enum.Enum):
 	BinViewColumnsMoved      = enum.auto()
 	"""Bin view column(s) were rearranged"""
 
-	BinViewColumnsDataChange = enum.auto()
+	BinViewColumnDataChanged = enum.auto()
 	"""Bin view column(s) data modified in place (renamed, hidden)"""
 
 
@@ -53,6 +53,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		self.endResetModel()
 		
 		self.sig_bin_view_info_set.emit(self.binViewInfo())
+		self.sig_bin_view_name_changed.emit(bin_view_info.name)
 		#self.setBinViewName(bin_view_info.name)
 	
 	def binViewInfo(self) -> binviewitemtypes.BSBinViewInfo:
@@ -158,7 +159,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		self.dataChanged.emit(index, index)
 
 		self._is_modified = True
-		self.sig_bin_view_modified.emit(self.binViewInfo(), BSBinViewModificationHint.BinViewColumnsDataChange)
+		self.sig_bin_view_modified.emit(self.binViewInfo(), BSBinViewModificationHint.BinViewColumnDataChanged)
 
 		return True
 	
