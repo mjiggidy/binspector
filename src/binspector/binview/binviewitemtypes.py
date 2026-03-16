@@ -51,7 +51,7 @@ class BSBinViewInfo:
 			try:
 				columns.append(BSBinViewColumnInfo.from_column(col))
 			except ValueError as e:
-				print("Passing value error: ", e)
+#				print("Passing value error: ", e)
 				continue
 
 		return cls(

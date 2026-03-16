@@ -60,7 +60,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	
 	def removeBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource):
 
-		print("REMOVAN ", binview_source.path())
+#		print("REMOVAN ", binview_source.path())
 
 		if binview_source.sourceType() == binviewsources.BSBinViewSourceType.Bin:
 			

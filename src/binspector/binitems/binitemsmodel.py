@@ -72,7 +72,7 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 			if  bin_item.get(bins.BinColumnFieldIDs.Name) is not None:
 				return bin_item.get(bins.BinColumnFieldIDs.Name).data(QtCore.Qt.ItemDataRole.DisplayRole)
 			else:
-				print(bin_item)
+#				print(bin_item)
 				return str(bin_item)
 		
 		else:

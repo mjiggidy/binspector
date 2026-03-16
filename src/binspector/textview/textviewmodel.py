@@ -125,7 +125,7 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		source_name = self.headerData(sourceStart, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
 		dest_name   = self.headerData(destinationRow-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationRow > 0 else "<<FRONT>>"
 
-		print(f"Text view model knows it's about to move {source_name} to before {dest_name}")
+#		print(f"Text view model knows it's about to move {source_name} to before {dest_name}")
 
 		# NOTE: I THINK it's ok?
 
@@ -142,7 +142,7 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		column_before  = self.headerData(destinationColumn - 1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationColumn > 0 else "<<FRONT>>"
 
 
-		print(f"Text view model got move {column_to_move=} {sourceColumn=} to after {column_before=} {destinationColumn=}")
+#		print(f"Text view model got move {column_to_move=} {sourceColumn=} to after {column_before=} {destinationColumn=}")
 
 		# NOTE: Good at this point, save for dragging-to-last-position stuff
 
@@ -283,6 +283,6 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		if orientation != QtCore.Qt.Orientation.Horizontal:
 			return False
 		
-		print("Text view model tryna set section value to ", value)
+#		print("Text view model tryna set section value to ", value)
 
 		return self._view_model.setData(self._view_model.index(section, 0, QtCore.QModelIndex()), value, role)

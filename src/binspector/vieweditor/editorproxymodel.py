@@ -182,10 +182,10 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		src_idx = self.mapToSource(index)
 
 		if not src_idx.isValid():
-			print("Map to source returned invalid index")
+#			print("Map to source returned invalid index")
 			return False
 		
-		print(f"Source model to remove row {src_idx.row()}: {src_idx.data(QtCore.Qt.ItemDataRole.DisplayRole)}")
+#		print(f"Source model to remove row {src_idx.row()}: {src_idx.data(QtCore.Qt.ItemDataRole.DisplayRole)}")
 
 		self.sourceModel().removeRow(src_idx.row(), src_idx.parent())
 	
@@ -290,7 +290,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		index_end   = index.siblingAtColumn(self.columnCount(index.parent())-1)
 
 		self.dataChanged.emit(index_start, index_end)
-		print("updateRowForIndex says HEEE")
+#		print("updateRowForIndex says HEEE")
 
 	@QtCore.Slot(object, object, object)
 	def sourceDataChanged(self, source_index_start:QtCore.QModelIndex, source_index_end:QtCore.QModelIndex, roles:list):
@@ -305,7 +305,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		for proxy_row in range(proxy_first_row, proxy_last_row+1):
 
 			self.updateRowForIndex(self.index(proxy_first_row, 0, QtCore.QModelIndex()))
-			print("Update proxy row", proxy_row)
+#			print("Update proxy row", proxy_row)
 	
 	def columnCount(self, /, parent:QtCore.QModelIndex):
 		

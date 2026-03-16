@@ -31,5 +31,5 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 		model_index   = self.model().index(selected_index, 0, QtCore.QModelIndex())
 		binview_source:binviewsources.BSAbstractBinViewSource = model_index.data(QtCore.Qt.ItemDataRole.UserRole)
 		
-		print("User selected ", binview_source.name())
+#		print("User selected ", binview_source.name())
 		self.sig_binview_selected.emit(binview_source.binViewInfo())

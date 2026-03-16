@@ -77,7 +77,7 @@ class BSBinViewStorageManager(QtCore.QObject):
 	def refreshBinViews(self):
 		"""Refresh the bin views and emit signals"""
 
-		print("REFREH")
+#		print("REFREH")
 
 		latest_files = self.__getLatestFiles()
 

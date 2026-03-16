@@ -180,8 +180,8 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		if count < 1 or parent.isValid():
 			return False
 
-		for bin_column_index in range(row, row + count):
-			print(f"Data model removing row {bin_column_index}: {self.index(bin_column_index, 0, parent).data(QtCore.Qt.ItemDataRole.DisplayRole)}")
+#		for bin_column_index in range(row, row + count):
+#			print(f"Data model removing row {bin_column_index}: {self.index(bin_column_index, 0, parent).data(QtCore.Qt.ItemDataRole.DisplayRole)}")
 
 		self.beginRemoveRows(parent, row, row + count-1)
 		del self._bin_view_columns[row:row+count]

@@ -276,7 +276,7 @@ class BSWheelZoomEventFilter(QtCore.QObject):
 			self.reset()
 
 		else:
-			print(f"{abs(self._accumulated)=} >= {self._threshold=}")
+#			print(f"{abs(self._accumulated)=} >= {self._threshold=}")
 			self._threshold_timer.start()
 
 		return True

@@ -125,7 +125,7 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		source_start_name = self.sourceModel().headerData(source_col_start, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
 		source_start_end  = self.sourceModel().headerData(source_col_end-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if source_col_end > 0 else "<<FRONT>>"
 
-		print(f"Proxy model wants to move {source_start_name} to before {source_start_end}")
+#		print(f"Proxy model wants to move {source_start_name} to before {source_start_end}")
 		
 		return self.sourceModel().moveColumn(QtCore.QModelIndex(), source_col_start, QtCore.QModelIndex(), source_col_end)
 

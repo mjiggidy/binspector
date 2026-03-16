@@ -57,7 +57,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			return True
 		
 		elif role == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn and model.userCanDelete(index):
-			print("Delegate says remove ", index.siblingAtColumn(0).data(QtCore.Qt.ItemDataRole.DisplayRole))
+#			print("Delegate says remove ", index.siblingAtColumn(0).data(QtCore.Qt.ItemDataRole.DisplayRole))
 			self.sig_remove_column_index.emit(index)
 
 		return False

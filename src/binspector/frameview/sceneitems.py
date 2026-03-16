@@ -250,7 +250,8 @@ class BSFrameModeItem(QtWidgets.QGraphicsItem):
 				margins=QtCore.QMarginsF(0,0,0,0)
 			)
 		except Exception as e:
-			print(e)
+#			print(e)
+			pass
 
 		painter.restore()
 		

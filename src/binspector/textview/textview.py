@@ -124,13 +124,13 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		col_logical_new = (self.header().logicalIndex(col_vis_new - 1) + 1) if col_vis_new > 0 else 0
 
 		if col_logical_old == col_logical_new:
-			print("Source and destination logical indeces are the same")
+#			print("Source and destination logical indeces are the same")
 			return
 
 		moving_column_name = self.model().headerData(col_logical_old, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
 		left_column_name   = self.model().headerData(col_logical_new-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if col_logical_new > 0 else "<<FRONT>>"
 
-		print(f"Treeview asks the proxy model to move {moving_column_name} to after {left_column_name} ({col_logical_old} -> {col_logical_new})")
+#		print(f"Treeview asks the proxy model to move {moving_column_name} to after {left_column_name} ({col_logical_old} -> {col_logical_new})")
 		
 		was_moved = self.model().moveColumn(QtCore.QModelIndex(), col_logical_old, QtCore.QModelIndex(), col_logical_new)
 
@@ -368,7 +368,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		# I dunno.  Maybe I just do this at the end of the loading?
 
 		if row_first == 0:
-			print(f"I UPDATE {row_first=} {row_last=}")
+#			print(f"I UPDATE {row_first=} {row_last=}")
 			self.updateMinimumSectionWidths()
 
 

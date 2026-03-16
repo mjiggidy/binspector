@@ -36,7 +36,7 @@ class BSBinItemDisplayFilter(BSAbstractTextViewItemFilter):
 	
 	def setAcceptedItemTypes(self, bin_item_types:avbutils.bins.BinDisplayItemTypes):
 
-		print("OK set to ", bin_item_types)
+#		print("OK set to ", bin_item_types)
 
 		self._accepted_item_types = bin_item_types
 

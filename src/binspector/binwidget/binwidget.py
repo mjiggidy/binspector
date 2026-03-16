@@ -306,7 +306,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_view_model = binviewmodel.BSBinViewModel(bin_view_info)
 		self._bin_composite_model.setBinViewModel(self._bin_view_model)
 
-		print("Emitting ", self._bin_view_model)
+#		print("Emitting ", self._bin_view_model)
 		self.sig_bin_view_model_changed.emit(self._bin_view_model)
 
 
