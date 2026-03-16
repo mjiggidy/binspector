@@ -93,6 +93,14 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		self._column_filters_enabled = filters_enabled
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Columns)
 
+	@QtCore.Slot(object)
+	def setSiftOptions(self, sift_options:object):
+		"""TODO"""
+
+	@QtCore.Slot(bool)
+	def setSiftEnabled(self, is_enabled:bool):
+		"""TODO"""
+
 	###
 
 	def lessThan(self, source_left:QtCore.QModelIndex, source_right:QtCore.QModelIndex) -> bool:
