@@ -45,6 +45,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self.header().setSectionsMovable(True)
 		self.header().setDefaultAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		self.header().setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+		self.header().setStretchLastSection(True)
 
 		self.setModel(textviewproxymodel.BSBTextViewSortFilterProxyModel())
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
