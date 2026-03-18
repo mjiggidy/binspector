@@ -96,7 +96,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		if not len(self._session_view_sources):
 			return
 		
-		self.beginRemoveRows(QtCore.QModelIndex(), 0, len(self._session_view_sources) -1)
+		self.beginRemoveRows(QtCore.QModelIndex(), 0, len(self._session_view_sources)) # NOTE: Not subtracting 1 because also removing separator
 		self._session_view_sources = []
 		self.endRemoveRows()
 
