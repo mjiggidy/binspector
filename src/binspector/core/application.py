@@ -6,12 +6,14 @@ import qtlogrelay
 from   PySide6 import QtCore, QtGui, QtWidgets
 from   os import PathLike
 
+from ..binviewprovider import providerstorage
+
 from . import settings, config
 from ..managers import windows, software_updates
 from ..widgets  import mainwindow, logwidget, settingswindow
 from ..models   import logmodels
 from ..res      import translations
-from ..binview  import binviewitemtypes, binviewstorage
+from ..binview  import binviewitemtypes
 
 BIN_VIEW_PATH = "binviews"
 
@@ -53,8 +55,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._setupSettingsManager()
 		#self._setupApplicationMenu()
 
-		self._man_binview_storage = binviewstorage.BSBinViewStorageManager(base_path=self._path_local_storage)
-		self._man_binview_storage.setRefreshInterval(binviewstorage.DEFAULT_REFRESH_RATE_MSEC)
+		self._man_binview_storage = providerstorage.BSBinViewStorageManager(base_path=self._path_local_storage)
+		self._man_binview_storage.setRefreshInterval(providerstorage.DEFAULT_REFRESH_RATE_MSEC)
 
 		self._setupSignals()
 

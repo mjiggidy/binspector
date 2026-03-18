@@ -1,8 +1,7 @@
 import typing, dataclasses
 from PySide6 import QtCore, QtGui
 
-from . import binviewsources
-from ..core import renaming
+from ..binview import binviewsources
 	
 
 class BSBinViewProviderModel(QtCore.QAbstractItemModel):

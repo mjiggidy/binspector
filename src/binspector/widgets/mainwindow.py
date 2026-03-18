@@ -3,11 +3,13 @@ from os import PathLike
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from ..binviewprovider import providermodel
+
 from ..core import icon_registry, renaming
 
 from ..binwidget import binwidget
 from ..binitems import binitemsmodel, binitemtypes
-from ..binview import binviewmodel, binviewitemtypes, binviewsprovider, binviewsources
+from ..binview import binviewmodel, binviewitemtypes, binviewsources
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..core import binloader, icon_engines, icon_providers, binparser
@@ -44,7 +46,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Define managers
 
-		self._binview_provider = binviewsprovider.BSBinViewProviderModel()
+		self._binview_provider = providermodel.BSBinViewProviderModel()
 
 
 
@@ -357,7 +359,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	## Getters & Setters
 	##
 
-	def binViewProviderModel(self) -> binviewsprovider.BSBinViewProviderModel:
+	def binViewProviderModel(self) -> providermodel.BSBinViewProviderModel:
 
 		return self._binview_provider
 

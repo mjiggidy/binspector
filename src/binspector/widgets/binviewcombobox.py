@@ -1,6 +1,8 @@
 from PySide6 import QtCore, QtWidgets
 
-from ..binview import binviewsprovider, binviewsources
+from ..binviewprovider import providermodel
+
+from ..binview import binviewsources
 
 class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 	"""A QComboBox for selecting binviews from a given binview provider"""
@@ -8,15 +10,15 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 	sig_binview_selected = QtCore.Signal(object)
 	"""The user selected a binview from the binview provider"""
 
-	def __init__(self, *args, binview_provider:binviewsprovider.BSBinViewProviderModel|None=None, **kwargs):
+	def __init__(self, *args, binview_provider:providermodel.BSBinViewProviderModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self.setModel(binview_provider or binviewsprovider.BSBinViewProviderModel())
+		self.setModel(binview_provider or providermodel.BSBinViewProviderModel())
 
 		self.activated.connect(self.userSelectedBinView)
 
-	def setModel(self, model:binviewsprovider.BSBinViewProviderModel):
+	def setModel(self, model:providermodel.BSBinViewProviderModel):
 		
 		if self.model() == model:
 			return

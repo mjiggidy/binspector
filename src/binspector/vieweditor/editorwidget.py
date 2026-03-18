@@ -1,8 +1,10 @@
 import logging
 
 from PySide6 import QtWidgets, QtGui, QtCore
+
+from ..binviewprovider import providermodel
 from . import editorproxymodel, editorview
-from ..binview import binviewmodel, binviewitemtypes, binviewsprovider
+from ..binview import binviewmodel, binviewitemtypes
 from ..widgets import binviewcombobox
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
@@ -10,7 +12,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	sig_export_binview_requested = QtCore.Signal()
 	"""Export the given binview"""
 
-	def __init__(self, *args, bin_view_provider:binviewsprovider.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_view_provider:providermodel.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -65,7 +67,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
 
 		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel())
-		self.setBinViewProvider(bin_view_provider or binviewsprovider.BSBinViewProviderModel())
+		self.setBinViewProvider(bin_view_provider or providermodel.BSBinViewProviderModel())
 
 	def _setupComboBox(self):
 		"""Set up the bin view selector"""
@@ -80,7 +82,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		# NOTE: This was commented out and probably ruining my life but I don't remember why yet.  So hello, future me.
 		self._view_editor.model().setSourceModel(bin_view_model)
 	
-	def setBinViewProvider(self, bin_view_provider:binviewsprovider.BSBinViewProviderModel):
+	def setBinViewProvider(self, bin_view_provider:providermodel.BSBinViewProviderModel):
 
 		if self._bin_view_provider == bin_view_provider:
 			return
