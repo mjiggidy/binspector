@@ -1,8 +1,6 @@
 from PySide6 import QtCore, QtWidgets
 
-from ..binviewprovider import providermodel
-
-from ..binview import binviewsources
+from ..binviewprovider import providermodel, binviewsources
 
 class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 	"""A QComboBox for selecting binviews from a given binview provider"""

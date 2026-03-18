@@ -143,6 +143,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.sig_bin_stats_updated.connect(self._binstats_text.setText)
 		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
 
+		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
+
 
 		
 		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
@@ -266,48 +268,51 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	###
 
 	@QtCore.Slot(dict)
-	def setTextColumnWidthsFromBin(self, column_widths:dict[str,int]):
+	def setTextColumnWidthsFromBin(self, column_widths:dict[str,int]|None=None):
 		"""Set text view column widths from avid bin `dict[column_name:str, width:int]`"""
 
-		logging.getLogger(__name__).debug("Got column widths: %s", column_widths)
-
-		for idx_logical in range(self.textView().header().count()):
-
-			column_name = self.textView().model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
-
-			if column_name in column_widths and self._use_bin_column_widths:
-
-				logging.getLogger(__name__).debug("Setting column %s (%s) to width %s", column_name, idx_logical, column_widths[column_name])
-				
-				self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.Fixed)
-				self.textView().header().resizeSection(idx_logical, column_widths[column_name])
+		if column_widths is None:
 			
-			else:
+			# Resize all columns to contents
+			self.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+		
+		else:
+
+			# Resize known columns to specified widths; otherwise do autosize
+			logging.getLogger(__name__).debug("Got column widths: %s", column_widths)
+
+			for idx_logical in range(self.textView().header().count()):
+
+				column_name = self.textView().model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+
+				if column_name in column_widths and self._use_bin_column_widths:
+
+					logging.getLogger(__name__).debug("Setting column %s (%s) to width %s", column_name, idx_logical, column_widths[column_name])
+					
+					self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.Fixed)
+					self.textView().header().resizeSection(idx_logical, column_widths[column_name])
 				
-				self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-				logging.getLogger(__name__).debug("Set column %s (%s) to auto-fit width %s", column_name, idx_logical, self.textView().header().sectionSize(idx_logical))
+				else:
+					
+					self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+					logging.getLogger(__name__).debug("Set column %s (%s) to auto-fit width %s", column_name, idx_logical, self.textView().header().sectionSize(idx_logical))
+
+		# Restore to interactive
+		# TODO: Some kinda check here?
+		print("Putan it back")
+		self.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
 
 	@QtCore.Slot(object, object, int, int)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int, script_scale:int):
 
-		self.setBinViewName(bin_view.name)
+#		self.setBinViewName(bin_view.name)
 
 		for col in range(self.textView().header().count()):
 			self.textView().setColumnWidthFromBinView(col, True)
 			
-		self.frameView().setZoom(frame_scale)
-		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
-		self.scriptView().setFrameScale(script_scale)
-
-	@QtCore.Slot(object)
-	def setNeueBinView(self, bin_view_info:binviewitemtypes.BSBinViewInfo):
-		"""Set BinView from bin viiew info"""
-
-		self._bin_view_model = binviewmodel.BSBinViewModel(bin_view_info)
-		self._bin_composite_model.setBinViewModel(self._bin_view_model)
-
-#		print("Emitting ", self._bin_view_model)
-		self.sig_bin_view_model_changed.emit(self._bin_view_model)
+#		self.frameView().setZoom(frame_scale)
+#		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
+#		self.scriptView().setFrameScale(script_scale)
 
 
 	@QtCore.Slot(object)
@@ -316,19 +321,19 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# TODO: Do I need to emit a confirmation signal here?
 		self._bin_filter_model.setBinViewEnabled(is_enabled)
 
-	@QtCore.Slot(object)
-	def setBinViewName(self, bin_view_name:str):
-		"""Set the name of the current bin view"""
-
-		# TODO: Faking this for now, will need a model I guess
-		if bin_view_name not in (
-			self.topWidgetBar().binViewSelector().itemText(idx)
-			for idx in range(self.topWidgetBar().binViewSelector().count())
-		):
-			self.topWidgetBar().binViewSelector().addItem(bin_view_name)
-
-		self.topWidgetBar().binViewSelector().setItemText(0, bin_view_name)
-		self.topWidgetBar().binViewSelector().setCurrentIndex(0)
+#	@QtCore.Slot(object)
+#	def setBinViewName(self, bin_view_name:str):
+#		"""Set the name of the current bin view"""
+#
+#		# TODO: Faking this for now, will need a model I guess
+#		if bin_view_name not in (
+#			self.topWidgetBar().binViewSelector().itemText(idx)
+#			for idx in range(self.topWidgetBar().binViewSelector().count())
+#		):
+#			self.topWidgetBar().binViewSelector().addItem(bin_view_name)
+#
+#		self.topWidgetBar().binViewSelector().setItemText(0, bin_view_name)
+#		self.topWidgetBar().binViewSelector().setCurrentIndex(0)
 	
 	@QtCore.Slot(object)
 	def setBinFiltersEnabled(self, is_enabled:bool):
