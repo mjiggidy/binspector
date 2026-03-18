@@ -351,8 +351,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		# Bin View Editor
 		self._tool_binview.sig_export_binview_requested         .connect(self.exportBinView)
-		self._tool_binview.binViewSelector().sig_binview_selected              .connect(self._man_binview.sig_neue_bin_view_changed.emit)
-		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_selected .connect(self._man_binview.sig_neue_bin_view_changed.emit)
+		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(lambda bvs: self._man_binview.sig_neue_bin_view_changed.emit(bvs.binViewInfo()))
+		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_source_selected .connect(lambda bvs: self._man_binview.sig_neue_bin_view_changed.emit(bvs.binViewInfo()))
 
 
 	##

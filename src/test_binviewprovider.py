@@ -99,7 +99,7 @@ if __name__ == "__main__":
 	
 
 	wnd_selector.comboBox().setModel(binview_provider_model)
-	wnd_selector.comboBox().sig_binview_selected.connect(setActiveBinViewFromSource)
+	wnd_selector.comboBox().sig_binview_source_selected.connect(setActiveBinViewFromSource)
 
 	if binview_provider_model.storedBinViewSources():
 		
