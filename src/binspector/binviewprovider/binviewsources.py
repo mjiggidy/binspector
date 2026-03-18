@@ -104,4 +104,4 @@ class BSBinViewSourceBin(BSAbstractBinViewSource):
 	
 	def binViewInfo(self) -> binviewitemtypes.BSBinViewInfo:
 
-		self._binview_info
+		return self._binview_info
