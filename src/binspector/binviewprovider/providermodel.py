@@ -19,7 +19,9 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	def addSessionBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
 		"""Add a new bin view to session memory."""
 
-		self.beginInsertRows(QtCore.QModelIndex(), 0, 0)
+		separator_offset = 0 if self._session_view_sources else 1
+
+		self.beginInsertRows(QtCore.QModelIndex(), 0, 0 + separator_offset)
 		self._session_view_sources.insert(0, binview_source)
 		self.endInsertRows()
 
@@ -61,34 +63,33 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 #		print("REMOVAN ", binview_source.path())
 
-		if binview_source.sourceType() == binviewsources.BSBinViewSourceType.Bin:
+
+		print(f"{binview_source} in {self._stored_view_sources}?")
+
+		if binview_source in self._session_view_sources:
+
+			idx_viewsource = self._session_view_sources.index(binview_source)
+
+			# If this is the only binview in the sessions list, I'mma take out the separator too
+			separator_offset = 1 if len(self._session_view_sources) == 1 else 0
+
+			self.beginRemoveRows(QtCore.QModelIndex(), idx_viewsource, idx_viewsource + separator_offset)
+			self._session_view_sources.pop(idx_viewsource)
+			self.endRemoveRows()
+
+		elif binview_source in self._stored_view_sources:
+
+			idx_viewsource = self._stored_view_sources.index(binview_source)
 			
-			try:
-				idx_view = self._session_view_sources.index(idx_view)
+			# Factor in session views/separators to get the model row
+			idx_modelrow   = idx_viewsource + self._stored_views_row_offset()
 
-			except ValueError:
-				return
-			
-			else:
-
-				self.beginRemoveRows(QtCore.QModelIndex(), idx_view, idx_view)
-				self._session_view_sources.pop(idx_view)
-				self.endRemoveRows()
-
-		elif binview_source.sourceType() == binviewsources.BSBinViewSourceType.File:
-
-			try:
-				idx_view = self._stored_view_sources.index(binview_source)
-			except ValueError:
-				return
-			
-			else:
-
-				start = len(self._session_view_sources) + idx_view
-				
-				self.beginRemoveRows(QtCore.QModelIndex(), start, start)
-				self._stored_view_sources.pop(idx_view)
-				self.endRemoveRows()
+			self.beginRemoveRows(QtCore.QModelIndex(), idx_modelrow, idx_modelrow)
+			self._stored_view_sources.pop(idx_viewsource)
+			self.endRemoveRows()
+		
+		else:
+			raise ValueError("Bin view source unknown")
 
 	def clearSessionViewSources(self):
 		"""Delete any ephemeral binviews"""
@@ -129,7 +130,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	def allBinViewSources(self) -> list[binviewsources.BSAbstractBinViewSource]:
 		"""All binviews in the collection"""
 
-		return [self._session_view_sources] + [self._stored_view_sources]
+		return self._session_view_sources + self._stored_view_sources
 	
 	def sessionBinViewSources(self) -> list[binviewsources.BSAbstractBinViewSource]:
 		
