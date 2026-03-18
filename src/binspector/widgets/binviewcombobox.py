@@ -5,7 +5,7 @@ from ..binviewprovider import providermodel, binviewsources
 class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 	"""A QComboBox for selecting binviews from a given binview provider"""
 
-	sig_binview_selected = QtCore.Signal(object)
+	sig_binview_source_selected = QtCore.Signal(object)
 	"""The user selected a binview from the binview provider"""
 
 	def __init__(self, *args, binview_provider:providermodel.BSBinViewProviderModel|None=None, **kwargs):
@@ -14,7 +14,7 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 
 		self.setModel(binview_provider or providermodel.BSBinViewProviderModel())
 
-		self.activated.connect(self.userSelectedBinView)
+		self.activated.connect(self.userSelectedBinViewSource)
 
 	def setModel(self, model:providermodel.BSBinViewProviderModel):
 		
@@ -26,10 +26,9 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 		super().setModel(model)
 	
 	@QtCore.Slot(int)
-	def userSelectedBinView(self, selected_index:int):
+	def userSelectedBinViewSource(self, selected_index:int):
 
-		model_index   = self.model().index(selected_index, 0, QtCore.QModelIndex())
-		binview_source:binviewsources.BSAbstractBinViewSource = model_index.data(QtCore.Qt.ItemDataRole.UserRole)
-		
-#		print("User selected ", binview_source.name())
-		self.sig_binview_selected.emit(binview_source.binViewInfo())
+
+		selected_binview_source = self.currentData()
+
+		self.sig_binview_source_selected.emit(selected_binview_source)
