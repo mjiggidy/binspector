@@ -6,7 +6,7 @@ import logging
 from os import PathLike
 from PySide6 import QtCore
 
-from ..binview import binviewsources
+from . import binviewsources
 
 DEFAULT_SUBFOLDER_NAME    = "binviews"
 DEFAULT_REFRESH_RATE_MSEC = 10_000
@@ -22,7 +22,6 @@ class BSBinViewStorageManager(QtCore.QObject):
 
 		super().__init__(*args, **kwargs)
 
-
 		self._base_dir      = QtCore.QDir(base_path)
 		self._subfolder     = DEFAULT_SUBFOLDER_NAME
 		self._last_files_info    = self.__getLatestFiles()
@@ -30,6 +29,8 @@ class BSBinViewStorageManager(QtCore.QObject):
 		self._refresh_timer = QtCore.QTimer()
 		self._refresh_timer.timeout.connect(self.refreshBinViews)
 		self.setRefreshInterval(auto_refresh_interval)
+
+		self._currently_checking = False
 
 		# Setup binview folder if it's not there
 		# TODO: Maybe also install defaults if not there
@@ -81,6 +82,14 @@ class BSBinViewStorageManager(QtCore.QObject):
 	def refreshBinViews(self):
 		"""Refresh the bin views and emit signals"""
 
+		# TODO: Do this whole thing in another thread
+
+		if self._currently_checking:
+			logging.getLogger(__name__).debug("Skipped bin view storage refresh, looks like we're still checking. CONCERNING? YES.")
+			return
+		
+		self._currently_checking = True
+
 		logging.getLogger(__name__).debug("Checking binview path %s...", self.binViewStoragePath())
 
 		latest_files = self.__getLatestFiles()
@@ -102,6 +111,8 @@ class BSBinViewStorageManager(QtCore.QObject):
 
 		if files_new or files_del:
 			self.sig_binviews_refreshed.emit([self._binSourceInfo(f) for f in latest_files])
+
+		self._currently_checking = False
 
 		if self._refresh_timer.interval():
 			self._refresh_timer.start()

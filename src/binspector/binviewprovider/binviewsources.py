@@ -1,7 +1,7 @@
 import abc, enum
 from os import PathLike
 
-from . import binviewitemtypes
+from ..binview import binviewitemtypes
 
 from PySide6 import QtCore
 
@@ -70,7 +70,7 @@ class BSBinViewSourceFile(BSAbstractBinViewSource):
 	
 	def binViewInfo(self) -> binviewitemtypes.BSBinViewInfo:
 		
-		from . import jsonadapter
+		from ..binview import jsonadapter
 
 		with open(self._path) as binview_handle:
 			return jsonadapter.BSBinViewJsonAdapter.from_json(binview_handle.read())
