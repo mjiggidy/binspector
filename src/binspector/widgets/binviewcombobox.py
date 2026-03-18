@@ -1,4 +1,4 @@
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..binviewprovider import providermodel, binviewsources
 
@@ -12,6 +12,9 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 
 		super().__init__(*args, **kwargs)
 
+		self._view_is_modified = False
+		"""Is the bin view modified?"""
+
 		self.setModel(binview_provider or providermodel.BSBinViewProviderModel())
 
 		self.activated.connect(self.userSelectedBinViewSource)
@@ -21,10 +24,19 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 		if self.model() == model:
 			return
 		
-		model.sig_session_sources_changed.connect(lambda: self.setCurrentIndex(0))
+		model.sig_session_sources_changed.connect(self.binViewSessionSourcesChanged)
+
 
 		super().setModel(model)
-	
+
+	@QtCore.Slot()
+	def binViewSessionSourcesChanged(self):
+		
+		self.setCurrentIndex(0)
+
+		if self.currentData():
+			self._view_is_modified = self.currentData().isModified()
+
 	@QtCore.Slot(int)
 	def userSelectedBinViewSource(self, selected_index:int):
 
@@ -32,3 +44,24 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 		selected_binview_source = self.currentData()
 
 		self.sig_binview_source_selected.emit(selected_binview_source)
+
+	def paintEvent(self, e:QtGui.QPaintEvent):
+
+		
+		painter = QtWidgets.QStylePainter(self)
+		options = QtWidgets.QStyleOptionComboBox()
+		
+		self.initStyleOption(options)
+		
+		# NOTE: Do this on change and just set a flag for paint
+		if self._view_is_modified:
+			
+			font = painter.font()
+			font.setItalic(True)
+			painter.setFont(font)
+		
+
+		painter.drawComplexControl(QtWidgets.QStyle.ComplexControl.CC_ComboBox, options)
+		painter.drawControl(QtWidgets.QStyle.ControlElement.CE_ComboBoxLabel, options)
+		
+		#return super().paintEvent(e)
