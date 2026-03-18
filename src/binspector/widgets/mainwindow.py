@@ -457,7 +457,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			# If this is a modified view, check for an already-existing, already-modified view
 			# of the same naem and use that for the name
 			
-			for bvs in self._binview_provider.sessionBinViews():
+			for bvs in self._binview_provider.sessionBinViewSources():
 
 				if bvs.isModified() and bvs.name() == binview_info.name:
 					unique_name = bvs.name()
@@ -472,9 +472,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# (Only checking sessions because a stored binview can become a session without modification)
 
 		if not unique_name:
-			unique_name = renaming.make_unique_name(binview_info.name, [bvs.name() for bvs in self._binview_provider.sessionBinViews()])
+			unique_name = renaming.make_unique_name(binview_info.name, [bvs.name() for bvs in self._binview_provider.sessionBinViewSources()])
 
-		self._binview_provider.clearSessionViews()
+		self._binview_provider.clearSessionViewSources()
 		
 		if unique_name != binview_info.name:
 
@@ -484,7 +484,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Otherwise, confirm name collision and give a new name
 		
 		binview_source = binviewsources.BSBinViewSourceBin(binview_info, is_modified)
-		self._binview_provider.addSessionBinView(binview_source)
+		self._binview_provider.addSessionBinViewSource(binview_source)
 
 		self._bin_widget.topWidgetBar()._cmb_binviews.setCurrentIndex(0)
 
