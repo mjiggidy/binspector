@@ -16,7 +16,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		self._session_view_sources :list[binviewsources.BSAbstractBinViewSource] = []
 		self._stored_view_sources  :list[binviewsources.BSAbstractBinViewSource] = []
 	
-	def addSessionBinView(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
+	def addSessionBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
 		"""Add a new bin view to session memory."""
 
 		self.beginInsertRows(QtCore.QModelIndex(), 0, 0)
@@ -26,13 +26,13 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		self.sig_session_sources_changed.emit()
 
 	@QtCore.Slot(object)
-	def addStoredBinView(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
+	def addStoredBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
 		"""Add a new bin view to stored collection."""
 			
-		return self.addStoredBinViews([binview_source])
+		return self.addStoredBinViewSources([binview_source])
 
 	@QtCore.Slot(object)
-	def addStoredBinViews(self, binview_sources:typing.Iterable[binviewsources.BSAbstractBinViewSource]) -> bool:
+	def addStoredBinViewSources(self, binview_sources:typing.Iterable[binviewsources.BSAbstractBinViewSource]) -> bool:
 		
 		new_sources = [binview_source for binview_source in binview_sources if binview_source not in self.allBinViewSources()]
 
@@ -90,7 +90,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 				self._stored_view_sources.pop(idx_view)
 				self.endRemoveRows()
 
-	def clearSessionViews(self):
+	def clearSessionViewSources(self):
 		"""Delete any ephemeral binviews"""
 
 		if not len(self._session_view_sources):
@@ -102,7 +102,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 		self.sig_session_sources_changed.emit()
 
-	def clearStoredViews(self):
+	def clearStoredViewSources(self):
 		"""Delete any permanent binviews"""
 
 		if not len(self._stored_view_sources):
@@ -117,7 +117,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 		self.sig_stored_sources_changed.emit()
 
-	def itemForRow(self, row:int) -> binviewsources.BSAbstractBinViewSource:
+	def binViewSourceForRow(self, row:int) -> binviewsources.BSAbstractBinViewSource:
 		"""Get a bin view source given a model row"""
 
 		if row < len(self._session_view_sources):
@@ -131,11 +131,11 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 		return [self._session_view_sources] + [self._stored_view_sources]
 	
-	def sessionBinViews(self) -> list[binviewsources.BSAbstractBinViewSource]:
+	def sessionBinViewSources(self) -> list[binviewsources.BSAbstractBinViewSource]:
 		
 		return self._session_view_sources
 	
-	def storedBinViews(self) -> list[binviewsources.BSAbstractBinViewSource]:
+	def storedBinViewSources(self) -> list[binviewsources.BSAbstractBinViewSource]:
 
 		return self._stored_view_sources
 		
@@ -177,7 +177,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		if not index.isValid():
 			return
 		
-		item = self.itemForRow(index.row())
+		item = self.binViewSourceForRow(index.row())
 		
 		if role == QtCore.Qt.ItemDataRole.DisplayRole:
 

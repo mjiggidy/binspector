@@ -233,8 +233,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
 
-		window.binViewProviderModel().addStoredBinViews(self._man_binview_storage.lastBinViews())
-		self._man_binview_storage.sig_binviews_added.connect(window.binViewProviderModel().addStoredBinViews)
+		window.binViewProviderModel().addStoredBinViewSources(self._man_binview_storage.lastBinViews())
+		self._man_binview_storage.sig_binviews_added.connect(window.binViewProviderModel().addStoredBinViewSources)
 		self._man_binview_storage.sig_binviews_removed.connect(window.binViewProviderModel().removeBinViewSources)
 
 
