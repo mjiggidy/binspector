@@ -77,7 +77,14 @@ class BSBinViewSourceFile(BSAbstractBinViewSource):
 		
 	def __hash__(self) -> int:
 		
-		return hash(self.name() + self._path)
+		return hash(self._path)
+	
+	def __eq__(self, other) -> bool:
+
+		if not isinstance(other, self.__class__):
+			return False
+		
+		return hash(self) == hash(other)
 			
 
 class BSBinViewSourceBin(BSAbstractBinViewSource):
