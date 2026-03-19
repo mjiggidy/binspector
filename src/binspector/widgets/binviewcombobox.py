@@ -2,6 +2,8 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..binviewprovider import providermodel, binviewsources
 
+DEFAULT_MODIFIED_SYMBOL = "*"
+
 class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 	"""A QComboBox for selecting binviews from a given binview provider"""
 
@@ -14,6 +16,8 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 
 		self._view_is_modified = False
 		"""Is the bin view modified?"""
+
+		self._last_selection:binviewsources.BSAbstractBinViewSource|None = None
 
 		self.setModel(binview_provider or providermodel.BSBinViewProviderModel())
 
@@ -33,8 +37,10 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 	def binViewSessionSourcesChanged(self):
 		
 		self.setCurrentIndex(0)
+		self._last_selection = self.currentData()
 
 		if self.currentData():
+
 			self._view_is_modified = self.currentData().isModified()
 
 	@QtCore.Slot(int)
@@ -42,6 +48,9 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 
 
 		selected_binview_source = self.currentData()
+
+		if selected_binview_source == self._last_selection:
+			return
 
 		self.sig_binview_source_selected.emit(selected_binview_source)
 
@@ -56,6 +65,8 @@ class BSBinViewSelectorComboBox(QtWidgets.QComboBox):
 		# NOTE: Do this on change and just set a flag for paint
 		if self._view_is_modified:
 			
+			options.currentText += DEFAULT_MODIFIED_SYMBOL
+
 			font = painter.font()
 			font.setItalic(True)
 			painter.setFont(font)
