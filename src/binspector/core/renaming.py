@@ -1,9 +1,9 @@
 
-import re
+import re, typing
 
 PAT_UNIQUE_NAME = re.compile(r"^(?P<base_name>.*)(?P<current_index>\d+)$")
 
-def make_unique_name(name:str, existing_names:list[str], *, default_index_start:int=1, default_index_padding:int=2) -> str:
+def make_unique_name(name:str, existing_names:typing.Iterable[str], /, index_start:int=1, index_padding:int=2) -> str:
 	"""Ensure a unique name with the format "My Kewl Name.02" or something"""
 
 
@@ -22,8 +22,8 @@ def make_unique_name(name:str, existing_names:list[str], *, default_index_start:
 
 	else:
 
-		current_index = default_index_start
-		index_padding = default_index_padding
+		current_index = index_start
+		index_padding = index_padding
 		base_name     = name.rstrip(".") + "."
 		
 	current_name = base_name + str(current_index).zfill(index_padding)
