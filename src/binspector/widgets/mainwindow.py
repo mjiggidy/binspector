@@ -685,8 +685,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		event.accept()
 		return True
 	
-	@QtCore.Slot(dict)
-	def exportBinView(self):
+	@QtCore.Slot(object)
+	@QtCore.Slot(object, str)
+	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo, with_name:str|None=None):
 		"""Export the current binview"""
 
-		self.sig_request_export_bin_view.emit(self._bin_view_model.binViewInfo())
+		binview_info = self._bin_view_model.binViewInfo()
+
+		if with_name:
+			binview_info = dataclasses.replace(binview_info, name=with_name)
+
+		self.sig_request_export_bin_view.emit(binview_info)

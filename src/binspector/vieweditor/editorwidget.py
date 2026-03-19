@@ -9,7 +9,7 @@ from ..widgets import binviewcombobox
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
 
-	sig_export_binview_requested = QtCore.Signal()
+	sig_export_binview_requested = QtCore.Signal(object, str)
 	"""Export the given binview"""
 
 	def __init__(self, *args, bin_view_provider:providermodel.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
@@ -98,7 +98,52 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	def exportBinView(self):
 		"""Prepare binview as a dict for export"""
 
-		self.sig_export_binview_requested.emit()
+		binview_info = self._view_editor.model().sourceModel().binViewInfo()
+
+		if binview_info is None:
+			raise ValueError("No bin view to save")
+
+		save_name = self._promptForBinViewName()
+
+		if save_name:
+			self.sig_export_binview_requested.emit(binview_info, save_name)
+
+	@QtCore.Slot()
+	def deleteBinView(self):
+		pass
+		#self.sig_delete_binview_requested.emit()
+	
+	def _promptForBinViewName(self) -> str|None:
+
+		while True:
+
+			# NOTE: Gonnanita validate that string
+
+			# Ask for name
+			save_name, was_serious_about_it = QtWidgets.QInputDialog.getText(
+				self,
+				self.tr("View Name"),
+				self.tr("Name your view:"),
+				text = self._cmb_bin_view_list.currentText()
+			)
+
+			if not was_serious_about_it:
+				return None
+			
+			# Start over if overwrite is "undesirable" to the "user"
+			if save_name in self._bin_view_provider.binViewNames():
+
+				user_choice = QtWidgets.QMessageBox.question(
+					self,
+					self.tr("Bin View Already Exists"),
+					f"Replace the existing bin view named \"{save_name}\"?"
+				)
+
+				if user_choice == QtWidgets.QMessageBox.StandardButton.No:
+					continue
+			
+			return save_name
+
 
 	def binViewSelector(self) -> binviewcombobox.BSBinViewSelectorComboBox:
 
