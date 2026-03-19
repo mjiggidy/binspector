@@ -39,7 +39,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot(object)
 	def addStoredBinViewSources(self, binview_sources:typing.Iterable[binviewsources.BSAbstractBinViewSource]) -> bool:
 		
-		new_sources = [binview_source for binview_source in binview_sources if binview_source not in self.allBinViewSources()]
+		new_sources = [binview_source for binview_source in binview_sources if binview_source not in self.binViewSources()]
 
 		if not new_sources:
 			return False
@@ -130,10 +130,15 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		else:
 			return self._stored_view_sources[row - self._stored_views_row_offset()]
 		
-	def allBinViewSources(self) -> list[binviewsources.BSAbstractBinViewSource]:
-		"""All binviews in the collection"""
+	def binViewSources(self) -> list[binviewsources.BSAbstractBinViewSource]:
+		"""All binviews in the collection.  Session and stored alike!  Wow!  Haha cool!"""
 
 		return self._session_view_sources + self._stored_view_sources
+	
+	def binViewNames(self) -> list[str]:
+		"""A list of all binview names.  From me, to me.  There ya go me.  Ya weirdo."""
+
+		return [bvs.name() for bvs in self.binViewSources()]
 	
 	def sessionBinViewSources(self) -> list[binviewsources.BSAbstractBinViewSource]:
 		
