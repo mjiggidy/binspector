@@ -3,8 +3,8 @@ from PySide6 import QtCore, QtGui
 
 from . import binviewsources
 
-DEFAULT_MODIFIED_SYMBOL = "*"
-"""Symbol appended to the name of a bin view"""
+#DEFAULT_MODIFIED_SYMBOL = "*"
+#"""Symbol appended to the name of a bin view"""
 	
 
 class BSBinViewProviderModel(QtCore.QAbstractItemModel):
@@ -193,8 +193,8 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 			if self._index_is_separator(index):
 				return None
 			
-			elif item.isModified():
-				return item.name() + DEFAULT_MODIFIED_SYMBOL
+#			elif item.isModified():
+#				return item.name() + DEFAULT_MODIFIED_SYMBOL
 			
 			else:
 				return item.name()
