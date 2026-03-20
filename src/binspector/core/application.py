@@ -272,28 +272,44 @@ class BSMainApplication(QtWidgets.QApplication):
 	@QtCore.Slot(object)
 	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo):
 
-		from ..binview import jsonadapter
-
-		path_binview_dir = QtCore.QDir(self.localStoragePath()).filePath(BIN_VIEW_PATH)
-		QtCore.QDir().mkpath(path_binview_dir)
+		try:
+			output_path = self._man_binview_storage.writeStoredBinView(binview_info)
 		
-		path_binview_file = QtCore.QDir.toNativeSeparators(QtCore.QDir(path_binview_dir).filePath(binview_info.name + ".json"))
+		except Exception as e:
 
-		with open(path_binview_file, "w") as file_binview:
+			logging.getLogger(__name__).error("Error exporting binview %s: %s", binview_info.name, str(e))
 
-			print(
-				jsonadapter.BSBinViewJsonAdapter().from_binview(binview_info),
-				file=file_binview
-			)
+			wnd_err = QtWidgets.QMessageBox()
+			wnd_err.setWindowTitle("Error exporting bin view")
+			wnd_err.setText("Could not export this bin view")
+			wnd_err.setInformativeText(f"{e}<br/><hr/>Please report any unexpected errors to <a href=\"michael@glowingpixel.com\">michael@glowingpixel.com</a>")
+			wnd_err.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+			wnd_err.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
+			wnd_err.exec()
 
-		self._man_binview_storage.refreshBinViews()
-
-		logging.getLogger(__name__).info("Bin view \"%s\" was saved to %s", binview_info.name, path_binview_file)
+		else:
+			logging.getLogger(__name__).info("Bin view \"%s\" was saved to %s", binview_info.name, output_path)
 
 	@QtCore.Slot(object)
-	def deleteBinView(self, binview_source:binviewsources.BSAbstractBinViewSource):
+	def deleteBinView(self, binview_source:binviewsources.BSBinViewSourceFile):
 
-		self._man_binview_storage.deleteStoredBinView(binview_source)
+		try:
+			self._man_binview_storage.deleteStoredBinView(binview_source)
+		
+		except Exception as e:
+
+			logging.getLogger(__name__).error("Error deleting binview %s: %s", binview_source.name(), str(e))
+
+			wnd_err = QtWidgets.QMessageBox()
+			wnd_err.setWindowTitle("Error deleting bin view")
+			wnd_err.setText("Could not delete the bin view from storage")
+			wnd_err.setInformativeText(f"{e}<br/><hr/>Please report any unexpected errors to <a href=\"michael@glowingpixel.com\">michael@glowingpixel.com</a>")
+			wnd_err.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+			wnd_err.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
+			wnd_err.exec()
+
+		else:
+			logging.getLogger(__name__).info("Bin view \"%s\" was deleted from %s", binview_source.name(), binview_source.path())
 	
 	@QtCore.Slot()
 	@QtCore.Slot(bool)

@@ -699,8 +699,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo, with_name:str|None=None):
 		"""Export the current binview"""
 
-		binview_info = self._bin_view_model.binViewInfo()
-
 		if with_name:
 			binview_info = dataclasses.replace(binview_info, name=with_name)
 
