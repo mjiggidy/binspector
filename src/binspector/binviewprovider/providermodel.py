@@ -90,6 +90,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 			self.beginRemoveRows(QtCore.QModelIndex(), idx_modelrow, idx_modelrow)
 			self._stored_view_sources.pop(idx_viewsource)
 			self.endRemoveRows()
+			self.sig_stored_sources_changed.emit()
 		
 		else:
 			raise ValueError("Bin view source unknown")
