@@ -130,7 +130,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		binview_source:binviewsources.BSAbstractBinViewSource = self._cmb_bin_view_list.currentData()
 
 		if not binview_source:
-			
+
 			logging.getLogger(__name__).error("No bin view selected for deletion")
 			return
 
@@ -162,7 +162,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 				return None
 			
 			# Start over if overwrite is "undesirable" to the "user"
-			if save_name in self._bin_view_provider.binViewNames():
+			if save_name in [bvs.name() for bvs in self._bin_view_provider.storedBinViewSources()]:
 
 				user_choice = QtWidgets.QMessageBox.question(
 					self,
