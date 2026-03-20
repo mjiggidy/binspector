@@ -167,7 +167,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 				user_choice = QtWidgets.QMessageBox.question(
 					self,
 					self.tr("Bin View Already Exists"),
-					f"Replace the existing bin view named \"{save_name}\"?"
+					self.tr("Replace the existing bin view named \"{save_name}\"?").format_map({"save_name":save_name})
 				)
 
 				if user_choice == QtWidgets.QMessageBox.StandardButton.No:
