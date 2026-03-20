@@ -274,7 +274,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		if column_widths is None:
 			
 			# Resize all columns to contents
-			self.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+			self.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
+			self.textView().header().resizeSections(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+
+			logging.getLogger(__name__).debug("Auto-sizing all columns")
+
+			return
 		
 		else:
 
@@ -289,18 +294,19 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 					logging.getLogger(__name__).debug("Setting column %s (%s) to width %s", column_name, idx_logical, column_widths[column_name])
 					
-					self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.Fixed)
+					self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.Interactive)
 					self.textView().header().resizeSection(idx_logical, column_widths[column_name])
 				
 				else:
 					
-					self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+					self.textView().header().resizeSection(idx_logical, self.textView().header().sectionSizeFromContents())
 					logging.getLogger(__name__).debug("Set column %s (%s) to auto-fit width %s", column_name, idx_logical, self.textView().header().sectionSize(idx_logical))
+					self.textView().header().setSectionResizeMode(idx_logical, QtWidgets.QHeaderView.ResizeMode.Interactive)
 
 		# Restore to interactive
 		# TODO: Some kinda check here?
-		print("Putan it back")
-		self.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
+#		print("Putan it back")
+		
 
 	@QtCore.Slot(object, object, int, int)
 	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int, script_scale:int):
