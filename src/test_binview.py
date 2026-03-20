@@ -18,7 +18,7 @@ def exportJson():
 	binview_info = bin_view_model.binViewInfo()
 	with open(binview_info.name + ".json", "w") as view_handle:
 
-		print(jsonadapter.BSBinViewJsonAdapter.to_json(binview_info), file=view_handle)
+		print(jsonadapter.BSBinViewJsonAdapter.from_binview(binview_info), file=view_handle)
 		print("Written to", view_handle.name)
 
 	
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 	elif sys.argv[1].lower().endswith(".json"):
 
 		with open(sys.argv[1]) as view_handle:
-			bin_view_model.setBinViewInfo(jsonadapter.BSBinViewJsonAdapter.from_json(view_handle.read()))
+			bin_view_model.setBinViewInfo(jsonadapter.BSBinViewJsonAdapter.to_binview(view_handle.read()))
 
 	bin_textview_model = textviewmodel.BSTextViewModel()
 	bin_textview_model.setBinViewModel(bin_view_model)

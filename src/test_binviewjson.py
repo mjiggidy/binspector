@@ -20,21 +20,21 @@ if __name__ == "__main__":
 
 	with open(FIRST_OUTPUT, "w") as json_handle:
 
-		print(jsonadapter.BSBinViewJsonAdapter.to_json(bin_view), file=json_handle)
+		print(jsonadapter.BSBinViewJsonAdapter.from_binview(bin_view), file=json_handle)
 
 	with open(FIRST_OUTPUT) as json_handle:
 
-		bin_view = jsonadapter.BSBinViewJsonAdapter.from_json(json_handle.read())
+		bin_view = jsonadapter.BSBinViewJsonAdapter.to_binview(json_handle.read())
 
 	with open(SECOND_OUTPUT,"w") as json_handle:
 
-		print(jsonadapter.BSBinViewJsonAdapter.to_json(bin_view), file=json_handle)
+		print(jsonadapter.BSBinViewJsonAdapter.from_binview(bin_view), file=json_handle)
 
 	with open(SECOND_OUTPUT) as json_handle:
 
 		bin_view_model = binviewmodel.BSBinViewModel()
-		bin_view_model.setBinViewInfo(jsonadapter.BSBinViewJsonAdapter.from_json(json_handle.read()))
+		bin_view_model.setBinViewInfo(jsonadapter.BSBinViewJsonAdapter.to_binview(json_handle.read()))
 	
 	with open(THIRD_OUTPUT, "w") as json_handle:
 
-		print(jsonadapter.BSBinViewJsonAdapter.to_json(bin_view_model.binViewInfo()), file=json_handle)
+		print(jsonadapter.BSBinViewJsonAdapter.from_binview(bin_view_model.binViewInfo()), file=json_handle)

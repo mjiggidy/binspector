@@ -73,7 +73,7 @@ class BSBinViewSourceFile(BSAbstractBinViewSource):
 		from ..binview import jsonadapter
 
 		with open(self._path) as binview_handle:
-			return jsonadapter.BSBinViewJsonAdapter.from_json(binview_handle.read())
+			return jsonadapter.BSBinViewJsonAdapter().to_binview(binview_handle.read())
 		
 	def __hash__(self) -> int:
 		

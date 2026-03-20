@@ -282,7 +282,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		with open(path_binview_file, "w") as file_binview:
 
 			print(
-				jsonadapter.BSBinViewJsonAdapter.to_json(binview_info),
+				jsonadapter.BSBinViewJsonAdapter().from_binview(binview_info),
 				file=file_binview
 			)
 
