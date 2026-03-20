@@ -132,6 +132,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
 		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
 
+		self._bin_composite_model.rowsInserted  .connect(self.updateBinStats)
+		self._bin_composite_model.rowsRemoved   .connect(self.updateBinStats)
+		self._bin_composite_model.modelReset    .connect(self.updateBinStats)
+		self._bin_composite_model.layoutChanged .connect(self.updateBinStats)
+
 		self._section_top.sig_frame_scale_changed  .connect(self._viewmode_frame.setZoom)
 		self._viewmode_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._viewmode_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
@@ -456,7 +461,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def updateBinStats(self):
 
 		count_visible = self._bin_filter_model.rowCount(QtCore.QModelIndex())
-		count_all     = self._bin_filter_model.sourceModel().rowCount(QtCore.QModelIndex())
+		count_all     = self._bin_composite_model.rowCount(QtCore.QModelIndex())
 
 		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
 			current_item_count=QtCore.QLocale.system().toString(count_visible),

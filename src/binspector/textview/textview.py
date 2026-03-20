@@ -34,7 +34,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		self.ICON_ASPECT_RATIO = QtCore.QSizeF(4,3)
 
-		self.setSortingEnabled(True)
+		#self.setSortingEnabled(False)
 		self.setRootIsDecorated(False)
 		self.setAlternatingRowColors(True)
 		self.setUniformRowHeights(True)
@@ -176,6 +176,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		model.columnsInserted.connect(self.binColumnsInserted, QtCore.Qt.ConnectionType.QueuedConnection) # NOTE: Queued because QHeader needs to update first
 		model.rowsInserted.connect(self.binItemsInserted)
+		model.modelReset.connect(lambda: self.sortByColumn(-1, QtCore.Qt.SortOrder.AscendingOrder))
 #		model.modelReset.connect(lambda: self.binColumnsInserted(QtCore.QModelIndex(), 0, self.model().columnCount(QtCore.QModelIndex())), QtCore.Qt.ConnectionType.QueuedConnection)
 #		model.headerDataChanged.connect(self.updateBinColumns)
 

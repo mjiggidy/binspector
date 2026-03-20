@@ -14,29 +14,33 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		super().__init__(*args, **kwargs)
 
-		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
-
+		self.setDynamicSortFilter(False)
+		self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
+		
 		self._sort_collator = QtCore.QCollator()
 		self._sort_collator.setNumericMode(True)
 		self._sort_collator.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
-		#self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
-		self.setDynamicSortFilter(False)
-
 
 		self._item_filters_enabled     = True
 		self._column_filters_enabled   = True
 		
 		self._filter_bin_display_items = proxyfilters.BSBinItemDisplayFilter()
 
+		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
+
 	def setSourceModel(self, sourceModel:textviewmodel.BSTextViewModel):
 
 		if self.sourceModel() == sourceModel:
 			return
+		
+		if self.sourceModel():
+			self.sourceModel().disconnect(self)
 
 		if not isinstance(sourceModel, textviewmodel.BSTextViewModel):
 			raise ValueError(f"Source model must be `BSTextViewModel`; got {repr(sourceModel)}")
 		
 		sourceModel.headerDataChanged.connect(self.binColumnDataChanged)
+#		sourceModel.modelReset.connect(lambda: self.sort(-1))	# Start unsorted/"script order"
 		
 		super().setSourceModel(sourceModel)
 
