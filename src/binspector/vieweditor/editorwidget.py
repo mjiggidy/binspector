@@ -64,7 +64,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self.layout().addLayout(self._lay_buttons)
 
-		self._cmb_bin_view_list.currentTextChanged.connect(self.viewWasChanged)
+		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
 
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
 		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
@@ -93,12 +93,14 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if self._bin_view_provider is not None:
 			self._bin_view_provider.disconnect(self)
 		
+		bin_view_provider.sig_stored_sources_changed.connect(self.updateButtonState)
+		
 		self._bin_view_provider = bin_view_provider
 
 		self._cmb_bin_view_list.setModel(self._bin_view_provider)
 
 	@QtCore.Slot()
-	def viewWasChanged(self):
+	def updateButtonState(self):
 		"""Update buttons on view change"""
 
 		binview_source:binviewsources.BSAbstractBinViewSource = self._cmb_bin_view_list.currentData()
@@ -143,6 +145,24 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 			return
 		
 		self.sig_delete_binview_requested.emit(binview_source.name())
+
+	def _isValidFileName(self, filename:str) -> bool:
+
+		illegal_filename_chars = ("\\", "/", "<", ">", "?", "*", ":")
+
+		if not filename:
+			return False
+		
+		if not filename.isprintable():
+			return False
+		
+		if filename.startswith("."):
+			return False
+		
+		if any(c in illegal_filename_chars for c in filename):
+			return False
+		
+		return True
 	
 	def _promptForBinViewName(self) -> str|None:
 
@@ -160,6 +180,18 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 			if not was_serious_about_it:
 				return None
+			
+			# Check for illegal characters
+			if not self._isValidFileName(save_name):
+
+				user_choice = QtWidgets.QMessageBox.warning(
+					self,
+					self.tr("Invalid Bin Name"),
+					self.tr("The given bin name contains characters that are not allowed.  Please use alphanumeric characters, and do not start names with a period.")
+				)
+
+				continue
+
 			
 			# Start over if overwrite is "undesirable" to the "user"
 			if save_name in [bvs.name() for bvs in self._bin_view_provider.storedBinViewSources()]:
