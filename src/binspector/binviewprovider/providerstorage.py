@@ -117,6 +117,25 @@ class BSBinViewStorageManager(QtCore.QObject):
 		if self._refresh_timer.interval():
 			self._refresh_timer.start()
 
+	def deleteStoredBinView(self, binview_source:binviewsources.BSBinViewSourceFile):
+
+		binview_path = binview_source.path()
+		
+		if not QtCore.QFileInfo(binview_path).isFile():
+			raise FileNotFoundError(f"Requested bin view {binview_source.name()} was not found at expected path {binview_source.path()}")
+
+		binview_file = QtCore.QFile(binview_path)
+
+		if not binview_file.remove():
+
+			if binview_file.error() != QtCore.QFileDevice.FileError.NoError:
+				raise OSError(f"Could not delete binview source at {binview_path}: {binview_file.errorString()}")
+			else:
+				raise OSError(f"Could not delete binview source at {binview_path}: Unknown Error")
+		
+		self.refreshBinViews()
+
+
 	def _binSourceInfo(self, fileinfo:QtCore.QFileInfo, not_exist_ok:bool=False) -> binviewsources.BSBinViewSourceFile:
 
 		return binviewsources.BSBinViewSourceFile(

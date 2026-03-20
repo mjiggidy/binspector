@@ -2,7 +2,7 @@ import logging
 
 from PySide6 import QtWidgets, QtGui, QtCore
 
-from ..binviewprovider import providermodel
+from ..binviewprovider import providermodel, binviewsources
 from . import editorproxymodel, editorview
 from ..binview import binviewmodel, binviewitemtypes
 from ..widgets import binviewcombobox
@@ -11,6 +11,9 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 	sig_export_binview_requested = QtCore.Signal(object, str)
 	"""Export the given binview"""
+
+	sig_delete_binview_requested = QtCore.Signal(object)
+	"""Delete the given binview"""
 
 	def __init__(self, *args, bin_view_provider:providermodel.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
@@ -23,7 +26,6 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._cmb_bin_view_list       = binviewcombobox.BSBinViewSelectorComboBox()
 
 		self._btn_view_list_add       = QtWidgets.QPushButton()
-		self._btn_view_list_modify    = QtWidgets.QPushButton()
 		self._btn_view_list_delete    = QtWidgets.QPushButton()
 		
 		# Editor View
@@ -38,16 +40,15 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._lay_view_list.setSpacing(0)
 
 		self._lay_view_list.addWidget(self._cmb_bin_view_list)
-		self._lay_view_list.addWidget(self._btn_view_list_modify)
 		self._lay_view_list.addWidget(self._btn_view_list_add)
 		self._lay_view_list.addWidget(self._btn_view_list_delete)
 
 		self._cmb_bin_view_list.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, self._cmb_bin_view_list.sizePolicy().verticalPolicy()))
-		self._btn_view_list_modify.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DocumentSave))
 		self._btn_view_list_add.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
 		self._btn_view_list_delete.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove))
 
-		self._btn_view_list_modify.clicked.connect(self.exportBinView)
+		self._btn_view_list_add.clicked.connect(self.requestExportBinView)
+		self._btn_view_list_delete.clicked.connect(self.requestDeleteBinView)
 
 		self.layout().addLayout(self._lay_view_list)
 
@@ -63,6 +64,8 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self.layout().addLayout(self._lay_buttons)
 
+		self._cmb_bin_view_list.currentTextChanged.connect(self.viewWasChanged)
+
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
 		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
 
@@ -74,7 +77,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
-		if self._view_editor.model().binViewModel() == bin_view_model:
+		if self._view_editor.model().sourceModel() == bin_view_model:
 			return
 		
 		logging.getLogger(__name__).debug("Setting editor model to %s", bin_view_model.binViewName())
@@ -95,7 +98,20 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._cmb_bin_view_list.setModel(self._bin_view_provider)
 
 	@QtCore.Slot()
-	def exportBinView(self):
+	def viewWasChanged(self):
+		"""Update buttons on view change"""
+
+		binview_source:binviewsources.BSAbstractBinViewSource = self._cmb_bin_view_list.currentData()
+
+		stored_names = iter(bvs.name() for bvs in self._bin_view_provider.storedBinViewSources())
+
+		self._btn_view_list_delete.setEnabled(
+			not binview_source.isModified() \
+			and binview_source.name() in (bvs.name() for bvs in self._bin_view_provider.storedBinViewSources())
+		)
+
+	@QtCore.Slot()
+	def requestExportBinView(self):
 		"""Prepare binview as a dict for export"""
 
 		binview_info = self._view_editor.model().sourceModel().binViewInfo()
@@ -109,9 +125,24 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 			self.sig_export_binview_requested.emit(binview_info, save_name)
 
 	@QtCore.Slot()
-	def deleteBinView(self):
-		pass
-		#self.sig_delete_binview_requested.emit()
+	def requestDeleteBinView(self):
+
+		binview_source:binviewsources.BSAbstractBinViewSource = self._cmb_bin_view_list.currentData()
+
+		if not binview_source:
+			
+			logging.getLogger(__name__).error("No bin view selected for deletion")
+			return
+
+		if QtWidgets.QMessageBox.question(
+			self,
+			self.tr("Delete Bin View"),
+			self.tr("Are you sure you want to delete the stored bin view {binview_name}?").format_map({"binview_name":binview_source.name()})
+		) != QtWidgets.QMessageBox.StandardButton.Yes:
+			
+			return
+		
+		self.sig_delete_binview_requested.emit(binview_source.name())
 	
 	def _promptForBinViewName(self) -> str|None:
 

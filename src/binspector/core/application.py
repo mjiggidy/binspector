@@ -6,7 +6,7 @@ import qtlogrelay
 from   PySide6 import QtCore, QtGui, QtWidgets
 from   os import PathLike
 
-from ..binviewprovider import providerstorage
+from ..binviewprovider import providerstorage, binviewsources
 
 from . import settings, config
 from ..managers import windows, software_updates
@@ -202,6 +202,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_check_updates     .connect(self.showUpdatesWindow)
 		window.sig_bin_changed               .connect(self._man_settings.setLastBinPath)
 		window.sig_request_export_bin_view   .connect(self.exportBinView)
+		window.sig_request_delete_bin_view   .connect(self.deleteBinView)
 
 		# Restore Toggle Settings
 		window.binViewManager().setAllColumnsVisible(self._man_settings.allColumnsVisible())
@@ -268,7 +269,7 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		return window
 	
-	@QtCore.Slot(dict)
+	@QtCore.Slot(object)
 	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo):
 
 		from ..binview import jsonadapter
@@ -285,7 +286,14 @@ class BSMainApplication(QtWidgets.QApplication):
 				file=file_binview
 			)
 
+		self._man_binview_storage.refreshBinViews()
+
 		logging.getLogger(__name__).info("Bin view \"%s\" was saved to %s", binview_info.name, path_binview_file)
+
+	@QtCore.Slot(object)
+	def deleteBinView(self, binview_source:binviewsources.BSAbstractBinViewSource):
+
+		self._man_binview_storage.deleteStoredBinView(binview_source)
 	
 	@QtCore.Slot()
 	@QtCore.Slot(bool)

@@ -31,6 +31,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	sig_request_export_bin_view   = QtCore.Signal(object)
 	"""Export the bin view"""
 
+	sig_request_delete_bin_view   = QtCore.Signal(object)
+	"""Export the bin view"""
+
 	sig_bin_changed               = QtCore.Signal(str)
 	"""Window is loading a new bin"""
 
@@ -351,6 +354,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		# Bin View Editor
 		self._tool_binview.sig_export_binview_requested         .connect(self.exportBinView)
+		self._tool_binview.sig_delete_binview_requested         .connect(self.deleteBinView)
 		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(lambda bvs: self._man_binview.sig_neue_bin_view_changed.emit(bvs.binViewInfo()))
 		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_source_selected .connect(lambda bvs: self._man_binview.sig_neue_bin_view_changed.emit(bvs.binViewInfo()))
 
@@ -701,3 +705,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			binview_info = dataclasses.replace(binview_info, name=with_name)
 
 		self.sig_request_export_bin_view.emit(binview_info)
+
+	@QtCore.Slot(str)
+	def deleteBinView(self, binview_name:str):
+
+		for binview_info in self._binview_provider.storedBinViewSources():
+
+			if binview_info.name() == binview_name:
+				self.sig_request_delete_bin_view.emit(binview_info)
+
