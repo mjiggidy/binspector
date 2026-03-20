@@ -148,7 +148,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		while True:
 
-			# NOTE: Gonnanita validate that string
+			# NOTE: Gonnanita validate that strank
 
 			# Ask for name
 			save_name, was_serious_about_it = QtWidgets.QInputDialog.getText(
