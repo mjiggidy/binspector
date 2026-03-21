@@ -16,7 +16,7 @@ from .proxydelegates import FieldLookupDict, FormatLookupDict
 
 from ..binview import binviewitemtypes
 
-class BSBinTextView(treeview.BSTreeViewBase):
+class BSBinTextView(QtWidgets.QTreeView):
 	"""QTreeView but nicer"""
 
 	sig_default_sort_columns_changed = QtCore.Signal(object)
@@ -34,10 +34,10 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		self.ICON_ASPECT_RATIO = QtCore.QSizeF(4,3)
 
-		#self.setSortingEnabled(False)
+		self.setSortingEnabled(True)
 		self.setRootIsDecorated(False)
-		self.setAlternatingRowColors(True)
 		self.setUniformRowHeights(True)
+		self.setAlternatingRowColors(True)
 
 		self.setHeader(textviewheader.BSTextViewColumnHeaderView(QtCore.Qt.Orientation.Horizontal))
 
