@@ -92,10 +92,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		#self._tool_columneditor = editorwidget.BSBinViewColumnEditor()
 		#self._tool_columneditor.show()
 
-		self._btn_toolbox_bindisplay = buttons.BSActionPushButton(show_text=False)
-		self._btn_toolbox_appearance = buttons.BSActionPushButton(show_text=False)
-		self._btn_toolbox_sifting    = buttons.BSActionPushButton(show_text=False)
-		self._btn_toolbox_binview    = buttons.BSActionPushButton(show_text=False)
+#		self._btn_toolbox_bindisplay = buttons.BSActionPushButton(show_text=False)
+#		self._btn_toolbox_appearance = buttons.BSActionPushButton(show_text=False)
+#		self._btn_toolbox_sifting    = buttons.BSActionPushButton(show_text=False)
+#		self._btn_toolbox_binview    = buttons.BSActionPushButton(show_text=False)
 
 		self._drag_drop_overlay = overlaywidget.BSDragDropOverlayWidget(parent=self._bin_widget, is_visible=False)
 
