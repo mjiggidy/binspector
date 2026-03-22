@@ -154,6 +154,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		grp = QtWidgets.QSizeGrip(self._bin_widget.textView())
 		self._bin_widget.textView().setCornerWidget(grp)
+
+		self._bin_widget.setShowColumnEditorAction(self._man_actions._act_toggle_binview_settings)
 		
 		# Apply Bin Settings Toggles
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	

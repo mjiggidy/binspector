@@ -171,8 +171,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._viewmode_text.addAction(self._act_set_view_width_for_columns)
 		self._viewmode_text.addAction(self._act_autofit_columns)
-			
 
+	def setShowColumnEditorAction(self, action:QtGui.QAction):
+		"""Show column editor needs a global action"""
+
+		self._viewmode_text.setShowColumnEditorAction(action)
+		self._viewmode_script.setShowColumnEditorAction(action)
 
 	@QtCore.Slot(object)
 	def setBinItemsModel(self, bin_model:binitemsmodel.BSBinItemModel):

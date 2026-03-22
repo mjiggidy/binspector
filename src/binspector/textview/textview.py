@@ -16,6 +16,8 @@ from .proxydelegates import FieldLookupDict, FormatLookupDict
 
 from ..binview import binviewitemtypes
 
+import avbutils
+
 class BSBinTextView(QtWidgets.QTreeView):
 	"""QTreeView but nicer"""
 
@@ -72,12 +74,16 @@ class BSBinTextView(QtWidgets.QTreeView):
 		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 		self.setItemPadding(self._item_padding)
 
+		self._act_show_column_editor = None
+
 
 		self.header().sectionMoved.connect(self.binColumnDragged)
 		self.header().customContextMenuRequested.connect(self.showColumnContextMenu)
 		#self.header().sectionResized.connect(self.setBinColumnWidth)
 
-	
+	def setShowColumnEditorAction(self, action:QtGui.QAction):
+
+		self._act_show_column_editor = action	
 
 	@QtCore.Slot(QtCore.QPoint)
 	def showColumnContextMenu(self, point:QtCore.QPoint):
@@ -87,12 +93,19 @@ class BSBinTextView(QtWidgets.QTreeView):
 		#print("Yo")
 
 		idx_logical = self.header().logicalIndexAt(point)
-		column_name = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+		field_id    = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
+
+		if field_id == avbutils.bins.BinColumnFieldIDs.BinItemIcon:
+			column_name = "Item Icon"
+		else:
+			column_name = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
 		
-		menu.addAction(QtGui.QAction(f"Hide {column_name}", parent=self.header()))
-		menu.addSeparator()
-		act_choose = QtGui.QAction("Choose Columns...", parent=self.header())
-		menu.addAction(act_choose)
+		menu.addAction(QtGui.QAction(self.tr("Hide {column_name}".format(column_name=column_name)), parent=self.header()))
+
+		if self._act_show_column_editor:
+
+			menu.addSeparator()
+			menu.addAction(self._act_show_column_editor)
 
 		menu.popup(self.header().mapToGlobal(point))
 
