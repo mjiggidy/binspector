@@ -150,6 +150,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
 
+		self._viewmode_text.sig_hide_column_requested   .connect(self.hideBinColumn)
+		self._viewmode_script.sig_hide_column_requested .connect(self.hideBinColumn)
+
 
 		
 		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
@@ -275,6 +278,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	###
 	# Bin Views and Filters
 	###
+
+	@QtCore.Slot(int)
+	def hideBinColumn(self, logical_index:int):
+
+		self._bin_filter_model.setHeaderData(logical_index, QtCore.Qt.Orientation.Horizontal, True, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+
+
 
 	@QtCore.Slot(dict)
 	def setTextColumnWidthsFromBin(self, column_widths:dict[str,int]|None=None):

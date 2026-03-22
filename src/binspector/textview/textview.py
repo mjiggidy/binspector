@@ -29,6 +29,9 @@ class BSBinTextView(QtWidgets.QTreeView):
 
 	sig_item_padding_changed         = QtCore.Signal(object)
 
+	sig_hide_column_requested        = QtCore.Signal(object)
+	"""Hide a given bin view column info"""
+
 
 	def __init__(self, *args, bin_item_icon_registry:icon_registry.IconRegistryType|None=None, **kwargs):
 
@@ -88,6 +91,8 @@ class BSBinTextView(QtWidgets.QTreeView):
 	@QtCore.Slot(QtCore.QPoint)
 	def showColumnContextMenu(self, point:QtCore.QPoint):
 
+		import functools
+
 		menu = QtWidgets.QMenu("Column Actions", parent=self.header())
 
 		#print("Yo")
@@ -100,7 +105,10 @@ class BSBinTextView(QtWidgets.QTreeView):
 		else:
 			column_name = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
 		
-		menu.addAction(QtGui.QAction(self.tr("Hide {column_name}".format(column_name=column_name)), parent=self.header()))
+		act_hide_col = QtGui.QAction(self.tr("Hide {column_name}".format(column_name=column_name)), parent=self.header())
+		act_hide_col.triggered.connect(functools.partial(self.sig_hide_column_requested.emit, idx_logical))
+		
+		menu.addAction(act_hide_col)
 
 		if self._act_show_column_editor:
 
