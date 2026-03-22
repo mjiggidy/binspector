@@ -405,27 +405,32 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._viewmode_text  .setItemPadding(padding)
 		self._viewmode_script.setItemPadding(padding)
 
-	@QtCore.Slot(str)
-	def focusBinColumn(self, focus_field_name:str) -> bool:
+	@QtCore.Slot(object)
+	def focusBinColumn(self, column_info:binviewitemtypes.BSBinViewColumnInfo) -> bool:
 
-		for log_idx, field_name in enumerate(
-			[self._viewmode_text.model().headerData(i, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole+5)
-			for i in range(self._viewmode_text.header().count())]
-			):
+		for col in range(self._bin_filter_model.columnCount(QtCore.QModelIndex())):
 
-			if field_name == focus_field_name:
+			if self._bin_filter_model.headerData(col, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo) == column_info:
 
 				self._section_main.currentWidget().setFocus()
-				self._viewmode_text.selectSection(log_idx)
+				self._viewmode_text.selectSection(col)
+
+				# Get the index of the top visible row
+				vertical_offset = self._viewmode_text.verticalScrollBar().value()
+
 				self._viewmode_text.scrollTo(
-					self._viewmode_text.model().index(0, log_idx, QtCore.QModelIndex()),
+					self._bin_filter_model.index(0, col, QtCore.QModelIndex()),
 					QtWidgets.QTreeView.ScrollHint.PositionAtCenter
 				)
-				
-				self.sig_focus_set_on_column.emit(log_idx)
-				return True
+
+				self._viewmode_text.verticalScrollBar().setValue(vertical_offset)
+
+				self.sig_focus_set_on_column.emit(col)
+
+				return
 		
 		QtWidgets.QApplication.beep()
+
 		return False
 
 	###

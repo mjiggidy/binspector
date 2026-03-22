@@ -15,6 +15,9 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	sig_delete_binview_requested = QtCore.Signal(object)
 	"""Delete the given binview"""
 
+	sig_focus_column_requested   = QtCore.Signal(object)
+	"""User requests the given `BSBinColumnInfo` to be brought into focus"""
+
 	def __init__(self, *args, bin_view_provider:providermodel.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -71,6 +74,14 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel())
 		self.setBinViewProvider(bin_view_provider or providermodel.BSBinViewProviderModel())
+
+		self._view_editor.activated.connect(self.binColumnDoubleClicked)
+	
+	@QtCore.Slot(QtCore.QModelIndex)
+	def binColumnDoubleClicked(self, index:QtCore.QModelIndex):
+		"""User requesting column focus"""
+
+		self.sig_focus_column_requested.emit(index.data(binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo))
 
 	def _setupComboBox(self):
 		"""Set up the bin view selector"""
