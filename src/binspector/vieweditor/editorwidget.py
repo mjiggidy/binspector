@@ -7,6 +7,8 @@ from . import editorproxymodel, editorview
 from ..binview import binviewmodel, binviewitemtypes
 from ..widgets import binviewcombobox
 
+DEFAULT_ILLEGAL_FILENAME_CHARS = ("\\", "/", "<", ">", "?", "*", ":")
+
 class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 	sig_export_binview_requested = QtCore.Signal(object, str)
@@ -150,7 +152,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if QtWidgets.QMessageBox.question(
 			self,
 			self.tr("Delete Bin View"),
-			self.tr("Are you sure you want to delete the stored bin view {binview_name}?").format_map({"binview_name":binview_source.name()})
+			self.tr("Are you sure you want to delete the stored bin view {binview_name}?").format(binview_name=binview_source.name())
 		) != QtWidgets.QMessageBox.StandardButton.Yes:
 			
 			return
@@ -158,8 +160,6 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self.sig_delete_binview_requested.emit(binview_source.name())
 
 	def _isValidFileName(self, filename:str) -> bool:
-
-		illegal_filename_chars = ("\\", "/", "<", ">", "?", "*", ":")
 
 		if not filename:
 			return False
@@ -170,7 +170,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if filename.startswith("."):
 			return False
 		
-		if any(c in illegal_filename_chars for c in filename):
+		if any(c in DEFAULT_ILLEGAL_FILENAME_CHARS for c in filename):
 			return False
 		
 		return True
@@ -210,7 +210,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 				user_choice = QtWidgets.QMessageBox.question(
 					self,
 					self.tr("Bin View Already Exists"),
-					self.tr("Replace the existing bin view named \"{save_name}\"?").format_map({"save_name":save_name})
+					self.tr("Replace the existing bin view named \"{save_name}\"?").format(save_name=save_name)
 				)
 
 				if user_choice == QtWidgets.QMessageBox.StandardButton.No:
