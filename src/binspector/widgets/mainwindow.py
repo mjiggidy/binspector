@@ -17,6 +17,8 @@ from ..vieweditor import editorwidget
 
 import avbutils
 
+DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC:int = 300
+
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
 
@@ -50,6 +52,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Define managers
 
 		self._binview_provider = providermodel.BSBinViewProviderModel()
+
+		self._find_in_bin_timer = QtCore.QTimer(parent=self, singleShot=True, interval=DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC)
+		self._find_in_bin_timer.timeout.connect(lambda: self._bin_widget._bin_filter_model.setSearchText(self._bin_widget.topWidgetBar().searchBox().text()))
+#		self._last_search_text = ""
 
 
 
@@ -328,7 +334,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
 
 		# Bin Contents Toolbars
-#		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.textView().model().setSearchText)
+		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self.userChangedSearchText)
 
 		# Bin View Modes
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
@@ -366,6 +372,17 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 	## Getters & Setters
 	##
+
+	@QtCore.Slot(str)
+	def userChangedSearchText(self, search_text:str):
+		"""User changed "Find In Bin" text, throttle via """
+
+		if not search_text:
+			self._find_in_bin_timer.stop()
+#			self._bin_widget._bin_filter_model.setSearchText("")
+
+		elif not self._find_in_bin_timer.isActive():
+			self._find_in_bin_timer.start()
 
 	def binViewProviderModel(self) -> providermodel.BSBinViewProviderModel:
 
