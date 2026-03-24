@@ -377,11 +377,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def userChangedSearchText(self, search_text:str):
 		"""User changed "Find In Bin" text, throttle via """
 
-		if not search_text:
-			self._find_in_bin_timer.stop()
-#			self._bin_widget._bin_filter_model.setSearchText("")
-
-		elif not self._find_in_bin_timer.isActive():
+		if not self._find_in_bin_timer.isActive():
 			self._find_in_bin_timer.start()
 
 	def binViewProviderModel(self) -> providermodel.BSBinViewProviderModel:
