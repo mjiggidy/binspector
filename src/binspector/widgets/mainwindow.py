@@ -17,7 +17,7 @@ from ..vieweditor import editorwidget
 
 import avbutils
 
-DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC:int = 300
+DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC:int = 500
 
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
