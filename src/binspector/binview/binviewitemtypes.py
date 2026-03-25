@@ -19,6 +19,9 @@ class BSBinViewColumnInfoRole(enum.IntEnum):
 
 	IconRole        = QtCore.Qt.ItemDataRole.DecorationRole
 	"""Data expected by a `BSIconProvider`"""
+
+	ToolTipRole     = QtCore.Qt.ItemDataRole.ToolTipRole
+	"""Tool tip data"""
 	
 	RawColumnInfo   = QtCore.Qt.ItemDataRole.UserRole
 	"""Full `BSBinViewColumnInfo` object"""
@@ -81,10 +84,21 @@ class BSBinViewColumnInfo:
 	def __post_init__(self):
 		self._refresh_data_roles()
 
+	def _build_tooltip(self):
+		
+		return QtCore.QCoreApplication.instance().tr(
+			"""
+			<strong>Display Name:</strong> {display_name}<br/>
+			<strong>Data Format:</strong> {data_format}<br/>
+			<strong>Is User Column:</strong> {is_user}
+			"""
+		).format(display_name=self.display_name, data_format=self.format_id, is_user=self.field_id==avbutils.bins.BinColumnFieldIDs.User)
+
 	def _refresh_data_roles(self):
 
 		self._data_roles = {
 			BSBinViewColumnInfoRole.DisplayNameRole:    self._sanitize_display_name(self.display_name),
+			BSBinViewColumnInfoRole.ToolTipRole:        self._build_tooltip(),
 			BSBinViewColumnInfoRole.FieldIdRole:        self.field_id,
 			BSBinViewColumnInfoRole.FieldNameRole:      self.display_name,
 			BSBinViewColumnInfoRole.FormatIdRole:       self.format_id,
