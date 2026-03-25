@@ -88,11 +88,19 @@ class BSBinViewColumnInfo:
 		
 		return QtCore.QCoreApplication.instance().tr(
 			"""
-			<strong>Display Name:</strong> {display_name}<br/>
-			<strong>Data Format:</strong> {data_format}<br/>
-			<strong>Is User Column:</strong> {is_user}
+			<table>
+				<tr>
+					<td><strong>Field:</strong></td><td>{field_id} ({field_name})</td>
+				</tr>
+				<tr>
+					<td><strong>Format:</strong></td><td>{data_format_id} ({data_format})</td>
+				</tr>
+				<tr>
+					<td><strong>Hidden:</strong></td><td>{is_hidden}</td>
+				</tr>
+			</table>
 			"""
-		).format(display_name=self.display_name, data_format=self.format_id, is_user=self.field_id==avbutils.bins.BinColumnFieldIDs.User)
+		).format(field_name=self.display_name, field_id=self.field_id.value, data_format=self.format_id, data_format_id=self.format_id.value, is_hidden=self.is_hidden)
 
 	def _refresh_data_roles(self):
 
