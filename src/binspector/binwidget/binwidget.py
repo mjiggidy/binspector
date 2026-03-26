@@ -52,7 +52,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_view_model      = bin_view_model or binviewmodel .BSBinViewModel()
 		
 		self._bin_composite_model = textviewmodel.BSTextViewModel(item_model=self._bin_items_model, view_model=self._bin_view_model)
-		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModel()
+		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModel(text_view_model=self._bin_composite_model)
 		
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
@@ -101,9 +101,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.LIST),   self._viewmode_text)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.FRAME),  self._viewmode_frame)
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._viewmode_script)
-
-		self._viewmode_frame.setZoomRange(BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_RANGE)
-		self._viewmode_frame.setZoom(BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_START)
 		
 		self.layout().addWidget(self._section_main)
 
@@ -120,11 +117,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		# Adjust scrollbar height for macOS rounded corner junk
 		
-		self._viewmode_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		
 		self._viewmode_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
 		
-		self._viewmode_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
+		
 
 	def _setupTextViewMode(self):
 
@@ -143,6 +140,22 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Signals
 		self._viewmode_text.sig_hide_column_requested.connect(self.hideBinColumn)
 
+	def _setupFrameViewMode(self):
+
+		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # Came from _setupBinModel
+
+		self._viewmode_frame.setZoomRange(BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_RANGE)
+		self._viewmode_frame.setZoom(BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_START)
+
+		self._viewmode_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
+		
+		self._viewmode_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
+		self._viewmode_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
+
+
+
+
 
 
 	def _setupSignals(self):
@@ -158,8 +171,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_composite_model.layoutChanged .connect(self.updateBinStats)
 
 		self._section_top.sig_frame_scale_changed  .connect(self._viewmode_frame.setZoom)
-		self._viewmode_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
-		self._viewmode_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 
 		self._section_top.sig_script_scale_changed         .connect(self._viewmode_script.setFrameScale)
 		self._viewmode_script.sig_frame_scale_changed      .connect(self._section_top._sld_script_scale.setValue)
@@ -221,7 +232,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		"""Connect bin model to all the schtuff"""
 
 		self._bin_filter_model.setSourceModel(self._bin_composite_model)
-		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK
+#		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK NOTE: MOVED to frame setup for now?
 
 	###
 	# View Mode Widgets
