@@ -326,8 +326,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_sifting.sig_options_set                   .connect(self._man_siftsettings.setSiftSettings)
 
 		# Inter-manager relations
-		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
-		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
+#		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
+#		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_view_model.setBinViewInfo)
 		self._man_binview.sig_neue_text_column_widths_changed.connect(self._bin_widget.setTextColumnWidthsFromBin)
 

@@ -84,6 +84,14 @@ class BSBinTextView(QtWidgets.QTreeView):
 		self.header().customContextMenuRequested.connect(self.showColumnContextMenu)
 		#self.header().sectionResized.connect(self.setBinColumnWidth)
 
+		# Setup Actions
+		# NOTE: Moved this out of binwidget, never sure what to do with actions
+		self._act_autofit_columns = QtGui.QAction(self)
+		self._act_autofit_columns.setText(self.tr("Auto-fit bin columns to contents"))
+		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
+		self._act_autofit_columns.triggered.connect(self.resizeAllColumnsToContents)
+		self.addAction(self._act_autofit_columns)
+
 	def setShowColumnEditorAction(self, action:QtGui.QAction):
 
 		self._act_show_column_editor = action	
