@@ -182,6 +182,11 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 
 		self.endResetModel()
 
+	def binItemModel(self) -> binitemsmodel.BSBinItemModel:
+		"""The current bin items model"""
+
+		return self._item_model
+
 	def setBinViewModel(self, view_model:binviewmodel.BSBinViewModel):
 		"""Set the bin column view model"""
 
@@ -207,8 +212,6 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		
 		if parent.isValid():
 			return 0
-		
-		
 		
 		return self._item_model.rowCount(QtCore.QModelIndex())
 	
