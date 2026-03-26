@@ -274,9 +274,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		# Entering Script View Mode
 		# Sync headers over to Script
-		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
+#		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
+#			pass
 
-			self._viewmode_script.syncFromHeader(self._viewmode_text.header())
+#			self._viewmode_script.syncFromHeader(self._viewmode_text.header())
 			#self._viewmode_script.adjustFirstItemPadding()
 
 		# Leaving Frame Mode
