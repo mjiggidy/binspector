@@ -14,6 +14,7 @@ from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..core import binloader, icon_engines, icon_providers, binparser
 from ..vieweditor import editorwidget
+from ..textview import textviewmodel
 
 import avbutils
 
@@ -43,7 +44,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		super().__init__()
 
-		self._bin_items_model  = binitemsmodel.BSBinItemModel()
+		self._bin_item_model  = binitemsmodel.BSBinItemModel()
 		self._bin_view_model   = binviewmodel.BSBinViewModel()
 
 		self._settings         = QtCore.QSettings()
@@ -78,7 +79,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._time_last_load   = QtCore.QElapsedTimer()
 
 		# Define widgets
-		self._bin_widget = binwidget.BSBinContentsWidget(bin_item_model=self._bin_items_model, bin_view_model=self._bin_view_model)
+		self._bin_widget = binwidget.BSBinContentsWidget(bin_composite_model=textviewmodel.BSTextViewModel(item_model=self._bin_item_model, view_model=self._bin_view_model))
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(
 			icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY
@@ -413,7 +414,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		#self._test_binitems_model.addBinItems(bin_items)
 
-		self._bin_items_model.addBinItems(bin_items)
+		self._bin_item_model.addBinItems(bin_items)
 			
 					
 	
@@ -533,7 +534,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
 #		self._man_binitems.viewModel().clear()
-		self._bin_items_model.clear()
+		self._bin_item_model.clear()
 #		self._test_binitems_model.clearBinItems()
 		
 		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))

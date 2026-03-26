@@ -30,9 +30,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_bin_model_changed      = QtCore.Signal(object)
 	sig_focus_set_on_column    = QtCore.Signal(int)	# Logical column index
 	sig_bin_stats_updated      = QtCore.Signal(str)
-	sig_bin_view_model_changed = QtCore.Signal(object)
+#	sig_bin_view_model_changed = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_item_model:binitemsmodel.BSBinItemModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_composite_model:textviewmodel.BSTextViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -48,10 +48,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# - binwdiget owns the composite model
 		# - binwidget allows you to set the view model and the items model
 		
-		self._bin_items_model     = bin_item_model or binitemsmodel.BSBinItemModel()
-		self._bin_view_model      = bin_view_model or binviewmodel .BSBinViewModel()
-		
-		self._bin_composite_model = textviewmodel.BSTextViewModel(item_model=self._bin_items_model, view_model=self._bin_view_model)
+		self._bin_composite_model = bin_composite_model or textviewmodel.BSTextViewModel()
 		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModel(text_view_model=self._bin_composite_model)
 		
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
@@ -84,11 +81,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._setupTextViewMode()
 		self._setupFrameViewMode()
+		self._setupScriptViewMode()
 
 		self._setupSignals()
 		self._setupActions()
 		
-		self._setupBinModel()
+#		self._setupBinModel()
 
 	def _setupWidgets(self):
 
@@ -104,25 +102,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_main.insertWidget(int(avbutils.BinDisplayModes.SCRIPT), self._viewmode_script)
 		
 		self.layout().addWidget(self._section_main)
-
-		
-
-
-		self._viewmode_script.setModel(self._bin_filter_model)
-		self._viewmode_script.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
-		self._viewmode_script.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-		
-		# NOTE: Set AFTER `view.setModel()`.  Got me good.
-		
-		self._viewmode_script.setSelectionModel(self._selection_model)
-		
-		# Adjust scrollbar height for macOS rounded corner junk
-		
-		
-		self._viewmode_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-
-		
-		
 
 	def _setupTextViewMode(self):
 
@@ -154,8 +133,22 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._viewmode_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
 		self._viewmode_frame.sig_zoom_range_changed.connect(lambda r: self._section_top._sld_frame_scale.setRange(r.start, r.stop))
 
+	def _setupScriptViewMode(self):
 
+		# Models
+		self._viewmode_script.setModel(self._bin_filter_model)
+		self._viewmode_script.setSelectionModel(self._selection_model)
 
+		# Delegates
+		self._viewmode_script.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
+		
+		# Scroll barrs
+		self._viewmode_script.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		self._viewmode_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+
+		self._viewmode_script.sig_frame_scale_changed      .connect(self._section_top._sld_script_scale.setValue)
+		self._viewmode_script.sig_frame_scale_range_changed.connect(lambda r: self._section_top._sld_script_scale.setRange(r.start, r.stop))
+		self._viewmode_script.sig_hide_column_requested .connect(self.hideBinColumn)
 
 
 
@@ -174,16 +167,16 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top.sig_frame_scale_changed  .connect(self._viewmode_frame.setZoom)
 
 		self._section_top.sig_script_scale_changed         .connect(self._viewmode_script.setFrameScale)
-		self._viewmode_script.sig_frame_scale_changed      .connect(self._section_top._sld_script_scale.setValue)
-		self._viewmode_script.sig_frame_scale_range_changed.connect(lambda r: self._section_top._sld_script_scale.setRange(r.start, r.stop))
+
 
 		self.sig_bin_stats_updated.connect(self._binstats_text.setText)
 		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
 
-		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
+		# NOTE: Maybe do this different
+		self._bin_composite_model.binViewModel().sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
 
 		
-		self._viewmode_script.sig_hide_column_requested .connect(self.hideBinColumn)
+
 
 
 		
@@ -213,26 +206,26 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._viewmode_text.setShowColumnEditorAction(action)
 		self._viewmode_script.setShowColumnEditorAction(action)
 
-	@QtCore.Slot(object)
-	def setBinItemsModel(self, bin_model:binitemsmodel.BSBinItemModel):
-		"""Set the bin item model for the bin"""
-
-		if self._bin_items_model == bin_model:
-			return
-		
-		self._bin_items_model = bin_model
-		self._setupBinModel()
-		
-		logging.getLogger(__name__).debug("Set bin model=%s", self._bin_items_model)
-		self.sig_bin_model_changed.emit(bin_model)
+#	@QtCore.Slot(object)
+#	def setBinItemsModel(self, bin_model:binitemsmodel.BSBinItemModel):
+#		"""Set the bin item model for the bin"""
+#
+#		if self._bin_items_model == bin_model:
+#			return
+#		
+#		self._bin_items_model = bin_model
+#		self._setupBinModel()
+#		
+#		logging.getLogger(__name__).debug("Set bin model=%s", self._bin_items_model)
+#		self.sig_bin_model_changed.emit(bin_model)
 	
-	def binItemsModel(self) -> binitemsmodel.BSBinItemModel:
-		return self._bin_items_model
+#	def binItemsModel(self) -> binitemsmodel.BSBinItemModel:
+#		return self._bin_items_model
 	
-	def _setupBinModel(self):
-		"""Connect bin model to all the schtuff"""
-
-		self._bin_filter_model.setSourceModel(self._bin_composite_model)
+#	def _setupBinModel(self):
+#		"""Connect bin model to all the schtuff"""
+#
+#		self._bin_filter_model.setSourceModel(self._bin_composite_model)  # TODO: Setup during declaration, don't want this stuff goin on here I don't think
 #		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK NOTE: MOVED to frame setup for now?
 
 	###
