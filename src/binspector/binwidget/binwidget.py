@@ -81,6 +81,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)
 
 		self._setupWidgets()
+
+		self._setupTextViewMode()
+
 		self._setupSignals()
 		self._setupActions()
 		
@@ -105,25 +108,42 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().addWidget(self._section_main)
 
 		
-		self._viewmode_text.setModel(self._bin_filter_model)
-		self._viewmode_text.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
-		self._viewmode_text.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
 
 		self._viewmode_script.setModel(self._bin_filter_model)
 		self._viewmode_script.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
 		self._viewmode_script.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		
 		# NOTE: Set AFTER `view.setModel()`.  Got me good.
-		self._viewmode_text.setSelectionModel(self._selection_model)
+		
 		self._viewmode_script.setSelectionModel(self._selection_model)
 		
 		# Adjust scrollbar height for macOS rounded corner junk
-		self._viewmode_text  .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		
 		self._viewmode_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 		self._viewmode_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 
-		self._viewmode_text .addScrollBarWidget(self._binstats_text,  QtCore.Qt.AlignmentFlag.AlignLeft)
+		
 		self._viewmode_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
+
+	def _setupTextViewMode(self):
+
+		# Models
+		self._viewmode_text.setModel(self._bin_filter_model)
+		self._viewmode_text.setSelectionModel(self._selection_model) # NOTE: Call after setModel()
+		
+		# Delegates
+		self._viewmode_text.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
+
+		# Scroll bars
+		self._viewmode_text.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+		self._viewmode_text.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_text.addScrollBarWidget(self._binstats_text,  QtCore.Qt.AlignmentFlag.AlignLeft)
+
+		# Signals
+		self._viewmode_text.sig_hide_column_requested.connect(self.hideBinColumn)
+
+
 
 	def _setupSignals(self):
 		
@@ -150,7 +170,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
 
-		self._viewmode_text.sig_hide_column_requested   .connect(self.hideBinColumn)
+		
 		self._viewmode_script.sig_hide_column_requested .connect(self.hideBinColumn)
 
 
@@ -162,17 +182,17 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	def _setupActions(self):
 
-		self._act_set_view_width_for_columns = QtGui.QAction(self._viewmode_text)
-		self._act_set_view_width_for_columns.setText(self.tr("Restore saved bin column widths"))
-		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
-		self._act_set_view_width_for_columns.triggered.connect(lambda: self._viewmode_text.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._viewmode_text.header().count()-1))
+#		self._act_set_view_width_for_columns = QtGui.QAction(self._viewmode_text)
+#		self._act_set_view_width_for_columns.setText(self.tr("Restore saved bin column widths"))
+#		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
+#		self._act_set_view_width_for_columns.triggered.connect(lambda: self._viewmode_text.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._viewmode_text.header().count()-1))
 
 		self._act_autofit_columns = QtGui.QAction(self._viewmode_text)
 		self._act_autofit_columns.setText(self.tr("Auto-fit bin columns to contents"))
 		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
 		self._act_autofit_columns.triggered.connect(self._viewmode_text.resizeAllColumnsToContents)
 		
-		self._viewmode_text.addAction(self._act_set_view_width_for_columns)
+#		self._viewmode_text.addAction(self._act_set_view_width_for_columns)
 		self._viewmode_text.addAction(self._act_autofit_columns)
 
 	def setShowColumnEditorAction(self, action:QtGui.QAction):
