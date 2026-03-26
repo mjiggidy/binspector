@@ -83,6 +83,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._setupWidgets()
 
 		self._setupTextViewMode()
+		self._setupFrameViewMode()
 
 		self._setupSignals()
 		self._setupActions()
