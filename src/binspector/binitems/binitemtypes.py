@@ -1,8 +1,24 @@
-import typing, enum, datetime, os
-import avbutils
+from __future__ import annotations
+import typing, enum, datetime, os, dataclasses
+import avbutils, avb
 from timecode import Timecode
 from PySide6 import QtCore, QtGui, QtWidgets
 from functools import singledispatch
+
+#from binspector.binitems import binitemtypes
+
+@dataclasses.dataclass(frozen=True)
+class BSBinItemInfo:
+	"""Bin item info for a given mob"""
+
+	mob_id            :avb.mobid.MobID
+	item_type         :avbutils.bins.BinDisplayItemTypes
+	tracks            :set[avb.trackgroups.Track]
+	clip_color        :avbutils.compositions.ClipColor|None
+	name              :str
+	frame_coordinates :tuple[int,int]|None
+	keyframe_offset   :int
+	view_items        :dict[int,BSAbstractViewItem|dict[str,BSAbstractViewItem]] # Field ID -> ViewItem or 40 -> dict[term,def]
 
 class BSBinItemDataRoles(enum.IntEnum):
 	"""Item Data Roles for Bin Items (extends `QtCore.Qt.ItemDataRole`)"""
@@ -13,7 +29,8 @@ class BSBinItemDataRoles(enum.IntEnum):
 	FrameCoordinatesRole = enum.auto()
 	FrameThumbnailRole   = enum.auto()
 	ScriptNotesRole      = enum.auto()
-	ViewItemRole         = enum.auto()
+	ViewItemsRole        = enum.auto()
+	MobID                = enum.auto()
 	"""Return the view item dict"""
 
 class BSAbstractViewItem:
@@ -382,3 +399,5 @@ def _(item:datetime.datetime):
 @get_viewitem_for_item.register
 def _(item:Timecode):
 	return BSTimecodeViewItem(item)
+
+

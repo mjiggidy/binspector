@@ -12,7 +12,7 @@ from ..binitems import binitemsmodel, binitemtypes
 from ..binview import binviewmodel, binviewitemtypes
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
-from ..core import binloader, icon_engines, icon_providers, binparser
+from ..core import binloader, icon_engines, icon_providers
 from ..vieweditor import editorwidget
 from ..textview import textviewmodel
 
@@ -386,35 +386,35 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		return self._binview_provider
 
 	@QtCore.Slot()
-	def mobsToBinItems(self, mobs:list[binparser.BinItemInfo]):
+	def mobsToBinItems(self, mobs:list[binitemtypes.BSBinItemInfo]):
 
 		#print(mobs)
 
-		bin_items = []
+#		bin_items = []
 
-		for view_item in filter(lambda m: m.view_items, mobs):
-			
-			fields = dict()
-
-			for field_id, field_value in view_item.view_items.items():
-			
-
-				if field_id != avbutils.BinColumnFieldIDs.User:
-					fields[field_id] = binitemtypes.get_viewitem_for_item(field_value)
-				
-				else:
-					user_col_data = {}
-					
-					for user_col_name, user_col_value in field_value.items():
-						user_col_data[user_col_name] = binitemtypes.get_viewitem_for_item(user_col_value)
-					
-					fields[field_id] = user_col_data
-				
-			bin_items.append(fields)
+#		for view_item in filter(lambda m: m.view_items, mobs):
+#			
+#			fields = dict()
+#
+#			for field_id, field_value in view_item.view_items.items():
+#			
+#
+#				if field_id != avbutils.BinColumnFieldIDs.User:
+#					fields[field_id] = binitemtypes.get_viewitem_for_item(field_value)
+#				
+#				else:
+#					user_col_data = {}
+#					
+#					for user_col_name, user_col_value in field_value.items():
+#						user_col_data[user_col_name] = binitemtypes.get_viewitem_for_item(user_col_value)
+#					
+#					fields[field_id] = user_col_data
+#				
+#			bin_items.append(fields)
 		
 		#self._test_binitems_model.addBinItems(bin_items)
 
-		self._bin_item_model.addBinItems(bin_items)
+		self._bin_item_model.addBinItems(mobs)
 			
 					
 	

@@ -15,7 +15,7 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 
 		super().__init__(*args, **kwargs)
 
-		self._bin_items:list[BSBinItemModelEntry] = []
+		self._bin_items:list[binitemtypes.BSBinItemInfo] = []
 
 	def rowCount(self, /, parent:QtCore.QModelIndex) -> int:
 		"""Number of bin items"""
@@ -57,16 +57,19 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		# Map specialized BinItemDataRoles to their avbutils counterparts
 
 		if role == binitemtypes.BSBinItemDataRoles.ItemNameRole:
-			return bin_item.get(bins.BinColumnFieldIDs.Name).raw_data()
+			return bin_item.view_items.get(bins.BinColumnFieldIDs.Name).raw_data()
 				
 		elif role == binitemtypes.BSBinItemDataRoles.ClipColorRole:
-			return bin_item.get(bins.BinColumnFieldIDs.Color).raw_data()
+			return bin_item.view_items.get(bins.BinColumnFieldIDs.Color).raw_data()
 		
 		elif role == binitemtypes.BSBinItemDataRoles.ItemTypesRole:
-			return bin_item.get(bins.BinColumnFieldIDs.BinItemIcon).raw_data()
+			return bin_item.view_items.get(bins.BinColumnFieldIDs.BinItemIcon).raw_data()
 		
-		elif role == binitemtypes.BSBinItemDataRoles.ViewItemRole:
-			return bin_item
+		elif role == binitemtypes.BSBinItemDataRoles.ViewItemsRole:
+			return bin_item.view_items
+		
+#		elif role == binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole:
+#			return bin_item
 		
 		elif role == QtCore.Qt.ItemDataRole.DisplayRole:
 			if  bin_item.get(bins.BinColumnFieldIDs.Name) is not None:
@@ -74,13 +77,10 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 			else:
 #				print(bin_item)
 				return str(bin_item)
-		
+			
 		else:
 			return None
 
-#		elif role == binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole:
-#			# NOTE: TODO
-#			return [100,100]
 		
 #		elif role == binitemtypes.BSBinItemDataRoles.ScriptNotesRole:
 #			# NOTE: Maybe rethink

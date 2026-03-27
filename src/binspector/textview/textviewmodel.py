@@ -251,7 +251,7 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		if role > QtCore.Qt.ItemDataRole.UserRole:
 			return self._item_model.data(self._item_model.index(index.row(), 0, QtCore.QModelIndex()), role)
 
-		bin_item = self._item_model.data(self._item_model.index(index.row(), 0, QtCore.QModelIndex()), binitemtypes.BSBinItemDataRoles.ViewItemRole)
+		bin_item = self._item_model.data(self._item_model.index(index.row(), 0, QtCore.QModelIndex()), binitemtypes.BSBinItemDataRoles.ViewItemsRole)
 		
 		# Determine which field we need for this column
 		field_id   = self._view_model.data(self._view_model.index(index.column(), 0, QtCore.QModelIndex()), binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
