@@ -2,9 +2,6 @@ import logging, typing
 import avb, avbutils
 from PySide6 import QtCore
 
-from ..binitems import binitemtypes
-from ..models import viewmodels
-
 TEMP_POSITION_OFFSET_THING = 10
 
 class BSBinViewModeManager(QtCore.QObject):

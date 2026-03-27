@@ -3,7 +3,6 @@ from PySide6 import QtCore, QtWidgets
 
 from ..textview import textviewproxymodel
 
-from ..models import viewmodels
 from ..core import config
 from . import sceneitems, painters
 

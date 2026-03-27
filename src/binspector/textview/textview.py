@@ -1,18 +1,15 @@
 from __future__ import annotations
-import logging, enum, typing
+import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from . import textviewproxymodel, textviewheader
 
 from ..core.config import BSTextViewModeConfig
-from ..models import viewmodels
-from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
 from . import proxydelegates
 from ..binwidget import itemdelegates
 from ..core import icon_providers, icon_registry
-from .proxydelegates import FieldLookupDict, FormatLookupDict
 
 from ..binview import binviewitemtypes
 

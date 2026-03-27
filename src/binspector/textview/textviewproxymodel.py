@@ -1,6 +1,5 @@
 from ..binitems import binitemtypes
 from ..binview import binviewitemtypes
-from ..models import viewmodels
 
 from . import textviewmodel, proxyfilters
 
