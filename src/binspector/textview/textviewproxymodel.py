@@ -1,6 +1,5 @@
 from ..binitems import binitemtypes
 from ..binview import binviewitemtypes
-from ..models import viewmodels
 
 from . import textviewmodel, proxyfilters
 
@@ -14,29 +13,34 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		super().__init__(*args, **kwargs)
 
-		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
-
+		self.setDynamicSortFilter(False)
+		self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
+		
 		self._sort_collator = QtCore.QCollator()
 		self._sort_collator.setNumericMode(True)
 		self._sort_collator.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
-		#self.setSortRole(QtCore.Qt.ItemDataRole.InitialSortOrderRole)
-		self.setDynamicSortFilter(False)
-
 
 		self._item_filters_enabled     = True
 		self._column_filters_enabled   = True
 		
 		self._filter_bin_display_items = proxyfilters.BSBinItemDisplayFilter()
+		self._filter_find_in_bin       = proxyfilters.BSFindInBinFilter()
+
+		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
 
 	def setSourceModel(self, sourceModel:textviewmodel.BSTextViewModel):
 
 		if self.sourceModel() == sourceModel:
 			return
+		
+		if self.sourceModel():
+			self.sourceModel().disconnect(self)
 
 		if not isinstance(sourceModel, textviewmodel.BSTextViewModel):
 			raise ValueError(f"Source model must be `BSTextViewModel`; got {repr(sourceModel)}")
 		
 		sourceModel.headerDataChanged.connect(self.binColumnDataChanged)
+#		sourceModel.modelReset.connect(lambda: self.sort(-1))	# Start unsorted/"script order"
 		
 		super().setSourceModel(sourceModel)
 
@@ -101,6 +105,16 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 	def setSiftEnabled(self, is_enabled:bool):
 		"""TODO"""
 
+	@QtCore.Slot(str)
+	def setSearchText(self, search_text:str):
+
+		if self._filter_find_in_bin.searchText() == search_text:
+			return
+		
+		self.beginFilterChange()
+		self._filter_find_in_bin.setSearchText(search_text)
+		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
+
 	###
 
 	def lessThan(self, source_left:QtCore.QModelIndex, source_right:QtCore.QModelIndex) -> bool:
@@ -122,9 +136,8 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		source_col_start = self.mapToSourceColumn(col_start)
 		source_col_end   = self.mapToSourceColumn(col_dest)
 
-		source_start_name = self.sourceModel().headerData(source_col_start, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
-		source_start_end  = self.sourceModel().headerData(source_col_end-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if source_col_end > 0 else "<<FRONT>>"
-
+#		source_start_name = self.sourceModel().headerData(source_col_start, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+#		source_start_end  = self.sourceModel().headerData(source_col_end-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if source_col_end > 0 else "<<FRONT>>"
 #		print(f"Proxy model wants to move {source_start_name} to before {source_start_end}")
 		
 		return self.sourceModel().moveColumn(QtCore.QModelIndex(), source_col_start, QtCore.QModelIndex(), source_col_end)
@@ -161,4 +174,7 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		if not self._item_filters_enabled:
 			return True
 		
-		return self._filter_bin_display_items.filterAcceptsItem(self, source_row, source_parent)
+		return all([
+			self._filter_bin_display_items.filterAcceptsItem(self, source_row, source_parent),
+			self._filter_find_in_bin.filterAcceptsItem(self, source_row, source_parent)
+		])

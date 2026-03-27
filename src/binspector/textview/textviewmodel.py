@@ -182,6 +182,11 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 
 		self.endResetModel()
 
+	def binItemModel(self) -> binitemsmodel.BSBinItemModel:
+		"""The current bin items model"""
+
+		return self._item_model
+
 	def setBinViewModel(self, view_model:binviewmodel.BSBinViewModel):
 		"""Set the bin column view model"""
 
@@ -207,8 +212,6 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		
 		if parent.isValid():
 			return 0
-		
-		
 		
 		return self._item_model.rowCount(QtCore.QModelIndex())
 	
@@ -248,7 +251,7 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 		if role > QtCore.Qt.ItemDataRole.UserRole:
 			return self._item_model.data(self._item_model.index(index.row(), 0, QtCore.QModelIndex()), role)
 
-		bin_item = self._item_model.data(self._item_model.index(index.row(), 0, QtCore.QModelIndex()), binitemtypes.BSBinItemDataRoles.ViewItemRole)
+		bin_item = self._item_model.data(self._item_model.index(index.row(), 0, QtCore.QModelIndex()), binitemtypes.BSBinItemDataRoles.ViewItemsRole)
 		
 		# Determine which field we need for this column
 		field_id   = self._view_model.data(self._view_model.index(index.column(), 0, QtCore.QModelIndex()), binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)

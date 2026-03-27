@@ -147,7 +147,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		self.horizontalScrollBar().valueChanged     .connect(self.processViewRectChanges)
 		self.verticalScrollBar().valueChanged       .connect(self.processViewRectChanges)
 
-		self.setScene(frame_scene or BSBinFrameScene(brushes_manager=self._item_brushes))
+		
 
 	@QtCore.Slot(QtCore.QPointF)
 	def snapSelectedToGridUnit(self, unit_coordinates:QtCore.QPointF):

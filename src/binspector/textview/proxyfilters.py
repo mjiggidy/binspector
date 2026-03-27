@@ -23,6 +23,8 @@ class BSBinItemDisplayFilter(BSAbstractTextViewItemFilter):
 
 	def __init__(self, accepted_item_types:avbutils.bins.BinDisplayItemTypes|None = None):
 
+		super().__init__()
+
 		self._accepted_item_types = accepted_item_types or self.DEFAULT_ITEM_TYPES
 
 	def filterAcceptsItem(self, proxy_model:textviewproxymodel.BSBTextViewSortFilterProxyModel, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
@@ -43,3 +45,36 @@ class BSBinItemDisplayFilter(BSAbstractTextViewItemFilter):
 	def acceptedItemTypes(self) -> avbutils.bins.BinDisplayItemTypes:
 
 		return self._accepted_item_types
+
+class BSFindInBinFilter(BSAbstractTextViewItemFilter):
+
+	def __init__(self, search_text:str="", case_sensitive:bool=False):
+
+		super().__init__()
+
+		self._search_text    = search_text
+		self._case_sensitive = case_sensitive
+
+	def setSearchText(self, search_text:str):
+
+		self._search_text = search_text if self._case_sensitive else search_text.casefold()
+
+	def searchText(self) -> str:
+
+		return self._search_text
+
+	def filterAcceptsItem(self, proxy_model:textviewproxymodel.BSBTextViewSortFilterProxyModel, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
+
+		if not self._search_text:
+			return True
+		
+		# Build search text from visible columns
+		for source_col_idx in filter(lambda idx: proxy_model.filterAcceptsColumn(idx, source_parent), range(proxy_model.sourceModel().columnCount(source_parent))):
+
+			src_index           = proxy_model.sourceModel().index(source_row, source_col_idx, source_parent)
+			src_filter_data:str = src_index.data(QtCore.Qt.ItemDataRole.DisplayRole) # PRESUMPTUOUS!
+
+			if src_filter_data and self._search_text in (src_filter_data if self._case_sensitive else src_filter_data.casefold()):
+				return True
+
+		return False

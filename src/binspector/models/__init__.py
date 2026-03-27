@@ -1,3 +1,0 @@
-"""
-Oh, you know... models!
-"""

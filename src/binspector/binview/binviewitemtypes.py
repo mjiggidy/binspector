@@ -19,6 +19,9 @@ class BSBinViewColumnInfoRole(enum.IntEnum):
 
 	IconRole        = QtCore.Qt.ItemDataRole.DecorationRole
 	"""Data expected by a `BSIconProvider`"""
+
+	ToolTipRole     = QtCore.Qt.ItemDataRole.ToolTipRole
+	"""Tool tip data"""
 	
 	RawColumnInfo   = QtCore.Qt.ItemDataRole.UserRole
 	"""Full `BSBinViewColumnInfo` object"""
@@ -81,10 +84,29 @@ class BSBinViewColumnInfo:
 	def __post_init__(self):
 		self._refresh_data_roles()
 
+	def _build_tooltip(self):
+		
+		return QtCore.QCoreApplication.instance().tr(
+			"""
+			<table>
+				<tr>
+					<td><strong>Field:</strong></td><td>{field_id} ({field_name})</td>
+				</tr>
+				<tr>
+					<td><strong>Format:</strong></td><td>{data_format_id} ({data_format})</td>
+				</tr>
+				<tr>
+					<td><strong>Hidden:</strong></td><td>{is_hidden}</td>
+				</tr>
+			</table>
+			"""
+		).format(field_name=self.display_name, field_id=self.field_id.value, data_format=self.format_id, data_format_id=self.format_id.value, is_hidden=self.is_hidden)
+
 	def _refresh_data_roles(self):
 
 		self._data_roles = {
 			BSBinViewColumnInfoRole.DisplayNameRole:    self._sanitize_display_name(self.display_name),
+			BSBinViewColumnInfoRole.ToolTipRole:        self._build_tooltip(),
 			BSBinViewColumnInfoRole.FieldIdRole:        self.field_id,
 			BSBinViewColumnInfoRole.FieldNameRole:      self.display_name,
 			BSBinViewColumnInfoRole.FormatIdRole:       self.format_id,

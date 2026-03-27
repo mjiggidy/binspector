@@ -3,7 +3,6 @@ from PySide6 import QtCore, QtWidgets
 
 from ..textview import textviewproxymodel
 
-from ..models import viewmodels
 from ..core import config
 from . import sceneitems, painters
 
@@ -16,13 +15,19 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 	sig_selection_model_changed    = QtCore.Signal(object)
 	sig_bin_item_added             = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_filter_model:textviewproxymodel.BSBTextViewSortFilterProxyModel|None=None, brushes_manager:painters.BSFrameItemBrushManager, **kwargs):
+	def __init__(self,
+		*args,
+		bin_filter_model:textviewproxymodel.BSBTextViewSortFilterProxyModel|None=None,
+		brushes_manager:painters.BSFrameItemBrushManager|None=None,
+		selection_model:QtCore.QItemSelectionModel|None=None,
+		**kwargs
+	):
 
 		super().__init__(*args, **kwargs)
 
 		self._bin_filter_model = bin_filter_model or textviewproxymodel.BSBTextViewSortFilterProxyModel()
-		self._selection_model  = QtCore.QItemSelectionModel()
-		self._brushes_manager  = brushes_manager
+		self._selection_model  = selection_model  or QtCore.QItemSelectionModel()
+		self._brushes_manager  = brushes_manager  or painters.BSFrameItemBrushManager(parent=self.parent())
 
 		self._bin_items:list[sceneitems.BSFrameModeItem] = list()
 

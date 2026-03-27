@@ -72,6 +72,10 @@ class BSFrameItemBrushManager(QtCore.QObject):
 		self._watcher_style.sig_font_changed.connect(self.setFont)
 		self._watcher_style.sig_palette_changed.connect(self.setPalette)
 
+		# Complete setup
+		self.setFont(self.font_label)
+		self.setPalette(self._palette)
+
 	@QtCore.Slot(QtGui.QPalette)
 	def setPalette(self, palette:QtGui.QPalette):
 

@@ -72,21 +72,6 @@ def appearance_settings_from_bin(bin_content:avb.bin.Bin) -> tuple:
 		bin_content.was_iconic,
 	)
 
-import dataclasses
-@dataclasses.dataclass(frozen=True)
-class BinItemInfo:
-	"""Bin item info for a given mob"""
-
-	mob_id            :avb.mobid.MobID
-	item_type         :avbutils.bins.BinDisplayItemTypes
-	tracks            :set[avb.trackgroups.Track]
-	clip_color        :avbutils.compositions.ClipColor|None
-	name              :str
-	frame_coordinates :tuple[int,int]|None
-	keyframe_offset   :int
-	view_items        :dict[int,binitemtypes.BSAbstractViewItem|dict[str,str]]	# Field ID -> ViewItem or 40 -> dict[term,def]
-
-
 def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		"""Parse a mob and its bin item properties"""
 
@@ -197,26 +182,26 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		item = {
 			avbutils.BIN_COLUMN_ROLES["Name"]:  binitemtypes.BSStringViewItem(mob_name),
 			avbutils.BIN_COLUMN_ROLES["Color"]: binitemtypes.BSClipColorViewItem(mob_color),
-			avbutils.BIN_COLUMN_ROLES["Start"]: timecode_range.start if timecode_range else "",
-			avbutils.BIN_COLUMN_ROLES["End"]: timecode_range.end if timecode_range else "",
+			avbutils.BIN_COLUMN_ROLES["Start"]: binitemtypes.get_viewitem_for_item(timecode_range.start if timecode_range else ""),
+			avbutils.BIN_COLUMN_ROLES["End"]: binitemtypes.get_viewitem_for_item(timecode_range.end if timecode_range else ""),
 			avbutils.BIN_COLUMN_ROLES["Duration"]: binitemtypes.BSDurationViewItem(timecode_range.duration) if timecode_range else "",
-			avbutils.BIN_COLUMN_ROLES["Modified Date"]: comp.last_modified,
-			avbutils.BIN_COLUMN_ROLES["Creation Date"]: comp.creation_time,
-			avbutils.BIN_COLUMN_ROLES[""]: mob_types,
+			avbutils.BIN_COLUMN_ROLES["Modified Date"]: binitemtypes.get_viewitem_for_item(comp.last_modified),
+			avbutils.BIN_COLUMN_ROLES["Creation Date"]: binitemtypes.get_viewitem_for_item(comp.creation_time),
+			avbutils.BIN_COLUMN_ROLES[""]: binitemtypes.get_viewitem_for_item(mob_types),
 			avbutils.BIN_COLUMN_ROLES["Marker"]: binitemtypes.BSMarkerViewItem(marker),
 			avbutils.BIN_COLUMN_ROLES["Tracks"]: binitemtypes.BSStringViewItem(avbutils.timeline.format_track_labels(mob_tracks)) or None,
-			avbutils.BIN_COLUMN_ROLES["Tape"]: tape_name or "",
-			avbutils.BIN_COLUMN_ROLES["Drive"]: source_drive or "",
-			avbutils.BIN_COLUMN_ROLES["Source File"]: source_file_name or "",
-			avbutils.BIN_COLUMN_ROLES["Scene"]: user_attributes.get("Scene") or "",
-			avbutils.BIN_COLUMN_ROLES["Take"]: user_attributes.get("Take") or "",
-			avbutils.BIN_COLUMN_ROLES["Labroll"]: user_attributes.get("Labroll") or "",
-			avbutils.BIN_COLUMN_ROLES["Soundroll"]: user_attributes.get("Soundroll") or "",
-			avbutils.BIN_COLUMN_ROLES["Camroll"]: user_attributes.get("Camroll") or "",
-			avbutils.BIN_COLUMN_ROLES["FPS"]: user_attributes.get("FPS") or "",
-			avbutils.BIN_COLUMN_ROLES["Sound TC"]: user_attributes.get("Sound TC") or "",
-			avbutils.BIN_COLUMN_ROLES["Shoot Date"]: user_attributes.get("Shoot Date") or "",
-			avbutils.BIN_COLUMN_ROLES["Audio SR"]: user_attributes.get("Audio SR") or "",
+			avbutils.BIN_COLUMN_ROLES["Tape"]: binitemtypes.get_viewitem_for_item(tape_name or ""),
+			avbutils.BIN_COLUMN_ROLES["Drive"]: binitemtypes.get_viewitem_for_item(source_drive or ""),
+			avbutils.BIN_COLUMN_ROLES["Source File"]: binitemtypes.get_viewitem_for_item(source_file_name or ""),
+			avbutils.BIN_COLUMN_ROLES["Scene"]: binitemtypes.get_viewitem_for_item(user_attributes.get("Scene") or ""),
+			avbutils.BIN_COLUMN_ROLES["Take"]: binitemtypes.get_viewitem_for_item(user_attributes.get("Take") or ""),
+			avbutils.BIN_COLUMN_ROLES["Labroll"]: binitemtypes.get_viewitem_for_item(user_attributes.get("Labroll") or ""),
+			avbutils.BIN_COLUMN_ROLES["Soundroll"]: binitemtypes.get_viewitem_for_item(user_attributes.get("Soundroll") or ""),
+			avbutils.BIN_COLUMN_ROLES["Camroll"]: binitemtypes.get_viewitem_for_item(user_attributes.get("Camroll") or ""),
+			avbutils.BIN_COLUMN_ROLES["FPS"]: binitemtypes.get_viewitem_for_item(user_attributes.get("FPS") or ""),
+			avbutils.BIN_COLUMN_ROLES["Sound TC"]: binitemtypes.get_viewitem_for_item(user_attributes.get("Sound TC") or ""),
+			avbutils.BIN_COLUMN_ROLES["Shoot Date"]: binitemtypes.get_viewitem_for_item(user_attributes.get("Shoot Date") or ""),
+			avbutils.BIN_COLUMN_ROLES["Audio SR"]: binitemtypes.get_viewitem_for_item(user_attributes.get("Audio SR") or ""),
 			
 			
 		}
@@ -225,10 +210,13 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		#for key, val in user_attributes.items():
 		#	item.update({"40_"+key: val})
 
+		for k,v in user_attributes.items():
+			user_attributes[k] = binitemtypes.BSStringViewItem(v)
+
 		# New
 		item.update({40: user_attributes})
 		
-		return BinItemInfo(
+		return binitemtypes.BSBinItemInfo(
 			name = mob_name,
 			item_type = mob_types,
 			view_items = item,

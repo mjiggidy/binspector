@@ -1,22 +1,21 @@
 from __future__ import annotations
-import logging, enum, typing
+import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from . import textviewproxymodel, textviewheader
 
 from ..core.config import BSTextViewModeConfig
-from ..models import viewmodels
-from ..views  import treeview
 from ..utils import columnselect
 from ..res import icons_binitems
 from . import proxydelegates
 from ..binwidget import itemdelegates
 from ..core import icon_providers, icon_registry
-from .proxydelegates import FieldLookupDict, FormatLookupDict
 
 from ..binview import binviewitemtypes
 
-class BSBinTextView(treeview.BSTreeViewBase):
+import avbutils
+
+class BSBinTextView(QtWidgets.QTreeView):
 	"""QTreeView but nicer"""
 
 	sig_default_sort_columns_changed = QtCore.Signal(object)
@@ -27,6 +26,9 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 	sig_item_padding_changed         = QtCore.Signal(object)
 
+	sig_hide_column_requested        = QtCore.Signal(object)
+	"""Hide a given bin view column info"""
+
 
 	def __init__(self, *args, bin_item_icon_registry:icon_registry.IconRegistryType|None=None, **kwargs):
 
@@ -36,8 +38,8 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		self.setSortingEnabled(True)
 		self.setRootIsDecorated(False)
-		self.setAlternatingRowColors(True)
 		self.setUniformRowHeights(True)
+		self.setAlternatingRowColors(True)
 
 		self.setHeader(textviewheader.BSTextViewColumnHeaderView(QtCore.Qt.Orientation.Horizontal))
 
@@ -72,27 +74,51 @@ class BSBinTextView(treeview.BSTreeViewBase):
 		self._item_padding          = QtCore.QMarginsF(BSTextViewModeConfig.DEFAULT_ITEM_PADDING)
 		self.setItemPadding(self._item_padding)
 
+		self._act_show_column_editor = None
+
 
 		self.header().sectionMoved.connect(self.binColumnDragged)
 		self.header().customContextMenuRequested.connect(self.showColumnContextMenu)
 		#self.header().sectionResized.connect(self.setBinColumnWidth)
 
-	
+		# Setup Actions
+		# NOTE: Moved this out of binwidget, never sure what to do with actions
+		self._act_autofit_columns = QtGui.QAction(self)
+		self._act_autofit_columns.setText(self.tr("Auto-fit bin columns to contents"))
+		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
+		self._act_autofit_columns.triggered.connect(self.resizeAllColumnsToContents)
+		self.addAction(self._act_autofit_columns)
+
+	def setShowColumnEditorAction(self, action:QtGui.QAction):
+
+		self._act_show_column_editor = action	
 
 	@QtCore.Slot(QtCore.QPoint)
 	def showColumnContextMenu(self, point:QtCore.QPoint):
+
+		import functools
 
 		menu = QtWidgets.QMenu("Column Actions", parent=self.header())
 
 		#print("Yo")
 
 		idx_logical = self.header().logicalIndexAt(point)
-		column_name = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+		field_id    = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
+
+		if field_id == avbutils.bins.BinColumnFieldIDs.BinItemIcon:
+			column_name = "Item Icon"
+		else:
+			column_name = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
 		
-		menu.addAction(QtGui.QAction(f"Hide {column_name}", parent=self.header()))
-		menu.addSeparator()
-		act_choose = QtGui.QAction("Choose Columns...", parent=self.header())
-		menu.addAction(act_choose)
+		act_hide_col = QtGui.QAction(self.tr("Hide {column_name}".format(column_name=column_name)), parent=self.header())
+		act_hide_col.triggered.connect(functools.partial(self.sig_hide_column_requested.emit, idx_logical))
+		
+		menu.addAction(act_hide_col)
+
+		if self._act_show_column_editor:
+
+			menu.addSeparator()
+			menu.addAction(self._act_show_column_editor)
 
 		menu.popup(self.header().mapToGlobal(point))
 
@@ -176,6 +202,7 @@ class BSBinTextView(treeview.BSTreeViewBase):
 
 		model.columnsInserted.connect(self.binColumnsInserted, QtCore.Qt.ConnectionType.QueuedConnection) # NOTE: Queued because QHeader needs to update first
 		model.rowsInserted.connect(self.binItemsInserted)
+		model.modelReset.connect(lambda: self.sortByColumn(-1, QtCore.Qt.SortOrder.AscendingOrder))
 #		model.modelReset.connect(lambda: self.binColumnsInserted(QtCore.QModelIndex(), 0, self.model().columnCount(QtCore.QModelIndex())), QtCore.Qt.ConnectionType.QueuedConnection)
 #		model.headerDataChanged.connect(self.updateBinColumns)
 

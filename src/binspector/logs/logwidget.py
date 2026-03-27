@@ -1,6 +1,5 @@
 from PySide6 import QtWidgets
-from ..views import logtreeview
-from ..widgets import buttons
+from . import logtreeview
 
 class BSLogViewerWidget(QtWidgets.QWidget):
 

@@ -7,6 +7,8 @@ from . import editorproxymodel, editorview
 from ..binview import binviewmodel, binviewitemtypes
 from ..widgets import binviewcombobox
 
+DEFAULT_ILLEGAL_FILENAME_CHARS = ("\\", "/", "<", ">", "?", "*", ":")
+
 class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 	sig_export_binview_requested = QtCore.Signal(object, str)
@@ -14,6 +16,9 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 	sig_delete_binview_requested = QtCore.Signal(object)
 	"""Delete the given binview"""
+
+	sig_focus_column_requested   = QtCore.Signal(object)
+	"""User requests the given `BSBinColumnInfo` to be brought into focus"""
 
 	def __init__(self, *args, bin_view_provider:providermodel.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
@@ -64,13 +69,21 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self.layout().addLayout(self._lay_buttons)
 
-		self._cmb_bin_view_list.currentTextChanged.connect(self.viewWasChanged)
+		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
 
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
 		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
 
 		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel())
 		self.setBinViewProvider(bin_view_provider or providermodel.BSBinViewProviderModel())
+
+		self._view_editor.activated.connect(self.binColumnDoubleClicked)
+	
+	@QtCore.Slot(QtCore.QModelIndex)
+	def binColumnDoubleClicked(self, index:QtCore.QModelIndex):
+		"""User requesting column focus"""
+
+		self.sig_focus_column_requested.emit(index.data(binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo))
 
 	def _setupComboBox(self):
 		"""Set up the bin view selector"""
@@ -93,12 +106,14 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if self._bin_view_provider is not None:
 			self._bin_view_provider.disconnect(self)
 		
+		bin_view_provider.sig_stored_sources_changed.connect(self.updateButtonState)
+		
 		self._bin_view_provider = bin_view_provider
 
 		self._cmb_bin_view_list.setModel(self._bin_view_provider)
 
 	@QtCore.Slot()
-	def viewWasChanged(self):
+	def updateButtonState(self):
 		"""Update buttons on view change"""
 
 		binview_source:binviewsources.BSAbstractBinViewSource = self._cmb_bin_view_list.currentData()
@@ -137,12 +152,28 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if QtWidgets.QMessageBox.question(
 			self,
 			self.tr("Delete Bin View"),
-			self.tr("Are you sure you want to delete the stored bin view {binview_name}?").format_map({"binview_name":binview_source.name()})
+			self.tr("Are you sure you want to delete the stored bin view {binview_name}?").format(binview_name=binview_source.name())
 		) != QtWidgets.QMessageBox.StandardButton.Yes:
 			
 			return
 		
 		self.sig_delete_binview_requested.emit(binview_source.name())
+
+	def _isValidFileName(self, filename:str) -> bool:
+
+		if not filename:
+			return False
+		
+		if not filename.isprintable():
+			return False
+		
+		if filename.startswith("."):
+			return False
+		
+		if any(c in DEFAULT_ILLEGAL_FILENAME_CHARS for c in filename):
+			return False
+		
+		return True
 	
 	def _promptForBinViewName(self) -> str|None:
 
@@ -161,13 +192,25 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 			if not was_serious_about_it:
 				return None
 			
+			# Check for illegal characters
+			if not self._isValidFileName(save_name):
+
+				user_choice = QtWidgets.QMessageBox.warning(
+					self,
+					self.tr("Invalid Bin Name"),
+					self.tr("The given bin name contains characters that are not allowed.  Please use alphanumeric characters, and do not start names with a period.")
+				)
+
+				continue
+
+			
 			# Start over if overwrite is "undesirable" to the "user"
 			if save_name in [bvs.name() for bvs in self._bin_view_provider.storedBinViewSources()]:
 
 				user_choice = QtWidgets.QMessageBox.question(
 					self,
 					self.tr("Bin View Already Exists"),
-					f"Replace the existing bin view named \"{save_name}\"?"
+					self.tr("Replace the existing bin view named \"{save_name}\"?").format(save_name=save_name)
 				)
 
 				if user_choice == QtWidgets.QMessageBox.StandardButton.No:

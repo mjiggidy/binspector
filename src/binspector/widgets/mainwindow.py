@@ -12,10 +12,13 @@ from ..binitems import binitemsmodel, binitemtypes
 from ..binview import binviewmodel, binviewitemtypes
 from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
-from ..core import binloader, icon_engines, icon_providers, binparser
+from ..core import binloader, icon_engines, icon_providers
 from ..vieweditor import editorwidget
+from ..textview import textviewmodel
 
 import avbutils
+
+DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC:int = 500
 
 class BSMainWindow(QtWidgets.QMainWindow):
 	"""Main window for BinSpectre 👻"""
@@ -41,7 +44,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		super().__init__()
 
-		self._bin_items_model  = binitemsmodel.BSBinItemModel()
+		self._bin_item_model  = binitemsmodel.BSBinItemModel()
 		self._bin_view_model   = binviewmodel.BSBinViewModel()
 
 		self._settings         = QtCore.QSettings()
@@ -50,6 +53,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Define managers
 
 		self._binview_provider = providermodel.BSBinViewProviderModel()
+
+		self._find_in_bin_timer = QtCore.QTimer(parent=self, singleShot=True, interval=DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC)
+		self._find_in_bin_timer.timeout.connect(lambda: self._bin_widget._bin_filter_model.setSearchText(self._bin_widget.topWidgetBar().searchBox().text()))
+#		self._last_search_text = ""
 
 
 
@@ -72,7 +79,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._time_last_load   = QtCore.QElapsedTimer()
 
 		# Define widgets
-		self._bin_widget = binwidget.BSBinContentsWidget(bin_item_model=self._bin_items_model, bin_view_model=self._bin_view_model)
+		self._bin_widget = binwidget.BSBinContentsWidget(bin_composite_model=textviewmodel.BSTextViewModel(item_model=self._bin_item_model, view_model=self._bin_view_model))
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(
 			icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY
@@ -92,10 +99,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		#self._tool_columneditor = editorwidget.BSBinViewColumnEditor()
 		#self._tool_columneditor.show()
 
-		self._btn_toolbox_bindisplay = buttons.BSActionPushButton(show_text=False)
-		self._btn_toolbox_appearance = buttons.BSActionPushButton(show_text=False)
-		self._btn_toolbox_sifting    = buttons.BSActionPushButton(show_text=False)
-		self._btn_toolbox_binview    = buttons.BSActionPushButton(show_text=False)
+#		self._btn_toolbox_bindisplay = buttons.BSActionPushButton(show_text=False)
+#		self._btn_toolbox_appearance = buttons.BSActionPushButton(show_text=False)
+#		self._btn_toolbox_sifting    = buttons.BSActionPushButton(show_text=False)
+#		self._btn_toolbox_binview    = buttons.BSActionPushButton(show_text=False)
 
 		self._drag_drop_overlay = overlaywidget.BSDragDropOverlayWidget(parent=self._bin_widget, is_visible=False)
 
@@ -154,6 +161,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		grp = QtWidgets.QSizeGrip(self._bin_widget.textView())
 		self._bin_widget.textView().setCornerWidget(grp)
+
+		self._bin_widget.setShowColumnEditorAction(self._man_actions._act_toggle_binview_settings)
 		
 		# Apply Bin Settings Toggles
 		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
@@ -317,8 +326,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_sifting.sig_options_set                   .connect(self._man_siftsettings.setSiftSettings)
 
 		# Inter-manager relations
-		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
-		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
+#		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
+#		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
 		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_view_model.setBinViewInfo)
 		self._man_binview.sig_neue_text_column_widths_changed.connect(self._bin_widget.setTextColumnWidthsFromBin)
 
@@ -326,7 +335,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
 
 		# Bin Contents Toolbars
-#		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self._bin_widget.textView().model().setSearchText)
+		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self.userChangedSearchText)
 
 		# Bin View Modes
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
@@ -355,6 +364,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Bin View Editor
 		self._tool_binview.sig_export_binview_requested         .connect(self.exportBinView)
 		self._tool_binview.sig_delete_binview_requested         .connect(self.deleteBinView)
+		self._tool_binview.sig_focus_column_requested           .connect(self._bin_widget.focusBinColumn)
+
 		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(lambda bvs: self._man_binview.sig_neue_bin_view_changed.emit(bvs.binViewInfo()))
 		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_source_selected .connect(lambda bvs: self._man_binview.sig_neue_bin_view_changed.emit(bvs.binViewInfo()))
 
@@ -363,40 +374,47 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	## Getters & Setters
 	##
 
+	@QtCore.Slot(str)
+	def userChangedSearchText(self, search_text:str):
+		"""User changed "Find In Bin" text, throttle via """
+
+		if not self._find_in_bin_timer.isActive():
+			self._find_in_bin_timer.start()
+
 	def binViewProviderModel(self) -> providermodel.BSBinViewProviderModel:
 
 		return self._binview_provider
 
 	@QtCore.Slot()
-	def mobsToBinItems(self, mobs:list[binparser.BinItemInfo]):
+	def mobsToBinItems(self, mobs:list[binitemtypes.BSBinItemInfo]):
 
 		#print(mobs)
 
-		bin_items = []
+#		bin_items = []
 
-		for view_item in filter(lambda m: m.view_items, mobs):
-			
-			fields = dict()
-
-			for field_id, field_value in view_item.view_items.items():
-			
-
-				if field_id != avbutils.BinColumnFieldIDs.User:
-					fields[field_id] = binitemtypes.get_viewitem_for_item(field_value)
-				
-				else:
-					user_col_data = {}
-					
-					for user_col_name, user_col_value in field_value.items():
-						user_col_data[user_col_name] = binitemtypes.get_viewitem_for_item(user_col_value)
-					
-					fields[field_id] = user_col_data
-				
-			bin_items.append(fields)
+#		for view_item in filter(lambda m: m.view_items, mobs):
+#			
+#			fields = dict()
+#
+#			for field_id, field_value in view_item.view_items.items():
+#			
+#
+#				if field_id != avbutils.BinColumnFieldIDs.User:
+#					fields[field_id] = binitemtypes.get_viewitem_for_item(field_value)
+#				
+#				else:
+#					user_col_data = {}
+#					
+#					for user_col_name, user_col_value in field_value.items():
+#						user_col_data[user_col_name] = binitemtypes.get_viewitem_for_item(user_col_value)
+#					
+#					fields[field_id] = user_col_data
+#				
+#			bin_items.append(fields)
 		
 		#self._test_binitems_model.addBinItems(bin_items)
 
-		self._bin_items_model.addBinItems(bin_items)
+		self._bin_item_model.addBinItems(mobs)
 			
 					
 	
@@ -516,7 +534,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
 #		self._man_binitems.viewModel().clear()
-		self._bin_items_model.clear()
+		self._bin_item_model.clear()
 #		self._test_binitems_model.clearBinItems()
 		
 		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
@@ -698,8 +716,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	@QtCore.Slot(object, str)
 	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo, with_name:str|None=None):
 		"""Export the current binview"""
-
-		binview_info = self._bin_view_model.binViewInfo()
 
 		if with_name:
 			binview_info = dataclasses.replace(binview_info, name=with_name)
