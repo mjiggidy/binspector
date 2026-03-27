@@ -125,7 +125,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		bin_frame_scene     = frameview.BSBinFrameScene(
 			bin_filter_model = self._bin_filter_model,
 			brushes_manager  = frameview.painters.BSFrameItemBrushManager(parent=self._viewmode_frame),
-			selection_model  = self._selection_model
 		)
 		self._viewmode_frame.setScene(bin_frame_scene)
 
