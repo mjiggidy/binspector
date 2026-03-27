@@ -16,7 +16,7 @@ class BSBinItemInfo:
 	tracks            :set[avb.trackgroups.Track]
 	clip_color        :avbutils.compositions.ClipColor|None
 	name              :str
-	frame_coordinates :tuple[int,int]|None
+	frame_coordinates :tuple[int,int]
 	keyframe_offset   :int
 	view_items        :dict[int,BSAbstractViewItem|dict[str,BSAbstractViewItem]] # Field ID -> ViewItem or 40 -> dict[term,def]
 

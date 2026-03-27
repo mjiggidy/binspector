@@ -68,15 +68,19 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		elif role == binitemtypes.BSBinItemDataRoles.ViewItemsRole:
 			return bin_item.view_items
 		
-#		elif role == binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole:
-#			return bin_item
+		elif role == binitemtypes.BSBinItemDataRoles.MobID:
+			return bin_item.mob_id
 		
-		elif role == QtCore.Qt.ItemDataRole.DisplayRole:
-			if  bin_item.get(bins.BinColumnFieldIDs.Name) is not None:
-				return bin_item.get(bins.BinColumnFieldIDs.Name).data(QtCore.Qt.ItemDataRole.DisplayRole)
-			else:
-#				print(bin_item)
-				return str(bin_item)
+		elif role == binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole:
+			return bin_item.frame_coordinates
+
+#		NOTE: I don't remember why this would be here and it would need work anyway
+#
+#		elif role == QtCore.Qt.ItemDataRole.DisplayRole:
+#			if bin_item.view_items.get(bins.BinColumnFieldIDs.Name) is not None:
+#				return bin_item.view_items.get(bins.BinColumnFieldIDs.Name).data(QtCore.Qt.ItemDataRole.DisplayRole)
+#			else:
+#				return str(bin_item)
 			
 		else:
 			return None
