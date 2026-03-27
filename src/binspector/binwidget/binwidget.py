@@ -50,7 +50,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		self._bin_composite_model = bin_composite_model or textviewmodel.BSTextViewModel()
 		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModel(text_view_model=self._bin_composite_model)
-		
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
 		# Save initial palette for later togglin'
@@ -122,8 +121,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	def _setupFrameViewMode(self):
 
-		# Model
-		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # Came from _setupBinModel
+		# Scene from model
+		bin_frame_scene     = frameview.BSBinFrameScene(
+			bin_filter_model = self._bin_filter_model,
+			brushes_manager  = frameview.painters.BSFrameItemBrushManager(parent=self._viewmode_frame),
+			selection_model  = self._selection_model
+		)
+		self._viewmode_frame.setScene(bin_frame_scene)
 
 		# Initial settings sync
 		self._viewmode_frame.setZoomRange(BSFrameViewModeConfig.DEFAULT_FRAME_ZOOM_RANGE)
