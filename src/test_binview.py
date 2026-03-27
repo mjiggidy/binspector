@@ -7,7 +7,6 @@ from binspector.textview import textviewmodel, textviewproxymodel
 
 from binspector.vieweditor import editorwidget
 from binspector.textview import textview
-from binspector.models import viewmodels
 import avb
 
 bin_view_model = binviewmodel.BSBinViewModel()

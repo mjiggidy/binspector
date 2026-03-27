@@ -10,8 +10,8 @@ from ..binviewprovider import providerstorage, binviewsources
 
 from . import settings, config
 from ..managers import windows, software_updates
-from ..widgets  import mainwindow, logwidget, settingswindow
-from ..models   import logmodels
+from ..widgets  import mainwindow, settingswindow
+from ..logs   import logmodels, logwidget
 from ..res      import translations
 from ..binview  import binviewitemtypes
 

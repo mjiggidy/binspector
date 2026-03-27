@@ -3,7 +3,7 @@ Bin settings views, typically used as toolboxes or sidebars
 """
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..views import treeview, enumview
+from ..views import enumview
 from ..core import icon_providers, icon_engines, icon_registry
 import avbutils
 
