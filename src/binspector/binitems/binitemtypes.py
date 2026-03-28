@@ -400,4 +400,6 @@ def _(item:datetime.datetime):
 def _(item:Timecode):
 	return BSTimecodeViewItem(item)
 
-
+@get_viewitem_for_item.register
+def _(item:avbutils.markers.MarkerInfo):
+	return BSMarkerViewItem(item)
