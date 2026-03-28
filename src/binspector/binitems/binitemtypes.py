@@ -85,8 +85,19 @@ class BSStringViewItem(BSAbstractViewItem):
 		super()._prepare_data()
 
 		self._data_roles.update({
-			QtCore.Qt.ItemDataRole.DisplayRole: self.to_string(self._data),
+			QtCore.Qt.ItemDataRole.DisplayRole: self.format_single_line(self.to_string(self._data)),
 		})
+
+	def format_single_line(self, input_string:str):
+		
+		output_string = ""
+		
+		for c in input_string:
+			if not c.isprintable():
+				return output_string + "…"
+			output_string += c
+		
+		return output_string
 
 class BSEnumViewItem(BSAbstractViewItem):
 	"""Represents an Enum"""
