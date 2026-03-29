@@ -29,12 +29,6 @@ class BSBinViewModeManager(QtCore.QObject):
 
 class BSBinViewManager(QtCore.QObject):
 
-	sig_bin_view_changed = QtCore.Signal(object, object, int, int)
-	"""Binview has been reset"""
-
-	sig_neue_bin_view_changed = QtCore.Signal(object)
-	"""Neueu BinView Model thing"""
-
 	sig_view_mode_toggled = QtCore.Signal(object)
 	"""Binview has been toggled on/off"""
 
@@ -46,12 +40,6 @@ class BSBinViewManager(QtCore.QObject):
 
 	sig_all_items_toggled = QtCore.Signal(object)
 	"""All items have been toggled on/off (opposite of `sig_bin_filters_toggled`)"""
-
-	sig_focus_bin_column    = QtCore.Signal(str)
-	"""Focus a given bin column index"""
-
-	sig_neue_text_column_widths_changed = QtCore.Signal(object)
-	"""Bin Columns Test"""
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -65,16 +53,6 @@ class BSBinViewManager(QtCore.QObject):
 		self.sig_view_mode_toggled  .connect(lambda bv_enabled: self.sig_all_columns_toggled.emit(not bv_enabled))
 		self.sig_bin_filters_toggled.connect(lambda fl_enabled: self.sig_all_items_toggled  .emit(not fl_enabled))
 
-
-	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
-		"""Set columns and their widths"""
-
-		from ..binview import binviewitemtypes
-		self.sig_neue_bin_view_changed.emit(binviewitemtypes.BSBinViewInfo.from_binview(bin_view))
-
-		#self.sig_neue_text_column_widths_changed.emit(column_widths)
-
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
 
@@ -83,12 +61,6 @@ class BSBinViewManager(QtCore.QObject):
 	def defaultSortColumns(self) -> list[list[int,str]]:
 
 		return self._default_sort_columns
-
-	@QtCore.Slot(object)
-	def addColumnDefinition(self, column_definition:dict[str,object]):
-
-		column_definition["format"] = avbutils.BinColumnFormat(column_definition["format"])
-		self.addRow(column_definition)
 	
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
@@ -116,27 +88,6 @@ class BSBinViewManager(QtCore.QObject):
 	def setAllItemsVisible(self, all_visible:bool):
 
 		self.setBinFiltersEnabled(not all_visible)
-
-	@QtCore.Slot(QtCore.QModelIndex)
-	def requestFocusColumn(self, selected_index:QtCore.QModelIndex):
-
-		
-		# Field name
-		#clicked_row  = selected_index.row()
-		header_names = [selected_index.model().headerData(i, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.DisplayRole) for i in range(selected_index.model().columnCount())]
-		
-		selected_format  = selected_index.siblingAtColumn(header_names.index("Type")).data(QtCore.Qt.ItemDataRole.UserRole).raw_data()
-		selected_name    = selected_index.siblingAtColumn(header_names.index("Title")).data(QtCore.Qt.ItemDataRole.DisplayRole)
-		
-		logging.getLogger(__name__).debug("Requesting to focus bin view column %s: %s", selected_format, selected_name)
-
-		selected_field_name = f"{selected_format}_{selected_name}" if selected_format == 40 else str(selected_format)
-
-		#print(selected_field_name)
-
-		
-		#print(selected_index.data(QtCore.Qt.ItemDataRole.UserRole))
-		self.sig_focus_bin_column.emit(selected_field_name)
 
 
 class BSBinDisplaySettingsManager(QtCore.QObject):

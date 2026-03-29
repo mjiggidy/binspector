@@ -328,15 +328,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_siftsettings.sig_sift_settings_changed     .connect(self._bin_widget.setSiftOptions)
 		self._tool_sifting.sig_options_set                   .connect(self._man_siftsettings.setSiftSettings)
 
-		# Inter-manager relations
-#		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
-#		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
-		#self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_view_model.setBinViewInfo)
-#		self._man_binview.sig_neue_text_column_widths_changed.connect(self._bin_widget.setTextColumnWidthsFromBin)
-
-		# Update display counts -- Not where where to put this
-#		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
-
 		# Bin Contents Toolbars
 		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self.userChangedSearchText)
 
@@ -354,7 +345,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_toggle_show_all_items.toggled    .connect(self._man_binview.setAllItemsVisible)
 		self._man_binview.sig_all_items_toggled                 .connect(self._man_actions._act_toggle_show_all_items.setChecked)
 		self._man_binview.sig_bin_filters_toggled               .connect(self._bin_widget._bin_filter_model.setBinItemFiltersEnabled)
-		self._man_binview.sig_focus_bin_column                  .connect(self._bin_widget.focusBinColumn)
 
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
 		self._man_appearance.sig_use_system_appearance_toggled  .connect(self._man_actions._act_toggle_sys_appearance.setChecked)
@@ -391,32 +381,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	@QtCore.Slot()
 	def mobsToBinItems(self, mobs:list[binitemtypes.BSBinItemInfo]):
 
-		#print(mobs)
-
-#		bin_items = []
-
-#		for view_item in filter(lambda m: m.view_items, mobs):
-#			
-#			fields = dict()
-#
-#			for field_id, field_value in view_item.view_items.items():
-#			
-#
-#				if field_id != avbutils.BinColumnFieldIDs.User:
-#					fields[field_id] = binitemtypes.get_viewitem_for_item(field_value)
-#				
-#				else:
-#					user_col_data = {}
-#					
-#					for user_col_name, user_col_value in field_value.items():
-#						user_col_data[user_col_name] = binitemtypes.get_viewitem_for_item(user_col_value)
-#					
-#					fields[field_id] = user_col_data
-#				
-#			bin_items.append(fields)
-		
-		#self._test_binitems_model.addBinItems(bin_items)
-
 		self._bin_item_model.addBinItems(mobs)
 			
 					
@@ -435,9 +399,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	
 	def sortingManager(self) -> binproperties.BSBinSortingPropertiesManager:
 		return self._man_sorting
-	
-#	def binItemsManager(self) -> binproperties.BSBinItemsManager:
-#		return self._man_binitems
 	
 	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
 		return self._sigs_binloader
