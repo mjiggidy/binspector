@@ -313,12 +313,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._bin_view_model.setBinViewInfo)
 		self._sigs_binloader.sig_got_text_column_widths      .connect(self._bin_widget.setTextColumnWidthsFromBin)
-		self._sigs_binloader.sig_got_frame_mode_scale        .connect(self._bin_widget.frameView().setZoom) # NOTE: Set this via binwidget
-		self._sigs_binloader.sig_got_script_mode_scale       .connect(self._bin_widget.scriptView().setFrameScale) # NOTE: Set this via binwidget
+		self._sigs_binloader.sig_got_frame_mode_scale        .connect(self._bin_widget.frameView().setZoom)
+		self._sigs_binloader.sig_got_script_mode_scale       .connect(self._bin_widget.scriptView().setFrameScale)
 		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
-		self._sigs_binloader.sig_got_mobs                    .connect(self.mobsToBinItems, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
-		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
+		self._sigs_binloader.sig_got_mobs                    .connect(self.addBinItems, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
+#		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
 
 		self._sigs_binloader.sig_got_sift_settings           .connect(self._man_siftsettings.setSiftSettings)
 		self._man_siftsettings.sig_bin_view_changed          .connect(self._tool_sifting.setBinView)
@@ -379,12 +379,11 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		return self._binview_provider
 
 	@QtCore.Slot()
-	def mobsToBinItems(self, mobs:list[binitemtypes.BSBinItemInfo]):
+	def addBinItems(self, bin_items:list[binitemtypes.BSBinItemInfo]):
 
-		self._bin_item_model.addBinItems(mobs)
+		self.updateLoadingBar(bin_items)
+		self._bin_item_model.addBinItems(bin_items)
 			
-					
-	
 	def actionsManager(self) -> actions.ActionsManager:
 		return self._man_actions
 
