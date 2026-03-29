@@ -25,6 +25,8 @@ class BSBinViewLoader(QtCore.QRunnable):
 
 		sig_got_display_mode            = QtCore.Signal(object)
 		sig_got_view_settings           = QtCore.Signal(object, object, object, object)
+		sig_got_frame_mode_scale        = QtCore.Signal(int)
+		sig_got_script_mode_scale       = QtCore.Signal(int)
 		sig_got_mob                     = QtCore.Signal() # For progress bar
 		sig_got_mobs                    = QtCore.Signal(object)
 		sig_got_sort_settings           = QtCore.Signal(object)
@@ -91,12 +93,17 @@ class BSBinViewLoader(QtCore.QRunnable):
 			logging.getLogger(__name__).debug("End display flags")
 			
 			logging.getLogger(__name__).debug("Begin view settings")
+
 			self._signals.sig_got_view_settings.emit(
 				binparser.bin_view_setting_from_bin(bin_handle.content),
-				binparser.bin_column_widths_from_bin(bin_handle.content),
-				binparser.bin_frame_view_scale_from_bin(bin_handle.content),
-				binparser.bin_scipt_view_scale_from_bin(bin_handle.content),
+				binparser.bin_column_widths_from_bin(bin_handle.content),         # TODO: PHASE OUT
+				-1, #binparser.bin_frame_view_scale_from_bin(bin_handle.content),   PHASING OUT
+				-1, #binparser.bin_scipt_view_scale_from_bin(bin_handle.content),   PHASING OUT
 			)
+
+			self._signals.sig_got_frame_mode_scale .emit(binparser.bin_frame_view_scale_from_bin(bin_handle.content))
+			self._signals.sig_got_script_mode_scale.emit(binparser.bin_scipt_view_scale_from_bin(bin_handle.content))
+
 			logging.getLogger(__name__).debug("End view settings")
 
 			logging.getLogger(__name__).debug("Begin display mode")

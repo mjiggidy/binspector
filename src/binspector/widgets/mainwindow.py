@@ -312,6 +312,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
+		self._sigs_binloader.sig_got_frame_mode_scale        .connect(self._bin_widget.frameView().setZoom) # NOTE: Set this via binwidget
+		self._sigs_binloader.sig_got_script_mode_scale       .connect(self._bin_widget.scriptView().setFrameScale) # NOTE: Set this via binwidget
 		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
 		self._sigs_binloader.sig_got_mobs                    .connect(self.mobsToBinItems, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
