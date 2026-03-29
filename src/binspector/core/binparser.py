@@ -112,6 +112,10 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 		user_attributes = dict()
 		source_drive = None
 
+		mark_in    = None
+		mark_out   = None
+		mark_range = None
+
 		if avbutils.BinDisplayItemTypes.SEQUENCE in mob_types:
 			timecode_range = avbutils.get_timecode_range_for_composition(comp)
 			user_attributes = comp.attributes.get("_USER",{})
@@ -146,6 +150,18 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 				timecode_range = avbutils.get_timecode_range_for_composition(comp)
 			except Exception as e:
 				pass
+
+			# NOTE: UNRELIABLE
+			if timecode_range and "attributes" in comp.property_data:
+				mark_in = timecode_range.start + timecode.Timecode(comp.attributes.get("_IN"), rate=timecode_range.rate)   if "_IN"  in comp.attributes else None
+#				print("***", comp.name, mark_in)
+				mark_out = timecode_range.start + timecode.Timecode(comp.attributes.get("_OUT"), rate=timecode_range.rate) if "_OUT" in comp.attributes else None
+#				print("***", mark_out)
+				if mark_in and mark_out and mark_in < mark_out:
+					mark_range = timecode.TimecodeRange(start=mark_in, end=mark_out)
+
+
+
 
 			attributes_reverse = []
 			for source, offset in avbutils.source_references_for_component(avbutils.sourcerefs.primary_track_for_composition(comp).component):
@@ -203,6 +219,9 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
 			avbutils.bins.BinColumnFieldIDs.SoundTC:      binitemtypes.get_viewitem_for_item(user_attributes.get("Sound TC") or ""),
 			avbutils.bins.BinColumnFieldIDs.ShootDate:    binitemtypes.get_viewitem_for_item(user_attributes.get("Shoot Date") or ""),
 			avbutils.bins.BinColumnFieldIDs.AudioSR:      binitemtypes.get_viewitem_for_item(user_attributes.get("Audio SR") or ""),
+			avbutils.bins.BinColumnFieldIDs.MarkIn:       binitemtypes.get_viewitem_for_item(mark_in or ""),
+			avbutils.bins.BinColumnFieldIDs.MarkOut:      binitemtypes.get_viewitem_for_item(mark_out or ""),
+			avbutils.bins.BinColumnFieldIDs.InOut:        binitemtypes.BSDurationViewItem(mark_range.duration) if mark_range else binitemtypes.BSStringViewItem(""),
 			
 			
 		}
