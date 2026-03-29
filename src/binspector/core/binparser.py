@@ -5,16 +5,17 @@ Also used by `.binloader`
 
 import avb, avbutils, timecode
 from ..binitems import binitemtypes
+from ..binview  import binviewitemtypes
 
 def bin_display_flags_from_bin(bin_content:avb.bin.Bin) -> avbutils.BinDisplayItemTypes:
 	return avbutils.BinDisplayItemTypes.get_options_from_bin(bin_content)
 	
 def bin_view_setting_from_bin(bin_content:avb.bin.Bin) -> avb.bin.BinViewSetting:
 	
-	bin_view = bin_content.view_setting
-	bin_view.property_data = avb.core.AVBPropertyData(bin_view.property_data) # Dereference before closing file
+	#bin_view = bin_content.view_setting
+#	bin_view.property_data = avb.core.AVBPropertyData(bin_view.property_data) # Dereference before closing file
 	
-	return bin_view
+	return binviewitemtypes.BSBinViewInfo.from_binview(bin_content.view_setting)
 
 def bin_frame_view_scale_from_bin(bin_content:avb.bin.Bin) -> int:
 	"""Get the Frame view mode scale"""

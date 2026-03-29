@@ -311,7 +311,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
  
 		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
-		self._sigs_binloader.sig_got_view_settings           .connect(self._man_binview.setBinView)
+		self._sigs_binloader.sig_got_view_settings           .connect(self._bin_view_model.setBinViewInfo)
+		self._sigs_binloader.sig_got_text_column_widths      .connect(self._bin_widget.setTextColumnWidthsFromBin)
 		self._sigs_binloader.sig_got_frame_mode_scale        .connect(self._bin_widget.frameView().setZoom) # NOTE: Set this via binwidget
 		self._sigs_binloader.sig_got_script_mode_scale       .connect(self._bin_widget.scriptView().setFrameScale) # NOTE: Set this via binwidget
 		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
@@ -330,8 +331,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Inter-manager relations
 #		self._man_binview.sig_bin_view_changed               .connect(self._man_siftsettings.setBinView)
 #		self._man_binview.sig_bin_view_changed               .connect(self._bin_widget.setBinView)
-		self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_view_model.setBinViewInfo)
-		self._man_binview.sig_neue_text_column_widths_changed.connect(self._bin_widget.setTextColumnWidthsFromBin)
+		#self._man_binview.sig_neue_bin_view_changed          .connect(self._bin_view_model.setBinViewInfo)
+#		self._man_binview.sig_neue_text_column_widths_changed.connect(self._bin_widget.setTextColumnWidthsFromBin)
 
 		# Update display counts -- Not where where to put this
 #		self._man_binitems.sig_mob_count_changed             .connect(self._bin_widget.updateBinStats)
@@ -368,8 +369,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_binview.sig_delete_binview_requested         .connect(self.deleteBinView)
 		self._tool_binview.sig_focus_column_requested           .connect(self._bin_widget.focusBinColumn)
 
-		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(lambda bvs: self._man_binview.sig_neue_bin_view_changed.emit(bvs.binViewInfo()))
-		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_source_selected .connect(lambda bvs: self._man_binview.sig_neue_bin_view_changed.emit(bvs.binViewInfo()))
+		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(lambda bvs: self._bin_view_model.setBinViewInfo(bvs.binViewInfo()))
+		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_source_selected .connect(lambda bvs: self._bin_view_model.setBinViewInfo(bvs.binViewInfo()))
 
 
 	##
@@ -629,13 +630,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		if message:
 			QtWidgets.QMessageBox.critical(self, self.tr("Bin Not Loaded"), message)
 
-
-
 	@QtCore.Slot(object)
 	def binLoadException(self, exception:Exception):
-
 		
-		logging.getLogger(__name__).error(exception)
+		logging.getLogger(__name__).error("Error during bin load: %s", str(exception))
 	
 	@QtCore.Slot()
 	@QtCore.Slot(object)

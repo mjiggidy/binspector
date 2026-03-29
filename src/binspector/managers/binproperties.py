@@ -66,14 +66,14 @@ class BSBinViewManager(QtCore.QObject):
 		self.sig_bin_filters_toggled.connect(lambda fl_enabled: self.sig_all_items_toggled  .emit(not fl_enabled))
 
 
-	@QtCore.Slot(object, object, object, object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict|None=None, frame_view_scale:int=avbutils.THUMB_FRAME_MODE_RANGE.start, script_view_scale:int=avbutils.THUMB_SCRIPT_MODE_RANGE.start):
+	@QtCore.Slot(object)
+	def setBinView(self, bin_view:avb.bin.BinViewSetting):
 		"""Set columns and their widths"""
 
 		from ..binview import binviewitemtypes
 		self.sig_neue_bin_view_changed.emit(binviewitemtypes.BSBinViewInfo.from_binview(bin_view))
 
-		self.sig_neue_text_column_widths_changed.emit(column_widths)
+		#self.sig_neue_text_column_widths_changed.emit(column_widths)
 
 	@QtCore.Slot(object)
 	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
