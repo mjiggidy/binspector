@@ -103,7 +103,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		)
 		
 #		self._path_local_storage = local_path or QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
-
+#		print("Got local_storage", local_storage)
 		if not QtCore.QDir().mkpath(local_storage.path()):
 			raise OSError(
 				self.tr("Cannot set up local storage path at {local_storage_path}").format(local_storage_path=local_storage)
@@ -114,10 +114,17 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		return local_storage
 		
-	def _setupLogging(self):
+	def _setupLogging(self, subdir_name:str="logs"):
 		"""Setup logging config and handlers"""
 		
 		logging.basicConfig(level=logging.DEBUG)
+
+		base_dir = QtCore.QDir(QtCore.QDir(self._path_local_storage).filePath(subdir_name))
+
+		if not QtCore.QDir().mkpath(base_dir.path()):
+			raise OSError(
+				self.tr("Cannot set up log storage path at {local_storage_path}").format(local_storage_path=base_dir)
+			)
 
 		file_formatter = logging.Formatter("\t".join([
 			"%(levelname)s",
@@ -129,7 +136,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		# File handler
 		from logging import handlers
 		file_handler = handlers.RotatingFileHandler(
-			filename    = QtCore.QDir(self._path_local_storage).filePath(config.BSApplicationConfig.LOG_FILE_NAME),
+			filename    = base_dir.filePath(config.BSApplicationConfig.LOG_FILE_NAME),
 			maxBytes    = 1_000_000,
 			backupCount = 5,
 		)

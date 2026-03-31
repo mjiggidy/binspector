@@ -19,10 +19,10 @@ LATEST_CONFIG_VERSION = 1
 
 class BSSettingsManager:
 
-	def __init__(self, format:QtCore.QSettings.Format=QtCore.QSettings.Format.IniFormat, basepath:PathLike|None=None):
+	def __init__(self, format:QtCore.QSettings.Format=QtCore.QSettings.Format.IniFormat, basepath:PathLike|None=None, subfolder_name:str|None="config"):
 
 		self._format   = format
-		self._basepath = QtCore.QDir(basepath)
+		self._basepath = QtCore.QDir(QtCore.QDir(basepath or ".").filePath(subfolder_name))
 
 		logging.getLogger(__name__).debug("Initialized settings manager at %s", self._basepath.absolutePath())
 
