@@ -278,6 +278,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# User debuggy-type tools
 		# NOTE: Have application instance hook directly into window.actionsManager()?
 		# NOTE FROM FUTURE SELF: ^^ what?
+		# NOTE FROM DISTANT FUTURE SELF: Maybe have the QApplication instance set up the window's action manager on creation? lol dunno tho
 		self._man_actions.showUserFolder().triggered         .connect(self.sig_request_show_user_folder)
 		self._man_actions.showLogViewer().triggered          .connect(self.sig_request_show_log_viewer)
 		self._man_actions.showSettingsWindow().triggered     .connect(self.sig_request_show_settings)
