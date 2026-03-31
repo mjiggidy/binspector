@@ -258,9 +258,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
 		"""Set the current bin view mode"""
 
-		#logging.getLogger(__name__).debug("Setting bin view mode to %s", str(view_mode))
+		logging.getLogger(__name__).debug("Setting bin view mode to %s", str(view_mode))
 		
 		old_view_mode = avbutils.bins.BinDisplayModes(self._section_main.currentIndex())
+		
 		if old_view_mode == view_mode:
 			return
 

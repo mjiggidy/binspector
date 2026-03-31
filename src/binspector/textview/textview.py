@@ -18,8 +18,8 @@ import avbutils
 class BSBinTextView(QtWidgets.QTreeView):
 	"""QTreeView but nicer"""
 
-	sig_default_sort_columns_changed = QtCore.Signal(object)
-	"""TODO: HMMMMMM"""
+#	sig_default_sort_columns_changed = QtCore.Signal(object)
+#	"""TODO: HMMMMMM"""
 
 	sig_selection_model_changed      = QtCore.Signal(object)
 	"""Selection model was changed"""
@@ -418,11 +418,11 @@ class BSBinTextView(QtWidgets.QTreeView):
 #			og_size = self.sizeHintForIndex(self.model().index(0, 0, QtCore.QModelIndex()))
 #			logging.getLogger(__name__).debug("Set minimum section width for %s to %s for size hint %s", str(title), int(og_size.width()), repr(og_size))
 
-	@QtCore.Slot(object)
-	def setDefaultSortColumns(self, sort_columns:list[list[int,str]]):
-
-		self._default_sort = sort_columns
-		self.sig_default_sort_columns_changed.emit(self._default_sort)
+#	@QtCore.Slot(object)
+#	def setDefaultSortColumns(self, sort_columns:list[list[int,str]]):
+#
+#		self._default_sort = sort_columns
+#		self.sig_default_sort_columns_changed.emit(self._default_sort)
 
 	def registerCustomDelegates(self):
 		"""Register custom delegates, but probably not here"""

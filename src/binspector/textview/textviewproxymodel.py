@@ -9,6 +9,9 @@ from PySide6 import QtCore
 class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 	"""The New One For The New Thing"""
 
+	sig_bin_view_enabled  = QtCore.Signal(bool)
+	"""Bin view has been toggled on (`True`) or off (`False`)"""
+
 	def __init__(self, *args, text_view_model:textviewmodel.BSTextViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -92,10 +95,20 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 		if not self._column_filters_enabled != filters_enabled:
 			return
+		
+		print("KK")
 
 		self.beginFilterChange()
 		self._column_filters_enabled = filters_enabled
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Columns)
+
+		self.sig_bin_view_enabled.emit(filters_enabled)
+
+	@QtCore.Slot(bool)
+	def setBinColumnFiltersDisabled(self, filters_disabled:bool):
+		"""Convenience method to bypass filters"""
+
+		self.setBinColumnFiltersEnabled(not filters_disabled)
 
 	@QtCore.Slot(object)
 	def setSiftOptions(self, sift_options:object):

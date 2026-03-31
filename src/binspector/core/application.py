@@ -33,15 +33,21 @@ class BSMainApplication(QtWidgets.QApplication):
 		self.setDesktopFileName(self.organizationDomain() + "." + self.applicationName())
 		self.setStyle(config.BSApplicationConfig.UI_THEME)
 
-		self._man_settings         = None
+		self._path_local_storage   = self._getLocalStorage(
+			QtCore.QStandardPaths.writableLocation(config.BSApplicationConfig.APPLICATION_STORAGE_PATH)
+		)
+		
+		self._man_settings = settings.BSSettingsManager(
+			format   = QtCore.QSettings.Format.IniFormat,
+			basepath = self._path_local_storage
+		)
+
 		self._man_binwindows       = windows.BSWindowManager()
 		self._man_software_updates = software_updates.BSUpdatesManager()
 
-		self._path_local_storage   = QtCore.QDir(
-			QtCore.QStandardPaths.writableLocation(config.BSApplicationConfig.APPLICATION_STORAGE_PATH)
-		)
 		self._qt_log_handler       = qtlogrelay.QtLogRelayHandler()
 		self._qt_log_model         = logmodels.BSLogDataModel()
+		self._setupLogging()
 
 		self._disable_updates_counter = 0
 		
@@ -49,10 +55,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._wnd_settings         = None
 		self._wnd_software_updates = None
 		
-		self._setupLocalStorage()
-		self._setupLogging()
 		self._setupLocalization()
-		self._setupSettingsManager()
+
 		#self._setupApplicationMenu()
 
 		self._man_binview_storage = providerstorage.BSBinViewStorageManager(base_path=self._path_local_storage)
@@ -90,18 +94,25 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._actionmanager.showSettingsWindow().triggered.connect(self.showSettingsWindow)
 		self._actionmanager.quitApplicationAction().triggered.connect(self.exit)
 
-	def _setupLocalStorage(self, local_path:PathLike|None=None):
+	def _getLocalStorage(self, local_path:PathLike|None=None):
 		"""Setup local storage for user data"""
+
+		local_storage = QtCore.QDir(
+			local_path or 
+			QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
+		)
 		
 #		self._path_local_storage = local_path or QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.StandardLocation.AppDataLocation)
 
-		if not QtCore.QDir().mkpath(self._path_local_storage.path()):
+		if not QtCore.QDir().mkpath(local_storage.path()):
 			raise OSError(
-				self.tr("Cannot set up local storage path at {local_storage_path}").format(local_storage_path=self._path_local_storage)
+				self.tr("Cannot set up local storage path at {local_storage_path}").format(local_storage_path=local_storage)
 			)
 		
 		# NOTE: Logging not set up at this point lol but hey man you know
-		logging.getLogger(__name__).debug("Set up local storage (default path=%s) at location %s", local_path==None, self._path_local_storage)
+		logging.getLogger(__name__).debug("Set up local storage at location %s", local_storage)
+
+		return local_storage
 		
 	def _setupLogging(self):
 		"""Setup logging config and handlers"""
@@ -132,13 +143,13 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		logging.getLogger(__name__).debug("Well hello.  I've missed you.")
 
-	def _setupSettingsManager(self):
-		"""Get all set up with the user settings"""
-		
-		self._man_settings = settings.BSSettingsManager(
-			format   = QtCore.QSettings.Format.IniFormat,
-			basepath = self._path_local_storage
-		)
+#	def _setupSettingsManager(self):
+#		"""Get all set up with the user settings"""
+#		
+#		self._man_settings = settings.BSSettingsManager(
+#			format   = QtCore.QSettings.Format.IniFormat,
+#			basepath = self._path_local_storage
+#		)
 
 	def _setupLocalization(self):
 		"""Install localizations if available"""
@@ -205,8 +216,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_delete_bin_view   .connect(self.deleteBinView)
 
 		# Restore Toggle Settings
-		window.binViewManager().setAllColumnsVisible(self._man_settings.allColumnsVisible())
-		window.binViewManager().sig_all_columns_toggled.connect(self._man_settings.setAllColumnsVisible)
+		window.binContentsWidget()._bin_filter_model.setBinColumnFiltersDisabled(self._man_settings.allColumnsVisible())
+		window.binContentsWidget()._bin_filter_model.sig_bin_view_enabled.connect(lambda enabled: self._man_settings.setAllColumnsVisible(not enabled))
 		
 		window.binViewManager().setAllItemsVisible(self._man_settings.allItemsVisible())
 		window.binViewManager().sig_all_items_toggled.connect(self._man_settings.setAllItemsVisible)

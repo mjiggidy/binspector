@@ -63,10 +63,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_binview      = binproperties.BSBinViewManager()
 		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
 		self._man_appearance   = appearance.BSBinAppearanceSettingsManager()
-		self._man_sorting      = binproperties.BSBinSortingPropertiesManager()
-#		self._man_binitems     = binproperties.BSBinItemsManager()
+#		self._man_sorting      = binproperties.BSBinSortingPropertiesManager()
 		self._man_bindisplay   = binproperties.BSBinDisplaySettingsManager()
-		self._man_viewmode     = binproperties.BSBinViewModeManager()
+#		self._man_viewmode     = binproperties.BSBinViewModeManager()
 
 		# Define signals
 		self._queue_size       = 500  # Mobs to batch-load
@@ -310,13 +309,13 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_mob_count               .connect(self._bin_widget.topWidgetBar().progressBar().setMaximum)
 		self._sigs_binloader.sig_got_mob_count               .connect(lambda: self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading %v of %m mobs", "%v=current_count; %m=total_count")))
  
-		self._sigs_binloader.sig_got_display_mode            .connect(self._man_viewmode.setViewMode)
+		self._sigs_binloader.sig_got_display_mode            .connect(self._bin_widget.setViewMode)
 		self._sigs_binloader.sig_got_bin_display_settings    .connect(self._man_bindisplay.setBinDisplayFlags)
 		self._sigs_binloader.sig_got_view_settings           .connect(self._bin_view_model.setBinViewInfo)
 		self._sigs_binloader.sig_got_text_column_widths      .connect(self._bin_widget.setTextColumnWidthsFromBin)
 		self._sigs_binloader.sig_got_frame_mode_scale        .connect(self._bin_widget.frameView().setZoom)
 		self._sigs_binloader.sig_got_script_mode_scale       .connect(self._bin_widget.scriptView().setFrameScale)
-		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
+#		self._sigs_binloader.sig_got_sort_settings           .connect(self._man_binview.setDefaultSortColumns)
 		self._sigs_binloader.sig_got_bin_appearance_settings .connect(self._man_appearance.setAppearanceSettings)
 		self._sigs_binloader.sig_got_mobs                    .connect(self.addBinItems, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
 #		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
@@ -334,14 +333,14 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin View Modes
 		# TODO: Something about this feels circular compared to the other stuff I've been doing
-		self._man_viewmode.sig_view_mode_changed                .connect(self._bin_widget.setViewMode)
-		self._man_viewmode.sig_view_mode_changed                .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
-		self._man_actions._actgrp_view_mode.triggered           .connect(lambda act: self._man_viewmode.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
+#		self._man_viewmode.sig_view_mode_changed                .connect(self._bin_widget.setViewMode)
+		self._bin_widget.sig_view_mode_changed                  .connect(lambda  vm: self._man_actions.viewModesActionGroup().actions()[int(vm)].setChecked(True))
+		self._man_actions._actgrp_view_mode.triggered           .connect(lambda act: self._bin_widget.setViewMode(self._man_actions._actgrp_view_mode.actions().index(act)))
 
 		# Bin Settings Toggles
-		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._man_binview.setAllColumnsVisible)
-		self._man_binview.sig_all_columns_toggled               .connect(self._man_actions._act_toggle_show_all_columns.setChecked)
-		self._man_binview.sig_view_mode_toggled                 .connect(self._bin_widget._bin_filter_model.setBinColumnFiltersEnabled)
+#		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._man_binview.setAllColumnsVisible)
+		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._bin_widget._bin_filter_model.setBinColumnFiltersDisabled)
+		self._bin_widget._bin_filter_model.sig_bin_view_enabled .connect(lambda enabled: self._man_actions._act_toggle_show_all_columns.setChecked(not enabled))
 		
 		self._man_actions._act_toggle_show_all_items.toggled    .connect(self._man_binview.setAllItemsVisible)
 		self._man_binview.sig_all_items_toggled                 .connect(self._man_actions._act_toggle_show_all_items.setChecked)
@@ -397,8 +396,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def appearanceManager(self) -> appearance.BSBinAppearanceSettingsManager:
 		return self._man_appearance
 	
-	def sortingManager(self) -> binproperties.BSBinSortingPropertiesManager:
-		return self._man_sorting
+#	def sortingManager(self) -> binproperties.BSBinSortingPropertiesManager:
+#		return self._man_sorting
 	
 	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
 		return self._sigs_binloader

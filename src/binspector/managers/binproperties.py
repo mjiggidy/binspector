@@ -4,28 +4,28 @@ from PySide6 import QtCore
 
 TEMP_POSITION_OFFSET_THING = 10
 
-class BSBinViewModeManager(QtCore.QObject):
-	"""Manage them viewmodes"""
-
-	sig_view_mode_changed = QtCore.Signal(object)
-	"""The view mode has been changed"""
-
-	def __init__(self, initial_mode:avbutils.BinDisplayModes=avbutils.BinDisplayModes.LIST, *args, **kwargs):
-
-		super().__init__(*args, **kwargs)
-
-		self._current_mode = initial_mode
-
-	@QtCore.Slot(object)
-	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
-		"""Set the current bin view mode"""
-
-		if view_mode != self._current_mode:
-			self._current_mode = view_mode
-			self.sig_view_mode_changed.emit(self._current_mode)
-	
-	def viewMode(self) -> avbutils.BinDisplayModes:
-		return self._current_mode
+#class BSBinViewModeManager(QtCore.QObject):
+#	"""Manage them viewmodes"""
+#
+#	sig_view_mode_changed = QtCore.Signal(object)
+#	"""The view mode has been changed"""
+#
+#	def __init__(self, initial_mode:avbutils.BinDisplayModes=avbutils.BinDisplayModes.LIST, *args, **kwargs):
+#
+#		super().__init__(*args, **kwargs)
+#
+#		self._current_mode = initial_mode
+#
+#	@QtCore.Slot(object)
+#	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
+#		"""Set the current bin view mode"""
+#
+#		if view_mode != self._current_mode:
+#			self._current_mode = view_mode
+#			self.sig_view_mode_changed.emit(self._current_mode)
+#	
+#	def viewMode(self) -> avbutils.BinDisplayModes:
+#		return self._current_mode
 
 class BSBinViewManager(QtCore.QObject):
 
@@ -53,14 +53,14 @@ class BSBinViewManager(QtCore.QObject):
 		self.sig_view_mode_toggled  .connect(lambda bv_enabled: self.sig_all_columns_toggled.emit(not bv_enabled))
 		self.sig_bin_filters_toggled.connect(lambda fl_enabled: self.sig_all_items_toggled  .emit(not fl_enabled))
 
-	@QtCore.Slot(object)
-	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
+#	@QtCore.Slot(object)
+#	def setDefaultSortColumns(self, sort_settings:list[list[int,str]]):
+#
+#		self._default_sort_columns = sort_settings
 
-		self._default_sort_columns = sort_settings
-
-	def defaultSortColumns(self) -> list[list[int,str]]:
-
-		return self._default_sort_columns
+#	def defaultSortColumns(self) -> list[list[int,str]]:
+#
+#		return self._default_sort_columns
 	
 	@QtCore.Slot(object)
 	def setBinViewEnabled(self, is_enabled:bool):
@@ -103,15 +103,15 @@ class BSBinDisplaySettingsManager(QtCore.QObject):
 		
 		self.sig_bin_display_changed.emit(bin_display)
 		
-class BSBinSortingPropertiesManager(QtCore.QObject):
-	"""Bin sorting"""
-
-	sig_bin_sorting_changed   = QtCore.Signal(object)
-
-	@QtCore.Slot(object)
-	def setBinSortingProperties(self, sorting:list[int,str]):
-		
-		self.sig_bin_sorting_changed.emit([(QtCore.Qt.SortOrder(direction), column_name) for direction, column_name in sorting])
+#class BSBinSortingPropertiesManager(QtCore.QObject):
+#	"""Bin sorting"""
+#
+#	sig_bin_sorting_changed   = QtCore.Signal(object)
+#
+#	@QtCore.Slot(object)
+#	def setBinSortingProperties(self, sorting:list[int,str]):
+#		
+#		self.sig_bin_sorting_changed.emit([(QtCore.Qt.SortOrder(direction), column_name) for direction, column_name in sorting])
 
 class BSBinSiftSettingsManager(QtCore.QObject):
 
