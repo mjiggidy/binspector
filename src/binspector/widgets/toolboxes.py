@@ -10,8 +10,9 @@ import avbutils
 class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 	"""Fonts, colors, and dimensions"""
 
-	sig_font_changed = QtCore.Signal(QtGui.QFont)
-	sig_colors_changed = QtCore.Signal(QtGui.QColor, QtGui.QColor)
+	sig_font_changed     = QtCore.Signal(QtGui.QFont)
+	sig_colors_changed   = QtCore.Signal(QtGui.QColor, QtGui.QColor)
+	sig_geometry_changed = QtCore.Signal(QtCore.QRect)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -92,6 +93,11 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 
 		self._btn_fg_color.clicked.connect(self.fgColorPickerRequested)
 		self._btn_bg_color.clicked.connect(self.bgColorPickerRequested)
+
+		self._spn_geo_x.editingFinished.connect(lambda: self.sig_geometry_changed.emit(self.binGeometry()))
+		self._spn_geo_y.editingFinished.connect(lambda: self.sig_geometry_changed.emit(self.binGeometry()))
+		self._spn_geo_w.editingFinished.connect(lambda: self.sig_geometry_changed.emit(self.binGeometry()))
+		self._spn_geo_h.editingFinished.connect(lambda: self.sig_geometry_changed.emit(self.binGeometry()))
 
 	@QtCore.Slot(bool)
 	def setWasIconic(self, was_iconic:bool):
@@ -187,6 +193,15 @@ class BSBinAppearanceSettingsView(QtWidgets.QWidget):
 		return (
 			self._btn_fg_color.palette().color(QtGui.QPalette.ColorRole.Button),
 			self._btn_bg_color.palette().color(QtGui.QPalette.ColorRole.Button),
+		)
+	
+	def binGeometry(self) -> QtCore.QRect:
+
+		return QtCore.QRect(
+			self._spn_geo_x.value(),
+			self._spn_geo_y.value(),
+			self._spn_geo_w.value(),
+			self._spn_geo_h.value()
 		)
 	
 class BSBinDisplaySettingsView(enumview.LBAbstractEnumFlagsView):

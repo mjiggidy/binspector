@@ -231,6 +231,8 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		window.appearanceManager().setUseSystemAppearance(self._man_settings.useSystemAppearance())
 		window.appearanceManager().sig_use_system_appearance_toggled.connect(self._man_settings.setUseSystemAppearance)
+		window.appearanceManager().setUseBinGeometry(self._man_settings.useStoredBinGeometry())
+		window.appearanceManager().sig_use_bin_geometry_toggled.connect(self._man_settings.setUseBinGeometry)
 		#window.appearanceManager().sig_bin_appearance_toggled.connect(self._man_settings.setUseSystemAppearance)
 
 		window.binContentsWidget().frameView()._overlay_ruler._setEnabled(self._man_settings.showFrameRuler())
@@ -244,7 +246,7 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		window.setMobQueueSize(self._man_settings.mobQueueSize())
 		window.setUseAnimation(self._man_settings.useFancyProgressBar())
-		window.setUseSavedColumnWidths(self._man_settings.useSavedColumnWidths())
+		window.setUseSavedColumnWidths(self._man_settings.useStoredColumnWidths())
 		
 		window.binContentsWidget().setBottomScrollbarScaleFactor(self._man_settings.bottomScrollbarScale())
 		window.binContentsWidget().setItemPadding(self._man_settings.listItemPadding())
@@ -425,8 +427,12 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_settings.sig_use_animations_changed.connect(self._man_settings.setUseFancyProgressBar)
 			self._wnd_settings.sig_use_animations_changed.connect(lambda use_animation: [w.setUseAnimation(use_animation) for w in self._man_binwindows.windows()])
 
-			self._wnd_settings.sig_use_column_widths_changed.connect(self._man_settings.setUseSavedColumnWidths)
+			self._wnd_settings.sig_use_column_widths_changed.connect(self._man_settings.setUseStoredColumnWidths)
 			self._wnd_settings.sig_use_column_widths_changed.connect(lambda use_col_widths: [w.setUseSavedColumnWidths(use_col_widths) for w in self._man_binwindows.windows()])
+
+			self._wnd_settings.sig_use_bin_geometry_changed.connect(self._man_settings.setUseBinGeometry)
+			self._wnd_settings.sig_use_bin_geometry_changed.connect(lambda use_bin_geometry: [w.appearanceManager().setUseBinGeometry(use_bin_geometry) for w in self._man_binwindows.windows()])
+#			self._wnd_settings.sig_use_bin_geometry_changed.connect(print)
 
 			self._wnd_settings.sig_mob_queue_size_changed.connect(self._man_settings.setMobQueueSize)
 			self._wnd_settings.sig_startup_behavior_changed.connect(self._man_settings.setStartupBehavior)
@@ -440,7 +446,8 @@ class BSMainApplication(QtWidgets.QApplication):
 
 			# Settings Temp
 			self._wnd_settings.setUseAnimations(self._man_settings.useFancyProgressBar())
-			self._wnd_settings.setUseSavedColumnWidths(self._man_settings.useSavedColumnWidths())
+			self._wnd_settings.setUseStoredColumnWidths(self._man_settings.useStoredColumnWidths())
+			self._wnd_settings.setUseStoredBinGeometry(self._man_settings.useStoredBinGeometry())
 			self._wnd_settings.setBottomScrollBarScale(self._man_settings.bottomScrollbarScale())
 			self._wnd_settings.setMobQueueSize(self._man_settings.mobQueueSize())
 			self._wnd_settings.setStartupBehavior(self._man_settings.startupBehavior())

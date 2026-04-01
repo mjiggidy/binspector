@@ -40,6 +40,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	sig_bin_changed               = QtCore.Signal(str)
 	"""Window is loading a new bin"""
 
+	sig_geometry_changed          = QtCore.Signal(QtCore.QRect)
+	"""Window was moved or resized"""
+	# NOTE: Used for the appearance dialog; useful for saving window location too?
+
 	def __init__(self):
 
 		super().__init__()
@@ -288,18 +292,23 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		# Appearance to binwidget
-		self._man_appearance.sig_active_font_changed          .connect(self._bin_widget.setBinFont)
-		self._man_appearance.sig_palette_changed             .connect(self._bin_widget.setBinPalette)
+		self._man_appearance.sig_active_font_changed         .connect(self._bin_widget.setBinFont)
+		self._man_appearance.sig_active_palette_changed      .connect(self._bin_widget.setBinPalette)
+
+		# Window to appearance
+		self.sig_geometry_changed                            .connect(self._man_appearance.setBinGeometry)
 		
 		# Appearance to toolbox
 		self._man_appearance.sig_bin_font_changed            .connect(self._tool_appearance.setBinFont)
-		self._man_appearance.sig_bin_colors_changed          .connect(self._tool_appearance.setBinColors)
-		self._man_appearance.sig_window_rect_changed         .connect(self._tool_appearance.setBinRect)
+		self._man_appearance.sig_bin_palette_changed         .connect(self._tool_appearance.setBinColors)
+		self._man_appearance.sig_bin_geometry_changed        .connect(self._tool_appearance.setBinRect)
+		self._man_appearance.sig_bin_geometry_changed        .connect(self.setGeometry)
 		self._man_appearance.sig_was_iconic_changed          .connect(self._tool_appearance.setWasIconic)
 
 		# Toolbox to Appearance
 		self._tool_appearance.sig_font_changed               .connect(self._man_appearance.setBinFont)
 		self._tool_appearance.sig_colors_changed             .connect(self._man_appearance.setBinColors)
+		self._tool_appearance.sig_geometry_changed           .connect(self._man_appearance.setBinGeometry)
 
 		# Bin loader signals
 		self._sigs_binloader.sig_begin_loading               .connect(self.prepareForBinLoading)
@@ -395,9 +404,6 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	
 	def appearanceManager(self) -> appearance.BSBinAppearanceSettingsManager:
 		return self._man_appearance
-	
-#	def sortingManager(self) -> binproperties.BSBinSortingPropertiesManager:
-#		return self._man_sorting
 	
 	def binLoadingSignalManger(self) -> binloader.BSBinViewLoader.Signals:
 		return self._sigs_binloader
@@ -671,6 +677,18 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		
 		event.accept()
 		return True
+	
+	def moveEvent(self, event:QtGui.QMoveEvent):
+		
+		self.sig_geometry_changed.emit(self.geometry())
+		
+		return super().moveEvent(event)
+	
+	def resizeEvent(self, event):
+		
+		self.sig_geometry_changed.emit(self.geometry())
+
+		return super().resizeEvent(event)
 	
 	@QtCore.Slot(object)
 	@QtCore.Slot(object, str)

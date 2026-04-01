@@ -153,6 +153,18 @@ class BSSettingsManager:
 		logging.getLogger(__name__).debug("Returning use_system_appearance: %s", use_system)
 		return use_system
 	
+	@QtCore.Slot(bool)
+	def setUseBinGeometry(self, use_geometry:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/use_bin_geometry", use_geometry)
+		logging.getLogger(__name__).debug("Set use_bin_geometry: %s", use_geometry)
+	
+	def useStoredBinGeometry(self) -> bool:
+		
+		use_geometry = self.settings("bs").value("BinSettingsToggles/use_bin_geometry", False, bool)
+		logging.getLogger(__name__).debug("Returning use_bin_geometry: %s", use_geometry)
+		return use_geometry
+	
 	@QtCore.Slot(int)
 	def setMobQueueSize(self, queue_size:int):
 
@@ -178,12 +190,12 @@ class BSSettingsManager:
 		return use_animation
 	
 	@QtCore.Slot(bool)
-	def setUseSavedColumnWidths(self, use_column_widths:bool):
+	def setUseStoredColumnWidths(self, use_column_widths:bool):
 
 		self.settings("bs").setValue("BinLoading/use_column_widths", use_column_widths)
 		logging.getLogger(__name__).debug("Set use_column_widths: %s", use_column_widths)
 
-	def useSavedColumnWidths(self) -> bool:
+	def useStoredColumnWidths(self) -> bool:
 		
 		use_column_widths = self.settings("bs").value("BinLoading/use_column_widths", True, bool)
 		logging.getLogger(__name__).debug("Returning use_column_widths: %s", use_column_widths)

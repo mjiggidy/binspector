@@ -7,21 +7,21 @@ class BSBinAppearanceSettingsManager(QtCore.QObject):
 	sig_active_font_changed           = QtCore.Signal(QtGui.QFont)
 	"""Current font to use (may be system or bin font)"""
 
-	sig_palette_changed               = QtCore.Signal(QtGui.QPalette)
-	"""Current palette to sue (may be system or bin palette)"""
-
-	sig_use_bin_appearance_toggled    = QtCore.Signal(object) # NOTE: Inverse
-	sig_use_system_appearance_toggled = QtCore.Signal(object) # of each other
+	sig_active_palette_changed        = QtCore.Signal(QtGui.QPalette)
+	"""Current palette to use (may be system or bin palette)"""
 
 	# More for internal/tool use
-	sig_bin_colors_changed            = QtCore.Signal(QtGui.QColor, QtGui.QColor)
+	sig_bin_palette_changed           = QtCore.Signal(QtGui.QColor, QtGui.QColor)
 	"""Bin colors, as opposed to system colors"""
 
 	sig_bin_font_changed              = QtCore.Signal(QtGui.QFont)
 	"""Bin font, as opposed to system font"""
 
-	sig_column_widths_changed         = QtCore.Signal(object)
-	sig_window_rect_changed           = QtCore.Signal(object)
+	sig_use_bin_appearance_toggled    = QtCore.Signal(object) # NOTE: Inverse
+	sig_use_system_appearance_toggled = QtCore.Signal(object) # of each other
+	sig_use_bin_geometry_toggled      = QtCore.Signal(object)
+
+	sig_bin_geometry_changed           = QtCore.Signal(QtCore.QRect)
 	sig_was_iconic_changed            = QtCore.Signal(object)
 
 	def __init__(self, *args, **kwargs):
@@ -29,6 +29,7 @@ class BSBinAppearanceSettingsManager(QtCore.QObject):
 		super().__init__(*args, **kwargs)
 
 		self._use_bin_appearance = True
+		self._use_bin_geometry   = True
 		
 		self._bin_palette = QtWidgets.QApplication.palette()
 		self._bin_font    = QtWidgets.QApplication.font()
@@ -57,7 +58,10 @@ class BSBinAppearanceSettingsManager(QtCore.QObject):
 		# Appearance settings from avb
 
 #		self.setColumnWidths(column_widths)
-		self.setWindowRect(window_rect)
+		if self._use_bin_geometry:
+			self.setBinGeometry(QtCore.QRect(*window_rect))
+	
+	
 		self.sig_was_iconic_changed.emit(was_iconic)
 
 		# JUST A NOTE:
@@ -110,29 +114,26 @@ class BSBinAppearanceSettingsManager(QtCore.QObject):
 		
 		self._bin_palette = bin_palette
 		
-		self.sig_bin_colors_changed.emit(
+		self.sig_bin_palette_changed.emit(
 			bin_palette.windowText().color(),
 			bin_palette.window().color()
 		)
 
 		if self._use_bin_appearance:
-			self.sig_palette_changed.emit(bin_palette)
+			self.sig_active_palette_changed.emit(bin_palette)
 
-	@QtCore.Slot(object)
-	def setWindowRect(self, window_rect:list[int]):
+	@QtCore.Slot(QtCore.QRect)
+	def setBinGeometry(self, window_rect:QtCore.QRect):
 
-		self.sig_window_rect_changed.emit(QtCore.QRect(
-			QtCore.QPoint(*window_rect[:2]),
-			QtCore.QPoint(*window_rect[2:])
-		))
+		self.sig_bin_geometry_changed.emit(window_rect)
 
-	@QtCore.Slot(object)
-	def setColumnWidths(self, column_widths:dict[str,int]):
-		"""Display column width settings"""
-
-		# NOTE: DEPRECATE TO BIN VIEW
-
-		self.sig_column_widths_changed.emit(column_widths)
+#	@QtCore.Slot(object)
+#	def setColumnWidths(self, column_widths:dict[str,int]):
+#		"""Display column width settings"""
+#
+#		# NOTE: DEPRECATE TO BIN VIEW
+#
+#		self.sig_column_widths_changed.emit(column_widths)
 
 	@QtCore.Slot(object)
 	def setUseBinAppearance(self, use_bin:bool):
@@ -144,10 +145,10 @@ class BSBinAppearanceSettingsManager(QtCore.QObject):
 		self._use_bin_appearance = use_bin
 
 		if use_bin:
-			self.sig_palette_changed.emit(self._bin_palette)
+			self.sig_active_palette_changed.emit(self._bin_palette)
 			self.sig_active_font_changed.emit(self._bin_font)
 		else:
-			self.sig_palette_changed.emit(QtWidgets.QApplication.palette())
+			self.sig_active_palette_changed.emit(QtWidgets.QApplication.palette())
 			self.sig_active_font_changed.emit(QtWidgets.QApplication.font())
 
 		self.sig_use_bin_appearance_toggled   .emit(use_bin)
@@ -157,3 +158,16 @@ class BSBinAppearanceSettingsManager(QtCore.QObject):
 	def setUseSystemAppearance(self, use_system:bool):
 
 		self.setUseBinAppearance(not use_system)
+	
+	@QtCore.Slot(bool)
+	def setUseBinGeometry(self, use_geometry:bool):
+
+		if self._use_bin_geometry == use_geometry:
+			return
+		
+		self._use_bin_geometry = use_geometry
+		self.sig_use_bin_geometry_toggled.emit(use_geometry)
+
+	def useBinGeometry(self) -> bool:
+
+		return self._use_bin_geometry
