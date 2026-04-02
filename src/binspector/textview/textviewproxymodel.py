@@ -29,7 +29,8 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		self._filter_bin_display_items = proxyfilters.BSBinItemDisplayFilter()
 		self._filter_find_in_bin       = proxyfilters.BSFindInBinFilter()
 
-		self.setSourceModel(text_view_model if text_view_model else textviewmodel.BSTextViewModel())
+		if text_view_model:
+			self.setSourceModel(text_view_model)
 
 	def setSourceModel(self, sourceModel:textviewmodel.BSTextViewModel):
 
@@ -39,8 +40,8 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		if self.sourceModel():
 			self.sourceModel().disconnect(self)
 
-		if not isinstance(sourceModel, textviewmodel.BSTextViewModel):
-			raise ValueError(f"Source model must be `BSTextViewModel`; got {repr(sourceModel)}")
+#		if not isinstance(sourceModel, textviewmodel.BSTextViewModel):
+#			raise ValueError(f"Source model must be `BSTextViewModel`; got {repr(sourceModel)}")
 		
 		sourceModel.headerDataChanged.connect(self.binColumnDataChanged)
 #		sourceModel.modelReset.connect(lambda: self.sort(-1))	# Start unsorted/"script order"
