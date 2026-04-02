@@ -73,7 +73,7 @@ def appearance_settings_from_bin(bin_content:avb.bin.Bin) -> tuple:
 		bin_content.was_iconic,
 	)
 
-def load_item_from_bin(bin_item:avb.bin.BinItem) -> dict:
+def load_item_from_bin(bin_item:avb.bin.BinItem) -> binitemtypes.BSBinItemInfo:
 		"""Parse a mob and its bin item properties"""
 
 		
