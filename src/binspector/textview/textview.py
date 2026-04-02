@@ -178,11 +178,12 @@ class BSBinTextView(QtWidgets.QTreeView):
 		self.registerCustomDelegates()
 
 	def setSelectionModel(self, selectionModel):
+#		return
 
 		if selectionModel == self.selectionModel():
 			return
 
-		logging.getLogger(__name__).error("BinTreeView changed selection model to %s", str(selectionModel))
+		logging.getLogger(__name__).debug("BinTreeView changed selection model to %s", str(selectionModel))
 		self.sig_selection_model_changed.emit(selectionModel)
 
 		return super().setSelectionModel(selectionModel)
@@ -193,8 +194,8 @@ class BSBinTextView(QtWidgets.QTreeView):
 		if self.model() == model:
 			return
 		
-		elif not isinstance(model, textviewproxymodel.BSBTextViewSortFilterProxyModel):
-			raise TypeError(f"Model must be a BSBTextViewSortFilterProxyModel (got {type(model)})")
+#		elif not isinstance(model, textviewproxymodel.BSBTextViewSortFilterProxyModel):
+#			raise TypeError(f"Model must be a BSBTextViewSortFilterProxyModel (got {type(model)})")
 		
 		# TODO: Disconnect old model...?
 		if self.model():
