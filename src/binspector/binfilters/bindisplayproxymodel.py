@@ -43,15 +43,10 @@ class BSBinDisplayFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterPr
 			return True
 		
 		source_index   = self.sourceModel().index(source_row, 0, source_parent)
+#		print("Got here")
 		bin_item_types = source_index.data(binitemtypes.BSBinItemDataRoles.ItemTypesRole)
 
-#		if bin_item_types in self._accepted_item_types:
-#			print("YAS")
-#
-#		else:
-#			print("NAH")
-
-		return bin_item_types in self._accepted_item_types
+		return bool(bin_item_types & self._accepted_item_types)
 	
 	@QtCore.Slot(bool)
 	def setEnabled(self, is_enabled:bool):
