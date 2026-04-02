@@ -6,10 +6,14 @@ Mostly standard widgets sublcassed for style
 
 from PySide6 import QtCore, QtWidgets
 
-class BSBinStatsLabel(QtWidgets.QLabel):
+class BSBinStatsLabel(QtWidgets.QComboBox):
 	"""Display label intended for use in a `QScrollArea` widget"""
 
-	DEFAULT_TEXT = "Showing {filtered_item_count} of {source_item_count} items"
+	DEFAULT_TEXT = [
+		QtCore.QCoreApplication.tr("Showing {filtered_item_count} of {source_item_count} items"),
+		QtCore.QCoreApplication.tr("Showing {filtered_column_count} of {source_column_count} columns"),
+		QtCore.QCoreApplication.tr("Showing {filtered_item_count} items; {filtered_column_count} columns"),
+	]
 
 	def __init__(
 		self,
@@ -24,8 +28,8 @@ class BSBinStatsLabel(QtWidgets.QLabel):
 		super().__init__(*args, **kwargs)
 
 		self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, self.sizePolicy().verticalPolicy())
-		self.setAlignment (QtCore.Qt.AlignmentFlag.AlignCenter)
-		self.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
+#		self.setAlignment (QtCore.Qt.AlignmentFlag.AlignCenter)
+#		self.setFrameStyle(QtWidgets.QFrame.Shape.StyledPanel|QtWidgets.QFrame.Shadow.Sunken)
 
 		f = self.font()
 		f.setPointSizeF(f.pointSizeF() * font_scale)
@@ -37,8 +41,17 @@ class BSBinStatsLabel(QtWidgets.QLabel):
 		self._source_model:QtCore.QAbstractItemModel    = source_model or self._filter_model.sourceModel()
 		self._source_model_connections = []
 
+		self._last_index = 0
+
+		self.activated.connect(self.selectedIndexChanged)
+
 		self._setupModel()
 		self._setupSourceModel()
+
+	@QtCore.Slot(int)
+	def selectedIndexChanged(self, selected_index:int):
+
+		self._last_index = selected_index
 
 	def _setupModel(self):
 
@@ -66,18 +79,27 @@ class BSBinStatsLabel(QtWidgets.QLabel):
 	@QtCore.Slot()
 	def modelDataChanged(self):
 
+		self.clear()
+
 		if not self._source_model:
-			self.setText(self.tr("Nothing loaded"))
+			self.addItem(self.tr("Nothing loaded"))
 			return
 		
 		if self._source_model.rowCount(QtCore.QModelIndex()) == 0:
-			self.setText(self.tr("No items to show"))
+			self.addItem(self.tr("No items to show"))
 			return
 		
-		filtered_rows = self._filter_model.rowCount(QtCore.QModelIndex())
-		source_rows   = self._source_model.rowCount(QtCore.QModelIndex())
+		filtered_rows    = self._filter_model.rowCount(QtCore.QModelIndex())
+		filtered_columns = self._filter_model.columnCount(QtCore.QModelIndex())
+		source_rows      = self._source_model.rowCount(QtCore.QModelIndex())
+		source_columns   = self._source_model.columnCount(QtCore.QModelIndex())
 
-		self.setText(self.tr(self.DEFAULT_TEXT).format(
-			filtered_item_count = QtCore.QLocale.system().toString(filtered_rows),
-			source_item_count   = QtCore.QLocale.system().toString(source_rows),
-		))
+		for label_text in self.DEFAULT_TEXT:
+			self.addItem(label_text.format(
+				filtered_item_count   = QtCore.QLocale.system().toString(filtered_rows),
+				source_item_count     = QtCore.QLocale.system().toString(source_rows),
+				filtered_column_count = QtCore.QLocale.system().toString(filtered_columns),
+				source_column_count   = QtCore.QLocale.system().toString(source_columns),
+			))
+
+		self.setCurrentIndex(self._last_index)
