@@ -70,8 +70,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._viewmode_script   = scriptview.BSBinScriptView()
 
 		# Footers
-		self._binstats_text     = scrollwidgets.BSBinStatsLabel()
-		self._binstats_frame    = scrollwidgets.BSBinStatsLabel()
+		self._binstats_text     = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model)
+		self._binstats_frame    = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model)
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)
@@ -162,18 +162,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 	def _setupSignals(self):
 		
-		self._bin_filter_model.rowsInserted  .connect(self.updateBinStats)
-		self._bin_filter_model.rowsRemoved   .connect(self.updateBinStats)
-		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
-		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
+#		self._bin_filter_model.rowsInserted  .connect(self.updateBinStats)
+#		self._bin_filter_model.rowsRemoved   .connect(self.updateBinStats)
+#		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
+#		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
+#
+#		self._bin_composite_model.rowsInserted  .connect(self.updateBinStats)
+#		self._bin_composite_model.rowsRemoved   .connect(self.updateBinStats)
+#		self._bin_composite_model.modelReset    .connect(self.updateBinStats)
+#		self._bin_composite_model.layoutChanged .connect(self.updateBinStats)
 
-		self._bin_composite_model.rowsInserted  .connect(self.updateBinStats)
-		self._bin_composite_model.rowsRemoved   .connect(self.updateBinStats)
-		self._bin_composite_model.modelReset    .connect(self.updateBinStats)
-		self._bin_composite_model.layoutChanged .connect(self.updateBinStats)
-
-		self.sig_bin_stats_updated.connect(self._binstats_text.setText)
-		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
+#		self.sig_bin_stats_updated.connect(self._binstats_text.setText)
+#		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
 
 		self._section_top.sig_frame_scale_changed.connect(self._viewmode_frame.setZoom)
 		self._section_top.sig_script_scale_changed.connect(self._viewmode_script.setFrameScale)
@@ -510,15 +510,15 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def topWidgetBar(self) -> widgetbars.BSBinContentsTopWidgetBar:
 		return self._section_top
 
-	@QtCore.Slot()
-	def updateBinStats(self):
-
-		count_visible = self._bin_filter_model   .rowCount(QtCore.QModelIndex())
-		count_all     = self._bin_composite_model.rowCount(QtCore.QModelIndex())
-
-		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
-			current_item_count = QtCore.QLocale.system().toString(count_visible),
-			total_item_count   = QtCore.QLocale.system().toString(count_all)
-		)
-		
-		self.sig_bin_stats_updated.emit(info_text)
+#	@QtCore.Slot()
+#	def updateBinStats(self):
+#
+#		count_visible = self._bin_filter_model   .rowCount(QtCore.QModelIndex())
+#		count_all     = self._bin_composite_model.rowCount(QtCore.QModelIndex())
+#
+#		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
+#			current_item_count = QtCore.QLocale.system().toString(count_visible),
+#			total_item_count   = QtCore.QLocale.system().toString(count_all)
+#		)
+#		
+#		self.sig_bin_stats_updated.emit(info_text)
