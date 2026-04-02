@@ -57,7 +57,7 @@ if __name__ == "__main__":
 	bin_item_filter     = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=bin_item_model)
 	bin_view_filter     = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=bin_view_model)
 
-	bin_composite_model = textviewmodel.BSTextViewModel(item_model=bin_item_filter, view_model=bin_view_filter)
+	bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=bin_item_filter, view_model=bin_view_filter)
 
 	final_proxy         = QtCore.QIdentityProxyModel()
 	final_proxy.setSourceModel(bin_composite_model)

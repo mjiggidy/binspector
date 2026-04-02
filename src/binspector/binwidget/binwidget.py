@@ -32,7 +32,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_bin_stats_updated      = QtCore.Signal(str)
 #	sig_bin_view_model_changed = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_composite_model:textviewmodel.BSTextViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_composite_model:textviewmodel.BSBinCompositeModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -48,8 +48,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# - binwdiget owns the composite model
 		# - binwidget allows you to set the view model and the items model
 		
-		self._bin_composite_model = bin_composite_model or textviewmodel.BSTextViewModel()
-		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModel(text_view_model=self._bin_composite_model)
+		self._bin_composite_model = bin_composite_model or textviewmodel.BSBinCompositeModel()
+		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
 		# Save initial palette for later togglin'

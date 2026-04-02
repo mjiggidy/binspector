@@ -16,14 +16,14 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 
 	def __init__(self,
 		*args,
-		bin_filter_model:textviewproxymodel.BSBTextViewSortFilterProxyModel|None=None,
+		bin_filter_model:textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED|None=None,
 		brushes_manager:painters.BSFrameItemBrushManager|None=None,
 		**kwargs
 	):
 
 		super().__init__(*args, **kwargs)
 
-		self._bin_filter_model = bin_filter_model or textviewproxymodel.BSBTextViewSortFilterProxyModel()
+		self._bin_filter_model = bin_filter_model or textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED()
 		self._brushes_manager  = brushes_manager  or painters.BSFrameItemBrushManager(parent=self.parent())
 
 		self._bin_items:list[sceneitems.BSFrameModeItem] = list()
@@ -48,11 +48,11 @@ class BSBinFrameScene(QtWidgets.QGraphicsScene):
 		for idx, item in enumerate(self._bin_items):
 			item.setSelected(idx in item_indexes)
 
-	def binFilterModel(self) -> textviewproxymodel.BSBTextViewSortFilterProxyModel:
+	def binFilterModel(self) -> textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED:
 		return self._bin_filter_model
 
 	@QtCore.Slot(object)
-	def setBinFilterModel(self, bin_model:textviewproxymodel.BSBTextViewSortFilterProxyModel):
+	def setBinFilterModel(self, bin_model:textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED):
 
 		if self._bin_filter_model == bin_model:
 			return

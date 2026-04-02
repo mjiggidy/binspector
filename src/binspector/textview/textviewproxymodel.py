@@ -6,13 +6,13 @@ from . import textviewmodel, proxyfilters
 import avbutils
 from PySide6 import QtCore
 
-class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
+class BSBTextViewSortFilterProxyModelDEPRECATED(QtCore.QSortFilterProxyModel):
 	"""The New One For The New Thing"""
 
 	sig_bin_view_enabled  = QtCore.Signal(bool)
 	"""Bin view has been toggled on (`True`) or off (`False`)"""
 
-	def __init__(self, *args, text_view_model:textviewmodel.BSTextViewModel|None=None, **kwargs):
+	def __init__(self, *args, text_view_model:textviewmodel.BSBinCompositeModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -32,7 +32,7 @@ class BSBTextViewSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 		if text_view_model:
 			self.setSourceModel(text_view_model)
 
-	def setSourceModel(self, sourceModel:textviewmodel.BSTextViewModel):
+	def setSourceModel(self, sourceModel:textviewmodel.BSBinCompositeModel):
 
 		if self.sourceModel() == sourceModel:
 			return

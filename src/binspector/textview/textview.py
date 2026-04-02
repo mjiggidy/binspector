@@ -49,7 +49,7 @@ class BSBinTextView(QtWidgets.QTreeView):
 		self.header().setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
 		self.header().setStretchLastSection(True)
 
-		self.setModel(textviewproxymodel.BSBTextViewSortFilterProxyModel())
+		self.setModel(textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED())
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
@@ -189,7 +189,7 @@ class BSBinTextView(QtWidgets.QTreeView):
 		return super().setSelectionModel(selectionModel)
 
 	@QtCore.Slot(object)
-	def setModel(self, model:textviewproxymodel.BSBTextViewSortFilterProxyModel):
+	def setModel(self, model:textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED):
 
 		if self.model() == model:
 			return

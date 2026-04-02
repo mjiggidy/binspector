@@ -78,7 +78,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._time_last_load   = QtCore.QElapsedTimer()
 
 		# Define widgets
-		self._bin_widget = binwidget.BSBinContentsWidget(bin_composite_model=textviewmodel.BSTextViewModel(item_model=self._bin_item_model, view_model=self._bin_view_model))
+		self._bin_widget = binwidget.BSBinContentsWidget(bin_composite_model=textviewmodel.BSBinCompositeModel(item_model=self._bin_item_model, view_model=self._bin_view_model))
 
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(
 			icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY

@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
 class BSAbstractTextViewItemFilter(abc.ABC):
 
 	@abc.abstractmethod
-	def filterAcceptsItem(self, proxy_model:textviewproxymodel.BSBTextViewSortFilterProxyModel, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
+	def filterAcceptsItem(self, proxy_model:textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 		pass
 
 class BSBinItemDisplayFilter(BSAbstractTextViewItemFilter):
@@ -27,7 +27,7 @@ class BSBinItemDisplayFilter(BSAbstractTextViewItemFilter):
 
 		self._accepted_item_types = accepted_item_types or self.DEFAULT_ITEM_TYPES
 
-	def filterAcceptsItem(self, proxy_model:textviewproxymodel.BSBTextViewSortFilterProxyModel, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
+	def filterAcceptsItem(self, proxy_model:textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 
 		source_index   = proxy_model.sourceModel().index(source_row, 0, QtCore.QModelIndex())
 		bin_item_types = proxy_model.sourceModel().data(source_index, binitemtypes.BSBinItemDataRoles.ItemTypesRole)
@@ -63,7 +63,7 @@ class BSFindInBinFilter(BSAbstractTextViewItemFilter):
 
 		return self._search_text
 
-	def filterAcceptsItem(self, proxy_model:textviewproxymodel.BSBTextViewSortFilterProxyModel, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
+	def filterAcceptsItem(self, proxy_model:textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 
 		if not self._search_text:
 			return True

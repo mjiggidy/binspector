@@ -7,7 +7,7 @@ from ..binview import binviewmodel, binviewitemtypes
 
 import avbutils
 
-class BSTextViewModel(QtCore.QAbstractItemModel):
+class BSBinCompositeModel(QtCore.QAbstractItemModel):
 	"""Combine bin items model with bin view model for a nice table-y text view"""
 
 	def __init__(self, *args, item_model:binitemsmodel.BSBinItemModel|None=None, view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
