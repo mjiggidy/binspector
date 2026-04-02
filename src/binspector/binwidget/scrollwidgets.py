@@ -17,6 +17,7 @@ class BSBinStatsLabel(QtWidgets.QLabel):
 		font_scale:float=0.8,
 		char_width:int=32,  # len("Showing 999,999 of 999,999 items")
 		filter_model:QtCore.QSortFilterProxyModel|None=None,
+		source_model:QtCore.QAbstractItemModel|None=None,
 		**kwargs
 	):
 
@@ -32,24 +33,21 @@ class BSBinStatsLabel(QtWidgets.QLabel):
 		
 		self.setMinimumWidth(self.fontMetrics().averageCharWidth() * char_width)
 
-		self._model:QtCore.QSortFilterProxyModel = filter_model or QtCore.QSortFilterProxyModel(parent=self)
+		self._filter_model:QtCore.QSortFilterProxyModel = filter_model or QtCore.QSortFilterProxyModel(parent=self)
+		self._source_model:QtCore.QAbstractItemModel    = source_model or self._filter_model.sourceModel()
 		self._source_model_connections = []
 
 		self._setupModel()
+		self._setupSourceModel()
 
 	def _setupModel(self):
-		
-		self._model.sourceModelChanged.connect(self._setupSourceModel)
 
-		self._model.layoutChanged.connect(self.modelDataChanged)
-		self._model.rowsInserted    .connect(self.modelDataChanged),
-		self._model.columnsInserted .connect(self.modelDataChanged),
-		self._model.rowsRemoved     .connect(self.modelDataChanged),
-		self._model.columnsRemoved  .connect(self.modelDataChanged),
-		self._model.modelReset.connect(self.modelDataChanged)
-
-		if self._model.sourceModel() is not None:
-			self._setupSourceModel()
+		self._filter_model.layoutChanged   .connect(self.modelDataChanged)
+		self._filter_model.rowsInserted    .connect(self.modelDataChanged),
+		self._filter_model.columnsInserted .connect(self.modelDataChanged),
+		self._filter_model.rowsRemoved     .connect(self.modelDataChanged),
+		self._filter_model.columnsRemoved  .connect(self.modelDataChanged),
+		self._filter_model.modelReset      .connect(self.modelDataChanged)
 
 	@QtCore.Slot()
 	def _setupSourceModel(self):
@@ -58,26 +56,26 @@ class BSBinStatsLabel(QtWidgets.QLabel):
 			self.disconnect(c)
 
 		self._source_model_connections = [
-			self._model.sourceModel().rowsInserted    .connect(self.modelDataChanged),
-			self._model.sourceModel().columnsInserted .connect(self.modelDataChanged),
-			self._model.sourceModel().rowsRemoved     .connect(self.modelDataChanged),
-			self._model.sourceModel().columnsRemoved  .connect(self.modelDataChanged),
-			self._model.sourceModel().modelReset      .connect(self.modelDataChanged),
+			self._source_model.rowsInserted    .connect(self.modelDataChanged),
+			self._source_model.columnsInserted .connect(self.modelDataChanged),
+			self._source_model.rowsRemoved     .connect(self.modelDataChanged),
+			self._source_model.columnsRemoved  .connect(self.modelDataChanged),
+			self._source_model.modelReset      .connect(self.modelDataChanged),
 		]
 
 	@QtCore.Slot()
 	def modelDataChanged(self):
 
-		if not self._model.sourceModel():
+		if not self._source_model:
 			self.setText(self.tr("Nothing loaded"))
 			return
 		
-		if self._model.sourceModel().rowCount(QtCore.QModelIndex()) == 0:
+		if self._source_model.rowCount(QtCore.QModelIndex()) == 0:
 			self.setText(self.tr("No items to show"))
 			return
 		
-		filtered_rows = self._model.rowCount(QtCore.QModelIndex())
-		source_rows   = self._model.sourceModel().rowCount(QtCore.QModelIndex())
+		filtered_rows = self._filter_model.rowCount(QtCore.QModelIndex())
+		source_rows   = self._source_model.rowCount(QtCore.QModelIndex())
 
 		self.setText(self.tr(self.DEFAULT_TEXT).format(
 			filtered_item_count = QtCore.QLocale.system().toString(filtered_rows),
