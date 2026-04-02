@@ -284,7 +284,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
-		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget._bin_filter_model.setBinDisplayItemTypes)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.setBinDisplayItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		# Appearance to binwidget
@@ -339,12 +339,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toggles
 #		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._man_binview.setAllColumnsVisible)
-		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._bin_widget._bin_filter_model.setBinColumnFiltersDisabled)
-		self._bin_widget._bin_filter_model.sig_bin_view_enabled .connect(lambda enabled: self._man_actions._act_toggle_show_all_columns.setChecked(not enabled))
+		self._man_actions._act_toggle_show_all_columns.toggled  .connect(self._bin_widget.setBinColumnFiltersDisabled)
+		self._bin_widget.sig_bin_view_enabled .connect(lambda enabled: self._man_actions._act_toggle_show_all_columns.setChecked(not enabled))
 		
 		self._man_actions._act_toggle_show_all_items.toggled    .connect(self._man_binview.setAllItemsVisible)
 		self._man_binview.sig_all_items_toggled                 .connect(self._man_actions._act_toggle_show_all_items.setChecked)
-		self._man_binview.sig_bin_filters_toggled               .connect(self._bin_widget._bin_filter_model.setBinItemFiltersEnabled)
+		self._man_binview.sig_bin_filters_toggled               .connect(self._bin_widget.setBinItemFiltersEnabled)
 
 		self._man_actions._act_toggle_sys_appearance.toggled    .connect(self._man_appearance.setUseSystemAppearance)
 		self._man_appearance.sig_use_system_appearance_toggled  .connect(self._man_actions._act_toggle_sys_appearance.setChecked)

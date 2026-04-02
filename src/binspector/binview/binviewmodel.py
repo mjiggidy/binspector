@@ -126,14 +126,14 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 	def rowCount(self, /, parent:QtCore.QModelIndex) -> int:
 
 		if parent.isValid():
-			return None
+			return 0
 
 		return len(self._bin_view_columns)
 	
 	def columnCount(self, /, parent:QtCore.QModelIndex) -> int:
 
 		if parent.isValid():
-			return None
+			return 0
 		
 		return 1
 	

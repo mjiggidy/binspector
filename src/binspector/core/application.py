@@ -223,8 +223,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_delete_bin_view   .connect(self.deleteBinView)
 
 		# Restore Toggle Settings
-		window.binContentsWidget()._bin_filter_model.setBinColumnFiltersDisabled(self._man_settings.allColumnsVisible())
-		window.binContentsWidget()._bin_filter_model.sig_bin_view_enabled.connect(lambda enabled: self._man_settings.setAllColumnsVisible(not enabled))
+		window.binContentsWidget().setBinColumnFiltersDisabled(self._man_settings.allColumnsVisible())
+		window.binContentsWidget().sig_bin_view_enabled.connect(lambda enabled: self._man_settings.setAllColumnsVisible(not enabled))
 		
 		window.binViewManager().setAllItemsVisible(self._man_settings.allItemsVisible())
 		window.binViewManager().sig_all_items_toggled.connect(self._man_settings.setAllItemsVisible)

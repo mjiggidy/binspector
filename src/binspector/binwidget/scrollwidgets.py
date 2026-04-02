@@ -19,10 +19,10 @@ class BSBinStatsLabel(QtWidgets.QComboBox):
 	def __init__(
 		self,
 		*args,
+		filter_model:QtCore.QAbstractItemModel,
+		source_model:QtCore.QAbstractItemModel,
 		font_scale:float=0.8,
 		char_width:int=32,  # len("Showing 999,999 of 999,999 items")
-		filter_model:QtCore.QSortFilterProxyModel|None=None,
-		source_model:QtCore.QAbstractItemModel|None=None,
 		stat_strings:typing.Iterable[str]|None=None,
 		**kwargs
 	):
@@ -39,8 +39,8 @@ class BSBinStatsLabel(QtWidgets.QComboBox):
 		
 		self.setMinimumWidth(self.fontMetrics().averageCharWidth() * char_width)
 
-		self._filter_model:QtCore.QSortFilterProxyModel = filter_model or QtCore.QSortFilterProxyModel(parent=self)
-		self._source_model:QtCore.QAbstractItemModel    = source_model or self._filter_model.sourceModel()
+		self._filter_model:QtCore.QAbstractItemModel    = filter_model
+		self._source_model:QtCore.QAbstractItemModel    = source_model
 		self._source_model_connections = []
 
 		self._stat_strings = stat_strings or self.DEFAULT_TEXT
