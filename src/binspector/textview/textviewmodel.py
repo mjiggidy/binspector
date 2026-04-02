@@ -90,12 +90,12 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot()
 	def binItemLayoutAboutToChange(self):
 
-		self.layoutAboutToBeChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.VerticalSortHint)
+		self.layoutAboutToBeChanged.emit()
 
 	@QtCore.Slot()
 	def binItemLayoutChanged(self):
 
-		self.layoutChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.VerticalSortHint)
+		self.layoutChanged.emit()
 
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
@@ -153,12 +153,15 @@ class BSTextViewModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot()
 	def binColumnLayoutAboutToChange(self):
 
-		self.layoutAboutToBeChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint)
+		# NOTE: Bin View Model reports these as a vertical change since they're listed as rows
+		# doing a translation to Horizontal here
+
+		self.layoutAboutToBeChanged.emit()
 
 	@QtCore.Slot()
 	def binColumnLayoutChanged(self):
 
-		self.layoutChanged.emit(hint=QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint)
+		self.layoutChanged.emit()
 
 	@QtCore.Slot(QtCore.QModelIndex, QtCore.QModelIndex, object)
 	def binColumnDataChanged(self, topLeft:QtCore.QModelIndex, bottomRight:QtCore.QModelIndex, roles:typing.Sequence[QtCore.Qt.ItemDataRole]):
