@@ -71,7 +71,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		# Footers
 		self._binstats_text     = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model)
-		self._binstats_frame    = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model)
+		self._binstats_frame    = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model, stat_strings=[self.tr("Showing {filtered_item_count} of {source_item_count} items")])
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)

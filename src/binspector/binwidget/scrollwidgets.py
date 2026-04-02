@@ -4,6 +4,7 @@ Widgets for adding as scrollBarWidgets to `QScrollArea`
 Mostly standard widgets sublcassed for style
 """
 
+import typing
 from PySide6 import QtCore, QtWidgets
 
 class BSBinStatsLabel(QtWidgets.QComboBox):
@@ -22,6 +23,7 @@ class BSBinStatsLabel(QtWidgets.QComboBox):
 		char_width:int=32,  # len("Showing 999,999 of 999,999 items")
 		filter_model:QtCore.QSortFilterProxyModel|None=None,
 		source_model:QtCore.QAbstractItemModel|None=None,
+		stat_strings:typing.Iterable[str]|None=None,
 		**kwargs
 	):
 
@@ -41,12 +43,20 @@ class BSBinStatsLabel(QtWidgets.QComboBox):
 		self._source_model:QtCore.QAbstractItemModel    = source_model or self._filter_model.sourceModel()
 		self._source_model_connections = []
 
+		self._stat_strings = stat_strings or self.DEFAULT_TEXT
+
 		self._last_index = 0
 
 		self.activated.connect(self.selectedIndexChanged)
 
 		self._setupModel()
 		self._setupSourceModel()
+
+	def setStatStrings(self, stat_strings:typing.Iterable[str]):
+		"""Supported tokens: `{filtered_item_count}`,`{filtered_column_count}`,`{source_item_count}`,`{source_column_count}`"""
+
+		self._stat_strings = stat_strings
+		self.updateStats()
 
 	@QtCore.Slot(int)
 	def selectedIndexChanged(self, selected_index:int):
@@ -55,12 +65,12 @@ class BSBinStatsLabel(QtWidgets.QComboBox):
 
 	def _setupModel(self):
 
-		self._filter_model.layoutChanged   .connect(self.modelDataChanged)
-		self._filter_model.rowsInserted    .connect(self.modelDataChanged),
-		self._filter_model.columnsInserted .connect(self.modelDataChanged),
-		self._filter_model.rowsRemoved     .connect(self.modelDataChanged),
-		self._filter_model.columnsRemoved  .connect(self.modelDataChanged),
-		self._filter_model.modelReset      .connect(self.modelDataChanged)
+		self._filter_model.layoutChanged   .connect(self.updateStats)
+		self._filter_model.rowsInserted    .connect(self.updateStats),
+		self._filter_model.columnsInserted .connect(self.updateStats),
+		self._filter_model.rowsRemoved     .connect(self.updateStats),
+		self._filter_model.columnsRemoved  .connect(self.updateStats),
+		self._filter_model.modelReset      .connect(self.updateStats)
 
 	@QtCore.Slot()
 	def _setupSourceModel(self):
@@ -69,15 +79,15 @@ class BSBinStatsLabel(QtWidgets.QComboBox):
 			self.disconnect(c)
 
 		self._source_model_connections = [
-			self._source_model.rowsInserted    .connect(self.modelDataChanged),
-			self._source_model.columnsInserted .connect(self.modelDataChanged),
-			self._source_model.rowsRemoved     .connect(self.modelDataChanged),
-			self._source_model.columnsRemoved  .connect(self.modelDataChanged),
-			self._source_model.modelReset      .connect(self.modelDataChanged),
+			self._source_model.rowsInserted    .connect(self.updateStats),
+			self._source_model.columnsInserted .connect(self.updateStats),
+			self._source_model.rowsRemoved     .connect(self.updateStats),
+			self._source_model.columnsRemoved  .connect(self.updateStats),
+			self._source_model.modelReset      .connect(self.updateStats),
 		]
 
 	@QtCore.Slot()
-	def modelDataChanged(self):
+	def updateStats(self):
 
 		self.clear()
 
@@ -94,7 +104,7 @@ class BSBinStatsLabel(QtWidgets.QComboBox):
 		source_rows      = self._source_model.rowCount(QtCore.QModelIndex())
 		source_columns   = self._source_model.columnCount(QtCore.QModelIndex())
 
-		for label_text in self.DEFAULT_TEXT:
+		for label_text in self._stat_strings:
 			self.addItem(label_text.format(
 				filtered_item_count   = QtCore.QLocale.system().toString(filtered_rows),
 				source_item_count     = QtCore.QLocale.system().toString(source_rows),
