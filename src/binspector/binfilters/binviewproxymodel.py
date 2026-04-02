@@ -21,7 +21,7 @@ class BSBinViewFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		
 		is_hidden = self.sourceModel().index(source_row, 0, source_parent).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
-		print("** IS HIDDEN: ", is_hidden, self.sourceModel())
+#		print("** IS HIDDEN: ", is_hidden, self.sourceModel())
 
 		return not is_hidden
 	
