@@ -18,6 +18,7 @@ from ..scriptview import scriptview
 
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
+from ..binfilters import bindisplayproxymodel, binviewproxymodel
 
 from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
 
@@ -32,7 +33,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_bin_stats_updated      = QtCore.Signal(str)
 #	sig_bin_view_model_changed = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_composite_model:textviewmodel.BSBinCompositeModel|None=None, **kwargs):
+	def __init__(self, *args, bin_items_model:binitemsmodel.BSBinItemModel, bin_view_model:binviewmodel.BSBinViewModel, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -47,8 +48,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# NOTE: IDEA IS GON BE THIS:
 		# - binwdiget owns the composite model
 		# - binwidget allows you to set the view model and the items model
+
+		self._bin_items_model  = bin_items_model
+		self._bin_view_model   = bin_view_model
+
+		self._bin_items_filter = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=self._bin_items_model)
+		self._bin_view_filter  = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=self._bin_view_model)
 		
-		self._bin_composite_model = bin_composite_model or textviewmodel.BSBinCompositeModel()
+		self._bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter)
+
+		self._bin_model_final = QtCore.QIdentityProxyModel()
+		self._bin_model_final.setSourceModel(self._bin_composite_model)
+
 		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
@@ -179,7 +190,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top.sig_script_scale_changed.connect(self._viewmode_script.setFrameScale)
 
 		# NOTE: Maybe do this different?
-		self._bin_composite_model.binViewModel().sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
+		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
 
 		
 
