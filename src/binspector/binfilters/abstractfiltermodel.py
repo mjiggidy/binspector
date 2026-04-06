@@ -19,3 +19,10 @@ class BSAbstractBinSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 	def isEnabled(self) -> bool:
 		
 		return self._is_enabled
+	
+	@QtCore.Slot(bool)
+	def setDisabled(self, is_disabled:bool):
+		self.setEnabled(not is_disabled)
+
+	def isDisabled(self) -> bool:
+		return not self._is_enabled
