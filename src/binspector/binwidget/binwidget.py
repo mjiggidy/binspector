@@ -18,7 +18,7 @@ from ..scriptview import scriptview
 
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
-from ..binfilters import bindisplayproxymodel, binviewproxymodel
+from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel
 
 from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
 
@@ -47,10 +47,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		# Gaze upon these data models!  Very professional!
 
-		# NOTE: IDEA IS GON BE THIS:
-		# - binwdiget owns the composite model
-		# - binwidget allows you to set the view model and the items model
-
 		self._bin_items_model  = bin_items_model
 		self._bin_items_filter = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=self._bin_items_model, parent=self)
 		
@@ -59,10 +55,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter, parent=self)
 
-		self._bin_model_final = QtCore.QIdentityProxyModel(parent=self)
-		self._bin_model_final.setSourceModel(self._bin_composite_model)
+		self._bin_search_filter = binfindproxymodel.BSFindInBinProxyModel(parent=self)
+		self._bin_search_filter.setSourceModel(self._bin_composite_model)
 
-		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
+		self._bin_model_final = QtCore.QIdentityProxyModel(parent=self)
+		self._bin_model_final.setSourceModel(self._bin_search_filter)
+
+		self._bin_filter_model_deprecated    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_model_final, parent=self)
 
 		# Save initial palette for later togglin'
@@ -340,7 +339,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(bool)
 	def setBinColumnFiltersEnabled(self, are_enabled:bool):
 
-		print("TO DO")
+		self._bin_view_filter.setEnabled(are_enabled)
 
 		self.sig_bin_view_enabled.emit(are_enabled)
 
@@ -348,11 +347,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def setBinItemFiltersEnabled(self, are_enabled:bool):
 
 		print("TO DO")
+		self._bin_items_filter.setEnabled(are_enabled)
 
 	@QtCore.Slot(int)
 	def hideBinColumn(self, logical_index:int):
 
 		self._bin_model_final.setHeaderData(logical_index, QtCore.Qt.Orientation.Horizontal, True, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+
+	@QtCore.Slot()
+	@QtCore.Slot(str)
+	def setSearchText(self, search_text:str):
+
+		self._bin_search_filter.setSearchText(search_text)
 
 
 
@@ -426,12 +432,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(bool)
 	def setSiftEnabled(self, is_enabled:bool):
 
-		self._bin_filter_model.setSiftEnabled(is_enabled)
+		self._bin_filter_model_deprecated.setSiftEnabled(is_enabled)
 
 	@QtCore.Slot(object)
 	def setSiftOptions(self, sift_options:avbutils.bins.BinSiftOption):
 
-		self._bin_filter_model.setSiftOptions(sift_options)
+		self._bin_filter_model_deprecated.setSiftOptions(sift_options)
 
 
 	###

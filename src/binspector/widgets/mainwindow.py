@@ -55,7 +55,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._binview_provider = providermodel.BSBinViewProviderModel()
 
 		self._find_in_bin_timer = QtCore.QTimer(parent=self, singleShot=True, interval=DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC)
-		self._find_in_bin_timer.timeout.connect(lambda: self._bin_widget._bin_filter_model.setSearchText(self._bin_widget.topWidgetBar().searchBox().text()))
+		self._find_in_bin_timer.timeout.connect(lambda: self._bin_widget.setSearchText(self._bin_widget.topWidgetBar().searchBox().text()))
 #		self._last_search_text = ""
 
 
