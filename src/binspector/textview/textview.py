@@ -49,7 +49,7 @@ class BSBinTextView(QtWidgets.QTreeView):
 		self.header().setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
 		self.header().setStretchLastSection(True)
 
-		self.setModel(textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED())
+#		self.setModel(QtCore.QIdentityProxyModel())
 		self.setSelectionBehavior(BSTextViewModeConfig.DEFAULT_SELECTION_BEHAVIOR)
 		self.setSelectionMode(BSTextViewModeConfig.DEFAULT_SELECTION_MODE)
 
