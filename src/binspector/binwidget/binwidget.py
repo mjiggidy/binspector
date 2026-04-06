@@ -2,7 +2,7 @@
 The big fella
 """
 
-import logging
+import logging, typing
 import avb, avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -18,7 +18,7 @@ from ..scriptview import scriptview
 
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
-from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel
+from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel, binsiftproxymodel
 
 from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
 
@@ -55,13 +55,16 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter, parent=self)
 
-		self._bin_search_filter = binfindproxymodel.BSFindInBinProxyModel(parent=self)
-		self._bin_search_filter.setSourceModel(self._bin_composite_model)
+		self._bin_sift_filter = binsiftproxymodel.BSBinSiftFilterProxyModel(parent=self)	# TODO
+		self._bin_sift_filter.setSourceModel(self._bin_composite_model)
+
+		self._bin_find_filter = binfindproxymodel.BSFindInBinProxyModel(parent=self)
+		self._bin_find_filter.setSourceModel(self._bin_sift_filter)
 
 		self._bin_model_final = QtCore.QIdentityProxyModel(parent=self)
-		self._bin_model_final.setSourceModel(self._bin_search_filter)
+		self._bin_model_final.setSourceModel(self._bin_find_filter)
 
-		self._bin_filter_model_deprecated    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
+#		self._bin_filter_model_deprecated    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_model_final, parent=self)
 
 		# Save initial palette for later togglin'
@@ -82,8 +85,17 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._viewmode_script   = scriptview.BSBinScriptView()
 
 		# Footers
-		self._binstats_text     = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_model_final, source_model=self._bin_items_model)
-		self._binstats_frame    = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_model_final, source_model=self._bin_items_model, stat_strings=[self.tr("Showing {filtered_item_count} of {source_item_count} items")])
+		self._binstats_text = scrollwidgets.BSBinStatsLabel(
+			filter_model       = self._bin_model_final,
+			source_items_model = self._bin_items_model,
+			source_cols_model  = self._bin_view_model
+		)
+		self._binstats_frame = scrollwidgets.BSBinStatsLabel(
+			filter_model       = self._bin_model_final,
+			source_items_model = self._bin_items_model,
+			source_cols_model  = self._bin_view_model,
+			stat_strings       = [self.tr("Showing {filtered_item_count} of {source_item_count} items")]
+		)
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)
@@ -156,8 +168,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def _setupScriptViewMode(self):
 
 		# Models
-#		self._viewmode_script.setModel(self._bin_filter_model)
-#		self._viewmode_script.setSelectionModel(self._selection_model)
+#		self._viewmode_script.setModel(self._bin_model_final)
+		self._viewmode_script.setSelectionModel(self._selection_model)
 
 		# Delegates
 		self._viewmode_script.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
@@ -358,7 +370,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(str)
 	def setSearchText(self, search_text:str):
 
-		self._bin_search_filter.setSearchText(search_text)
+		self._bin_find_filter.setSearchText(search_text)
 
 
 
@@ -432,12 +444,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(bool)
 	def setSiftEnabled(self, is_enabled:bool):
 
-		self._bin_filter_model_deprecated.setSiftEnabled(is_enabled)
+		self._bin_sift_filter.setEnabled(is_enabled)
 
 	@QtCore.Slot(object)
-	def setSiftOptions(self, sift_options:avbutils.bins.BinSiftOption):
+	def setSiftOptions(self, sift_options:typing.Iterable[avbutils.bins.BinSiftOption]):
 
-		self._bin_filter_model_deprecated.setSiftOptions(sift_options)
+		print("TODO")
+		self._bin_sift_filter.setSiftOptions(sift_options)
 
 
 	###
