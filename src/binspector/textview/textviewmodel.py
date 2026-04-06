@@ -239,8 +239,15 @@ class BSBinCompositeModel(QtCore.QAbstractItemModel):
 		if parent.isValid():
 			return QtCore.QModelIndex()
 		
-#		if not row < self._item_model.rowCount(QtCore.QModelIndex()) or not column < self._view_model.rowCount(QtCore.QModelIndex()):
-#			return QtCore.QModelIndex()
+		if not row < self._item_model.rowCount(QtCore.QModelIndex()):
+			import logging
+			logging.getLogger(__name__).error("Got bad row index %s (row count=%s)", row, int(self._item_model.rowCount(QtCore.QModelIndex())))
+			return QtCore.QModelIndex()		
+		
+		elif not column < self._view_model.rowCount(QtCore.QModelIndex()):
+			import logging
+			logging.getLogger(__name__).error("Got bad column index %s (column count=%s)", column, int(self._view_model.rowCount(QtCore.QModelIndex())))
+			return QtCore.QModelIndex()
 		
 		return self.createIndex(row, column)
 	
