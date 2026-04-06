@@ -32,6 +32,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_focus_set_on_column    = QtCore.Signal(int)	# Logical column index
 	sig_bin_stats_updated      = QtCore.Signal(str)
 #	sig_bin_view_model_changed = QtCore.Signal(object)
+	sig_bin_view_enabled       = QtCore.Signal(bool)
 
 	def __init__(self, *args, bin_items_model:binitemsmodel.BSBinItemModel, bin_view_model:binviewmodel.BSBinViewModel, **kwargs):
 
@@ -50,18 +51,18 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# - binwidget allows you to set the view model and the items model
 
 		self._bin_items_model  = bin_items_model
-		self._bin_view_model   = bin_view_model
-
-		self._bin_items_filter = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=self._bin_items_model)
-		self._bin_view_filter  = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=self._bin_view_model)
+		self._bin_items_filter = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=self._bin_items_model, parent=self)
 		
-		self._bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter)
+		self._bin_view_model   = bin_view_model
+		self._bin_view_filter  = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=self._bin_view_model, parent=self)
 
-		self._bin_model_final = QtCore.QIdentityProxyModel()
+		self._bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter, parent=self)
+
+		self._bin_model_final = QtCore.QIdentityProxyModel(parent=self)
 		self._bin_model_final.setSourceModel(self._bin_composite_model)
 
 		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
-		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
+		self._selection_model     = QtCore.QItemSelectionModel(self._bin_model_final, parent=self)
 
 		# Save initial palette for later togglin'
 		self._default_palette   = self.palette()
@@ -81,8 +82,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._viewmode_script   = scriptview.BSBinScriptView()
 
 		# Footers
-		self._binstats_text     = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model)
-		self._binstats_frame    = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model, stat_strings=[self.tr("Showing {filtered_item_count} of {source_item_count} items")])
+		self._binstats_text     = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_model_final, source_model=self._bin_items_model)
+		self._binstats_frame    = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_model_final, source_model=self._bin_items_model, stat_strings=[self.tr("Showing {filtered_item_count} of {source_item_count} items")])
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)
@@ -114,9 +115,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().addWidget(self._section_main)
 
 	def _setupTextViewMode(self):
+		
 
 		# Models
-		self._viewmode_text.setModel(self._bin_filter_model)
+		self._viewmode_text.setModel(self._bin_model_final)
 		self._viewmode_text.setSelectionModel(self._selection_model) # NOTE: Call after setModel()
 		
 		# Delegates
@@ -134,7 +136,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		# Scene from model
 		bin_frame_scene     = frameview.BSBinFrameScene(
-			bin_filter_model = self._bin_filter_model,
+			bin_filter_model = self._bin_model_final,
 			brushes_manager  = frameview.painters.BSFrameItemBrushManager(parent=self._viewmode_frame),
 		)
 		self._viewmode_frame.setScene(bin_frame_scene)
@@ -307,7 +309,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 					continue
 
 				self._selection_model.select(
-					self._bin_filter_model.index(row, 0, QtCore.QModelIndex()),
+					self._bin_model_final.index(row, 0, QtCore.QModelIndex()),
 					QtCore.QItemSelectionModel.SelectionFlag.Select | \
 					  QtCore.QItemSelectionModel.SelectionFlag.Rows
 				)
@@ -324,10 +326,33 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	# Bin Views and Filters
 	###
 
+
+	@QtCore.Slot(avbutils.bins.BinDisplayItemTypes)
+	def setBinDisplayItemTypes(self, item_types:avbutils.bins.BinDisplayItemTypes):
+		
+		self._bin_items_filter.setAcceptedItemTypes(item_types)
+
+	@QtCore.Slot(bool)
+	def setBinColumnFiltersDisabled(self, are_disabled:bool):
+
+		self.setBinColumnFiltersEnabled(not are_disabled)
+
+	@QtCore.Slot(bool)
+	def setBinColumnFiltersEnabled(self, are_enabled:bool):
+
+		print("TO DO")
+
+		self.sig_bin_view_enabled.emit(are_enabled)
+
+	@QtCore.Slot(bool)
+	def setBinItemFiltersEnabled(self, are_enabled:bool):
+
+		print("TO DO")
+
 	@QtCore.Slot(int)
 	def hideBinColumn(self, logical_index:int):
 
-		self._bin_filter_model.setHeaderData(logical_index, QtCore.Qt.Orientation.Horizontal, True, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+		self._bin_model_final.setHeaderData(logical_index, QtCore.Qt.Orientation.Horizontal, True, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
 
 
@@ -467,9 +492,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(object)
 	def focusBinColumn(self, column_info:binviewitemtypes.BSBinViewColumnInfo) -> bool:
 
-		for col in range(self._bin_filter_model.columnCount(QtCore.QModelIndex())):
+		for col in range(self._bin_model_final.columnCount(QtCore.QModelIndex())):
 
-			if self._bin_filter_model.headerData(col, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo) == column_info:
+			if self._bin_model_final.headerData(col, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo) == column_info:
 
 				self._section_main.currentWidget().setFocus()
 				self._viewmode_text.selectSection(col)
@@ -478,7 +503,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				vertical_offset = self._viewmode_text.verticalScrollBar().value()
 
 				self._viewmode_text.scrollTo(
-					self._bin_filter_model.index(0, col, QtCore.QModelIndex()),
+					self._bin_model_final.index(0, col, QtCore.QModelIndex()),
 					QtWidgets.QTreeView.ScrollHint.PositionAtCenter
 				)
 
