@@ -404,7 +404,7 @@ class BSBinTextView(QtWidgets.QTreeView):
 	def updateMinimumSectionWidths(self):
 
 		# If no rows
-		if not self.model().hasIndex(0, 0, QtCore.QModelIndex()):
+		if not self.model() or not self.model().hasIndex(0, 0, QtCore.QModelIndex()):
 			return
 		
 		# Gon set minimum column width based on row height, but adjusted for icon aspect ratio

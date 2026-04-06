@@ -31,6 +31,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_bin_model_changed      = QtCore.Signal(object)
 	sig_focus_set_on_column    = QtCore.Signal(int)	# Logical column index
 	sig_bin_stats_updated      = QtCore.Signal(str)
+	sig_bin_view_enabled       = QtCore.Signal(bool)
 #	sig_bin_view_model_changed = QtCore.Signal(object)
 
 	def __init__(self, *args, bin_items_model:binitemsmodel.BSBinItemModel, bin_view_model:binviewmodel.BSBinViewModel, **kwargs):
@@ -52,15 +53,20 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_items_model  = bin_items_model
 		self._bin_view_model   = bin_view_model
 
-		self._bin_items_filter = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=self._bin_items_model)
-		self._bin_view_filter  = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=self._bin_view_model)
+		self._bin_items_filter = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=self._bin_items_model, parent=self)
+		self._bin_view_filter  = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=self._bin_view_model, parent=self)
 		
-		self._bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter)
+		self._bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter, parent=self)
 
-		self._bin_model_final = QtCore.QIdentityProxyModel()
-		self._bin_model_final.setSourceModel(self._bin_composite_model)
+		self._tmp_tree = QtWidgets.QTreeView()
+		self._tmp_tree.setModel(self._bin_composite_model)
+		self._tmp_tree.show()
+		#self._bin_filter_model = self._bin_composite_model
+		#self._bin_filter_model.setSourceModel(self._bin_composite_model)
 
-		self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
+		#self._bin_filter_model    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
+		self._bin_filter_model    = self._bin_composite_model#textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED()
+		
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_filter_model, parent=self)
 
 		# Save initial palette for later togglin'
@@ -81,8 +87,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._viewmode_script   = scriptview.BSBinScriptView()
 
 		# Footers
-		self._binstats_text     = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model)
-		self._binstats_frame    = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_filter_model, stat_strings=[self.tr("Showing {filtered_item_count} of {source_item_count} items")])
+		self._binstats_text     = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_composite_model, source_model=self._bin_items_model)
+		self._binstats_frame    = scrollwidgets.BSBinStatsLabel(filter_model=self._bin_composite_model, source_model=self._bin_items_model, stat_strings=[self.tr("Showing {filtered_item_count} of {source_item_count} items")])
 
 		# Create proxy style from application style for potential horizontal scrollbar height mods
 		self._proxystyle_hscroll = proxystyles.BSScrollBarStyle(parent=self)
@@ -154,8 +160,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def _setupScriptViewMode(self):
 
 		# Models
-		self._viewmode_script.setModel(self._bin_filter_model)
-		self._viewmode_script.setSelectionModel(self._selection_model)
+#		self._viewmode_script.setModel(self._bin_filter_model)
+#		self._viewmode_script.setSelectionModel(self._selection_model)
 
 		# Delegates
 		self._viewmode_script.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
@@ -323,6 +329,29 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	###
 	# Bin Views and Filters
 	###
+
+	@QtCore.Slot(avbutils.bins.BinDisplayItemTypes)
+	def setBinDisplayItemTypes(self, item_types:avbutils.bins.BinDisplayItemTypes):
+		
+		self._bin_items_filter.setAcceptedItemTypes(item_types)
+
+	@QtCore.Slot(bool)
+	def setBinColumnFiltersDisabled(self, are_disabled:bool):
+
+		self.setBinColumnFiltersEnabled(not are_disabled)
+
+	@QtCore.Slot(bool)
+	def setBinColumnFiltersEnabled(self, are_enabled:bool):
+
+		print("TO DO")
+
+		self.sig_bin_view_enabled.emit(are_enabled)
+
+	@QtCore.Slot(bool)
+	def setBinItemFiltersEnabled(self, are_enabled:bool):
+
+		print("TO DO")
+
 
 	@QtCore.Slot(int)
 	def hideBinColumn(self, logical_index:int):

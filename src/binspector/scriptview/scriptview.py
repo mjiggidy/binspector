@@ -23,15 +23,20 @@ class BSBinScriptView(textview.BSBinTextView):
 		
 		super().__init__(*args, **kwargs)
 
+		return
+
 		#self.setAlternatingRowColors(False)
 
 		# Need to repaint entire viewport when scrolling, due to drawRow()
 		self.verticalScrollBar()  .valueChanged.connect(self.viewport().update)
 		self.horizontalScrollBar().valueChanged.connect(self.viewport().update)
 
-		self.setItemPadding(BSScriptViewModeConfig.DEFAULT_ITEM_PADDING)
-	
-		self.applyHeaderConstraints()
+
+# DISABLING FOR NOW
+# I HATE YOU
+#		self.setItemPadding(BSScriptViewModeConfig.DEFAULT_ITEM_PADDING)
+#	
+#		self.applyHeaderConstraints()
 
 	@QtCore.Slot(QtCore.QMarginsF)
 	def setItemPadding(self, padding:QtCore.QMarginsF):
