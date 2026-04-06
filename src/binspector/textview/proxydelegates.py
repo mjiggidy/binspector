@@ -138,6 +138,10 @@ class BSBinColumnDelegateProvider(QtCore.QObject):
 		model       = self._view.model()
 		orientation = QtCore.Qt.Orientation.Horizontal
 
+		# TODO: See if no-model-set condition can be dealt with better
+		if model is None:
+			return
+
 		field  = model.headerData(logical_column_index, orientation, binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
 		format = model.headerData(logical_column_index, orientation, binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
 
@@ -154,6 +158,10 @@ class BSBinColumnDelegateProvider(QtCore.QObject):
 		"""Provide a delegate for a given logical column index of the view's model"""
 
 		model  = self._view.model()
+
+		# TODO: See if no-model-set condition can be dealt with better
+		if model is None:
+			return self._default_item_delegate
 
 		field  = model.headerData(logical_column_index, orientation, binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
 		format = model.headerData(logical_column_index, orientation, binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
