@@ -189,7 +189,7 @@ class BSBinTextView(QtWidgets.QTreeView):
 		return super().setSelectionModel(selectionModel)
 
 	@QtCore.Slot(object)
-	def setModel(self, model:textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED):
+	def setModel(self, model:QtCore.QAbstractItemModel):
 
 		if self.model() == model:
 			return
