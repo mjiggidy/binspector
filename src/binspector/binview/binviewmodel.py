@@ -54,7 +54,6 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		self.sig_bin_view_info_set.emit(self.binViewInfo())
 		self.sig_bin_view_name_changed.emit(bin_view_info.name)
-		#self.setBinViewName(bin_view_info.name)
 	
 	def binViewInfo(self) -> binviewitemtypes.BSBinViewInfo:
 		"""Get the bin view info for the current model"""
