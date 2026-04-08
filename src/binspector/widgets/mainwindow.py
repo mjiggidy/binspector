@@ -356,8 +356,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_binview.sig_delete_binview_requested         .connect(self.deleteBinView)
 		self._tool_binview.sig_focus_column_requested           .connect(self._bin_widget.focusBinColumn)
 
-		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(lambda bvs: self._bin_view_model.setBinViewInfo(bvs.binViewInfo()))
-		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_source_selected .connect(lambda bvs: self._bin_view_model.setBinViewInfo(bvs.binViewInfo()))
+		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(self.binViewSelected)
+		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_source_selected .connect(self.binViewSelected)
 
 
 	##
@@ -426,6 +426,12 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 	## Slots
 	##
+
+	@QtCore.Slot(object)
+	def binViewSelected(self, binview_info:binviewsources.BSAbstractBinViewSource):
+		"""User selected a bin view"""
+		
+		self._bin_view_model.setBinViewInfo(binview_info.binViewInfo())
 
 	@QtCore.Slot(object)
 	def activeBinViewChanged(self, binview_info:binviewitemtypes.BSBinViewInfo, is_modified:bool=False):
