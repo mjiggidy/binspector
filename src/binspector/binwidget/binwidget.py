@@ -186,19 +186,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 
 	def _setupSignals(self):
-		
-#		self._bin_filter_model.rowsInserted  .connect(self.updateBinStats)
-#		self._bin_filter_model.rowsRemoved   .connect(self.updateBinStats)
-#		self._bin_filter_model.modelReset    .connect(self.updateBinStats)
-#		self._bin_filter_model.layoutChanged .connect(self.updateBinStats)
-#
-#		self._bin_composite_model.rowsInserted  .connect(self.updateBinStats)
-#		self._bin_composite_model.rowsRemoved   .connect(self.updateBinStats)
-#		self._bin_composite_model.modelReset    .connect(self.updateBinStats)
-#		self._bin_composite_model.layoutChanged .connect(self.updateBinStats)
-
-#		self.sig_bin_stats_updated.connect(self._binstats_text.setText)
-#		self.sig_bin_stats_updated.connect(self._binstats_frame.setText)
 
 		self._section_top.sig_frame_scale_changed.connect(self._viewmode_frame.setZoom)
 		self._section_top.sig_script_scale_changed.connect(self._viewmode_script.setFrameScale)
@@ -206,59 +193,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# NOTE: Maybe do this different?
 		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
 
-		
-
-
-
-		
-		#self._binitems_frame.scene().sig_bin_item_selection_changed.connect(self.setSelectedItems)
-
-		#self._section_main.currentChanged.connect(self._selection_syncer.viewModeChanged)
-		#self._selection_syncer.sig_frame_selection_changed.connect(print)
-
-#	def _setupActions(self):
-
-#		self._act_set_view_width_for_columns = QtGui.QAction(self._viewmode_text)
-#		self._act_set_view_width_for_columns.setText(self.tr("Restore saved bin column widths"))
-#		self._act_set_view_width_for_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_T))
-#		self._act_set_view_width_for_columns.triggered.connect(lambda: self._viewmode_text.setColumnWidthsFromBinView(QtCore.QModelIndex(), 0, self._viewmode_text.header().count()-1))
-
-		# NOTE: Moved to TextView for now...
-#		self._act_autofit_columns = QtGui.QAction(self._viewmode_text)
-#		self._act_autofit_columns.setText(self.tr("Auto-fit bin columns to contents"))
-#		self._act_autofit_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ControlModifier|QtCore.Qt.Key.Key_T))
-#		self._act_autofit_columns.triggered.connect(self._viewmode_text.resizeAllColumnsToContents)
-#		self._viewmode_text.addAction(self._act_autofit_columns)
-		
-#		self._viewmode_text.addAction(self._act_set_view_width_for_columns)
-
 	def setShowColumnEditorAction(self, action:QtGui.QAction):
 		"""Show column editor needs a global action"""
 
 		self._viewmode_text.setShowColumnEditorAction(action)
 		self._viewmode_script.setShowColumnEditorAction(action)
-
-#	@QtCore.Slot(object)
-#	def setBinItemsModel(self, bin_model:binitemsmodel.BSBinItemModel):
-#		"""Set the bin item model for the bin"""
-#
-#		if self._bin_items_model == bin_model:
-#			return
-#		
-#		self._bin_items_model = bin_model
-#		self._setupBinModel()
-#		
-#		logging.getLogger(__name__).debug("Set bin model=%s", self._bin_items_model)
-#		self.sig_bin_model_changed.emit(bin_model)
-	
-#	def binItemsModel(self) -> binitemsmodel.BSBinItemModel:
-#		return self._bin_items_model
-	
-#	def _setupBinModel(self):
-#		"""Connect bin model to all the schtuff"""
-#
-#		self._bin_filter_model.setSourceModel(self._bin_composite_model)  # TODO: Setup during declaration, don't want this stuff goin on here I don't think
-#		self._viewmode_frame.scene().setBinFilterModel(self._bin_filter_model) # TODO: Don't need to set each time? CHECK NOTE: MOVED to frame setup for now?
 
 	###
 	# View Mode Widgets
@@ -403,44 +342,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			logging.getLogger(__name__).debug("Auto-sizing all columns")
 			self.textView().header().resizeSections(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
-#	@QtCore.Slot(object, object, int, int)
-#	def setBinView(self, bin_view:avb.bin.BinViewSetting, column_widths:dict[str,int], frame_scale:int, script_scale:int):
-#
-#		self.setBinViewName(bin_view.name)
-#
-#		for col in range(self.textView().header().count()):
-#			self.textView().setColumnWidthFromBinView(col, True)
-#			
-#		self.frameView().setZoom(frame_scale)
-#		self.frameView().ensureVisible(0, 0, 50, 50, 4,2)
-#		self.scriptView().setFrameScale(script_scale)
-
-
-#	@QtCore.Slot(object)
-#	def setBinViewEnabled(self, is_enabled:bool):
-#
-#		# TODO: Do I need to emit a confirmation signal here?
-#		self._bin_filter_model.setBinViewEnabled(is_enabled)
-
-#	@QtCore.Slot(object)
-#	def setBinViewName(self, bin_view_name:str):
-#		"""Set the name of the current bin view"""
-#
-#		# TODO: Faking this for now, will need a model I guess
-#		if bin_view_name not in (
-#			self.topWidgetBar().binViewSelector().itemText(idx)
-#			for idx in range(self.topWidgetBar().binViewSelector().count())
-#		):
-#			self.topWidgetBar().binViewSelector().addItem(bin_view_name)
-#
-#		self.topWidgetBar().binViewSelector().setItemText(0, bin_view_name)
-#		self.topWidgetBar().binViewSelector().setCurrentIndex(0)
-	
-#	@QtCore.Slot(object)
-#	def setBinFiltersEnabled(self, is_enabled:bool):
-#
-#		self._bin_filter_model.setBinFiltersEnabled(is_enabled)
-
 	@QtCore.Slot(bool)
 	def setSiftEnabled(self, is_enabled:bool):
 
@@ -564,16 +465,3 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	
 	def topWidgetBar(self) -> widgetbars.BSBinContentsTopWidgetBar:
 		return self._section_top
-
-#	@QtCore.Slot()
-#	def updateBinStats(self):
-#
-#		count_visible = self._bin_filter_model   .rowCount(QtCore.QModelIndex())
-#		count_all     = self._bin_composite_model.rowCount(QtCore.QModelIndex())
-#
-#		info_text = self.tr("Showing {current_item_count} of {total_item_count} items").format(
-#			current_item_count = QtCore.QLocale.system().toString(count_visible),
-#			total_item_count   = QtCore.QLocale.system().toString(count_all)
-#		)
-#		
-#		self.sig_bin_stats_updated.emit(info_text)
