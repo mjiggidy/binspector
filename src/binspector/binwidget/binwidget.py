@@ -82,7 +82,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Main View Mode Widgets
 		self._viewmode_text     = textview.BSBinTextView()
 		self._viewmode_frame    = frameview.BSBinFrameView()
-		self._viewmode_script   = scriptview.BSBinScriptView()
+		self._viewmode_script   = scriptview.BSBinScriptViewDEPRECATEDBAD()
 
 		# Footers
 		self._binstats_text = scrollwidgets.BSBinStatsLabel(
@@ -213,7 +213,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		return self._viewmode_frame
 
-	def scriptView(self) -> scriptview.BSBinScriptView:
+	def scriptView(self) -> scriptview.BSBinScriptViewDEPRECATEDBAD:
 		"""Script View Mode widget"""
 		
 		return self._viewmode_script

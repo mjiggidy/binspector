@@ -9,7 +9,7 @@ from ..binitems import binitemtypes
 
 from ..core.config import BSScriptViewModeConfig
 
-class BSBinScriptView(textview.BSBinTextView):
+class BSBinScriptViewDEPRECATEDBAD(textview.BSBinTextView):
 	"""Script view"""
 
 	sig_frame_scale_changed       = QtCore.Signal(float)
