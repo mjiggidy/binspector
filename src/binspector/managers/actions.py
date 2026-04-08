@@ -27,16 +27,19 @@ class ActionsManager(QtCore.QObject):
 		self._act_filebrowser.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.DocumentOpen))
 		self._act_filebrowser.setToolTip(self.tr("Choose a bin to open"))
 		self._act_filebrowser.setShortcut(QtGui.QKeySequence.StandardKey.Open)
+		self._act_filebrowser.setAutoRepeat(False)
 
 		self._act_reloadcurrent = QtGui.QAction(self.tr("&Reload Current Bin"))
 		self._act_reloadcurrent.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ViewRefresh))
 		self._act_reloadcurrent.setToolTip(self.tr("Reload the current bin"))
 		self._act_reloadcurrent.setShortcut(QtGui.QKeySequence.StandardKey.Refresh)
+		self._act_reloadcurrent.setAutoRepeat(False)
 
 		self._act_stopcurrent = QtGui.QAction(self.tr("Stop Loading Bin"))
 		self._act_stopcurrent.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ProcessStop))
 		self._act_stopcurrent.setToolTip(self.tr("Stop loading the current bin"))
 		self._act_stopcurrent.setShortcut(QtGui.QKeySequence.StandardKey.Cancel)
+		self._act_stopcurrent.setAutoRepeat(False)
 
 
 		# Window actions
@@ -61,6 +64,8 @@ class ActionsManager(QtCore.QObject):
 		self._act_show_settings.setToolTip(self.tr("Open {application_name} settings").format(application_name=QtWidgets.QApplication.instance().applicationName()))
 		self._act_show_settings.setShortcut(QtGui.QKeySequence.StandardKey.Preferences)
 		self._act_show_settings.setMenuRole(QtGui.QAction.MenuRole.PreferencesRole)
+		self._act_show_settings.setAutoRepeat(False)
+		
 
 		self._act_quitapplication = QtGui.QAction(self.tr("&Quit"))
 		"""Quit application"""
@@ -68,6 +73,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_quitapplication.setToolTip(self.tr("Quit {application_name}").format(application_name=QtWidgets.QApplication.instance().applicationName()))
 		self._act_quitapplication.setShortcut(QtGui.QKeySequence.StandardKey.Quit)
 		self._act_quitapplication.setMenuRole(QtGui.QAction.MenuRole.QuitRole)
+		self._act_quitapplication.setAutoRepeat(False)
 
 
 		# View modes
@@ -119,6 +125,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_toggle_show_all_items.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_2))
 		self._act_toggle_show_all_items.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_rows.svg")))
 		self._act_toggle_show_all_items.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_rows.svg")
+		self._act_toggle_show_all_items.setAutoRepeat(False)
 
 		self._act_toggle_show_all_columns = QtGui.QAction(self.tr("Show All Columns"))
 		self._act_toggle_show_all_columns.setCheckable(True)
@@ -126,6 +133,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_toggle_show_all_columns.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_1))
 		self._act_toggle_show_all_columns.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_columns.svg")))
 		self._act_toggle_show_all_columns.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_columns.svg")
+		self._act_toggle_show_all_columns.setAutoRepeat(False)
 
 		self._act_toggle_sys_appearance = QtGui.QAction(self.tr("Use System Appearance"))
 		self._act_toggle_sys_appearance.setCheckable(True)
@@ -133,6 +141,7 @@ class ActionsManager(QtCore.QObject):
 		self._act_toggle_sys_appearance.setShortcut(QtGui.QKeySequence(QtCore.Qt.KeyboardModifier.ShiftModifier|QtCore.Qt.Key.Key_3))
 		self._act_toggle_sys_appearance.setIcon(QtGui.QIcon(icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_appearance.svg")))
 		self._act_toggle_sys_appearance.setProperty(icon_providers.PROPERTY_ICON_PALETTED, ":/icons/gui/toggle_appearance.svg")
+		self._act_toggle_sys_appearance.setAutoRepeat(False)
 		
 
 		# Tools
