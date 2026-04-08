@@ -14,15 +14,11 @@ class BSBinViewFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 		
-		if not self._is_enabled:
+		if not self.isEnabled():
 			return True
 		
-
-		
 		is_hidden = self.sourceModel().index(source_row, 0, source_parent).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
-
-#		print("** IS HIDDEN: ", is_hidden, self.sourceModel())
-
+		
 		return not is_hidden
 	
 	def setEnabled(self, is_enabled:bool):
