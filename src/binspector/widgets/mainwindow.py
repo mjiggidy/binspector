@@ -493,15 +493,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setEnabled(True)
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
-#		self._man_binitems.viewModel().clear()
 		self._bin_item_model.clear()
-#		self._test_binitems_model.clearBinItems()
 		
 		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
 		self._bin_widget.topWidgetBar().progressBar().show()
 
-#		self._bin_widget.textView().setSortingEnabled(False)
-		self._bin_widget.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+		# NOTE: Disabling autosize for now, big ol' overhead during load
+		self._bin_widget.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
+#		self._bin_widget.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+
 		self._bin_widget.textView().header().setSectionsMovable(False)
 # self._bin_widget.textView().model().setDynamicSortFilter(False)
 		
@@ -568,7 +568,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		self._bin_widget.textView().header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
 		self._bin_widget.textView().header().setSectionsMovable(True)
-		self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
+		self.unsetCursor()
 		QtWidgets.QApplication.instance().alert(self)
 
 		total_load_time = self._time_last_load.elapsed()
