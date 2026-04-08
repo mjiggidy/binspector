@@ -1,10 +1,10 @@
-import sys, typing
+import sys
 from PySide6 import QtCore, QtWidgets
 
 from binspector.binview  import binviewitemtypes, binviewmodel, jsonadapter
-from binspector.binitems import binitemsmodel, binitemtypes
-from binspector.textview import textviewmodel, textviewproxymodel
-from binspector.core import binloader, binparser
+from binspector.binitems import binitemsmodel
+from binspector.textview import bincompositemodel
+from binspector.core import binparser
 
 from binspector.vieweditor import editorwidget
 from binspector.textview import textview
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 	bin_item_filter     = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=bin_item_model)
 	bin_view_filter     = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=bin_view_model)
 
-	bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=bin_item_filter, view_model=bin_view_filter)
+	bin_composite_model = bincompositemodel.BSBinCompositeModel(item_model=bin_item_filter, view_model=bin_view_filter)
 
 	final_proxy         = QtCore.QIdentityProxyModel()
 	final_proxy.setSourceModel(bin_composite_model)

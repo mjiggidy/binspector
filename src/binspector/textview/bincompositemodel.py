@@ -10,12 +10,12 @@ import avbutils
 class BSBinCompositeModel(QtCore.QAbstractItemModel):
 	"""Combine bin items model with bin view model for a nice table-y text view"""
 
-	def __init__(self, *args, item_model:binitemsmodel.BSBinItemModel|None=None, view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
+	def __init__(self, *args, item_model:QtCore.QAbstractItemModel, view_model:QtCore.QAbstractItemModel, **kwargs):
 		
 		super().__init__(*args, **kwargs)
 
-		self._item_model:binitemsmodel.BSBinItemModel = item_model or binitemsmodel.BSBinItemModel()
-		self._view_model:binviewmodel.BSBinViewModel  = view_model or binviewmodel.BSBinViewModel()
+		self._item_model = item_model
+		self._view_model = view_model
 
 		self._setupViewModel()
 		self._setupItemModel()
@@ -170,7 +170,7 @@ class BSBinCompositeModel(QtCore.QAbstractItemModel):
 		self.headerDataChanged.emit(QtCore.Qt.Orientation.Horizontal, topLeft.row(), bottomRight.row())
 
 
-	def setBinItemModel(self, item_model:binitemsmodel.BSBinItemModel):
+	def setBinItemModel(self, item_model:QtCore.QAbstractItemModel):
 		"""Set the bin item model"""
 
 		if self._item_model == item_model:
@@ -185,12 +185,12 @@ class BSBinCompositeModel(QtCore.QAbstractItemModel):
 
 		self.endResetModel()
 
-	def binItemModel(self) -> binitemsmodel.BSBinItemModel:
+	def binItemModel(self) -> QtCore.QAbstractItemModel:
 		"""The current bin items model"""
 
 		return self._item_model
 
-	def setBinViewModel(self, view_model:binviewmodel.BSBinViewModel):
+	def setBinViewModel(self, view_model:QtCore.QAbstractItemModel):
 		"""Set the bin column view model"""
 
 		if self._view_model == view_model:
@@ -205,7 +205,7 @@ class BSBinCompositeModel(QtCore.QAbstractItemModel):
 
 		self.endResetModel()
 
-	def binViewModel(self) -> binviewmodel.BSBinViewModel:
+	def binViewModel(self) -> QtCore.QAbstractItemModel:
 
 		return self._view_model
 

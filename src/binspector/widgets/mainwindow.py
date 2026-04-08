@@ -14,9 +14,6 @@ from ..managers import actions, binproperties, appearance
 from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
 from ..core import binloader, icon_engines, icon_providers
 from ..vieweditor import editorwidget
-from ..textview import textviewmodel
-
-import avbutils
 
 DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC:int = 500
 

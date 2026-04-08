@@ -12,7 +12,7 @@ from ..core import icon_registry
 
 from . import proxystyles, scrollwidgets, widgetbars
 
-from ..textview import textview, textviewmodel
+from ..textview import bincompositemodel, textview
 from ..frameview import frameview
 from ..scriptview import scriptview
 
@@ -53,7 +53,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_view_model   = bin_view_model
 		self._bin_view_filter  = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=self._bin_view_model, parent=self)
 
-		self._bin_composite_model = textviewmodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter, parent=self)
+		self._bin_composite_model = bincompositemodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter, parent=self)
 
 		self._bin_sift_filter = binsiftproxymodel.BSBinSiftFilterProxyModel(parent=self)	# TODO
 		self._bin_sift_filter.setSourceModel(self._bin_composite_model)
