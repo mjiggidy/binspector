@@ -80,7 +80,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 
 	def addBinColumn(self, bin_column:binviewitemtypes.BSBinViewColumnInfo, row:int|None=None):
 
-		if row:
+		if row is not None:
 
 			self.beginInsertRows(QtCore.QModelIndex(), row, row)
 			self._bin_view_columns.insert(row, bin_column)
