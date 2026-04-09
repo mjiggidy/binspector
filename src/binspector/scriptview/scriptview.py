@@ -22,6 +22,7 @@ class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
 		self._frame_size :QtCore.QSize = QtCore.QSizeF(16, 9) * 2
 		self._frame_scale:float        = BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_START
 
+		self.header().setSectionsMovable(False)
 
 	@QtCore.Slot(object)
 	def setFrameScale(self, frame_scale:float):
@@ -51,9 +52,6 @@ class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
 		"""Base frame size at `scale=1.0`"""
 		
 		return self._frame_size
-
-
-
 
 
 
