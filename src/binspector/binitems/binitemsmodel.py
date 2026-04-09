@@ -73,6 +73,9 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		
 		elif role == binitemtypes.BSBinItemDataRoles.FrameCoordinatesRole:
 			return bin_item.frame_coordinates
+		
+		elif role == binitemtypes.BSBinItemDataRoles.FrameThumbnailRole:
+			return bin_item.keyframe_offset
 
 #		NOTE: I don't remember why this would be here and it would need work anyway
 #
