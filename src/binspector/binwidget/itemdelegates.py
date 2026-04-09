@@ -1,7 +1,8 @@
 import logging, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core  import icon_providers
+from ..core  import icon_providers, config
+from ..binitems import binitemtypes
 
 
 class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
@@ -88,6 +89,105 @@ class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
 	def clone(self, *args, **kwargs) -> typing.Self:
 
 		return self.__class__(QtCore.QMarginsF(self._padding), *args, **kwargs)
+	
+class BSFrameThumbnailDelegate(BSGenericItemDelegate):
+	"""Display a thumbnailed frame"""
+
+	DEFAULT_ASPECT_RATIO = QtCore.QSizeF(16, 9)
+
+	sig_aspect_ratio_changed = QtCore.Signal(QtCore.QSize)
+	sig_frame_scale_changed  = QtCore.Signal(int)
+
+	def __init__(self, *args, aspect_ratio:QtCore.QSize|QtCore.QSizeF|None=None, frame_scale:int=config.BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_START, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._aspect_ratio = aspect_ratio or self.DEFAULT_ASPECT_RATIO
+#		self._unit_height  = 32 # Height in pixels at scale=1.0
+		self._frame_scale  = frame_scale  # TODO
+
+	def sizeHint(self, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> QtCore.QSize:
+
+		size = QtCore.QSizeF(
+			self._aspect_ratio.width()  * self._frame_scale + self._padding.left() + self._padding.right(),
+			self._aspect_ratio.height() * self._frame_scale + self._padding.top()  + self._padding.bottom()
+		).toSize()
+
+#		print("** RETURNING ", size)
+		return size
+
+	def setAspectRatio(self, aspect_ratio:QtCore.QSize|QtCore.QSizeF):
+
+		if self._aspect_ratio == aspect_ratio:
+			return
+		
+		self._aspect_ratio = aspect_ratio
+
+		self.sig_aspect_ratio_changed.emit(aspect_ratio)
+
+	def aspectRatio(self) -> QtCore.QSize|QtCore.QSizeF:
+
+		return self._aspect_ratio
+	
+	def setFrameScale(self, frame_scale:int):
+
+		if self._frame_scale == frame_scale:
+			return
+		
+		print("Ok hee", self._frame_scale, "to", frame_scale)
+		
+		self._frame_scale = frame_scale
+
+#		self.sizeHintChanged.emit(QtCore.QModelIndex())
+
+		self.sig_frame_scale_changed.emit(frame_scale)
+
+	def frameScale(self) -> int:
+		return self._frame_scale
+	
+	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+
+		super().paint(painter, option, index)
+
+		self.initStyleOption(option, index)
+
+		painter.save()
+
+		brush_bg = QtGui.QBrush(QtGui.QColor(16, 16, 16))
+		brush_bg.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+
+		clip_color = index.data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
+
+#		active_rect = QtCore.QRect(option.rect.topLeft(), self.sizeHint(option, index))
+		active_rect = QtCore.QRect(
+			QtCore.QPoint(option.rect.left(), option.rect.top()),
+			QtCore.QSize(self._aspect_ratio.width() * self._frame_scale, self._aspect_ratio.height() * self._frame_scale)
+		)
+
+#		print("** GOT CLIP COLOR", clip_color, index)
+
+		if clip_color.isValid():
+			pen_fg  = QtGui.QPen(clip_color)
+			pen_fg.setWidthF(1)
+			pen_fg.setStyle(QtCore.Qt.PenStyle.SolidLine)
+			pen_fg.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
+		
+		else:
+			pen_fg = QtGui.QPen()
+			pen_fg.setStyle(QtCore.Qt.PenStyle.NoPen)
+
+		painter.setBrush(brush_bg)
+		painter.setPen(pen_fg)
+
+		painter.drawRect(active_rect)
+
+
+		size_hint = self.sizeHint(option, index)
+		painter.drawText(active_rect, f"{size_hint.width()} x {size_hint.height()}", QtCore.Qt.AlignmentFlag.AlignTop)
+		painter.drawText(active_rect, str(index.data(binitemtypes.BSBinItemDataRoles.FrameThumbnailRole)), QtCore.Qt.AlignmentFlag.AlignBottom)
+
+		painter.restore()
+
 
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
 	"""Displays an icon centered in its item rect, with padding and aspect ratio preservation or something"""

@@ -65,7 +65,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_model_final = QtCore.QIdentityProxyModel(parent=self)
 		self._bin_model_final.setSourceModel(self._bin_find_filter)
 
-		self._test_scriptmodel = scriptproxy.BSScriptViewProxyModel()
+		self._test_scriptmodel = scriptproxy.BSScriptViewProxyModel(parent=self)
 		self._test_scriptmodel.setSourceModel(self._bin_model_final)
 
 #		self._bin_filter_model_deprecated    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)

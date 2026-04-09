@@ -6,8 +6,11 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..textview import textview
 from ..binitems import binitemtypes
+from ..binwidget import itemdelegates
 
 from ..core.config import BSScriptViewModeConfig
+
+import avbutils
 
 
 class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
@@ -19,39 +22,130 @@ class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
 
 		super().__init__(*args, **kwargs)
 		
-		self._frame_size :QtCore.QSize = QtCore.QSizeF(16, 9) * 2
-		self._frame_scale:float        = BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_START
+		self._frame_delegate     = itemdelegates.BSFrameThumbnailDelegate(aspect_ratio=QtCore.QSizeF(16, 9), frame_scale=BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_START*100)
 
 		self.header().setSectionsMovable(False)
+#		self.setUniformRowHeights(False)
+
+		self._delegate_provider.setUniqueDelegateForField(avbutils.bins.BinColumnFieldIDs.Frame, self._frame_delegate)
 
 	@QtCore.Slot(object)
 	def setFrameScale(self, frame_scale:float):
 		
-		if frame_scale == self._frame_scale:
+		if frame_scale == self._frame_delegate.frameScale():
 			return
 		
-		self._frame_scale = frame_scale
-		
+		self._frame_delegate.setFrameScale(frame_scale)
+#		self.updateGeometries()
+		self.scheduleDelayedItemsLayout()
+		self.header().setSectionResizeMode(self.header().logicalIndex(0), QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		self.sig_frame_scale_changed.emit(frame_scale)
 
 	def frameScale(self) -> float:
 		"""The scale factor for the frame rect"""
 
-		return self._frame_scale
+		return self._frame_delegate.frameScale()
 
 	@QtCore.Slot(QtCore.QSize)
-	def setFrameSize(self, frame_size:QtCore.QSize|QtCore.QSizeF):
+	def setFrameAspectRatio(self, aspect_ratio:QtCore.QSize|QtCore.QSizeF):
 
-		if self._frame_size == frame_size:
+		if self._frame_delegate.aspectRatio() == aspect_ratio:
 			return
 		
-		self._frame_size = frame_size
-		self.sig_frame_size_changed.emit(frame_size)
+		self._frame_delegate.setAspectRatio(aspect_ratio)
+		self.updateGeometries()
+		self.viewport().update()
 
-	def frameSize(self) -> QtCore.QSize|QtCore.QSizeF:
+		self.sig_frame_size_changed.emit(aspect_ratio)
+
+	def frameAspectRatio(self) -> QtCore.QSize|QtCore.QSizeF:
 		"""Base frame size at `scale=1.0`"""
 		
-		return self._frame_size
+		return self._frame_delegate.aspectRatio()
+	
+
+	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+		
+
+		super().drawRow(painter, options, index)
+
+#		print("** FONT METS", options.fontMetrics.height())
+
+		# Gather required data
+
+		script_text     = index.data(role=binitemtypes.BSBinItemDataRoles.ScriptNotesRole) or "Nah"
+		item_delegate   = self._delegate_provider.delegateForColumn(index.column())
+		row_is_selected = self.selectionModel().isSelected(index)
+
+		# Build rects
+
+		if not self.model() or not self.model().columnCount(QtCore.QModelIndex()) > 1:
+			return
+
+		offset_left = self.visualRect(index.siblingAtColumn(0)).right()
+#		print("** Offset", offset_left)
+
+		script_rect = QtCore.QRectF(
+			QtCore.QPointF(
+				offset_left + item_delegate.itemPadding().left(),
+				options.rect.top() + item_delegate.itemPadding().top() + options.fontMetrics.height() + item_delegate.itemPadding().top(),
+			),
+
+			QtCore.QPointF(
+				options.rect.right() - item_delegate.itemPadding().right(),
+				options.rect.bottom() - item_delegate.itemPadding().top(),
+			)
+		)
+
+		# Draw em
+
+		pen = QtGui.QPen()
+		
+		pen.setWidthF(1/painter.device().devicePixelRatioF())
+		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
+		pen.setColor(
+			options.palette.highlightedText().color() \
+			  if row_is_selected \
+			  else options.palette.windowText().color()
+		)
+
+		brush = QtGui.QBrush()
+		brush.setColor(options.palette.window().color())
+		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+
+		painter.save()
+		
+		painter.setPen(pen)
+		painter.setBrush(brush)
+		painter.setFont(options.font)
+
+#		if row_is_selected:
+		painter.drawRect(script_rect)
+		
+#		painter.drawRect(frame_rect)
+
+		if script_text:
+			pen.setColor(options.palette.windowText().color())
+			painter.setPen(pen)
+			painter.drawText(script_rect, script_text)
+
+
+		painter.restore()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

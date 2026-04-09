@@ -2,11 +2,24 @@ from PySide6 import QtCore
 from ..binitems import binitemtypes
 from ..binview import binviewitemtypes
 
+import avbutils
+
 class BSScriptViewProxyModel(QtCore.QIdentityProxyModel):
 	"""Because of the frame thing.  You know."""
 
 	ADDITIONAL_COLUMNS = 1
 	DEFAULT_ITEM_FLAGS = QtCore.Qt.ItemFlag.ItemIsSelectable | QtCore.Qt.ItemFlag.ItemIsEnabled
+
+	def __init__(self, /, parent:QtCore.QObject):
+
+		super().__init__(parent)
+
+		self._additional_header = binviewitemtypes.BSBinViewColumnInfo(
+			field_id     = avbutils.bins.BinColumnFieldIDs.Frame,
+			format_id    = avbutils.bins.BinColumnFormat.Frame,
+			display_name = "",
+			is_hidden    = False
+		)
 
 	def columnCount(self, /, parent:QtCore.QModelIndex):
 
@@ -28,10 +41,17 @@ class BSScriptViewProxyModel(QtCore.QIdentityProxyModel):
 
 		if not proxyIndex.isValid() or not self.sourceModel():
 			return None
+
+		if role == QtCore.Qt.ItemDataRole.TextAlignmentRole:
+			return QtCore.Qt.AlignmentFlag.AlignTop
 		
 		if proxyIndex.column() < self.ADDITIONAL_COLUMNS:
-			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return str(self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binitemtypes.BSBinItemDataRoles.FrameThumbnailRole))
+			if role == binitemtypes.BSBinItemDataRoles.FrameThumbnailRole:
+				return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binitemtypes.BSBinItemDataRoles.FrameThumbnailRole)
+			if role == binitemtypes.BSBinItemDataRoles.ClipColorRole:
+				return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
+
+			return None
 
 		return self.mapToSource(proxyIndex).data(role)
 	
@@ -41,7 +61,7 @@ class BSScriptViewProxyModel(QtCore.QIdentityProxyModel):
 			return None
 		
 		if section < self.ADDITIONAL_COLUMNS:
-			return "Thumbnail"
+			return self._additional_header.data(role)
 		
 		return self.sourceModel().headerData(section - self.ADDITIONAL_COLUMNS, orientation, role)
 	
