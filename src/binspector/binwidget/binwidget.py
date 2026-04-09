@@ -44,11 +44,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.setLayout(QtWidgets.QVBoxLayout())
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
-
-		self._test_scriptview  = scriptview.BSBinScriptViewNEWGOOD()
-		self._test_scriptmodel = scriptproxy.BSScriptViewProxyModel()
-		self._test_scriptview.setModel(self._test_scriptmodel)
-		self._test_scriptview.show()
 		
 		
 		# Gaze upon these data models!  Very professional!
@@ -70,7 +65,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_model_final = QtCore.QIdentityProxyModel(parent=self)
 		self._bin_model_final.setSourceModel(self._bin_find_filter)
 
-
+		self._test_scriptmodel = scriptproxy.BSScriptViewProxyModel()
 		self._test_scriptmodel.setSourceModel(self._bin_model_final)
 
 #		self._bin_filter_model_deprecated    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
@@ -91,7 +86,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Main View Mode Widgets
 		self._viewmode_text     = textview.BSBinTextView()
 		self._viewmode_frame    = frameview.BSBinFrameView()
-		self._viewmode_script   = scriptview.BSBinScriptViewDEPRECATEDBAD()
+		self._viewmode_script   = scriptview.BSBinScriptViewNEWGOOD()
 
 		# Footers
 		self._binstats_text = scrollwidgets.BSBinStatsLabel(
@@ -177,8 +172,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	def _setupScriptViewMode(self):
 
 		# Models
-#		self._viewmode_script.setModel(self._bin_model_final)
-		self._viewmode_script.setSelectionModel(self._selection_model)
+		self._viewmode_script.setModel(self._test_scriptmodel)
+#		self._viewmode_script.setSelectionModel(self._selection_model)
 
 		# Delegates
 		self._viewmode_script.setBinItemIconRegistry(icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
@@ -189,7 +184,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		# Signals
 		self._viewmode_script.sig_frame_scale_changed      .connect(self._section_top._sld_script_scale.setValue)
-		self._viewmode_script.sig_frame_scale_range_changed.connect(lambda r: self._section_top._sld_script_scale.setRange(r.start, r.stop))
+#		self._viewmode_script.sig_frame_scale_range_changed.connect(lambda r: self._section_top._sld_script_scale.setRange(r.start, r.stop))
 		self._viewmode_script.sig_hide_column_requested .connect(self.hideBinColumn)
 
 
