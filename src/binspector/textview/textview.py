@@ -430,7 +430,8 @@ class BSBinTextView(QtWidgets.QTreeView):
 
 		# Clip Color
 		self._delegate_provider.setUniqueDelegateForField(
-			51, itemdelegates.BSIconLookupItemDelegate(
+			avbutils.bins.BinColumnFieldIDs.Color,
+			itemdelegates.BSIconLookupItemDelegate(
 				parent=self,
 				aspect_ratio=self.ICON_ASPECT_RATIO,
 				icon_provider=icon_providers.BSStyledClipColorIconProvider(),
@@ -440,7 +441,7 @@ class BSBinTextView(QtWidgets.QTreeView):
 
 		# Markers
 		self._delegate_provider.setUniqueDelegateForField(
-			132,
+			avbutils.bins.BinColumnFieldIDs.Marker,
 			itemdelegates.BSIconLookupItemDelegate(
 				parent=self,
 				aspect_ratio=self.ICON_ASPECT_RATIO,
@@ -450,7 +451,7 @@ class BSBinTextView(QtWidgets.QTreeView):
 
 		# Bin Display Item Icon
 		self._delegate_provider.setUniqueDelegateForField(
-			200,
+			avbutils.bins.BinColumnFieldIDs.BinItemIcon,
 			itemdelegates.BSIconLookupItemDelegate(
 				parent=self,
 				aspect_ratio=self.ICON_ASPECT_RATIO,
@@ -458,3 +459,10 @@ class BSBinTextView(QtWidgets.QTreeView):
 			)
 
 		)
+
+#		self._delegate_provider.setUniqueDelegateForField(
+#			avbutils.bins.BinColumnFieldIDs.Frame,
+#			itemdelegates.BSFrameThumbnailDelegate(
+#				parent=self
+#			)
+#		)
