@@ -9,6 +9,69 @@ from ..binitems import binitemtypes
 
 from ..core.config import BSScriptViewModeConfig
 
+
+class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
+
+	sig_frame_scale_changed = QtCore.Signal(float)
+	sig_frame_size_changed  = QtCore.Signal(QtCore.QSize)
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+		
+		self._frame_size :QtCore.QSize = QtCore.QSizeF(16, 9) * 2
+		self._frame_scale:float        = BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_START
+
+
+	@QtCore.Slot(object)
+	def setFrameScale(self, frame_scale:float):
+		
+		if frame_scale == self._frame_scale:
+			return
+		
+		self._frame_scale = frame_scale
+		
+		self.sig_frame_scale_changed.emit(frame_scale)
+
+	def frameScale(self) -> float:
+		"""The scale factor for the frame rect"""
+
+		return self._frame_scale
+
+	@QtCore.Slot(QtCore.QSize)
+	def setFrameSize(self, frame_size:QtCore.QSize|QtCore.QSizeF):
+
+		if self._frame_size == frame_size:
+			return
+		
+		self._frame_size = frame_size
+		self.sig_frame_size_changed.emit(frame_size)
+
+	def frameSize(self) -> QtCore.QSize|QtCore.QSizeF:
+		"""Base frame size at `scale=1.0`"""
+		
+		return self._frame_size
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class BSBinScriptViewDEPRECATEDBAD(textview.BSBinTextView):
 	"""Script view"""
 

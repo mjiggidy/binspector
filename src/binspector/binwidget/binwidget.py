@@ -14,7 +14,7 @@ from . import proxystyles, scrollwidgets, widgetbars
 
 from ..textview import bincompositemodel, textview
 from ..frameview import frameview
-from ..scriptview import scriptview
+from ..scriptview import scriptview, scriptproxy
 
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
@@ -44,6 +44,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.setLayout(QtWidgets.QVBoxLayout())
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
+
+		self._test_scriptview  = scriptview.BSBinScriptViewNEWGOOD()
+		self._test_scriptmodel = scriptproxy.BSScriptViewProxyModel()
+		self._test_scriptview.setModel(self._test_scriptmodel)
+		self._test_scriptview.show()
+		
 		
 		# Gaze upon these data models!  Very professional!
 
@@ -63,6 +69,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._bin_model_final = QtCore.QIdentityProxyModel(parent=self)
 		self._bin_model_final.setSourceModel(self._bin_find_filter)
+
+
+		self._test_scriptmodel.setSourceModel(self._bin_model_final)
 
 #		self._bin_filter_model_deprecated    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
 		self._selection_model     = QtCore.QItemSelectionModel(self._bin_model_final, parent=self)
