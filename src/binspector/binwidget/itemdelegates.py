@@ -2,7 +2,6 @@ import logging, typing
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core  import icon_providers, config
-from ..binitems import binitemtypes
 
 
 class BSGenericItemDelegate(QtWidgets.QStyledItemDelegate):
@@ -134,8 +133,6 @@ class BSFrameThumbnailDelegate(BSGenericItemDelegate):
 		if self._frame_scale == frame_scale:
 			return
 		
-		print("Ok hee", self._frame_scale, "to", frame_scale)
-		
 		self._frame_scale = frame_scale
 
 #		self.sizeHintChanged.emit(QtCore.QModelIndex())
@@ -145,48 +142,32 @@ class BSFrameThumbnailDelegate(BSGenericItemDelegate):
 	def frameScale(self) -> int:
 		return self._frame_scale
 	
-	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+#	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+#
+#		super().paint(painter, option, index)
+#
+#		self.initStyleOption(option, index)
+#
+#		active_rect = QtCore.QRect(
+#			QtCore.QPoint(option.rect.left(), option.rect.top()),
+#			QtCore.QSize(self._aspect_ratio.width() * self._frame_scale, self._aspect_ratio.height() * self._frame_scale)
+#		)
+#
+#		clip_color = index.data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
+#
+#		frame_offset = index.data(binitemtypes.BSBinItemDataRoles.FrameThumbnailRole)
+#		shadow_color:QtGui.QColor = option.palette.color(QtGui.QPalette.ColorRole.Shadow)
+#		shadow_color.setAlphaF(0.25)
+#
+#		drawing.draw_frame_thumbnail(
+#			painter=painter,
+#			canvas=active_rect,
+#			frame_offset=frame_offset,
+#			base_color = QtGui.QColor(32,32,32),
+#			clip_color = clip_color,
+#			shadow_color=shadow_color
+#		)
 
-		super().paint(painter, option, index)
-
-		self.initStyleOption(option, index)
-
-		painter.save()
-
-		brush_bg = QtGui.QBrush(QtGui.QColor(16, 16, 16))
-		brush_bg.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
-
-		clip_color = index.data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
-
-#		active_rect = QtCore.QRect(option.rect.topLeft(), self.sizeHint(option, index))
-		active_rect = QtCore.QRect(
-			QtCore.QPoint(option.rect.left(), option.rect.top()),
-			QtCore.QSize(self._aspect_ratio.width() * self._frame_scale, self._aspect_ratio.height() * self._frame_scale)
-		)
-
-#		print("** GOT CLIP COLOR", clip_color, index)
-
-		if clip_color.isValid():
-			pen_fg  = QtGui.QPen(clip_color)
-			pen_fg.setWidthF(1)
-			pen_fg.setStyle(QtCore.Qt.PenStyle.SolidLine)
-			pen_fg.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
-		
-		else:
-			pen_fg = QtGui.QPen()
-			pen_fg.setStyle(QtCore.Qt.PenStyle.NoPen)
-
-		painter.setBrush(brush_bg)
-		painter.setPen(pen_fg)
-
-		painter.drawRect(active_rect)
-
-
-		size_hint = self.sizeHint(option, index)
-		painter.drawText(active_rect, f"{size_hint.width()} x {size_hint.height()}", QtCore.Qt.AlignmentFlag.AlignTop)
-		painter.drawText(active_rect, str(index.data(binitemtypes.BSBinItemDataRoles.FrameThumbnailRole)), QtCore.Qt.AlignmentFlag.AlignBottom)
-
-		painter.restore()
 
 
 class BSIconLookupItemDelegate(BSGenericItemDelegate):
@@ -240,7 +221,14 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		icon      = self._icon_provider.getIcon(decoration_role, option.palette)
 
 		# Center, size and shape the canvas QRect
-		canvas_active = self.activeRectFromRect(option.rect)#.marginsRemoved(self._padding)
+		text_rect = QtCore.QRect(option.rect.topLeft(), QtCore.QSize(option.rect.width(), self._padding.top() + option.fontMetrics.height() + self._padding.bottom()))
+		
+		canvas_active = self.activeRectFromRect(text_rect)#.marginsRemoved(self._padding)
+
+
+
+
+		
 		
 		# NOTE: Based on the active canvas area, bind the width to
 		# Min: Same as height (square)
@@ -255,7 +243,17 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 			w_active = canvas_active.width()
 		
 		canvas_active.setWidth(w_active)
-		canvas_active.moveCenter(QtCore.QRectF(option.rect).marginsRemoved(self._padding).center())
+
+
+		if option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignVCenter or option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignHCenter:
+			canvas_active.moveCenter(QtCore.QRectF(option.rect).marginsRemoved(self._padding).center())
+
+		if option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignBottom:
+			canvas_active.moveBottom(QtCore.QRectF(option.rect).marginsRemoved(self._padding).bottom())
+
+		if option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignTop:
+			canvas_active.moveTop(QtCore.QRectF(option.rect).marginsRemoved(self._padding).top())
+		
 		
 		painter.save()
 		painter.setClipRect(option.rect)
@@ -267,6 +265,7 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		try:
 			style.drawPrimitive(QtWidgets.QStyle.PrimitiveElement.PE_PanelItemViewItem, option, painter, option.widget)
 
+			icon:QtGui.QIcon
 			icon.paint(
 				painter,
 				canvas_active.toRect(),
