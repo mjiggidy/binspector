@@ -9,6 +9,7 @@ from ..binitems import binitemtypes
 from ..binwidget import itemdelegates
 
 from ..core.config import BSScriptViewModeConfig
+from ..utils import drawing
 
 import avbutils
 
@@ -28,6 +29,10 @@ class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
 #		self.setUniformRowHeights(False)
 
 		self._delegate_provider.setUniqueDelegateForField(avbutils.bins.BinColumnFieldIDs.Frame, self._frame_delegate)
+
+		# Need to repaint entire viewport when scrolling, due to drawRow()
+		self.verticalScrollBar()  .valueChanged.connect(self.viewport().update)
+		self.horizontalScrollBar().valueChanged.connect(self.viewport().update)
 
 	@QtCore.Slot(object)
 	def setFrameScale(self, frame_scale:float):
@@ -64,12 +69,34 @@ class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
 		return self._frame_delegate.aspectRatio()
 	
 
-	def drawRow(self, painter:QtGui.QPainter, options:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+	def drawRow(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 		
 
-		super().drawRow(painter, options, index)
+		super().drawRow(painter, option, index)
 
-#		print("** FONT METS", options.fontMetrics.height())
+
+
+		frame_rect = QtCore.QRect(
+			QtCore.QPoint(option.rect.left() + self._frame_delegate.itemPadding().left(), option.rect.top() + self._frame_delegate.itemPadding().top()),
+			QtCore.QSize(self._frame_delegate.aspectRatio().width() * self._frame_delegate.frameScale(), self._frame_delegate.aspectRatio().height() * self._frame_delegate.frameScale())
+		)
+
+		clip_color = index.data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
+
+		frame_offset = index.data(binitemtypes.BSBinItemDataRoles.FrameThumbnailRole)
+		shadow_color:QtGui.QColor = option.palette.color(QtGui.QPalette.ColorRole.Shadow)
+		shadow_color.setAlphaF(0.25)
+
+		drawing.draw_frame_thumbnail(
+			painter=painter,
+			canvas=frame_rect,
+			frame_offset=frame_offset,
+			base_color = QtGui.QColor(32,32,32),
+			clip_color = clip_color,
+			shadow_color=shadow_color
+		)
+
+
 
 		# Gather required data
 
@@ -82,18 +109,18 @@ class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
 		if not self.model() or not self.model().columnCount(QtCore.QModelIndex()) > 1:
 			return
 
-		offset_left = self.visualRect(index.siblingAtColumn(0)).right()
+		offset_left = frame_rect.right() + self._frame_delegate.itemPadding().right()
 #		print("** Offset", offset_left)
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
 				offset_left + item_delegate.itemPadding().left(),
-				options.rect.top() + item_delegate.itemPadding().top() + options.fontMetrics.height() + item_delegate.itemPadding().top(),
+				option.rect.top() + item_delegate.itemPadding().top() + option.fontMetrics.height() + item_delegate.itemPadding().top(),
 			),
 
 			QtCore.QPointF(
-				options.rect.right() - item_delegate.itemPadding().right(),
-				options.rect.bottom() - item_delegate.itemPadding().top(),
+				option.rect.right() - item_delegate.itemPadding().right(),
+				option.rect.bottom() - item_delegate.itemPadding().top(),
 			)
 		)
 
@@ -104,20 +131,20 @@ class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
 		pen.setWidthF(1/painter.device().devicePixelRatioF())
 		pen.setStyle(QtCore.Qt.PenStyle.SolidLine)
 		pen.setColor(
-			options.palette.highlightedText().color() \
+			option.palette.highlightedText().color() \
 			  if row_is_selected \
-			  else options.palette.windowText().color()
+			  else option.palette.windowText().color()
 		)
 
 		brush = QtGui.QBrush()
-		brush.setColor(options.palette.window().color())
+		brush.setColor(option.palette.window().color())
 		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
 
 		painter.save()
 		
 		painter.setPen(pen)
 		painter.setBrush(brush)
-		painter.setFont(options.font)
+		painter.setFont(option.font)
 
 #		if row_is_selected:
 		painter.drawRect(script_rect)
@@ -125,7 +152,7 @@ class BSBinScriptViewNEWGOOD(textview.BSBinTextView):
 #		painter.drawRect(frame_rect)
 
 		if script_text:
-			pen.setColor(options.palette.windowText().color())
+			pen.setColor(option.palette.windowText().color())
 			painter.setPen(pen)
 			painter.drawText(script_rect, script_text)
 
