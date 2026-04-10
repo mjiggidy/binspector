@@ -1,10 +1,11 @@
 from PySide6 import QtCore
-from ..binitems import binitemtypes
-from ..binview import binviewitemtypes
-
 import avbutils
 
-class BSScriptViewProxyModel(QtCore.QIdentityProxyModel):
+from ..binitems import binitemtypes
+from ..binview  import binviewitemtypes
+
+
+class BSScriptViewProxyModel(QtCore.QAbstractProxyModel):
 	"""Because of the frame thing.  You know."""
 
 	ADDITIONAL_COLUMNS = 1
@@ -21,12 +22,22 @@ class BSScriptViewProxyModel(QtCore.QIdentityProxyModel):
 			is_hidden    = False
 		)
 
+	def parent(self, child:QtCore.QModelIndex) -> QtCore.QModelIndex:
+		return QtCore.QModelIndex()
+
 	def columnCount(self, /, parent:QtCore.QModelIndex):
 
 		if parent.isValid() or not self.sourceModel():
 			return 0
 
 		return self.sourceModel().columnCount(QtCore.QModelIndex()) + self.ADDITIONAL_COLUMNS
+	
+	def rowCount(self, /, parent:QtCore.QModelIndex):
+
+		if parent.isValid() or not self.sourceModel():
+			return 0
+
+		return self.sourceModel().rowCount(QtCore.QModelIndex())
 	
 	def index(self, row:int, column:int, /, parent:QtCore.QModelIndex):
 
@@ -35,7 +46,7 @@ class BSScriptViewProxyModel(QtCore.QIdentityProxyModel):
 		if parent.isValid() or not self.sourceModel():
 			return QtCore.QModelIndex()
 		
-		return self.createIndex(row, column, None)
+		return self.createIndex(row, column)
 	
 	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
 
@@ -57,7 +68,7 @@ class BSScriptViewProxyModel(QtCore.QIdentityProxyModel):
 	
 	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole):
 		
-		if not self.sourceModel():
+		if not self.sourceModel() or orientation != QtCore.Qt.Orientation.Horizontal:
 			return None
 		
 		if section < self.ADDITIONAL_COLUMNS:
