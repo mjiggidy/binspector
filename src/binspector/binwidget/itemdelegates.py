@@ -245,8 +245,8 @@ class BSIconLookupItemDelegate(BSGenericItemDelegate):
 		canvas_active.setWidth(w_active)
 
 
-		if option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignVCenter or option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignHCenter:
-			canvas_active.moveCenter(QtCore.QRectF(option.rect).marginsRemoved(self._padding).center())
+		#if option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignVCenter or option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignHCenter:
+		canvas_active.moveCenter(QtCore.QRectF(option.rect).marginsRemoved(self._padding).center())
 
 		if option.displayAlignment & QtCore.Qt.AlignmentFlag.AlignBottom:
 			canvas_active.moveBottom(QtCore.QRectF(option.rect).marginsRemoved(self._padding).bottom())
