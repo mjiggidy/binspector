@@ -83,7 +83,7 @@ def draw_frame_thumbnail(
 		shadow_offset = shadow_offset or QtCore.QPointF(border_width, border_width)
 
 		active_rect = QtCore.QRectF(canvas).marginsRemoved(
-			QtCore.QMarginsF(*[border_width] * 4)
+			QtCore.QMarginsF(*[border_width * 2] * 4)
 		)
 		
 		painter.save()
