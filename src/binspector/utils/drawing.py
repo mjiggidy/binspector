@@ -4,7 +4,7 @@ def draw_marker_tick(
 	painter      :QtGui.QPainter,
 	canvas       :QtCore.QRect,
 	marker_color :QtGui.QColor,
-	*,
+#	/,
 	border_color :QtGui.QColor|None=None,
 	border_width :int=2,
 	border_radius:int=2,
@@ -65,11 +65,80 @@ def draw_marker_tick(
 	
 	painter.restore()
 
+def draw_frame_thumbnail(
+	painter      :QtGui.QPainter,
+	canvas       :QtCore.QRectF,
+	frame_offset :int = 0,
+
+	base_color   :QtGui.QColor|None = None,
+	clip_color   :QtGui.QColor|None = None,
+	border_width :float=2,
+
+	shadow_color :QtGui.QColor|None=None,
+	shadow_offset:QtCore.QPointF|None=None,
+):
+	
+		clip_color    = clip_color    or QtGui.QColor()
+		shadow_color  = shadow_color  or QtGui.QColor()
+		shadow_offset = shadow_offset or QtCore.QPointF(border_width, border_width)
+
+		active_rect = QtCore.QRectF(canvas).marginsRemoved(
+			QtCore.QMarginsF(*[border_width] * 4)
+		)
+		
+		painter.save()
+
+		# Draw shadow first
+		if shadow_color.isValid() and shadow_color.alpha() and not shadow_offset.isNull():
+
+			pen_shadow = QtGui.QPen()
+			pen_shadow.setStyle(QtCore.Qt.PenStyle.NoPen)
+
+			brush_shadow = QtGui.QBrush(shadow_color)
+			brush_shadow.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+
+			painter.setPen(pen_shadow)
+			painter.setBrush(brush_shadow)
+			painter.drawRect(active_rect.translated(shadow_offset))
+
+		# Draw base rect
+
+		brush_bg = QtGui.QBrush(base_color)
+		brush_bg.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+
+		pen_fg  = QtGui.QPen()
+
+		if clip_color.isValid():
+			pen_fg.setColor(clip_color)
+			pen_fg.setStyle(QtCore.Qt.PenStyle.SolidLine)
+			pen_fg.setWidthF(border_width)
+			pen_fg.setJoinStyle(QtCore.Qt.PenJoinStyle.MiterJoin)
+		
+		else:
+			pen_fg.setColor(QtGui.QColor(235,235,235))
+			pen_fg.setStyle(QtCore.Qt.PenStyle.NoPen)
+
+		painter.setBrush(brush_bg)
+		painter.setPen(pen_fg)
+
+		painter.drawRect(active_rect)
+
+
+		# Draw text
+
+		size_hint = canvas.size()
+		pen_fg.setStyle(QtCore.Qt.PenStyle.SolidLine)
+		painter.setPen(pen_fg)
+		painter.drawText(active_rect, f"{size_hint.width()} x {size_hint.height()}", QtCore.Qt.AlignmentFlag.AlignTop)
+		painter.drawText(active_rect, str(frame_offset), QtCore.Qt.AlignmentFlag.AlignBottom)
+
+		painter.restore()
+
 def draw_clip_color_chip(
 	painter      :QtGui.QPainter,
 	canvas       :QtCore.QRectF,
 	clip_color   :QtGui.QColor,
-	*,
+#	*,
 	border_color :QtGui.QColor|None=None,
 	border_width :float=2,
 	shadow_color :QtGui.QColor|None=None,
