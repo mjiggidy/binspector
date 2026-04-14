@@ -57,12 +57,12 @@ class BSScriptViewProxyModel(QtCore.QAbstractProxyModel):
 			return QtCore.Qt.AlignmentFlag.AlignTop
 		
 		if proxyIndex.column() < self.ADDITIONAL_COLUMNS:
-			if role == binitemtypes.BSBinItemDataRoles.FrameThumbnailRole:
-				return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binitemtypes.BSBinItemDataRoles.FrameThumbnailRole)
-			if role == binitemtypes.BSBinItemDataRoles.ClipColorRole:
-				return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
-
-			return None
+			
+			# Return any of my special lil' binitemtypes
+			if int(role) > int(QtCore.Qt.ItemDataRole.UserRole):	
+				return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex()).data(role)
+			else:
+				return None
 
 		return self.mapToSource(proxyIndex).data(role)
 	

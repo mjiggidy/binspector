@@ -72,8 +72,6 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		super().drawRow(painter, option, index)
 
-
-
 		frame_rect = QtCore.QRect(
 			QtCore.QPoint(option.rect.left() + self._frame_delegate.itemPadding().left(), option.rect.top() + self._frame_delegate.itemPadding().top()),
 			QtCore.QSize(self._frame_delegate.aspectRatio().width() * self._frame_delegate.frameScale(), self._frame_delegate.aspectRatio().height() * self._frame_delegate.frameScale())
@@ -81,20 +79,22 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		clip_color = index.data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
 
+		frame_range  = index.data(binitemtypes.BSBinItemDataRoles.TimecodeRangeRole)
 		frame_offset = index.data(binitemtypes.BSBinItemDataRoles.FrameThumbnailRole)
+
+		tc_offset    = frame_range.start + frame_offset if frame_range is not None else frame_offset
+
 		shadow_color:QtGui.QColor = option.palette.color(QtGui.QPalette.ColorRole.Shadow)
 		shadow_color.setAlphaF(0.25)
 
 		drawing.draw_frame_thumbnail(
 			painter=painter,
 			canvas=frame_rect,
-			frame_offset=frame_offset,
+			frame_offset=tc_offset,
 			base_color = QtGui.QColor(32,32,32),
 			clip_color = clip_color,
 			shadow_color=shadow_color
 		)
-
-
 
 		# Gather required data
 
