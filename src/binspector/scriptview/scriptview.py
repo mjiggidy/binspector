@@ -40,7 +40,7 @@ class BSBinScriptView(textview.BSBinTextView):
 			return
 		
 		self._frame_delegate.setFrameScale(frame_scale)
-		self.scheduleDelayedItemsLayout()
+		self.doItemsLayout()
 		self.header().setSectionResizeMode(self.header().logicalIndex(0), QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		self.sig_frame_scale_changed.emit(frame_scale)
 
