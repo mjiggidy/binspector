@@ -25,15 +25,33 @@ class BSBinItemDataRoles(enum.IntEnum):
 	"""Item Data Roles for Bin Items (extends `QtCore.Qt.ItemDataRole`)"""
 
 	ItemNameRole         = QtCore.Qt.ItemDataRole.UserRole + 1
+	"""Bin item name"""
+
 	ItemTypesRole        = enum.auto()
+	"""Bin item types under which this is categorized"""
+
 	ClipColorRole        = enum.auto()
+	"""Clip color assigned to this item, if any"""
+
 	FrameCoordinatesRole = enum.auto()
+	"""Scene coordinates for this thumbnail in Frame View Mode"""
+
 	FrameThumbnailRole   = enum.auto()
+	"""Relative frame offset for thumbnail"""
+
 	ScriptNotesRole      = enum.auto()
+	"""Data for Script View Mode extended comment"""
+
+	
 	ViewItemsRole        = enum.auto()
-	MobID                = enum.auto()
-	TimecodeRangeRole    = enum.auto()
 	"""Return the view item dict"""
+
+	MobID                = enum.auto()
+	"""The MobID"""
+
+	TimecodeRangeRole    = enum.auto()
+	"""The primary timecode range for this item"""
+	
 
 class BSAbstractViewItem:
 	"""An abstract view item for bin item models"""

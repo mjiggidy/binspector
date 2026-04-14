@@ -226,10 +226,6 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> binitemtypes.BSBinItemInfo:
 			
 		}
 
-		# Old
-		#for key, val in user_attributes.items():
-		#	item.update({"40_"+key: val})
-
 		for k,v in user_attributes.items():
 			user_attributes[k] = binitemtypes.BSStringViewItem(v)
 
