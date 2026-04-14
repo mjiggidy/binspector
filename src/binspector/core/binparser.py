@@ -245,4 +245,5 @@ def load_item_from_bin(bin_item:avb.bin.BinItem) -> binitemtypes.BSBinItemInfo:
 			mob_id = mob_id,
 			tracks=mob_tracks,
 			clip_color=mob_color,
+			primary_timecode=timecode_range
 		)

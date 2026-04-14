@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing, enum, datetime, os, dataclasses
 import avbutils, avb
-from timecode import Timecode
+from timecode import Timecode, TimecodeRange
 from PySide6 import QtCore, QtGui, QtWidgets
 from functools import singledispatch
 
@@ -14,6 +14,7 @@ class BSBinItemInfo:
 	mob_id            :avb.mobid.MobID
 	item_type         :avbutils.bins.BinDisplayItemTypes
 	tracks            :set[avb.trackgroups.Track]
+	primary_timecode  :TimecodeRange|None
 	clip_color        :avbutils.compositions.ClipColor|None
 	name              :str
 	frame_coordinates :tuple[int,int]
@@ -31,6 +32,7 @@ class BSBinItemDataRoles(enum.IntEnum):
 	ScriptNotesRole      = enum.auto()
 	ViewItemsRole        = enum.auto()
 	MobID                = enum.auto()
+	TimecodeRangeRole    = enum.auto()
 	"""Return the view item dict"""
 
 class BSAbstractViewItem:

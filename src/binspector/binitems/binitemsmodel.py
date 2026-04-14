@@ -76,6 +76,9 @@ class BSBinItemModel(QtCore.QAbstractItemModel):
 		
 		elif role == binitemtypes.BSBinItemDataRoles.FrameThumbnailRole:
 			return bin_item.keyframe_offset
+		
+		elif role == binitemtypes.BSBinItemDataRoles.TimecodeRangeRole:
+			return bin_item.primary_timecode
 
 #		NOTE: I don't remember why this would be here and it would need work anyway
 #
