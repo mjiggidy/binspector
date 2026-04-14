@@ -16,6 +16,8 @@ import avbutils
 
 class BSBinScriptView(textview.BSBinTextView):
 
+	DEFAULT_FADE_LENGTH_PX  = 10
+
 	sig_frame_scale_changed = QtCore.Signal(float)
 	sig_frame_size_changed  = QtCore.Signal(QtCore.QSize)
 
@@ -72,10 +74,46 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		super().drawRow(painter, option, index)
 
+
 		frame_rect = QtCore.QRect(
 			QtCore.QPoint(option.rect.left() + self._frame_delegate.itemPadding().left(), option.rect.top() + self._frame_delegate.itemPadding().top()),
 			QtCore.QSize(self._frame_delegate.aspectRatio().width() * self._frame_delegate.frameScale(), self._frame_delegate.aspectRatio().height() * self._frame_delegate.frameScale())
 		)
+
+		# Draw a little fade-out fella
+		fade_rect = QtCore.QRect(frame_rect)
+		fade_rect.setRight(fade_rect.right() + self._frame_delegate.itemPadding().right())
+		fade_rect.setLeft(0)
+
+		fade_grad = QtGui.QLinearGradient(
+			fade_rect.topLeft(),
+			fade_rect.topRight(),
+		)
+		
+		if index in self.selectionModel().selectedIndexes():
+			fade_color_opaque = option.palette.color(QtGui.QPalette.ColorRole.Highlight)
+		elif index.row() % 2:
+			fade_color_opaque = option.palette.color(QtGui.QPalette.ColorRole.AlternateBase)
+		else:
+			fade_color_opaque = option.palette.color(QtGui.QPalette.ColorRole.Base)
+		
+		fade_color_trans  = QtGui.QColor(fade_color_opaque)
+		fade_color_trans.setAlphaF(0)
+		
+		fade_grad.setColorAt(0, fade_color_opaque)
+		fade_grad.setColorAt(0.9, fade_color_opaque)
+		fade_grad.setColorAt(1, fade_color_trans)
+
+		brush_fade = QtGui.QBrush(fade_grad)
+
+		pen_fade = QtGui.QPen()
+		pen_fade.setStyle(QtCore.Qt.PenStyle.NoPen)
+
+		painter.setPen(pen_fade)
+		painter.setBrush(brush_fade)
+		
+		painter.drawRect(fade_rect)
+
 
 		clip_color = index.data(binitemtypes.BSBinItemDataRoles.ClipColorRole)
 
