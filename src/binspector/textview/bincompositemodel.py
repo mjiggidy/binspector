@@ -136,18 +136,33 @@ class BSBinCompositeModel(QtCore.QAbstractItemModel):
 
 		self.endMoveColumns()
 
-	def moveColumn(self, sourceParent:QtCore.QModelIndex, sourceColumn:int, destinationParent:QtCore.QModelIndex, destinationColumn:int) -> bool:
-		
-		column_to_move = self.headerData(sourceColumn, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
-		column_before  = self.headerData(destinationColumn - 1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationColumn > 0 else "<<FRONT>>"
+#	def moveColumn(self, sourceParent:QtCore.QModelIndex, sourceColumn:int, destinationParent:QtCore.QModelIndex, destinationColumn:int) -> bool:
+#
+#		# TODO: Roll into `moveColumns()`
+#		
+#		column_to_move = self.headerData(sourceColumn, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+#		column_before  = self.headerData(destinationColumn - 1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationColumn > 0 else "<<FRONT>>"
+##		print(f"Text view model got move {column_to_move=} {sourceColumn=} to after {column_before=} {destinationColumn=}")
+#
+#		# NOTE: Good at this point, save for dragging-to-last-position stuff
+#
+#		return self.binViewModel().moveRow(QtCore.QModelIndex(), sourceColumn, QtCore.QModelIndex(), destinationColumn)
+#		#return super().moveColumn(sourceParent, sourceColumn, destinationParent, destinationChild)
 
+	def moveColumns(self, sourceParent:QtCore.QModelIndex, sourceColumn:int, count:int, destinationParent:QtCore.QModelIndex, destinationColumn:int) -> bool:
+		"""Re-order visible bin columns.  Comes in from QHeaderView drags."""
 
-#		print(f"Text view model got move {column_to_move=} {sourceColumn=} to after {column_before=} {destinationColumn=}")
+#		column_to_move = self.headerData(sourceColumn, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+#		column_before  = self.headerData(destinationColumn - 1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if destinationColumn > 0 else "<<FRONT>>"
+#		print(f"Composite model got move column {column_to_move=} {sourceColumn=} to after {column_before=} {destinationColumn=}")
 
-		# NOTE: Good at this point, save for dragging-to-last-position stuff
-
-		return self.binViewModel().moveRow(QtCore.QModelIndex(), sourceColumn, QtCore.QModelIndex(), destinationColumn)
-		#return super().moveColumn(sourceParent, sourceColumn, destinationParent, destinationChild)
+		return self.binViewModel().moveRows(
+			QtCore.QModelIndex(),
+			sourceColumn,
+			count,
+			QtCore.QModelIndex(),
+			destinationColumn
+		)
 
 
 	@QtCore.Slot()

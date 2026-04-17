@@ -26,3 +26,15 @@ class BSAbstractBinSortFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 	def isDisabled(self) -> bool:
 		return not self._is_enabled
+	
+	def moveColumns(self, sourceParent, sourceColumn, count, destinationParent, destinationChild) -> bool:
+		
+		# Kinda surprised I need to implement this but OK
+		
+		return self.sourceModel().moveColumns(
+			self.mapToSource(sourceParent),
+			sourceColumn,
+			count,
+			self.mapToSource(destinationParent),
+			destinationChild
+		)
