@@ -146,9 +146,15 @@ class BSBinTextView(QtWidgets.QTreeView):
 		if col_vis_old == col_vis_new:
 			logging.getLogger(__name__).error("Source and destination visual indexes are the same")
 			return
+		
+		# First or last?  Do a typical mapping
+		if col_vis_new == 0 or col_vis_new > self.header().count():
+			col_logical_new = self.header().logicalIndex(col_vis_new)
+		
+		# Move visual column based on the visual left neighbor's logical index + 1
+		else:
+			col_logical_new = (self.header().logicalIndex(col_vis_new - 1) + 1)
 
-		# Determine the new LOGICAL index, based on the visual left neighbor's logical index + 1
-		col_logical_new = (self.header().logicalIndex(col_vis_new - 1) + 1) if col_vis_new > 0 else 0
 
 		if col_logical_old == col_logical_new:
 #			print("Source and destination logical indeces are the same")
@@ -161,17 +167,19 @@ class BSBinTextView(QtWidgets.QTreeView):
 		was_moved = self.model().moveColumn(QtCore.QModelIndex(), col_logical_old, QtCore.QModelIndex(), col_logical_new)
 
 		if was_moved:
+
 			# AAAAAAAAAH HA HA HAAAAA I FUCKIN GOT IT BITCCHCHCHCHCHCHHHHHHHH YEAAAAAH BOIIIIIII
 			# Undo the visual move here.  Yes this triggers another move request but it gets stopped there because of identical indexes yesssss
+
 			width_vis_new = self.header().sectionSize(self.header().logicalIndex(col_vis_new))
 			width_vis_old = self.header().sectionSize(self.header().logicalIndex(col_vis_old))
 
 			self.header().moveSection(col_vis_new, col_vis_old)
 
-			# Restore column widths
+			# Restore column widths after move
 			# NOTE: May want to hook this into a generic sections moved thing,
 			# so far this doesn't work when columns are moved by other means like the bin view editor
-			
+
 			self.header().resizeSection(self.header().logicalIndex(col_vis_new), width_vis_new)
 			self.header().resizeSection(self.header().logicalIndex(col_vis_old), width_vis_old)
 		
