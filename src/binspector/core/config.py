@@ -7,7 +7,7 @@ class BSApplicationConfig:
 	APPLICATION_NAME    = "Binspector"
 	"""Name o' the app"""
 
-	APPLICATION_VERSION = QtCore.QVersionNumber(0,0,20)
+	APPLICATION_VERSION = QtCore.QVersionNumber(0,0,21)
 	"""Version Number (major.minor.revision)"""
 
 	APPLICATION_STORAGE_PATH = QtCore.QStandardPaths.StandardLocation.AppDataLocation
