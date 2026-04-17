@@ -7,6 +7,17 @@ class BSTextViewColumnHeaderView(QtWidgets.QHeaderView):
 
 		super().__init__(*args, **kwargs)
 
+	def moveSection(self, idx_vis_start:int, idx_vis_dest:int):
+		
+		width_start = self.sectionSize(self.logicalIndex(idx_vis_dest))
+		width_dest  = self.sectionSize(self.logicalIndex(idx_vis_start))
+		
+		
+#		print("MOVING")
+		super().moveSection(idx_vis_start, idx_vis_dest)
+
+		self.resizeSection(self.logicalIndex(idx_vis_start), width_dest)
+		self.resizeSection(self.logicalIndex(idx_vis_dest), width_start)
 
 
 # NOTE: This works for column selection but ruins column dragging
