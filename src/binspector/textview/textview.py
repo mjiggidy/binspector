@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from . import textviewproxymodel, textviewheader
+from . import textviewheader
 
 from ..core.config import BSTextViewModeConfig
 from ..utils import columnselect
@@ -122,19 +122,6 @@ class BSBinTextView(QtWidgets.QTreeView):
 
 		menu.popup(self.header().mapToGlobal(point))
 
-		#print(menu, "at", point)
-
-
-#	@QtCore.Slot(int, int, int)
-#	def setBinColumnWidth(self, idx_logical:int, old_width:int, new_width:int):
-#
-#		last_known_width = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
-#
-#		if new_width == last_known_width:
-#			return
-#		
-#		return self.model().setHeaderData(idx_logical, QtCore.Qt.Orientation.Horizontal, new_width, binviewitemtypes.BSBinViewColumnInfoRole.ColumnWidthRole)
-
 	###
 
 	@QtCore.Slot(int, int, int)
@@ -157,7 +144,7 @@ class BSBinTextView(QtWidgets.QTreeView):
 
 
 		if col_logical_old == col_logical_new:
-#			print("Source and destination logical indeces are the same")
+			logging.getLogger(__name__).debug("Not moving columns: Source and destination logical indeces are the same (%s)", col_logical_old)
 			return
 
 #		moving_column_name = self.model().headerData(col_logical_old, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
@@ -196,7 +183,6 @@ class BSBinTextView(QtWidgets.QTreeView):
 		self.registerCustomDelegates()
 
 	def setSelectionModel(self, selectionModel):
-#		return
 
 		if selectionModel == self.selectionModel():
 			return
@@ -212,16 +198,13 @@ class BSBinTextView(QtWidgets.QTreeView):
 		if self.model() == model:
 			return
 		
-#		elif not isinstance(model, textviewproxymodel.BSBTextViewSortFilterProxyModel):
-#			raise TypeError(f"Model must be a BSBTextViewSortFilterProxyModel (got {type(model)})")
-		
 		# TODO: Disconnect old model...?
 		if self.model():
 			self.model().disconnect(self)
 
-		model.columnsInserted.connect(self.binColumnsInserted, QtCore.Qt.ConnectionType.QueuedConnection) # NOTE: Queued because QHeader needs to update first
-		model.rowsInserted.connect(self.binItemsInserted)
-		model.modelReset.connect(lambda: self.sortByColumn(-1, QtCore.Qt.SortOrder.AscendingOrder))
+		model.columnsInserted .connect(self.binColumnsInserted, QtCore.Qt.ConnectionType.QueuedConnection) # NOTE: Queued because QHeader needs to update first
+		model.rowsInserted    .connect(self.binItemsInserted)
+		model.modelReset      .connect(lambda: self.sortByColumn(-1, QtCore.Qt.SortOrder.AscendingOrder))
 #		model.modelReset.connect(lambda: self.binColumnsInserted(QtCore.QModelIndex(), 0, self.model().columnCount(QtCore.QModelIndex())), QtCore.Qt.ConnectionType.QueuedConnection)
 #		model.headerDataChanged.connect(self.updateBinColumns)
 
