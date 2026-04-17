@@ -147,15 +147,15 @@ class BSBinTextView(QtWidgets.QTreeView):
 			logging.getLogger(__name__).error("Source and destination visual indexes are the same")
 			return
 
+		# Determine the new LOGICAL index, based on the visual left neighbor's logical index + 1
 		col_logical_new = (self.header().logicalIndex(col_vis_new - 1) + 1) if col_vis_new > 0 else 0
 
 		if col_logical_old == col_logical_new:
 #			print("Source and destination logical indeces are the same")
 			return
 
-		moving_column_name = self.model().headerData(col_logical_old, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
-		left_column_name   = self.model().headerData(col_logical_new-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if col_logical_new > 0 else "<<FRONT>>"
-
+#		moving_column_name = self.model().headerData(col_logical_old, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+#		left_column_name   = self.model().headerData(col_logical_new-1, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole) if col_logical_new > 0 else "<<FRONT>>"
 #		print(f"Treeview asks the proxy model to move {moving_column_name} to after {left_column_name} ({col_logical_old} -> {col_logical_new})")
 		
 		was_moved = self.model().moveColumn(QtCore.QModelIndex(), col_logical_old, QtCore.QModelIndex(), col_logical_new)
@@ -163,7 +163,17 @@ class BSBinTextView(QtWidgets.QTreeView):
 		if was_moved:
 			# AAAAAAAAAH HA HA HAAAAA I FUCKIN GOT IT BITCCHCHCHCHCHCHHHHHHHH YEAAAAAH BOIIIIIII
 			# Undo the visual move here.  Yes this triggers another move request but it gets stopped there because of identical indexes yesssss
+			width_vis_new = self.header().sectionSize(self.header().logicalIndex(col_vis_new))
+			width_vis_old = self.header().sectionSize(self.header().logicalIndex(col_vis_old))
+
 			self.header().moveSection(col_vis_new, col_vis_old)
+
+			# Restore column widths
+			# NOTE: May want to hook this into a generic sections moved thing,
+			# so far this doesn't work when columns are moved by other means like the bin view editor
+			
+			self.header().resizeSection(self.header().logicalIndex(col_vis_new), width_vis_new)
+			self.header().resizeSection(self.header().logicalIndex(col_vis_old), width_vis_old)
 		
 		return False
 
