@@ -139,7 +139,7 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		# Gather required data
 
-		script_text     = index.data(role=binitemtypes.BSBinItemDataRoles.ScriptNotesRole) or "Nah"
+		script_text     = index.data(role=binitemtypes.BSBinItemDataRoles.ScriptNotesRole)
 		item_delegate   = self._delegate_provider.delegateForColumn(index.column())
 		row_is_selected = self.selectionModel().isSelected(index)
 
@@ -153,13 +153,13 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		script_rect = QtCore.QRectF(
 			QtCore.QPointF(
-				offset_left + item_delegate.itemPadding().left(),
+				offset_left,# + item_delegate.itemPadding().left(),
 				option.rect.top() + item_delegate.itemPadding().top() + option.fontMetrics.height() + item_delegate.itemPadding().top(),
 			),
 
 			QtCore.QPointF(
 				option.rect.right() - item_delegate.itemPadding().right(),
-				option.rect.bottom() - item_delegate.itemPadding().top(),
+				option.rect.bottom() - item_delegate.itemPadding().top() - 3,
 			)
 		)
 
@@ -177,7 +177,7 @@ class BSBinScriptView(textview.BSBinTextView):
 
 		brush = QtGui.QBrush()
 		brush.setColor(option.palette.window().color())
-		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern)
+		brush.setStyle(QtCore.Qt.BrushStyle.SolidPattern if row_is_selected else QtCore.Qt.BrushStyle.NoBrush)
 
 		painter.save()
 		
