@@ -246,11 +246,12 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		# Entering Script View Mode
 		# Sync headers over to Script
-#		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
-#			pass
+		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
 
-#			self._viewmode_script.syncFromHeader(self._viewmode_text.header())
-			#self._viewmode_script.adjustFirstItemPadding()
+			for col in filter(lambda c:  not self._viewmode_text.header().isSectionHidden(c), range(self._viewmode_text.header().count())):
+
+				col_size = self._viewmode_text.header().sectionSize(col)
+				self._viewmode_script.header().resizeSection(col+1, col_size)
 
 		# Leaving Frame Mode
 		# Sync selection back to selection model
