@@ -1,12 +1,11 @@
 from PySide6 import QtCore
 import avbutils
 
-from ..binitems import binitemtypes
 from ..binview  import binviewitemtypes
 
 
 class BSScriptViewProxyModel(QtCore.QAbstractProxyModel):
-	"""Because of the frame thing.  You know."""
+	"""Adds a placeholder frame column"""
 
 	ADDITIONAL_COLUMNS = 1
 	DEFAULT_ITEM_FLAGS = QtCore.Qt.ItemFlag.ItemIsSelectable | QtCore.Qt.ItemFlag.ItemIsEnabled
@@ -21,6 +20,81 @@ class BSScriptViewProxyModel(QtCore.QAbstractProxyModel):
 			display_name = "",
 			is_hidden    = False
 		)
+
+	def setSourceModel(self, sourceModel:QtCore.QAbstractItemModel):
+
+		if self.sourceModel() == sourceModel:
+			return
+		
+		if self.sourceModel() is not None:
+			self.sourceModel().disconnect(self)
+
+		sourceModel.dataChanged             .connect(self.sourceDataChanged)
+		sourceModel.headerDataChanged       .connect(self.sourceHeaderDataChanged)
+
+		sourceModel.columnsAboutToBeInserted.connect(self.sourceColumnsAboutToBeInserted)
+		sourceModel.columnsInserted         .connect(self.columnsInserted)
+		sourceModel.columnsAboutToBeRemoved .connect(self.sourceColumnsAboutToBeRemoved)
+		sourceModel.columnsRemoved          .connect(self.columnsRemoved)
+
+		sourceModel.rowsAboutToBeInserted   .connect(self.sourceRowsAboutToBeInserted)
+		sourceModel.rowsInserted            .connect(self.rowsInserted)
+		sourceModel.rowsAboutToBeRemoved    .connect(self.sourceRowsAboutToBeRemoved)
+		sourceModel.rowsRemoved             .connect(self.rowsRemoved)
+
+		sourceModel.layoutAboutToBeChanged  .connect(self.layoutAboutToBeChanged)
+		sourceModel.layoutChanged           .connect(self.layoutChanged)
+
+		sourceModel.modelAboutToBeReset     .connect(self.modelAboutToBeReset)
+		sourceModel.modelReset              .connect(self.modelReset)
+
+		return super().setSourceModel(sourceModel)
+	
+	# Source model mapping
+	
+	@QtCore.Slot(QtCore.Qt.Orientation, int, int)
+	def sourceHeaderDataChanged(self, orientation:QtCore.Qt.Orientation, first:int, last:int):
+		self.headerDataChanged.emit(orientation, first + self.ADDITIONAL_COLUMNS, last + self.ADDITIONAL_COLUMNS)
+	
+	@QtCore.Slot(QtCore.QModelIndex, QtCore.QModelIndex, list)
+	def sourceDataChanged(self, topLeft:QtCore.QModelIndex, bottomRight:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]):
+		self.dataChanged.emit(self.mapFromSource(topLeft), self.mapFromSource(bottomRight), roles)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceColumnsAboutToBeInserted(self, parent:QtCore.QModelIndex, first:int, last:int):
+		self.beginInsertColumns(QtCore.QModelIndex(), first + self.ADDITIONAL_COLUMNS, last + self.ADDITIONAL_COLUMNS)
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceColumnsAboutToBeRemoved(self, parent:QtCore.QModelIndex, first:int, last:int):
+		self.beginRemoveColumns(QtCore.QModelIndex(), first + self.ADDITIONAL_COLUMNS, last + self.ADDITIONAL_COLUMNS)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceRowsAboutToBeInserted(self, parent:QtCore.QModelIndex, first:int, last:int):
+		self.beginInsertRows(QtCore.QModelIndex(), first, last)
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceRowsAboutToBeRemoved(self, parent:QtCore.QModelIndex, first:int, last:int):
+		self.beginRemoveRows(QtCore.QModelIndex(), first, last)
+
+	def mapFromSource(self, sourceIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
+
+		if not sourceIndex.isValid() or not self.sourceModel():
+			return QtCore.QModelIndex()
+
+		return self.index(sourceIndex.row(), sourceIndex.column() + self.ADDITIONAL_COLUMNS, QtCore.QModelIndex())
+	
+	def mapToSource(self, proxyIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
+		
+		if not proxyIndex.isValid() or not self.sourceModel():
+			return QtCore.QModelIndex()
+		
+		if proxyIndex.column() < self.ADDITIONAL_COLUMNS:
+			return QtCore.QModelIndex()
+		
+		return self.sourceModel().index(proxyIndex.row(), proxyIndex.column() - self.ADDITIONAL_COLUMNS, QtCore.QModelIndex())
+	
+
+	# Proxy model modifications
 
 	def parent(self, child:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		return QtCore.QModelIndex()
@@ -85,20 +159,3 @@ class BSScriptViewProxyModel(QtCore.QAbstractProxyModel):
 			return self.DEFAULT_ITEM_FLAGS
 		
 		return self.mapToSource(proxyIndex).flags()
-		
-	def mapFromSource(self, sourceIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
-
-		if not sourceIndex.isValid() or not self.sourceModel():
-			return QtCore.QModelIndex()
-
-		return self.index(sourceIndex.row(), sourceIndex.column() + self.ADDITIONAL_COLUMNS, QtCore.QModelIndex())
-	
-	def mapToSource(self, proxyIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
-		
-		if not proxyIndex.isValid() or not self.sourceModel():
-			return QtCore.QModelIndex()
-		
-		if proxyIndex.column() < self.ADDITIONAL_COLUMNS:
-			return QtCore.QModelIndex()
-		
-		return self.sourceModel().index(proxyIndex.row(), proxyIndex.column() - self.ADDITIONAL_COLUMNS, QtCore.QModelIndex())
