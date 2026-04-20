@@ -31,6 +31,7 @@ class BSBinScriptView(textview.BSBinTextView):
 		)
 
 		self.header().setSectionsMovable(False)
+		self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
 
 		self._delegate_provider.setUniqueDelegateForField(avbutils.bins.BinColumnFieldIDs.Frame, self._frame_delegate)
 

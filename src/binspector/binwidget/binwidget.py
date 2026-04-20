@@ -245,13 +245,22 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			)
 
 		# Entering Script View Mode
-		# Sync headers over to Script
 		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
 
+			# Sync header widths
 			for col in filter(lambda c:  not self._viewmode_text.header().isSectionHidden(c), range(self._viewmode_text.header().count())):
 
 				col_size = self._viewmode_text.header().sectionSize(col)
 				self._viewmode_script.header().resizeSection(col+1, col_size)
+
+#			self._viewmode_script.selectionModel().clearSelection()
+
+			self._viewmode_script.selectionModel().select(
+				self._test_scriptmodel.mapSelectionFromSource(
+					self._viewmode_text.selectionModel().selection()
+				),
+				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect,
+			)
 
 		# Leaving Frame Mode
 		# Sync selection back to selection model
