@@ -107,12 +107,16 @@ class BSFrameThumbnailDelegate(BSGenericItemDelegate):
 
 	def sizeHint(self, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> QtCore.QSize:
 
+		self.initStyleOption(option, index)
+
+		# ROUGHLY maintains one line visible in the script comment box
+		min_height = self._padding.top() + option.fontMetrics.height() + self._padding.top() + option.fontMetrics.height() + self._padding.bottom()
+
 		size = QtCore.QSizeF(
 			self._aspect_ratio.width()  * self._frame_scale + self._padding.left() + self._padding.right(),
-			self._aspect_ratio.height() * self._frame_scale + self._padding.top()  + self._padding.bottom()
+			max(min_height, self._aspect_ratio.height() * self._frame_scale + self._padding.top()  + self._padding.bottom())
 		).toSize()
-
-#		print("** RETURNING ", size)
+		
 		return size
 
 	def setAspectRatio(self, aspect_ratio:QtCore.QSize|QtCore.QSizeF):
