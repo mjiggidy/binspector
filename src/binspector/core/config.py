@@ -72,8 +72,9 @@ class BSFrameViewModeConfig:
 class BSScriptViewModeConfig:
 	"""Bin Script View Mode Config"""
 
-	DEFAULT_SCRIPT_ZOOM_RANGE = avbutils.bins.THUMB_SCRIPT_MODE_RANGE
-	DEFAULT_SCRIPT_ZOOM_START = avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start
+	DEFAULT_SCRIPT_ZOOM_RANGE   = avbutils.bins.THUMB_SCRIPT_MODE_RANGE
+	DEFAULT_SCRIPT_ZOOM_START   = avbutils.bins.THUMB_SCRIPT_MODE_RANGE.start
+	DEFAULT_SCRIPT_ASPECT_RATIO = QtCore.QSizeF(16,9)
 	DEFAULT_ITEM_PADDING:QtCore.QMargins = QtCore.QMargins(16,4,16,4)
 	"""Default padding inside view item"""
 

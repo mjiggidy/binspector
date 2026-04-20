@@ -21,11 +21,14 @@ class BSBinScriptView(textview.BSBinTextView):
 	sig_frame_scale_changed = QtCore.Signal(float)
 	sig_frame_size_changed  = QtCore.Signal(QtCore.QSize)
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, frame_scale:int|None=None, aspect_ratio:QtCore.QSize|QtCore.QSizeF|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 		
-		self._frame_delegate     = itemdelegates.BSFrameThumbnailDelegate(aspect_ratio=QtCore.QSizeF(16, 9), frame_scale=BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_START*100)
+		self._frame_delegate     = itemdelegates.BSFrameThumbnailDelegate(
+			aspect_ratio = aspect_ratio or BSScriptViewModeConfig.DEFAULT_SCRIPT_ASPECT_RATIO,
+			frame_scale  = frame_scale  or BSScriptViewModeConfig.DEFAULT_SCRIPT_ZOOM_START
+		)
 
 		self.header().setSectionsMovable(False)
 
