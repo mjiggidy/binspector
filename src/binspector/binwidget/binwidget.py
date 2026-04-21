@@ -222,6 +222,76 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		
 		return self._viewmode_script
 	
+	def beginChangeViewMode(self):
+
+		current_view_mode = self.viewMode()
+
+		if current_view_mode == avbutils.BinDisplayModes.FRAME:
+
+			# Sync selection back to selection model
+
+			self._selection_model.clearSelection()
+
+			item_selection = QtCore.QItemSelection()
+
+			for row, item in enumerate(self._viewmode_frame.scene()._bin_items):
+
+				if not item.isSelected():
+					continue
+
+				item_selection.append(QtCore.QItemSelectionRange(
+					self._bin_model_final.index(row, 0, QtCore.QModelIndex())
+				))
+			
+			self._selection_model.select(
+				item_selection,
+				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect | \
+				QtCore.QItemSelectionModel.SelectionFlag.Rows
+			)
+		
+		if current_view_mode == avbutils.BinDisplayModes.SCRIPT:
+
+			# Sync selection back to selection model
+
+			self._selection_model.select(
+				self._viewmode_script.model().mapSelectionToSource(
+					self._viewmode_script.selectionModel().selection()
+				),
+				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect
+			)
+	
+	def viewModeChanged(self):
+		
+		current_view_mode = self.viewMode()
+
+		if current_view_mode == avbutils.bins.BinDisplayModes.FRAME:
+
+			self._viewmode_frame.scene().setSelectedItems(
+				set(x.row() for x in self._selection_model.selectedIndexes())
+			)
+
+		elif current_view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
+
+			# Sync header widths
+			for col in filter(
+				lambda c: not self._viewmode_text.header().isSectionHidden(c),
+				range(self._viewmode_text.header().count())
+			):
+
+				col_size = self._viewmode_text.header().sectionSize(col)
+				self._viewmode_script.header().resizeSection(col+1, col_size)
+
+			# Sync selection models
+			self._viewmode_script.selectionModel().select(
+				self._test_scriptmodel.mapSelectionFromSource(
+					self._viewmode_text.selectionModel().selection()
+				),
+				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect,
+			)
+
+		self.sig_view_mode_changed.emit(current_view_mode)
+
+	
 	@QtCore.Slot(object)
 	def setViewMode(self, view_mode:avbutils.BinDisplayModes):
 		"""Set the current bin view mode"""
@@ -233,53 +303,58 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		if old_view_mode == view_mode:
 			return
 
+		self.beginChangeViewMode()
+
 		self._section_main.setCurrentIndex(view_mode)
 		self._section_top .setViewMode(view_mode)
 
+		self.viewModeChanged()
+
+
 		# Entering Frame View Mode
 		# Sync selected items from selection model
-		if view_mode == avbutils.bins.BinDisplayModes.FRAME:
-			
-			self._viewmode_frame.scene().setSelectedItems(
-				list(x.row() for x in self._selection_model.selectedRows())
-			)
-
-		# Entering Script View Mode
-		elif view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
-
-			# Sync header widths
-			for col in filter(lambda c:  not self._viewmode_text.header().isSectionHidden(c), range(self._viewmode_text.header().count())):
-
-				col_size = self._viewmode_text.header().sectionSize(col)
-				self._viewmode_script.header().resizeSection(col+1, col_size)
-
-#			self._viewmode_script.selectionModel().clearSelection()
-
-			self._viewmode_script.selectionModel().select(
-				self._test_scriptmodel.mapSelectionFromSource(
-					self._viewmode_text.selectionModel().selection()
-				),
-				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect,
-			)
+#		if view_mode == avbutils.bins.BinDisplayModes.FRAME:
+#			
+#			self._viewmode_frame.scene().setSelectedItems(
+#				list(x.row() for x in self._selection_model.selectedRows())
+#			)
+#
+#s		# Entering Script View Mode
+#s		if view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
+#s
+#s			# Sync header widths
+#s			for col in filter(lambda c:  not self._viewmode_text.header().isSectionHidden(c), range(self._viewmode_text.header().count())):
+#s
+#s				col_size = self._viewmode_text.header().sectionSize(col)
+#s				self._viewmode_script.header().resizeSection(col+1, col_size)
+#s
+#s#			self._viewmode_script.selectionModel().clearSelection()
+#s
+#s			self._viewmode_script.selectionModel().select(
+#s				self._test_scriptmodel.mapSelectionFromSource(
+#s					self._viewmode_text.selectionModel().selection()
+#s				),
+#s				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect,
+#s			)
 
 		# Leaving Frame Mode
 		# Sync selection back to selection model
-		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
+#		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
+#
+#			self._selection_model.clearSelection()
+#
+#			for row, item in enumerate(self._viewmode_frame.scene()._bin_items):
+#
+#				if not item.isSelected():
+#					continue
+#
+#				self._selection_model.select(
+#					self._bin_model_final.index(row, 0, QtCore.QModelIndex()),
+#					QtCore.QItemSelectionModel.SelectionFlag.Select | \
+#					  QtCore.QItemSelectionModel.SelectionFlag.Rows
+#				)
 
-			self._selection_model.clearSelection()
 
-			for row, item in enumerate(self._viewmode_frame.scene()._bin_items):
-
-				if not item.isSelected():
-					continue
-
-				self._selection_model.select(
-					self._bin_model_final.index(row, 0, QtCore.QModelIndex()),
-					QtCore.QItemSelectionModel.SelectionFlag.Select | \
-					  QtCore.QItemSelectionModel.SelectionFlag.Rows
-				)
-
-		self.sig_view_mode_changed.emit(view_mode)
 
 	def viewMode(self) -> avbutils.BinDisplayModes:
 		"""Current view mode"""
