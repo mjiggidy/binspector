@@ -3,7 +3,7 @@ import avb
 from PySide6 import QtCore, QtWidgets
 
 from binspector.binview import binviewitemtypes
-from binspector.binviewprovider import binviewsources, providermodel, providerstorage
+from binspector.binviewprovider import binviewsources, providermodel, storagemodel
 from binspector.widgets import binviewcombobox
 
 # Hack me bra
@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
 	binview_provider_model = providermodel.BSBinViewProviderModel()
 
-	folder_watcher = providerstorage.BSBinViewStorageManager(parent=app, base_path=DEFAULT_FOLDER)
+	folder_watcher = storagemodel.BSBinViewStorageManager(parent=app, base_path=DEFAULT_FOLDER)
 	folder_watcher.setRefreshInterval(5_000)
 	folder_watcher.sig_binviews_refreshed.connect(updateBinViewFileList)
 	
