@@ -136,8 +136,10 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		save_name = self._promptForBinViewName()
 
-		if save_name:
-			self.sig_export_binview_requested.emit(binview_info, save_name)
+		if not save_name:
+			return
+		
+		self._bin_view_provider.saveAsStoredBinView(binview_info, save_name)
 
 	@QtCore.Slot()
 	def requestDeleteBinView(self):
@@ -157,7 +159,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 			
 			return
 		
-		self.sig_delete_binview_requested.emit(binview_source.name())
+		self._bin_view_provider.deleteStoredBinViewSource(binview_source)
 
 	def _isValidFileName(self, filename:str) -> bool:
 

@@ -6,7 +6,7 @@ import qtlogrelay
 from   PySide6 import QtCore, QtGui, QtWidgets
 from   os import PathLike
 
-from ..binviewprovider import providerstorage, binviewsources
+from ..binviewprovider import binviewsources, storagemodel
 
 from . import settings, config
 from ..managers import windows, software_updates
@@ -14,6 +14,7 @@ from ..widgets  import mainwindow, settingswindow
 from ..logs   import logmodels, logwidget
 from ..res      import translations
 from ..binview  import binviewitemtypes
+from ..binviewprovider import storagemodel
 
 BIN_VIEW_PATH = "binviews"
 
@@ -67,7 +68,7 @@ class BSMainApplication(QtWidgets.QApplication):
 		# Restore user settings for session
 		self._man_software_updates.setAutoCheckEnabled(self._man_settings.softwareUpdateAutocheckEnabled())
 
-		self._bin_view_storage_model = QtWidgets.QFileSystemModel(parent=self)
+		self._bin_view_storage_model = storagemodel.BSFileSystemModel(parent=self)
 
 		self._setupBinViewStorage()
 		

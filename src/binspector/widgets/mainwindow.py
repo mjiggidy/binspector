@@ -352,8 +352,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._bin_view_model.sig_bin_view_modified              .connect(lambda bv: self.activeBinViewChanged(bv, True))
 		
 		# Bin View Editor
-		self._tool_binview.sig_export_binview_requested         .connect(self.exportBinView)
-		self._tool_binview.sig_delete_binview_requested         .connect(self.deleteBinView)
+#		self._tool_binview.sig_export_binview_requested         .connect(self.exportBinView)
+#		self._tool_binview.sig_delete_binview_requested         .connect(self.deleteBinView)
 		self._tool_binview.sig_focus_column_requested           .connect(self._bin_widget.focusBinColumn)
 
 		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(self.binViewSelected)
@@ -675,21 +675,21 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		event.accept()
 		return True
 	
-	@QtCore.Slot(object)
-	@QtCore.Slot(object, str)
-	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo, with_name:str|None=None):
-		"""Export the current binview"""
+#	@QtCore.Slot(object)
+#	@QtCore.Slot(object, str)
+#	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo, with_name:str|None=None):
+#		"""Export the current binview"""
+#
+#		if with_name:
+#			binview_info = dataclasses.replace(binview_info, name=with_name)
+#
+#		self.sig_request_export_bin_view.emit(binview_info)
 
-		if with_name:
-			binview_info = dataclasses.replace(binview_info, name=with_name)
-
-		self.sig_request_export_bin_view.emit(binview_info)
-
-	@QtCore.Slot(str)
-	def deleteBinView(self, binview_name:str):
-
-		for binview_info in self._binview_provider.storedBinViewSources():
-
-			if binview_info.name() == binview_name:
-				self.sig_request_delete_bin_view.emit(binview_info)
-
+#	@QtCore.Slot(str)
+#	def deleteBinView(self, binview_name:str):
+#
+#		for binview_info in self._binview_provider.storedBinViewSources():
+#
+#			if binview_info.name() == binview_name:
+#				self.sig_request_delete_bin_view.emit(binview_info)
+#
