@@ -59,13 +59,17 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		#self._setupApplicationMenu()
 
-		self._man_binview_storage = providerstorage.BSBinViewStorageManager(base_path=self._path_local_storage)
-		self._man_binview_storage.setRefreshInterval(providerstorage.DEFAULT_REFRESH_RATE_MSEC)
+#		self._man_binview_storage = providerstorage.BSBinViewStorageManager(base_path=self._path_local_storage)
+#		self._man_binview_storage.setRefreshInterval(providerstorage.DEFAULT_REFRESH_RATE_MSEC)
 
 		self._setupSignals()
 
 		# Restore user settings for session
 		self._man_software_updates.setAutoCheckEnabled(self._man_settings.softwareUpdateAutocheckEnabled())
+
+		self._bin_view_storage_model = QtWidgets.QFileSystemModel(parent=self)
+
+		self._setupBinViewStorage()
 		
 	def _setupSignals(self):
 
@@ -93,6 +97,29 @@ class BSMainApplication(QtWidgets.QApplication):
 		self._actionmanager.fileBrowserAction().triggered.connect(lambda: self.createMainWindow(show_file_browser=True))
 		self._actionmanager.showSettingsWindow().triggered.connect(self.showSettingsWindow)
 		self._actionmanager.quitApplicationAction().triggered.connect(self.exit)
+
+	def _setupBinViewStorage(self):
+
+
+		path_binviews = QtCore.QDir(self._path_local_storage).filePath(BIN_VIEW_PATH)
+		logging.getLogger(__name__).debug("Setting up binview storage provider at %s", QtCore.QDir.toNativeSeparators(path_binviews))
+
+		if not QtCore.QFileInfo(path_binviews).isDir():
+
+			logging.getLogger(__name__).debug("Creating non-existing dir: %s", QtCore.QDir.toNativeSeparators(path_binviews))
+			
+			if not QtCore.QDir().mkdir(path_binviews):
+				logging.getLogger(__name__).error("Could not create directory for binview storage at %s: ", path_binviews)
+
+		self._bin_view_storage_model.setFilter(
+			QtCore.QDir.Filter.Files | \
+			QtCore.QDir.Filter.NoDotAndDotDot
+		)
+		
+		self._bin_view_storage_model.setRootPath(
+			QtCore.QDir(self._path_local_storage).filePath(BIN_VIEW_PATH)
+		)
+
 
 	def _getLocalStorage(self, local_path:PathLike|None=None):
 		"""Setup local storage for user data"""
@@ -252,9 +279,11 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.binLoadingSignalManger().sig_begin_loading.connect(self.setUpdateCheckDisabled)
 		window.binLoadingSignalManger().sig_done_loading.connect(self.setUpdateCheckEnabled)
 
-		window.binViewProviderModel().addStoredBinViewSources(self._man_binview_storage.lastBinViews())
-		self._man_binview_storage.sig_binviews_added.connect(window.binViewProviderModel().addStoredBinViewSources)
-		self._man_binview_storage.sig_binviews_removed.connect(window.binViewProviderModel().removeBinViewSources)
+		window.binViewProviderModel().setStorageModel(self._bin_view_storage_model)
+
+#		window.binViewProviderModel().addStoredBinViewSources(self._man_binview_storage.lastBinViews())
+#		self._man_binview_storage.sig_binviews_added.connect(window.binViewProviderModel().addStoredBinViewSources)
+#		self._man_binview_storage.sig_binviews_removed.connect(window.binViewProviderModel().removeBinViewSources)
 
 
 		logging.getLogger(__name__).debug("Created %s", window.winId())
@@ -291,7 +320,8 @@ class BSMainApplication(QtWidgets.QApplication):
 	def exportBinView(self, binview_info:binviewitemtypes.BSBinViewInfo):
 
 		try:
-			output_path = self._man_binview_storage.writeStoredBinView(binview_info)
+			print("Would totally export here")
+			#output_path = self._man_binview_storage.writeStoredBinView(binview_info)
 		
 		except Exception as e:
 
@@ -312,7 +342,8 @@ class BSMainApplication(QtWidgets.QApplication):
 	def deleteBinView(self, binview_source:binviewsources.BSBinViewSourceFile):
 
 		try:
-			self._man_binview_storage.deleteStoredBinView(binview_source)
+			print("Would totally delete here")
+			#self._man_binview_storage.deleteStoredBinView(binview_source)
 		
 		except Exception as e:
 

@@ -1,5 +1,5 @@
-import typing, dataclasses
-from PySide6 import QtCore, QtGui
+import typing, dataclasses, logging
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from . import binviewsources
 
@@ -11,13 +11,147 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 	sig_session_sources_changed = QtCore.Signal()
 	sig_stored_sources_changed  = QtCore.Signal()
+	sig_storage_model_changed   = QtCore.Signal(QtWidgets.QFileSystemModel)
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, storage_model:QtWidgets.QFileSystemModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		self._session_view_sources :list[binviewsources.BSAbstractBinViewSource] = []
 		self._stored_view_sources  :list[binviewsources.BSAbstractBinViewSource] = []
+
+		self._storage_model = None
+		self.setStorageModel(storage_model or QtWidgets.QFileSystemModel(parent=self))
+	
+	def setStorageModel(self, storage_model:QtWidgets.QFileSystemModel):
+
+		self.beginResetModel()
+
+		if self._storage_model == storage_model:
+			return
+		
+		if self._storage_model is not None:
+			self._storage_model.disconnect(self)
+
+		storage_model.rowsInserted .connect(self.storageFoundNewFiles)
+		storage_model.rowsRemoved  .connect(self.storageRemovedFiles)
+		storage_model.modelReset   .connect(self.storageModelReset)
+		storage_model.layoutChanged.connect(self.storageLayoutChanged)
+
+#		storage_model.rowsMoved.connect(self.storageRowsMoved)
+#		storage_model.dataChanged.connect(print)
+		
+		self._storage_model = storage_model
+
+		self.endResetModel()
+
+		self.sig_storage_model_changed.emit(storage_model)
+
+	def storageModel(self) -> QtWidgets.QFileSystemModel:
+
+		return self._storage_model
+	
+	@QtCore.Slot()
+	def storageModelReset(self):
+
+#		print("**RESET")
+		self.beginResetModel()
+		self._stored_view_sources = []
+		self.endResetModel()
+	
+#	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+#	def storageRowsMoved(self, parent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destParent:QtCore.QModelIndex, destStart:int):
+#
+#		print("Ok moving")
+
+	def _storageParentIndex(self) -> QtCore.QModelIndex:
+
+		if not self._storage_model:
+			return QtCore.QModelIndex()
+		
+		return self._storage_model.index(self._storage_model.rootPath())
+
+	@QtCore.Slot()
+	def storageLayoutChanged(self, *args, **kwargs):
+
+#		print("Storage layout changed", *args, **kwargs)
+
+		self.layoutAboutToBeChanged.emit()
+
+		for row in range(
+			self._storage_model.rowCount(self._storageParentIndex())):
+			
+			file_index = self._storage_model.index(row, 0, self._storageParentIndex())
+
+			bin_info = binviewsources.BSBinViewSourceFile(
+				self._storage_model.fileInfo(file_index).absoluteFilePath(),
+				self._storage_model.fileInfo(file_index).completeBaseName()
+				
+			)
+
+			self._stored_view_sources[row] = bin_info
+		
+		self.layoutChanged.emit()
+			
+
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def storageFoundNewFiles(self, parent:QtCore.QModelIndex, first:int, last:int):
+
+		if parent != self._storage_model.index(self._storage_model.rootPath()):
+			return
+		
+		self.beginInsertRows(QtCore.QModelIndex(), first + self._stored_views_row_offset(), last + self._stored_views_row_offset())
+
+		binview_infos = []
+		
+		for new_binview_row in range(first, last+1):
+
+			file_index                  = self._storage_model.index(new_binview_row, 0, parent)
+			file_info:QtCore.QFileInfo  = file_index.data(QtWidgets.QFileSystemModel.Roles.FileInfoRole)
+
+			logging.getLogger(__name__).debug("Found new stored binview: %s", QtCore.QDir.toNativeSeparators(file_info.absoluteFilePath()))
+
+#			print(f"** {file_index=} {file_info=}")
+
+			bin_info = binviewsources.BSBinViewSourceFile(
+				file_info.absoluteFilePath(),
+				file_info.completeBaseName()
+				
+			)
+#			print("K")
+
+			binview_infos.append(bin_info)
+
+#		print([b.name() for b in binview_infos])
+
+		self._stored_view_sources[first:first] = binview_infos
+		
+		self.endInsertRows()
+
+#		self._printStorageModel()
+
+#	def _printStorageModel(self):
+#
+#		print("STORAGE MODEL")
+#		print([self._storage_model.index(x, 0, self._storage_model.index(self._storage_model.rootPath())).data(QtWidgets.QFileSystemModel.Roles.FileNameRole) for x in range(self._storage_model.rowCount(self._storage_model.index(self._storage_model.rootPath())))])
+#
+#		print("INFO MODEL")
+#		print([b.name() for b in self._stored_view_sources])
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def storageRemovedFiles(self, parent:QtCore.QModelIndex, first:int, last:int):
+
+		if parent != self._storage_model.index(self._storage_model.rootPath()):
+			return
+		
+		self.beginRemoveRows(QtCore.QModelIndex(), first + self._stored_views_row_offset(), last + self._stored_views_row_offset()+1)
+
+		del self._stored_view_sources[first:last+1]
+
+		self.endRemoveRows()
+
+	######
 	
 	def addSessionBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
 		"""Add a new bin view to session memory."""
@@ -30,70 +164,61 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 		self.sig_session_sources_changed.emit()
 
-	@QtCore.Slot(object)
-	def addStoredBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
-		"""Add a new bin view to stored collection."""
-			
-		return self.addStoredBinViewSources([binview_source])
+#	@QtCore.Slot(object)
+#	def addStoredBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource) -> bool:
+#		"""Add a new bin view to stored collection."""
+#			
+#		return self.addStoredBinViewSources([binview_source])
 
-	@QtCore.Slot(object)
-	def addStoredBinViewSources(self, binview_sources:typing.Iterable[binviewsources.BSAbstractBinViewSource]) -> bool:
-		
-		new_sources = [binview_source for binview_source in binview_sources if binview_source not in self.binViewSources()]
-
-		if not new_sources:
-			return False
-		
-		view_row_offset = self._stored_views_row_offset()
-
-		self.beginInsertRows(QtCore.QModelIndex(), view_row_offset, view_row_offset + len(new_sources) - 1)
-		self._stored_view_sources = new_sources + self._stored_view_sources
-		self.endInsertRows()
-
-		self.sig_stored_sources_changed.emit()
-
-		return True
+#	@QtCore.Slot(object)
+#	def addStoredBinViewSources(self, binview_sources:typing.Iterable[binviewsources.BSAbstractBinViewSource]) -> bool:
+#		
+#		new_sources = [binview_source for binview_source in binview_sources if binview_source not in self.binViewSources()]
+#
+#		if not new_sources:
+#			return False
+#		
+#		view_row_offset = self._stored_views_row_offset()
+#
+#		self.beginInsertRows(QtCore.QModelIndex(), view_row_offset, view_row_offset + len(new_sources) - 1)
+#		self._stored_view_sources = new_sources + self._stored_view_sources
+#		self.endInsertRows()
+#
+#		self.sig_stored_sources_changed.emit()
+#
+#		return True
 	
-	@QtCore.Slot(object)
-	def removeBinViewSources(self, binview_sources:typing.Iterable[binviewsources.BSAbstractBinViewSource]) -> bool:
-
-		# NOTE: This is backwards, should be "remove one calls removeMany" but I'm movin' quick right nah
-
-		for binview_source in binview_sources:
-			self.removeBinViewSource(binview_source)
+#	@QtCore.Slot(object)
+#	def removeBinViewSources(self, binview_sources:typing.Iterable[binviewsources.BSAbstractBinViewSource]) -> bool:
+#
+#		# NOTE: This is backwards, should be "remove one calls removeMany" but I'm movin' quick right nah
+#
+#		for binview_source in binview_sources:
+#			self.removeBinViewSource(binview_source)
 	
-	def removeBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource):
-
-#		print("REMOVAN ", binview_source.path())
-
-
-		print(f"{binview_source} in {self._stored_view_sources}?")
-
-		if binview_source in self._session_view_sources:
-
-			idx_viewsource = self._session_view_sources.index(binview_source)
-
-			# If this is the only binview in the sessions list, I'mma take out the separator too
-			separator_offset = 1 if len(self._session_view_sources) == 1 else 0
-
-			self.beginRemoveRows(QtCore.QModelIndex(), idx_viewsource, idx_viewsource + separator_offset)
-			self._session_view_sources.pop(idx_viewsource)
-			self.endRemoveRows()
-
-		elif binview_source in self._stored_view_sources:
-
-			idx_viewsource = self._stored_view_sources.index(binview_source)
-			
-			# Factor in session views/separators to get the model row
-			idx_modelrow   = idx_viewsource + self._stored_views_row_offset()
-
-			self.beginRemoveRows(QtCore.QModelIndex(), idx_modelrow, idx_modelrow)
-			self._stored_view_sources.pop(idx_viewsource)
-			self.endRemoveRows()
-			self.sig_stored_sources_changed.emit()
-		
-		else:
-			raise ValueError("Bin view source unknown")
+#	def deleteBinViewSource(self, binview_source:binviewsources.BSAbstractBinViewSource):
+#
+#		if binview_source in self._session_view_sources:
+#
+#			idx_viewsource = self._session_view_sources.index(binview_source)
+#
+#			# If this is the only binview in the sessions list, I'mma take out the separator too
+#			separator_offset = 1 if len(self._session_view_sources) == 1 else 0
+#
+#			self.beginRemoveRows(QtCore.QModelIndex(), idx_viewsource, idx_viewsource + separator_offset)
+#			self._session_view_sources.pop(idx_viewsource)
+#			self.endRemoveRows()
+#
+#		elif binview_source in self._stored_view_sources:
+#
+#			idx_viewsource = self._stored_view_sources.index(binview_source)
+#			
+#			self._storage_model.file
+#
+#			self.sig_stored_sources_changed.emit()
+#		
+#		else:
+#			raise ValueError("Bin view source unknown")
 
 	def clearSessionViewSources(self):
 		"""Delete any ephemeral binviews"""
@@ -107,20 +232,20 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 		self.sig_session_sources_changed.emit()
 
-	def clearStoredViewSources(self):
-		"""Delete any permanent binviews"""
-
-		if not len(self._stored_view_sources):
-			return
-		
-		view_row_start = self._stored_views_row_offset()
-		view_row_end   = self._stored_views_row_offset() + len(self._stored_view_sources) - 1
-		
-		self.beginRemoveRows(QtCore.QModelIndex(), view_row_start, view_row_end)
-		self._stored_view_sources = []
-		self.endRemoveRows()
-
-		self.sig_stored_sources_changed.emit()
+#	def clearStoredViewSources(self):
+#		"""Delete any permanent binviews"""
+#
+#		if not len(self._stored_view_sources):
+#			return
+#		
+#		view_row_start = self._stored_views_row_offset()
+#		view_row_end   = self._stored_views_row_offset() + len(self._stored_view_sources) - 1
+#		
+#		self.beginRemoveRows(QtCore.QModelIndex(), view_row_start, view_row_end)
+#		self._stored_view_sources = []
+#		self.endRemoveRows()
+#
+#		self.sig_stored_sources_changed.emit()
 
 	def binViewSourceForRow(self, row:int) -> binviewsources.BSAbstractBinViewSource:
 		"""Get a bin view source given a model row"""
@@ -154,7 +279,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 
 		session_count = len(self._session_view_sources)
 
-		return len(self._session_view_sources) + (1 if session_count > 0 else 0)
+		return session_count + (1 if session_count > 0 else 0)
 	
 	def _index_is_separator(self, index:QtCore.QModelIndex) -> bool:
 
@@ -187,23 +312,22 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		if not index.isValid():
 			return
 		
+		if self._index_is_separator(index):
+			
+			if role == QtCore.Qt.ItemDataRole.AccessibleDescriptionRole:
+				return "separator"
+
+#			if role == QtCore.Qt.ItemDataRole.DisplayRole:
+#				return self.tr("Stored Bin Views")
+			
+			return None
+
+		
 		item = self.binViewSourceForRow(index.row())
 		
 		if role == QtCore.Qt.ItemDataRole.DisplayRole:
-
-			if self._index_is_separator(index):
-				return None
 			
-#			elif item.isModified():
-#				return item.name() + DEFAULT_MODIFIED_SYMBOL
-			
-			else:
-				return item.name()
-
-		elif role == QtCore.Qt.ItemDataRole.AccessibleDescriptionRole:
-		
-			if self._index_is_separator(index):
-				return "separator"
+			return item.name()
 		
 		elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
