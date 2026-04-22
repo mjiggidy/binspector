@@ -18,6 +18,8 @@ class BSBinViewAbstractAdapter(abc.ABC):
 class BSBinViewJsonAdapter(BSBinViewAbstractAdapter):
 	"""JSON Importer/Exporter for a binview"""
 
+	DEFAULT_FILE_EXTENSION = ".json"
+
 	def from_binview(self, binview_info:binviewitemtypes.BSBinViewInfo) -> str:
 		"""Return a JSON-formatted string  representing a given `BSBinViewInfo`"""
 
