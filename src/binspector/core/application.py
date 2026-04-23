@@ -116,6 +116,12 @@ class BSMainApplication(QtWidgets.QApplication):
 			QtCore.QDir.Filter.Files | \
 			QtCore.QDir.Filter.NoDotAndDotDot
 		)
+
+		self._bin_view_storage_model.setNameFilters(
+			["*.json"]
+		)
+
+		self._bin_view_storage_model.setNameFilterDisables(False)
 		
 		self._bin_view_storage_model.setRootPath(
 			QtCore.QDir(self._path_local_storage).filePath(BIN_VIEW_PATH)
