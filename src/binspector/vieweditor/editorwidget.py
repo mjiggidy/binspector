@@ -122,7 +122,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self._btn_view_list_delete.setEnabled(
 			not binview_source.isModified() \
-			and binview_source.name() in (bvs.name() for bvs in self._bin_view_provider.storedBinViewSources())
+			and binview_source.name() in stored_names
 		)
 
 	@QtCore.Slot()
