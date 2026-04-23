@@ -227,7 +227,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		current_view_mode = self.viewMode()
 
-		if current_view_mode == avbutils.BinDisplayModes.FRAME:
+		if current_view_mode == avbutils.BinDisplayModes.LIST:
+
+			self._viewmode_text.setUpdatesEnabled(False)
+
+		elif current_view_mode == avbutils.BinDisplayModes.FRAME:
 
 			# Sync selection back to selection model
 
@@ -249,8 +253,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect | \
 				QtCore.QItemSelectionModel.SelectionFlag.Rows
 			)
+
+			self._viewmode_frame.setUpdatesEnabled(False)
 		
-		if current_view_mode == avbutils.BinDisplayModes.SCRIPT:
+		elif current_view_mode == avbutils.BinDisplayModes.SCRIPT:
 
 			# Sync selection back to selection model
 
@@ -260,16 +266,24 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				),
 				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect
 			)
+
+			self._viewmode_script.setUpdatesEnabled(False)
 	
 	def viewModeChanged(self):
 		
 		current_view_mode = self.viewMode()
 
-		if current_view_mode == avbutils.bins.BinDisplayModes.FRAME:
+		if current_view_mode  == avbutils.bins.BinDisplayModes.LIST:
+
+			self._viewmode_text.setUpdatesEnabled(True)
+
+		elif current_view_mode == avbutils.bins.BinDisplayModes.FRAME:
 
 			self._viewmode_frame.scene().setSelectedItems(
 				set(x.row() for x in self._selection_model.selectedIndexes())
 			)
+
+			self._viewmode_frame.setUpdatesEnabled(True)
 
 		elif current_view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
 
@@ -289,6 +303,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				),
 				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect,
 			)
+
+			self._viewmode_script.setUpdatesEnabled(True)
 
 		self.sig_view_mode_changed.emit(current_view_mode)
 
