@@ -247,8 +247,8 @@ class BSMainApplication(QtWidgets.QApplication):
 		window.sig_request_visit_discussions .connect(lambda: QtGui.QDesktopServices.openUrl("https://github.com/mjiggidy/binspector/discussions/"))
 		window.sig_request_check_updates     .connect(self.showUpdatesWindow)
 		window.sig_bin_changed               .connect(self._man_settings.setLastBinPath)
-		window.sig_request_export_bin_view   .connect(self.exportBinView)
-		window.sig_request_delete_bin_view   .connect(self.deleteBinView)
+#		window.sig_request_export_bin_view   .connect(self.exportBinView)
+#		window.sig_request_delete_bin_view   .connect(self.deleteBinView)
 
 		# Restore Toggle Settings
 		window.binContentsWidget().setBinColumnFiltersDisabled(self._man_settings.allColumnsVisible())
