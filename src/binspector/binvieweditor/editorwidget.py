@@ -71,7 +71,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self.layout().addLayout(self._lay_buttons)
 
-		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
+#		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
 		self._cmb_bin_view_list.sig_binview_source_selected.connect(self.sig_bin_view_source_selected)
 
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
@@ -109,7 +109,9 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if self._bin_view_provider is not None:
 			self._bin_view_provider.disconnect(self)
 		
-		bin_view_provider.sig_stored_sources_changed.connect(self.updateButtonState)
+		bin_view_provider.rowsInserted.connect(self.updateButtonState)
+		bin_view_provider.rowsRemoved .connect(self.updateButtonState)
+		bin_view_provider.modelReset  .connect(self.updateButtonState)
 		
 		self._bin_view_provider = bin_view_provider
 
@@ -119,7 +121,16 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	def updateButtonState(self):
 		"""Update buttons on view change"""
 
-		binview_source:binviewsources.BSAbstractBinViewSource = self._cmb_bin_view_list.currentData()
+#		print("Haha yeah I know oh boy")
+
+		binview_source = self._bin_view_provider.sessionBinViewSources()[0] if self._bin_view_provider.sessionBinViewSources() else None
+
+		if binview_source is None:
+#			print("**Well gall darn")
+			self._btn_view_list_delete.setEnabled(False)
+			return
+
+#		print(f"{binview_source.name()=} in {[b.name() for b in self._bin_view_provider.storedBinViewSources()]} ?  {binview_source.name() in (bvs.name() for bvs in self._bin_view_provider.storedBinViewSources())}")
 
 		self._btn_view_list_delete.setEnabled(
 			binview_source is not None \
