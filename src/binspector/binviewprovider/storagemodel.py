@@ -42,6 +42,9 @@ class BSFileSystemModel(QtWidgets.QFileSystemModel):
 			return False
 		
 		logging.getLogger(__name__).info("Moved file to trash")
+		
+		# Force a lil refresharooni
+		self.setRootPath(self.rootPath())
 
 	
 	def writeToFile(self, file_name:str, contents:bytes|bytearray|str) -> QtCore.QFileInfo:
@@ -68,5 +71,8 @@ class BSFileSystemModel(QtWidgets.QFileSystemModel):
 			raise OSError(f"Cannot update stored binview: {tempfile_handle.error()}")
 		
 		tempfile_handle.close()
+
+		# Force a lil refresharooni
+		self.setRootPath(self.rootPath())
 		
 		return QtCore.QFileInfo(tempfile_handle)
