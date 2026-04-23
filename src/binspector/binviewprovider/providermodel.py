@@ -93,7 +93,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def storageFoundNewFiles(self, parent:QtCore.QModelIndex, first:int, last:int):
 
-		if parent != self._storage_model.index(self._storage_model.rootPath()):
+		if parent != self._storage_model.rootIndex():
 			return
 		
 		self.beginInsertRows(QtCore.QModelIndex(), first + self._stored_views_row_offset(), last + self._stored_views_row_offset())
@@ -122,7 +122,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def storageRemovedFiles(self, parent:QtCore.QModelIndex, first:int, last:int):
 
-		if parent != self._storage_model.index(self._storage_model.rootPath()):
+		if parent != self._storage_model.rootIndex():
 			return
 		
 		self.beginRemoveRows(QtCore.QModelIndex(), first + self._stored_views_row_offset(), last + self._stored_views_row_offset()+1)
