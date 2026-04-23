@@ -190,12 +190,30 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 			dataclasses.replace(binview_info, name=with_name)
 		).encode(DEFAULT_FILE_ENCODING)
 
-		file_name = with_name + DEFAULT_FILE_EXTENSION
-
-		self._storage_model.writeToFile(
-			file_name = file_name, 
+		file_info = self._storage_model.writeToFile(
+			file_name = with_name + DEFAULT_FILE_EXTENSION, 
 			contents = data
 		)
+
+		if file_info is None:
+
+			logging.getLogger(__name__).error(
+				"Failed to write bin view %s to %s for some reason",
+				with_name,
+				with_name + DEFAULT_FILE_EXTENSION
+			)
+
+			return
+	
+		logging.getLogger(__name__).info(
+			"Wrote bin view %s to %s",
+			with_name,
+			QtCore.QDir.toNativeSeparators(file_info.absoluteFilePath())
+		)
+
+		self.sig_stored_sources_changed.emit()
+		
+		return file_info
 
 	#####
 	# Convenience Methods

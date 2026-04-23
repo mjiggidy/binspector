@@ -75,11 +75,9 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._time_last_load   = QtCore.QElapsedTimer()
 
 		# Define widgets
-		self._bin_widget = binwidget.BSBinContentsWidget(bin_items_model=self._bin_item_model, bin_view_model=self._bin_view_model)
+		self._bin_widget       = binwidget.BSBinContentsWidget(bin_items_model=self._bin_item_model, bin_view_model=self._bin_view_model)
 
-		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(
-			icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY
-		)
+		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
 		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
 		self._tool_sifting     = siftwidget.BSSiftSettingsWidget()
@@ -356,8 +354,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #		self._tool_binview.sig_delete_binview_requested         .connect(self.deleteBinView)
 		self._tool_binview.sig_focus_column_requested           .connect(self._bin_widget.focusBinColumn)
 
-		self._tool_binview.binViewSelector().sig_binview_source_selected              .connect(self.binViewSelected)
-		self._bin_widget.topWidgetBar().binViewSelector().sig_binview_source_selected .connect(self.binViewSelected)
+		self._tool_binview.sig_bin_view_source_selected          .connect(self.binViewSelected)
+		self._bin_widget.sig_bin_view_source_selected            .connect(self.binViewSelected)
 
 
 	##

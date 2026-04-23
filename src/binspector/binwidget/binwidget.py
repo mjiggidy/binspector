@@ -25,15 +25,14 @@ from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptV
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
-	sig_view_mode_changed      = QtCore.Signal(object)
-	sig_bin_palette_changed    = QtCore.Signal(QtGui.QPalette)
-	sig_bin_font_changed       = QtCore.Signal(QtGui.QFont)
-	sig_bin_model_changed      = QtCore.Signal(object)
-	sig_focus_set_on_column    = QtCore.Signal(int)	# Logical column index
-	sig_bin_stats_updated      = QtCore.Signal(str)
-	sig_bin_view_enabled       = QtCore.Signal(bool)
-#	sig_bin_view_model_changed = QtCore.Signal(object)
-	sig_bin_view_enabled       = QtCore.Signal(bool)
+	sig_view_mode_changed        = QtCore.Signal(object)
+	sig_bin_palette_changed      = QtCore.Signal(QtGui.QPalette)
+	sig_bin_font_changed         = QtCore.Signal(QtGui.QFont)
+	sig_bin_model_changed        = QtCore.Signal(object)
+	sig_focus_set_on_column      = QtCore.Signal(int)	# Logical column index
+	sig_bin_stats_updated        = QtCore.Signal(str)
+	sig_bin_view_enabled         = QtCore.Signal(bool)
+	sig_bin_view_source_selected = QtCore.Signal(object)
 
 	def __init__(self, *args, bin_items_model:binitemsmodel.BSBinItemModel, bin_view_model:binviewmodel.BSBinViewModel, **kwargs):
 
@@ -193,6 +192,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._section_top.sig_frame_scale_changed.connect(self._viewmode_frame.setZoom)
 		self._section_top.sig_script_scale_changed.connect(self._viewmode_script.setFrameScale)
+
+		self._section_top.binViewSelector().sig_binview_source_selected.connect(self.sig_bin_view_source_selected)
 
 		# NOTE: Maybe do this different?
 		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())

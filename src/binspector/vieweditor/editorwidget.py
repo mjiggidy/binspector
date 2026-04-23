@@ -20,6 +20,8 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	sig_focus_column_requested   = QtCore.Signal(object)
 	"""User requests the given `BSBinColumnInfo` to be brought into focus"""
 
+	sig_bin_view_source_selected = QtCore.Signal(object)
+
 	def __init__(self, *args, bin_view_provider:providermodel.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -70,6 +72,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self.layout().addLayout(self._lay_buttons)
 
 		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
+		self._cmb_bin_view_list.sig_binview_source_selected.connect(self.sig_bin_view_source_selected)
 
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
 		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
@@ -118,18 +121,17 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		binview_source:binviewsources.BSAbstractBinViewSource = self._cmb_bin_view_list.currentData()
 
-		stored_names = iter(bvs.name() for bvs in self._bin_view_provider.storedBinViewSources())
-
 		self._btn_view_list_delete.setEnabled(
-			not binview_source.isModified() \
-			and binview_source.name() in stored_names
+			binview_source is not None \
+			and not binview_source.isModified() \
+			and binview_source.name() in (bvs.name() for bvs in self._bin_view_provider.storedBinViewSources()) \
 		)
 
 	@QtCore.Slot()
 	def requestExportBinView(self):
 		"""Prepare binview as a dict for export"""
 
-		binview_info = self._view_editor.model().sourceModel().binViewInfo()
+		binview_info:binviewitemtypes.BSBinViewInfo = self._view_editor.model().sourceModel().binViewInfo()
 
 		if binview_info is None:
 			raise ValueError("No bin view to save")
@@ -139,7 +141,19 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if not save_name:
 			return
 		
-		self._bin_view_provider.saveAsStoredBinView(binview_info, save_name)
+		file_info = self._bin_view_provider.saveAsStoredBinView(binview_info, save_name)
+
+		if file_info:
+
+			self.sig_bin_view_source_selected.emit(
+
+				binviewsources.BSBinViewSourceBin(
+					binviewitemtypes.BSBinViewInfo(
+						name = save_name,
+						columns = binview_info.columns
+					)
+				)
+			)
 
 	@QtCore.Slot()
 	def requestDeleteBinView(self):
