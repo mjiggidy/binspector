@@ -1,9 +1,6 @@
-import sys, pathlib
-from PySide6 import QtCore, QtGui, QtWidgets
-from binspector.binviewprovider.providermodel import BSBinViewProviderModel
-from binspector.binviewprovider import binviewsources
-from binspector.binview import binviewitemtypes
-from binspector.widgets import binviewcombobox
+import sys
+from PySide6 import QtCore, QtWidgets
+from binspector.binviewprovider import storagemodel, providermodel
 
 PATH = "/Users/mjordan/Library/Application Support/GlowingPixel/Binspector/binviews"
 
@@ -15,27 +12,29 @@ if __name__ == "__main__":
 	app = QtWidgets.QApplication()
 	app.setStyle("Fusion")
 
-	model_files = QtWidgets.QFileSystemModel()
+	model_files = storagemodel.BSFileSystemModel()
 	model_files.setFilter(
 		QtCore.QDir.Filter.Files | \
 		QtCore.QDir.Filter.NoDotAndDotDot
 	)
+	model_files.setNameFilters(["*.json"])
+	model_files.setNameFilterDisables(False)
 
-	model_provider = BSBinViewProviderModel(storage_model=model_files)
-#	model_provider.addSessionBinViewSource(
-#		binviewsources.BSBinViewSourceBin(
-#			binviewitemtypes.BSBinViewInfo(
-#				"HeeHee",
-#				[]
-#			)
-#		)
-#	)
-	
+	#model_files.rowsRemoved.connect(print)
 	idx_current_path = model_files.setRootPath(PATH)
+	print(model_files.rootPath())
 
-	list_files = binviewcombobox.BSBinViewSelectorComboBox(binview_provider=model_provider)
+	model_provider = providermodel.BSBinViewProviderModel(storage_model=model_files)
+	model_provider.rowsRemoved.connect(print)
+
+#	model_files.rowsInserted.connect(print)
+
+#	idx_current_path = model_files.setRootPath(QtCore.QDir(PATH).absoluteFilePath("binviews"))
+	
+	list_files = QtWidgets.QListView()
 	list_files.setModel(model_provider)
-	#list_files.setRootIndex(idx_current_path)
+#	list_files.setRootIndex(idx_current_path)
 	list_files.show()
 
 	sys.exit(app.exec())
+

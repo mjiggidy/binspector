@@ -6,7 +6,7 @@ from binspector.binitems import binitemsmodel
 from binspector.textview import bincompositemodel
 from binspector.core import binparser
 
-from binspector.vieweditor import editorwidget
+from binspector.binvieweditor import editorwidget
 from binspector.textview import textview
 
 from binspector.binfilters import binviewproxymodel, bindisplayproxymodel
