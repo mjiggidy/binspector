@@ -49,7 +49,7 @@ class BSBinFrameView(QtWidgets.QGraphicsView):
 		# Scrollbar init
 		self.setVerticalScrollBarPolicy  (QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-		self.setCornerWidget(QtWidgets.QSizeGrip(self))
+#		self.setCornerWidget(QtWidgets.QSizeGrip(self))
 
 		self._current_zoom       = 1.0
 		self._zoom_range         = range(100)

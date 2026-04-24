@@ -153,61 +153,61 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._anim_progress.setPropertyName(QtCore.QByteArray.fromStdString("value"))
 		self._anim_progress.setEasingCurve(QtCore.QEasingCurve.Type.Linear)
 
-		grp = QtWidgets.QSizeGrip(self._bin_widget.textView())
-		self._bin_widget.textView().setCornerWidget(grp)
+#		grp = QtWidgets.QSizeGrip(self._bin_widget.textView())
+#		self._bin_widget.textView().setCornerWidget(grp)
 
 		self._bin_widget.setShowColumnEditorAction(self._man_actions._act_toggle_binview_settings)
 		
 		# Apply Bin Settings Toggles
-		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
-			
-			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(act_toggle))
-			btn.setIconSize(QtCore.QSize(8,8))
-			btn.setFixedSize(QtCore.QSize(
-				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
-			))
-			self._bin_widget.scrollbarScaler().sig_size_changed.connect(
-				lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
-			)
-			
-			self._bin_widget.textView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
-
-		# Frame View Toggles
-		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_sys_appearance, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(self._man_actions._act_toggle_sys_appearance))
-		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedSize(QtCore.QSize(
-			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
-		))
-		self._bin_widget.scrollbarScaler().sig_size_changed.connect(
-			lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
-		)
-
-		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
-
-		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False, icon_engine=icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_frame_showall.svg"))
-		btn.setIconSize(QtCore.QSize(8,8))
-		btn.setFixedSize(QtCore.QSize(
-			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
-		))
-		self._bin_widget.scrollbarScaler().sig_size_changed.connect(
-			lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
-		)
-
-		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
-
-		for act_toggle in self._bin_widget.frameView().actions().overlayActions().actions(): #lol
-
-			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(act_toggle))
-			btn.setIconSize(QtCore.QSize(8,8))
-			btn.setFixedSize(QtCore.QSize(
-				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
-			))
-			self._bin_widget.scrollbarScaler().sig_size_changed.connect(
-				lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
-			)
-			
-			self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)			
-
+#		for act_toggle in reversed(self._man_actions.toggleBinSettingsActionGroup().actions()):	
+#			
+#			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(act_toggle))
+#			btn.setIconSize(QtCore.QSize(8,8))
+#			btn.setFixedSize(QtCore.QSize(
+#				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
+#			))
+#			self._bin_widget.scrollbarScaler().sig_size_changed.connect(
+#				lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
+#			)
+#			
+#			self._bin_widget.textView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+#
+#		# Frame View Toggles
+#		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_sys_appearance, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(self._man_actions._act_toggle_sys_appearance))
+#		btn.setIconSize(QtCore.QSize(8,8))
+#		btn.setFixedSize(QtCore.QSize(
+#			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
+#		))
+#		self._bin_widget.scrollbarScaler().sig_size_changed.connect(
+#			lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
+#		)
+#
+#		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+#
+#		btn = buttons.BSPalettedActionPushButton(self._man_actions._act_toggle_show_all_items, show_text=False, icon_engine=icon_engines.BSPalettedSvgIconEngine(":/icons/gui/toggle_frame_showall.svg"))
+#		btn.setIconSize(QtCore.QSize(8,8))
+#		btn.setFixedSize(QtCore.QSize(
+#			*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
+#		))
+#		self._bin_widget.scrollbarScaler().sig_size_changed.connect(
+#			lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
+#		)
+#
+#		self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)
+#
+#		for act_toggle in self._bin_widget.frameView().actions().overlayActions().actions(): #lol
+#
+#			btn = buttons.BSPalettedActionPushButton(act_toggle, show_text=False, icon_engine=icon_providers.getPalettedIconEngine(act_toggle))
+#			btn.setIconSize(QtCore.QSize(8,8))
+#			btn.setFixedSize(QtCore.QSize(
+#				*[self._bin_widget.scrollbarScaler().scrollbarSize()] * 2,
+#			))
+#			self._bin_widget.scrollbarScaler().sig_size_changed.connect(
+#				lambda s, b=btn: b.setFixedSize(QtCore.QSize(s,s))
+#			)
+#			
+#			self._bin_widget.frameView().addScrollBarWidget(btn, QtCore.Qt.AlignmentFlag.AlignLeft)			
+#
 
 		
 	def setupDock(self):

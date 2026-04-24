@@ -145,7 +145,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Scroll bars
 		self._viewmode_text.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		self._viewmode_text.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
-		self._viewmode_text.addScrollBarWidget(self._binstats_text,  QtCore.Qt.AlignmentFlag.AlignLeft)
+		self._viewmode_text.setCornerWidget(QtWidgets.QSizeGrip(self))
 
 		# Signals
 		self._viewmode_text.sig_hide_column_requested.connect(self.hideBinColumn)
@@ -166,6 +166,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Scroll bars
 		self._viewmode_frame .horizontalScrollBar().setStyle(self._proxystyle_hscroll)
 		self._viewmode_frame.addScrollBarWidget(self._binstats_frame, QtCore.Qt.AlignmentFlag.AlignLeft)
+		self._viewmode_frame.setCornerWidget(QtWidgets.QSizeGrip(self))
 		
 		# Signals
 		self._viewmode_frame.sig_zoom_level_changed.connect(self._section_top._sld_frame_scale.setValue)
@@ -183,6 +184,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		# Scroll bars
 		self._viewmode_script.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 		self._viewmode_script.horizontalScrollBar().setStyle(self._proxystyle_hscroll)
+		self._viewmode_script.setCornerWidget(QtWidgets.QSizeGrip(self))
+		
 
 		# Signals
 		self._viewmode_script.sig_frame_scale_changed      .connect(self._section_top._sld_script_scale.setValue)
@@ -279,16 +282,21 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		if current_view_mode  == avbutils.bins.BinDisplayModes.LIST:
 
 			self._viewmode_text.setUpdatesEnabled(True)
+			self._viewmode_text.addScrollBarWidget(self._binstats_text,  QtCore.Qt.AlignmentFlag.AlignLeft)
 
 		elif current_view_mode == avbutils.bins.BinDisplayModes.FRAME:
+
+			self._viewmode_frame.setUpdatesEnabled(True)
 
 			self._viewmode_frame.scene().setSelectedItems(
 				set(x.row() for x in self._selection_model.selectedIndexes())
 			)
 
-			self._viewmode_frame.setUpdatesEnabled(True)
 
 		elif current_view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
+			
+			self._viewmode_script.setUpdatesEnabled(True)
+			self._viewmode_script.addScrollBarWidget(self._binstats_text,  QtCore.Qt.AlignmentFlag.AlignLeft)
 
 			# Sync header widths
 			for col in filter(
@@ -307,7 +315,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect,
 			)
 
-			self._viewmode_script.setUpdatesEnabled(True)
 
 		self.sig_view_mode_changed.emit(current_view_mode)
 
