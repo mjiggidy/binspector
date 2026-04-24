@@ -36,6 +36,10 @@ class BSScrollBarStyle(QtWidgets.QProxyStyle):
 		self.sig_scale_factor_changed.emit(scale_factor)
 		self.sig_size_changed.emit(self.scrollbarSize())
 
+	def scrollbarScaleFactor(self) -> float|int:
+
+		return self._scale_factor
+
 	def scrollbarSize(self, option:QtWidgets.QStyleOption=None, widget:QtWidgets.QWidget=None) -> int:
 		"""Current scrollbar size (pixels)"""
 
