@@ -354,8 +354,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #		self._tool_binview.sig_delete_binview_requested         .connect(self.deleteBinView)
 		self._tool_binview.sig_focus_column_requested           .connect(self._bin_widget.focusBinColumn)
 
-		self._tool_binview.sig_bin_view_source_selected          .connect(self.binViewSelected)
-		self._bin_widget.sig_bin_view_source_selected            .connect(self.binViewSelected)
+		self._tool_binview.sig_bin_view_source_selected          .connect(self.binViewSourceSelected)
+		self._bin_widget.sig_bin_view_source_selected            .connect(self.binViewSourceSelected)
 
 
 	##
@@ -426,10 +426,49 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	##
 
 	@QtCore.Slot(object)
-	def binViewSelected(self, binview_info:binviewsources.BSAbstractBinViewSource):
+	def binViewSourceSelected(self, binview_source:binviewsources.BSAbstractBinViewSource):
 		"""User selected a bin view"""
+
+		try:
 		
-		self._bin_view_model.setBinViewInfo(binview_info.binViewInfo())
+			binview_info = binview_source.binViewInfo()
+		
+		except Exception as e:
+
+#			print(repr(e))
+
+			if isinstance(e, FileNotFoundError):
+				err_informative = self.tr(
+					"The file <code>{file_name}</code> does not appear to exist.\n\nIf this error continues, please try restarting the application."
+				).format_map(
+					{"file_name": QtCore.QFileInfo(binview_source.path()).fileName()}
+				)
+
+			elif isinstance(binview_source, binviewsources.BSBinViewSourceFile):
+				err_informative = self.tr(
+					"The file <code>{file_name}</code> does not appear to be a valid bin view file.\n\nYou may wish to remove it from your user folder."
+				).format_map(
+					{"file_name": QtCore.QFileInfo(binview_source.path()).fileName()}
+				)
+			
+			else:
+				err_informative = self.tr(
+					"The bin view <strong>{binview_name} does not appear to be valid."
+				).format_map(
+					{"binview_name": binview_source.name()}
+				)
+
+			wnd_error_message = QtWidgets.QMessageBox(parent=self)
+			wnd_error_message.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+			
+			wnd_error_message.setText(self.tr("Could Not Load Bin View"))
+			wnd_error_message.setInformativeText(err_informative)
+			wnd_error_message.setDetailedText(str(e))
+
+			wnd_error_message.exec()
+			
+		else:
+			self._bin_view_model.setBinViewInfo(binview_info)
 
 	@QtCore.Slot(object)
 	def activeBinViewChanged(self, binview_info:binviewitemtypes.BSBinViewInfo, is_modified:bool=False):
