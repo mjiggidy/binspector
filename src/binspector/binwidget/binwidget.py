@@ -10,7 +10,7 @@ from binspector.textview import textviewproxymodel
 
 from ..core import icon_registry
 
-from . import proxystyles, scrollwidgets, widgetbars
+from . import featureflags, proxystyles, scrollwidgets, widgetbars
 
 from ..textview import bincompositemodel, textview
 from ..frameview import frameview
@@ -33,6 +33,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_bin_stats_updated        = QtCore.Signal(str)
 	sig_bin_view_enabled         = QtCore.Signal(bool)
 	sig_bin_view_source_selected = QtCore.Signal(object)
+	sig_bin_features_changed     = QtCore.Signal(object)
 
 	def __init__(self, *args, bin_items_model:binitemsmodel.BSBinItemModel, bin_view_model:binviewmodel.BSBinViewModel, **kwargs):
 
@@ -81,6 +82,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._section_top       = widgetbars.BSBinContentsTopWidgetBar()
 		self._section_main      = QtWidgets.QStackedWidget()
+
+		self._enabled_features  = featureflags.BSBinWidgetFeatures.AllFeatures
 		
 		# Main View Mode Widgets
 		self._viewmode_text     = textview.BSBinTextView()
@@ -382,6 +385,20 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	###
 	# Bin Views and Filters
 	###
+
+	@QtCore.Slot(object)
+	def setEnabledFeatures(self, features:featureflags.BSBinWidgetFeatures):
+
+		if self._enabled_features == features:
+			return
+		
+		self._enabled_features = features
+
+		self.sig_bin_features_changed.emit(features)
+	
+	def enabledFeatures(self) -> featureflags.BSBinWidgetFeatures:
+
+		return self._enabled_features
 
 	@QtCore.Slot(avbutils.bins.BinDisplayItemTypes)
 	def setBinDisplayItemTypes(self, item_types:avbutils.bins.BinDisplayItemTypes):
