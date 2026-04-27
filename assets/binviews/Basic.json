@@ -1,0 +1,1212 @@
+{
+	"name": "Basic",
+	"version": "1.0",
+	"columns": [
+		{
+			"field_id": "AFD",
+			"format_id": "Icon",
+			"display_name": "AFD",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MediaStatus",
+			"format_id": "Icon",
+			"display_name": "Media Status",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Color",
+			"format_id": "Strict",
+			"display_name": "Color",
+			"is_hidden": false
+		},
+		{
+			"field_id": "BinItemIcon",
+			"format_id": "Icon",
+			"display_name": "   ",
+			"is_hidden": false
+		},
+		{
+			"field_id": "CFPS",
+			"format_id": "FrameRate",
+			"display_name": "CFPS",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxiliaryTC2",
+			"format_id": "Timecode",
+			"display_name": "Auxiliary TC2",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxiliaryTC4",
+			"format_id": "Timecode",
+			"display_name": "Auxiliary TC4",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxiliaryTC1",
+			"format_id": "Timecode",
+			"display_name": "Auxiliary TC1",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxiliaryTC5",
+			"format_id": "Timecode",
+			"display_name": "Auxiliary TC5",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ColorFraming",
+			"format_id": "Strict",
+			"display_name": "Color Framing",
+			"is_hidden": true
+		},
+		{
+			"field_id": "CreationDate",
+			"format_id": "DateTime",
+			"display_name": "Creation Date",
+			"is_hidden": true
+		},
+		{
+			"field_id": "InkNumber",
+			"format_id": "FrameCount",
+			"display_name": "Ink Number",
+			"is_hidden": true
+		},
+		{
+			"field_id": "InOut",
+			"format_id": "Timecode",
+			"display_name": "IN-OUT",
+			"is_hidden": true
+		},
+		{
+			"field_id": "FPS",
+			"format_id": "FrameRate",
+			"display_name": "FPS",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MarkIn",
+			"format_id": "Timecode",
+			"display_name": "Mark IN",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxiliaryInk",
+			"format_id": "FrameCount",
+			"display_name": "Auxiliary Ink",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MarkOut",
+			"format_id": "Timecode",
+			"display_name": "Mark OUT",
+			"is_hidden": true
+		},
+		{
+			"field_id": "KNMarkIn",
+			"format_id": "FrameCount",
+			"display_name": "KN Mark IN",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Perf",
+			"format_id": "Perf",
+			"display_name": "Perf",
+			"is_hidden": true
+		},
+		{
+			"field_id": "FilmTC",
+			"format_id": "Timecode",
+			"display_name": "Film TC",
+			"is_hidden": true
+		},
+		{
+			"field_id": "KNMarkOut",
+			"format_id": "FrameCount",
+			"display_name": "KN Mark OUT",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AudioSR",
+			"format_id": "UserText",
+			"display_name": "Audio SR",
+			"is_hidden": true
+		},
+		{
+			"field_id": "KNDur",
+			"format_id": "FrameCount",
+			"display_name": "KN Dur",
+			"is_hidden": true
+		},
+		{
+			"field_id": "KNStart",
+			"format_id": "FrameCount",
+			"display_name": "KN Start",
+			"is_hidden": true
+		},
+		{
+			"field_id": "KNEnd",
+			"format_id": "FrameCount",
+			"display_name": "KN End",
+			"is_hidden": true
+		},
+		{
+			"field_id": "KnInOut",
+			"format_id": "FrameCount",
+			"display_name": "KN IN-OUT",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Tape",
+			"format_id": "UserText",
+			"display_name": "Tape",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Project",
+			"format_id": "UserText",
+			"display_name": "Project",
+			"is_hidden": true
+		},
+		{
+			"field_id": "PullOut",
+			"format_id": "UserText",
+			"display_name": "Pullout",
+			"is_hidden": true
+		},
+		{
+			"field_id": "SoundTC",
+			"format_id": "Timecode",
+			"display_name": "Sound TC",
+			"is_hidden": true
+		},
+		{
+			"field_id": "PullIn",
+			"format_id": "UserText",
+			"display_name": "Pullin",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Soundroll",
+			"format_id": "UserText",
+			"display_name": "Soundroll",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Frame",
+			"format_id": "Frame",
+			"display_name": "Frame",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ReelNo",
+			"format_id": "UserText",
+			"display_name": "Reel #",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ShootDate",
+			"format_id": "UserText",
+			"display_name": "Shoot Date",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Take",
+			"format_id": "UserText",
+			"display_name": "Take",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Camroll",
+			"format_id": "UserText",
+			"display_name": "Camroll",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VITC",
+			"format_id": "Timecode",
+			"display_name": "VITC",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Scene",
+			"format_id": "UserText",
+			"display_name": "Scene",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Labroll",
+			"format_id": "UserText",
+			"display_name": "Labroll",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Camera",
+			"format_id": "UserText",
+			"display_name": "Camera",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Slip",
+			"format_id": "Timecode",
+			"display_name": "Slip",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Lock",
+			"format_id": "Icon",
+			"display_name": "Lock",
+			"is_hidden": true
+		},
+		{
+			"field_id": "TapeID",
+			"format_id": "UserText",
+			"display_name": "TapeID",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ModifiedDate",
+			"format_id": "DateTime",
+			"display_name": "Modified Date",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AudioFormat",
+			"format_id": "UserText",
+			"display_name": "Audio File Format",
+			"is_hidden": true
+		},
+		{
+			"field_id": "TC24",
+			"format_id": "Timecode",
+			"display_name": "TC 24",
+			"is_hidden": true
+		},
+		{
+			"field_id": "TC25PD",
+			"format_id": "Timecode",
+			"display_name": "TC 25PD",
+			"is_hidden": true
+		},
+		{
+			"field_id": "TC25",
+			"format_id": "Timecode",
+			"display_name": "TC 25",
+			"is_hidden": true
+		},
+		{
+			"field_id": "TC30",
+			"format_id": "Timecode",
+			"display_name": "TC 30",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AudioBitDepth",
+			"format_id": "Timecode",
+			"display_name": "Audio Bit Depth",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxiliaryTC3",
+			"format_id": "Timecode",
+			"display_name": "Auxiliary TC3",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxTC24",
+			"format_id": "Timecode",
+			"display_name": "Aux TC 24",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VideoFileFormat",
+			"format_id": "UserText",
+			"display_name": "Video File Format",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VFXReel",
+			"format_id": "UserText",
+			"display_name": "VFX Reel",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VFX",
+			"format_id": "FrameCount",
+			"display_name": "VFX",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxInkFilm",
+			"format_id": "Strict",
+			"display_name": "AuxInk Film",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxInkEnd",
+			"format_id": "UserText",
+			"display_name": "AuxInk End",
+			"is_hidden": true
+		},
+		{
+			"field_id": "InkDur",
+			"format_id": "UserText",
+			"display_name": "Ink Dur",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxInkEdge",
+			"format_id": "Strict",
+			"display_name": "AuxInk Edge",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AuxInkDur",
+			"format_id": "UserText",
+			"display_name": "AuxInk Dur",
+			"is_hidden": true
+		},
+		{
+			"field_id": "DPX",
+			"format_id": "FrameCount",
+			"display_name": "DPX",
+			"is_hidden": true
+		},
+		{
+			"field_id": "InkEnd",
+			"format_id": "UserText",
+			"display_name": "Ink End",
+			"is_hidden": true
+		},
+		{
+			"field_id": "InkEdge",
+			"format_id": "Strict",
+			"display_name": "Ink Edge",
+			"is_hidden": true
+		},
+		{
+			"field_id": "InkFilm",
+			"format_id": "Strict",
+			"display_name": "Ink Film",
+			"is_hidden": true
+		},
+		{
+			"field_id": "KNFilm",
+			"format_id": "Strict",
+			"display_name": "KN Film",
+			"is_hidden": true
+		},
+		{
+			"field_id": "LUT",
+			"format_id": "UserText",
+			"display_name": "LUT",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MasterDur",
+			"format_id": "UserText",
+			"display_name": "Master Dur",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MasterEdge",
+			"format_id": "Strict",
+			"display_name": "Master Edge",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MasterEnd",
+			"format_id": "UserText",
+			"display_name": "Master End",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MasterFilm",
+			"format_id": "Strict",
+			"display_name": "Master Film",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MasterStart",
+			"format_id": "FrameCount",
+			"display_name": "Master Start",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Transfer",
+			"format_id": "FrameCount",
+			"display_name": "Transfer",
+			"is_hidden": true
+		},
+		{
+			"field_id": "UNCPath",
+			"format_id": "UserText",
+			"display_name": "UNC Path",
+			"is_hidden": true
+		},
+		{
+			"field_id": "TC30NP",
+			"format_id": "Timecode",
+			"display_name": "TC 30NP",
+			"is_hidden": true
+		},
+		{
+			"field_id": "TC60",
+			"format_id": "Timecode",
+			"display_name": "TC 60",
+			"is_hidden": true
+		},
+		{
+			"field_id": "DiskLabel",
+			"format_id": "UserText",
+			"display_name": "Disk Label",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Journalist",
+			"format_id": "UserText",
+			"display_name": "Journalist",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Production",
+			"format_id": "UserText",
+			"display_name": "Production",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Cadence",
+			"format_id": "Strict",
+			"display_name": "Cadence",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ASCSOP",
+			"format_id": "UserText",
+			"display_name": "ASC_SOP",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ASCSAT",
+			"format_id": "UserText",
+			"display_name": "ASC_SAT",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Name",
+			"format_id": "UserText",
+			"display_name": "Name",
+			"is_hidden": false
+		},
+		{
+			"field_id": "Format",
+			"format_id": "UserText",
+			"display_name": "Format",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Start",
+			"format_id": "Timecode",
+			"display_name": "Start",
+			"is_hidden": false
+		},
+		{
+			"field_id": "End",
+			"format_id": "Timecode",
+			"display_name": "End",
+			"is_hidden": false
+		},
+		{
+			"field_id": "Duration",
+			"format_id": "Timecode",
+			"display_name": "Duration",
+			"is_hidden": false
+		},
+		{
+			"field_id": "Tracks",
+			"format_id": "UserText",
+			"display_name": "Tracks",
+			"is_hidden": false
+		},
+		{
+			"field_id": "Offline",
+			"format_id": "UserText",
+			"display_name": "Offline",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Video",
+			"format_id": "UserText",
+			"display_name": "Video",
+			"is_hidden": false
+		},
+		{
+			"field_id": "Drive",
+			"format_id": "UserText",
+			"display_name": "Drive",
+			"is_hidden": true
+		},
+		{
+			"field_id": "FieldMotion",
+			"format_id": "Strict",
+			"display_name": "Field Motion",
+			"is_hidden": true
+		},
+		{
+			"field_id": "TrackFormats",
+			"format_id": "UserText",
+			"display_name": "Track Formats",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ColorSpace",
+			"format_id": "UserText",
+			"display_name": "Color Space",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ImageAspectRatio",
+			"format_id": "Strict",
+			"display_name": "Image Aspect Ratio",
+			"is_hidden": true
+		},
+		{
+			"field_id": "PixelAspectRatio",
+			"format_id": "UserText",
+			"display_name": "Pixel Aspect Ratio",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Reformat",
+			"format_id": "Strict",
+			"display_name": "Reformat",
+			"is_hidden": true
+		},
+		{
+			"field_id": "SourceFile",
+			"format_id": "UserText",
+			"display_name": "Source File",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AncillaryData",
+			"format_id": "UserText",
+			"display_name": "Ancillary Data",
+			"is_hidden": true
+		},
+		{
+			"field_id": "SourcePath",
+			"format_id": "UserText",
+			"display_name": "Source Path",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DContributors",
+			"format_id": "UserText",
+			"display_name": "S3D Contributors",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DLeadingEye",
+			"format_id": "Strict",
+			"display_name": "S3D Leading Eye",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DChannel",
+			"format_id": "Strict",
+			"display_name": "S3D Channel",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DGroupName",
+			"format_id": "UserText",
+			"display_name": "S3D Group Name",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DInversion",
+			"format_id": "Strict",
+			"display_name": "S3D Inversion",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DInversionR",
+			"format_id": "Strict",
+			"display_name": "S3D InversionR",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DEyeOrder",
+			"format_id": "Strict",
+			"display_name": "S3D Eye Order",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorName",
+			"format_id": "UserText",
+			"display_name": "Vendor Name",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorURL",
+			"format_id": "UserText",
+			"display_name": "Vendor URL",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorAssetID",
+			"format_id": "UserText",
+			"display_name": "Vendor Asset ID",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorAssetName",
+			"format_id": "UserText",
+			"display_name": "Vendor Asset Name",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorAssetRights",
+			"format_id": "UserText",
+			"display_name": "Vendor Asset Rights",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorAssetDescription",
+			"format_id": "UserText",
+			"display_name": "Vendor Asset Description",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorAssetKeywords",
+			"format_id": "UserText",
+			"display_name": "Vendor Asset Keywords",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorAssetStatus",
+			"format_id": "UserText",
+			"display_name": "Vendor Asset Status",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorInvoiceID",
+			"format_id": "UserText",
+			"display_name": "Vendor Invoice ID",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "Comments",
+			"is_hidden": false
+		},
+		{
+			"field_id": "VideoDataRate",
+			"format_id": "UserText",
+			"display_name": "Video Data Rate",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ChromaSubsampling",
+			"format_id": "UserText",
+			"display_name": "Chroma Subsampling",
+			"is_hidden": true
+		},
+		{
+			"field_id": "MediaFilePath",
+			"format_id": "UserText",
+			"display_name": "Media File Path",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ColorTransformation",
+			"format_id": "UserText",
+			"display_name": "Color Transformation",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DClipName",
+			"format_id": "UserText",
+			"display_name": "S3D Clip Name",
+			"is_hidden": true
+		},
+		{
+			"field_id": "S3DAlignment",
+			"format_id": "Strict",
+			"display_name": "S3D Alignment",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Marker",
+			"format_id": "Icon",
+			"display_name": "Marker",
+			"is_hidden": true
+		},
+		{
+			"field_id": "PlugIn",
+			"format_id": "UserText",
+			"display_name": "Plug-in",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Reel",
+			"format_id": "UserText",
+			"display_name": "Reel",
+			"is_hidden": true
+		},
+		{
+			"field_id": "FrameCountStart",
+			"format_id": "FrameCount",
+			"display_name": "Frame Count Start",
+			"is_hidden": true
+		},
+		{
+			"field_id": "FrameCountEnd",
+			"format_id": "FrameCount",
+			"display_name": "Frame Count End",
+			"is_hidden": true
+		},
+		{
+			"field_id": "FrameCountDuration",
+			"format_id": "FrameCount",
+			"display_name": "Frame Count Duration",
+			"is_hidden": true
+		},
+		{
+			"field_id": "VendorDownloadMaster",
+			"format_id": "UserText",
+			"display_name": "Vendor Download Master",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ImageFraming",
+			"format_id": "UserText",
+			"display_name": "Image Framing",
+			"is_hidden": true
+		},
+		{
+			"field_id": "RasterDimension",
+			"format_id": "UserText",
+			"display_name": "Raster Dimension",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ImageSize",
+			"format_id": "UserText",
+			"display_name": "Image Size",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ProxyOffline",
+			"format_id": "UserText",
+			"display_name": "Proxy Offline",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ProxyAudio",
+			"format_id": "UserText",
+			"display_name": "Proxy Audio",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ProxyVideo",
+			"format_id": "UserText",
+			"display_name": "Proxy Video",
+			"is_hidden": true
+		},
+		{
+			"field_id": "ProxyPath",
+			"format_id": "UserText",
+			"display_name": "Proxy Path",
+			"is_hidden": true
+		},
+		{
+			"field_id": "InvertAlpha",
+			"format_id": "Strict",
+			"display_name": "NEXIS Cache",
+			"is_hidden": true
+		},
+		{
+			"field_id": "IgnoreAlpha",
+			"format_id": "Strict",
+			"display_name": "Invert Alpha",
+			"is_hidden": true
+		},
+		{
+			"field_id": "PremultAlpha",
+			"format_id": "Strict",
+			"display_name": "Ignore Alpha",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AlphaChannel",
+			"format_id": "Strict",
+			"display_name": "Premult Alpha",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AlphaModeA",
+			"format_id": "Strict",
+			"display_name": "Alpha Channel",
+			"is_hidden": true
+		},
+		{
+			"field_id": "AlphaModeB",
+			"format_id": "Strict",
+			"display_name": "Alpha Mode",
+			"is_hidden": true
+		},
+		{
+			"field_id": "Transcription",
+			"format_id": "UserText",
+			"display_name": "Transcription",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "Circled",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "False start",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK10",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK11",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK12",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK13",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK14",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK15",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK16",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK17",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK18",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK19",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK2",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK20",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK21",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK22",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK23",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK24",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK25",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK26",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK27",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK28",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK29",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK3",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK30",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK31",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK34",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK35",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK36",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK37",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK38",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK39",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK4",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK40",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK41",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK42",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK43",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK44",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK45",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK46",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK47",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK48",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK49",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK5",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK50",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK51",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK52",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK53",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK54",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK59",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK6",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK60",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK61",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK62",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK7",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK8",
+			"is_hidden": true
+		},
+		{
+			"field_id": "User",
+			"format_id": "UserText",
+			"display_name": "TRK9",
+			"is_hidden": true
+		}
+	]
+}
