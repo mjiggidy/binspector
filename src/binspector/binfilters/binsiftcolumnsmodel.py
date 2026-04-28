@@ -19,7 +19,7 @@ When a column or range is selected, but the binview changes so the appropriate c
 sift goes back to "Any" column.
 """
 
-import enum, dataclasses
+import enum
 import avbutils
 from PySide6 import QtCore
 from ..binview import binviewmodel, binviewitemtypes
@@ -27,24 +27,18 @@ from ..binview import binviewmodel, binviewitemtypes
 class BSBinSiftSourceType(enum.Enum):
 	"""None? Any? A column? A range? YOU TELL ME, FRIENDOOOOO"""
 
-	NoColumn         = enum.auto()
-	IndividualColumn = enum.auto()
-	Range            = enum.auto()
-	AnyColumn        = enum.auto()
+	NoColumn     = enum.auto()
+	SingleColumn = enum.auto()
+	Range        = enum.auto()
+	AnyColumn    = enum.auto()
 
-@dataclasses.dataclass(frozen=True)
-class BSBinSiftColumnRowMapper: # wat
-	"""Maps rows to their sources ok"""
-
-	local_row:int
-	source_type:BSBinSiftSourceType
 
 class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	"""A `QAbstractItemModel` describing bin view columns available for sifting"""
 
 	DEFAULT_LIST_ORDER = [
 		BSBinSiftSourceType.NoColumn,
-		BSBinSiftSourceType.IndividualColumn,
+		BSBinSiftSourceType.SingleColumn,
 		BSBinSiftSourceType.Range,
 		BSBinSiftSourceType.AnyColumn,
 	]
@@ -58,10 +52,8 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 
 		super().__init__(*args, **kwargs)
 
-		self._list_order         = list_order     or self.DEFAULT_LIST_ORDER
-		self._bin_view_model     = bin_view_model or binviewmodel.BSBinViewModel()
-
-		self._dumb_row_map_thing:list[BSBinSiftColumnRowMapper] = []
+		self._list_order     = list_order     or self.DEFAULT_LIST_ORDER
+		self._bin_view_model = bin_view_model or binviewmodel.BSBinViewModel()
 		
 		# lol three days of troubleshooting and it turns out I didn't call this
 		self._setupBinViewModel()
@@ -90,48 +82,33 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def binViewRowsAboutToBeInserted(self, parent: QtCore.QModelIndex, first: int, last: int) -> None:
 
-		
-		mapped_first = self._dumb_row_map_thing.index(BSBinSiftColumnRowMapper(first, BSBinSiftSourceType.IndividualColumn))
-		mapped_last  = self._dumb_row_map_thing.index(BSBinSiftColumnRowMapper(last,  BSBinSiftSourceType.IndividualColumn))
-
-		self.beginInsertRows(QtCore.QModelIndex(), mapped_first, mapped_last)
+		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.SingleColumn)
+		self.beginInsertRows(QtCore.QModelIndex(), first + offset, last + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def binViewRowsInserted(self, parent: QtCore.QModelIndex, first: int, last: int) -> None:
 
-		self._updateRowMap()
-		
 		self.endInsertRows()
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
 	def binViewRowsAboutToBeMoved(self, sourceParent: QtCore.QModelIndex, sourceStart: int, sourceEnd: int, destinationParent: QtCore.QModelIndex, destinationRow: int) -> None:
 		
-		mapped_first = self._dumb_row_map_thing.index(BSBinSiftColumnRowMapper(sourceStart,    BSBinSiftSourceType.IndividualColumn))
-		mapped_last  = self._dumb_row_map_thing.index(BSBinSiftColumnRowMapper(sourceEnd,      BSBinSiftSourceType.IndividualColumn))
-		mapped_dest  = self._dumb_row_map_thing.index(BSBinSiftColumnRowMapper(destinationRow, BSBinSiftSourceType.IndividualColumn))
-
-		self.beginMoveRows(QtCore.QModelIndex(), mapped_first, mapped_last, QtCore.QModelIndex(), mapped_dest)
+		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.SingleColumn)
+		self.beginMoveRows(QtCore.QModelIndex(), sourceStart + offset, sourceEnd + offset, QtCore.QModelIndex(), destinationRow + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
 	def binViewRowsMoved(self, sourceParent: QtCore.QModelIndex, sourceStart: int, sourceEnd: int, destinationParent: QtCore.QModelIndex, destinationRow: int) -> None:
 		
-		self._updateRowMap()
-
 		self.endMoveRows()
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def binViewRowsAboutToBeRemoved(self, parent: QtCore.QModelIndex, first: int, last: int) -> None:
 		
-		mapped_first = self._dumb_row_map_thing.index(BSBinSiftColumnRowMapper(first, BSBinSiftSourceType.IndividualColumn))
-		mapped_last  = self._dumb_row_map_thing.index(BSBinSiftColumnRowMapper(last,  BSBinSiftSourceType.IndividualColumn))
-
-		self.beginRemoveRows(QtCore.QModelIndex(), mapped_first, mapped_last)
+		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.SingleColumn)
+		self.beginRemoveRows(QtCore.QModelIndex(), first + offset, last + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def binViewRowsRemoved(self, parent: QtCore.QModelIndex, first: int, last: int) -> None:
-
-		self._updateRowMap()
-
 		self.endRemoveRows()
 
 	@QtCore.Slot(list)
@@ -141,8 +118,6 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 
 	@QtCore.Slot(list)
 	def binViewLayoutChanged(self, parents: list[QtCore.QPersistentModelIndex], hint: QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
-		
-		self._updateRowMap()
 		
 		self.layoutChanged.emit()
 
@@ -154,24 +129,18 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot()
 	def binViewModelReset(self) -> None:
 		
-		self._updateRowMap()
-		
 		self.endResetModel()
 
 	@QtCore.Slot(QtCore.QModelIndex, QtCore.QModelIndex, list)
 	def binViewDataChanged(self, topLeft: QtCore.QModelIndex, bottomRight: QtCore.QModelIndex, roles: list[int]) -> None:
-
-		self.beginResetModel()
-		self._updateRowMap()
-		self.endResetModel()
 		
-#		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.IndividualColumn)
-#		
-#		self.dataChanged.emit(
-#			self.index(topLeft.row() + offset, topLeft.column(),QtCore.QModelIndex()),
-#			self.index(bottomRight.row() + offset, bottomRight.column(), QtCore.QModelIndex()),
-#			roles
-#		)
+		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.SingleColumn)
+		
+		self.dataChanged.emit(
+			self.index(topLeft.row() + offset, topLeft.column(),QtCore.QModelIndex()),
+			self.index(bottomRight.row() + offset, bottomRight.column(), QtCore.QModelIndex()),
+			roles
+		)
 
 	###
 	
@@ -197,16 +166,6 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 		return self._bin_view_model
 	
 	###
-
-	def _updateRowMap(self):
-
-		self._dumb_row_map_thing = []
-
-		for source_type in self._list_order:
-
-			self._dumb_row_map_thing.extend([
-				BSBinSiftColumnRowMapper(local_row, source_type) for local_row in range(self._rowCountForSiftSource(source_type))
-			])
 	
 	def _rowCountForSiftSource(self, sift_source_type:BSBinSiftSourceType) -> int:
 		"""Calculate the number of rows for a given column source section"""
@@ -214,7 +173,7 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 		if sift_source_type not in self._list_order:
 			raise ValueError(f"Source type {sift_source_type} is not in this model")
 
-		elif sift_source_type == BSBinSiftSourceType.IndividualColumn:
+		elif sift_source_type == BSBinSiftSourceType.SingleColumn:
 
 			# Bin View row count
 
@@ -224,6 +183,58 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 
 			# One-off rows such as "Any" or "None"
 			return 1
+		
+	def _calculateRowOffsetToSourceSection(self, to_sift_source:BSBinSiftSourceType|None=None) -> int:
+		"""Calculate the row offset to the beginning of the specified section"""
+
+		cumulative_row_count = 0
+
+		for source_type in self._list_order:
+			
+			# Exit if done
+			if to_sift_source is not None and source_type == to_sift_source:
+				break
+				
+			cumulative_row_count += self._rowCountForSiftSource(source_type)
+
+		return cumulative_row_count
+
+	def _sourceTypeForIndex(self, index:QtCore.QModelIndex) -> BSBinSiftSourceType|None:
+		"""Given an index, determine which of the source types the row belongs to, or `None` (possibly separator)"""
+
+
+		"""
+		ROW IS 0
+		- Start from beginning
+		- For each section, get its row count
+		- Add row count to accumulator.  If accumulator is not 0, add separator length (technically to front)
+		- "Any" section length == 2, indexes [0,1], separator == 1, data == 0
+			- So row ==0 ? Accumulator less than separator minus 1
+		"""
+
+		accumulator = 0
+
+		row = index.row()
+		
+		for source_type in self._list_order:
+
+			accumulator += self._rowCountForSiftSource(source_type)
+
+			if row < accumulator:
+				return source_type
+			
+		return None
+	
+#	def _indexIsSeparator(self, index:QtCore.QModelIndex) -> bool:
+#		"""Is the given index row a separator or nah"""
+#
+#		if not index.isValid():
+#			return False
+#		
+#		if index.row() == 1:
+#			return True
+#		
+#		return False
 	
 ####
 
@@ -232,7 +243,7 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 		if parent.isValid():
 			return 0
 		
-		return len(self._dumb_row_map_thing)
+		return self._calculateRowOffsetToSourceSection()
 
 	def columnCount(self, /, parent:QtCore.QModelIndex) -> int:
 		
@@ -253,27 +264,25 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
 
 		
-		if not index.isValid():
-			return None
+		source_type = self._sourceTypeForIndex(index)
 
-		row_mapper = self._dumb_row_map_thing[index.row()]
-
-		if row_mapper.source_type == BSBinSiftSourceType.AnyColumn:
+		if source_type == BSBinSiftSourceType.AnyColumn:
 
 			if role == QtCore.Qt.ItemDataRole.DisplayRole:
 				return self.tr("Any")
 			
-		elif row_mapper.source_type == BSBinSiftSourceType.NoColumn:
+		elif source_type == BSBinSiftSourceType.NoColumn:
 
 			if role == QtCore.Qt.ItemDataRole.DisplayRole:
 				return self.tr("None")
 			
-		elif row_mapper.source_type == BSBinSiftSourceType.IndividualColumn:
+		elif source_type == BSBinSiftSourceType.SingleColumn:
 
 			# Map back to bin view model for any single-column data
-			return self._bin_view_model.index(row_mapper.local_row, 0, QtCore.QModelIndex()).data(role)
+			row_offset  = self._calculateRowOffsetToSourceSection(source_type)
+			return self._bin_view_model.index(index.row() - row_offset, 0, QtCore.QModelIndex()).data(role)
 			
-		elif row_mapper.source_type == BSBinSiftSourceType.Range:
+		elif source_type == BSBinSiftSourceType.Range:
 
 			# TODO: Group
 
@@ -283,7 +292,7 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 		else:
 
 			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return "lolwat" + str(row_mapper.source_type)
+				return "lolwat" + str(source_type)
 
 		return None
 	
