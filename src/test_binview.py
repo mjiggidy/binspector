@@ -76,7 +76,7 @@ if __name__ == "__main__":
 	tree_binviewer.move(wnd_editor.geometry().topRight() + QtCore.QPoint(100,0))
 	tree_binviewer.show()
 
-	list_sift_columns = QtWidgets.QListView()
+	list_sift_columns = QtWidgets.QComboBox()
 	list_sift_columns.setModel(sift_columns_model)
 	tree_binviewer.move(wnd_editor.geometry().topLeft() + QtCore.QPoint(-100,0))
 	list_sift_columns.show()
@@ -84,8 +84,6 @@ if __name__ == "__main__":
 	#bin_item_filter.setAcceptedItemTypes(avbutils.bins.BinDisplayItemTypes.SOURCE)
 
 	wnd_editor.sig_export_binview_requested.connect(exportJson)
-
-	print(bin_item_filter.rowCount(QtCore.QModelIndex()))
 	
 
 	app.exec()
