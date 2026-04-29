@@ -80,44 +80,73 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	###
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binViewRowsAboutToBeInserted(self, parent: QtCore.QModelIndex, first: int, last: int) -> None:
+	def binViewRowsAboutToBeInserted(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
 
-		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.SingleColumn)
+		if parent.isValid():
+			return
+
+		offset = self._rowOffsetToSiftSource(BSBinSiftSourceType.SingleColumn)
 		self.beginInsertRows(QtCore.QModelIndex(), first + offset, last + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binViewRowsInserted(self, parent: QtCore.QModelIndex, first: int, last: int) -> None:
+	def binViewRowsInserted(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
+
+		if parent.isValid():
+			return
 
 		self.endInsertRows()
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
-	def binViewRowsAboutToBeMoved(self, sourceParent: QtCore.QModelIndex, sourceStart: int, sourceEnd: int, destinationParent: QtCore.QModelIndex, destinationRow: int) -> None:
+	def binViewRowsAboutToBeMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int) -> None:
+
+		if sourceParent.isValid() or destinationParent.isValid():
+
+			# NOTE: Assuming we're all flat lists here.
+			# Otherwise I guess if either parent index is True, need to translate these into insert/remove rows instead
+
+			return
 		
-		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.SingleColumn)
+		offset = self._rowOffsetToSiftSource(BSBinSiftSourceType.SingleColumn)
 		self.beginMoveRows(QtCore.QModelIndex(), sourceStart + offset, sourceEnd + offset, QtCore.QModelIndex(), destinationRow + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
-	def binViewRowsMoved(self, sourceParent: QtCore.QModelIndex, sourceStart: int, sourceEnd: int, destinationParent: QtCore.QModelIndex, destinationRow: int) -> None:
+	def binViewRowsMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int) -> None:
+
+		if sourceParent.isValid() or destinationParent.isValid():
+			return
 		
 		self.endMoveRows()
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binViewRowsAboutToBeRemoved(self, parent: QtCore.QModelIndex, first: int, last: int) -> None:
+	def binViewRowsAboutToBeRemoved(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
+
+		if parent.isValid():
+			return
 		
-		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.SingleColumn)
+		offset = self._rowOffsetToSiftSource(BSBinSiftSourceType.SingleColumn)
 		self.beginRemoveRows(QtCore.QModelIndex(), first + offset, last + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binViewRowsRemoved(self, parent: QtCore.QModelIndex, first: int, last: int) -> None:
+	def binViewRowsRemoved(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
+
+		if parent.isValid():
+			return
+		
 		self.endRemoveRows()
 
 	@QtCore.Slot(list)
-	def binViewLayoutAboutToBeChanged(self, parents: list[QtCore.QPersistentModelIndex], hint: QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
+	def binViewLayoutAboutToBeChanged(self, parents:list[QtCore.QPersistentModelIndex], hint:QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
+
+		if not any(not idx.isValid() for idx in parents):
+			return
 		
 		self.layoutAboutToBeChanged.emit()
 
 	@QtCore.Slot(list)
-	def binViewLayoutChanged(self, parents: list[QtCore.QPersistentModelIndex], hint: QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
+	def binViewLayoutChanged(self, parents:list[QtCore.QPersistentModelIndex], hint:QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
+
+		if not any(not idx.isValid() for idx in parents):
+			return
 		
 		self.layoutChanged.emit()
 
@@ -132,13 +161,16 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 		self.endResetModel()
 
 	@QtCore.Slot(QtCore.QModelIndex, QtCore.QModelIndex, list)
-	def binViewDataChanged(self, topLeft: QtCore.QModelIndex, bottomRight: QtCore.QModelIndex, roles: list[int]) -> None:
+	def binViewDataChanged(self, topLeft:QtCore.QModelIndex, bottomRight:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]) -> None:
 		
-		offset = self._calculateRowOffsetToSourceSection(BSBinSiftSourceType.SingleColumn)
+		if topLeft.column() != 0:
+			return
+		
+		offset = self._rowOffsetToSiftSource(BSBinSiftSourceType.SingleColumn)
 		
 		self.dataChanged.emit(
-			self.index(topLeft.row() + offset, topLeft.column(),QtCore.QModelIndex()),
-			self.index(bottomRight.row() + offset, bottomRight.column(), QtCore.QModelIndex()),
+			self.index(topLeft.row()     + offset, 0, QtCore.QModelIndex()),
+			self.index(bottomRight.row() + offset, 0, QtCore.QModelIndex()),
 			roles
 		)
 
@@ -167,8 +199,10 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	
 	###
 	
-	def _rowCountForSiftSource(self, sift_source_type:BSBinSiftSourceType) -> int:
-		"""Calculate the number of rows for a given column source section"""
+	def _rowCountForSiftSource(self, sift_source_type:BSBinSiftSourceType, append_separator_if_enabled:bool=True) -> int:
+		"""Calculate the number of rows for a given column source section.  Appends a separator assuming it's enabled."""
+
+		row_count = 0
 
 		if sift_source_type not in self._list_order:
 			raise ValueError(f"Source type {sift_source_type} is not in this model")
@@ -177,73 +211,71 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 
 			# Bin View row count
 
-			return self._bin_view_model.rowCount(QtCore.QModelIndex())
+			row_count = self._bin_view_model.rowCount(QtCore.QModelIndex())
 		
 		else:
 
 			# One-off rows such as "Any" or "None"
-			return 1
+			row_count = 1
+
+		# Add separator to "end" if any rows were present
+
+		if row_count and append_separator_if_enabled:
+			return row_count + self.SEPARATOR_ROW_SIZE
 		
-	def _calculateRowOffsetToSourceSection(self, to_sift_source:BSBinSiftSourceType|None=None) -> int:
-		"""Calculate the row offset to the beginning of the specified section"""
+		else:
+			return 0
+	
+	def _rowOffsetToSiftSource(self, to_sift_source:BSBinSiftSourceType|None=None) -> int:
+		"""Calculate the model's row offset to a given sift source section (or 'SSS')"""
 
-		cumulative_row_count = 0
+		if to_sift_source is not None and to_sift_source not in self._list_order:
+			raise ValueError(f"Source type {to_sift_source} is not in this model")
+		
+		row_offset = 0
+		
+		for current_sift_source in self._list_order:
 
-		for source_type in self._list_order:
+			if to_sift_source is not None and to_sift_source == current_sift_source:
+				return row_offset
 			
-			# Exit if done
-			if to_sift_source is not None and source_type == to_sift_source:
-				break
-				
-			cumulative_row_count += self._rowCountForSiftSource(source_type)
-
-		return cumulative_row_count
-
+			row_offset += self._rowCountForSiftSource(current_sift_source)
+		
+		return row_offset
+	
 	def _sourceTypeForIndex(self, index:QtCore.QModelIndex) -> BSBinSiftSourceType|None:
-		"""Given an index, determine which of the source types the row belongs to, or `None` (possibly separator)"""
-
-
-		"""
-		ROW IS 0
-		- Start from beginning
-		- For each section, get its row count
-		- Add row count to accumulator.  If accumulator is not 0, add separator length (technically to front)
-		- "Any" section length == 2, indexes [0,1], separator == 1, data == 0
-			- So row ==0 ? Accumulator less than separator minus 1
-		"""
-
-		accumulator = 0
+		"""Map er back"""
 
 		row = index.row()
-		
+
+		accumulated_rows = 0
+
 		for source_type in self._list_order:
 
-			accumulator += self._rowCountForSiftSource(source_type)
+			source_row_count = self._rowCountForSiftSource(source_type)
+			
+			if not source_row_count:
+				continue
 
-			if row < accumulator:
+			accumulated_rows += source_row_count
+			
+			if row < accumulated_rows - self.SEPARATOR_ROW_SIZE:
 				return source_type
 			
-		return None
-	
-#	def _indexIsSeparator(self, index:QtCore.QModelIndex) -> bool:
-#		"""Is the given index row a separator or nah"""
-#
-#		if not index.isValid():
-#			return False
-#		
-#		if index.row() == 1:
-#			return True
-#		
-#		return False
-	
+			if row < accumulated_rows:
+				return None
+		
+		raise IndexError(f"Model does not contain row {repr(index)}")
+		
 ####
 
 	def rowCount(self, /, parent:QtCore.QModelIndex) -> int:
 		
 		if parent.isValid():
 			return 0
-		
-		return self._calculateRowOffsetToSourceSection()
+
+		# Remove the final separator (if any rows exist at all) and return row count
+		return max(self._rowOffsetToSiftSource() - self.SEPARATOR_ROW_SIZE, 0)
 
 	def columnCount(self, /, parent:QtCore.QModelIndex) -> int:
 		
@@ -279,7 +311,7 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 		elif source_type == BSBinSiftSourceType.SingleColumn:
 
 			# Map back to bin view model for any single-column data
-			row_offset  = self._calculateRowOffsetToSourceSection(source_type)
+			row_offset  = self._rowOffsetToSiftSource(source_type)
 			return self._bin_view_model.index(index.row() - row_offset, 0, QtCore.QModelIndex()).data(role)
 			
 		elif source_type == BSBinSiftSourceType.Range:
@@ -288,6 +320,11 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 
 			if role == QtCore.Qt.ItemDataRole.DisplayRole:
 				return self.tr("Value Range")
+			
+		elif source_type == None:	# Is separator:
+
+			if role == QtCore.Qt.ItemDataRole.AccessibleDescriptionRole:
+				return "separator"
 			
 		else:
 
