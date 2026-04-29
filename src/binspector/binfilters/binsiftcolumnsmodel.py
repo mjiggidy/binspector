@@ -292,9 +292,15 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	def index(self, row:int, column:int, /, parent:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		
 		return self.createIndex(row, column, None)
+	
+	def flags(self, index:QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
+		
+		if self._sourceTypeForIndex(index) is None:
+			return QtCore.Qt.ItemFlag.NoItemFlags
+		
+		return super().flags(index)
 
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
-
 		
 		source_type = self._sourceTypeForIndex(index)
 
@@ -332,20 +338,3 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 				return "lolwat" + str(source_type)
 
 		return None
-	
-
-"""
-
-Can:
-Calculate total rows
-
-Need:
-Given an index, wat do
-	- Figure out which source type it is
-		- Keep adding section lengths until greater than index row
-			- 
-	- Either show the bin column, or the special lil data
-
-
-
-"""
