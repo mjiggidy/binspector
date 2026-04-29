@@ -296,9 +296,9 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	def flags(self, index:QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
 		
 		if self._sourceTypeForIndex(index) is None:
-			return QtCore.Qt.ItemFlag.NoItemFlags
+			return QtCore.Qt.ItemFlag.NoItemFlags | QtCore.Qt.ItemFlag.ItemNeverHasChildren
 		
-		return super().flags(index)
+		return super().flags(index) | QtCore.Qt.ItemFlag.ItemNeverHasChildren
 
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
 		
