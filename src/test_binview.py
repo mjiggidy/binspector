@@ -9,7 +9,7 @@ from binspector.core import binparser
 from binspector.binvieweditor import editorwidget
 from binspector.textview import textview
 
-from binspector.binfilters import binviewproxymodel, bindisplayproxymodel
+from binspector.binfilters import binviewproxymodel, bindisplayproxymodel, binsiftcolumnsmodel
 
 import avb, avbutils
 
@@ -47,7 +47,6 @@ if __name__ == "__main__":
 	app = QtWidgets.QApplication()
 	app.setStyle("Fusion")
 
-	wnd_editor = editorwidget.BSBinViewColumnEditor()
 
 	
 
@@ -61,11 +60,14 @@ if __name__ == "__main__":
 
 	final_proxy         = QtCore.QIdentityProxyModel()
 	final_proxy.setSourceModel(bin_composite_model)
+
+	sift_columns_model  = binsiftcolumnsmodel.BSBinSiftColumnsModel(bin_view_model=bin_view_filter)
 	
 	###
 	
 	loadFromBinPath(sys.argv[1])
 	
+	wnd_editor = editorwidget.BSBinViewColumnEditor()
 	wnd_editor.setBinViewModel(bin_view_model)
 	wnd_editor.show()
 
@@ -73,6 +75,11 @@ if __name__ == "__main__":
 	tree_binviewer.setModel(final_proxy)
 	tree_binviewer.move(wnd_editor.geometry().topRight() + QtCore.QPoint(100,0))
 	tree_binviewer.show()
+
+	list_sift_columns = QtWidgets.QListView()
+	list_sift_columns.setModel(sift_columns_model)
+	tree_binviewer.move(wnd_editor.geometry().topLeft() + QtCore.QPoint(-100,0))
+	list_sift_columns.show()
 
 	#bin_item_filter.setAcceptedItemTypes(avbutils.bins.BinDisplayItemTypes.SOURCE)
 
