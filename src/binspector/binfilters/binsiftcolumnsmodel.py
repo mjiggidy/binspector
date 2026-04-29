@@ -21,7 +21,7 @@ sift goes back to "Any" column.
 
 import enum
 import avbutils
-from PySide6 import QtCore
+from PySide6 import QtCore, QtGui
 from ..binview import binviewmodel, binviewitemtypes
 
 class BSBinSiftSourceType(enum.Enum):
@@ -33,8 +33,8 @@ class BSBinSiftSourceType(enum.Enum):
 	AnyColumn    = enum.auto()
 
 
-class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
-	"""A `QAbstractItemModel` describing bin view columns available for sifting"""
+class BSBinSiftColumnsChooserModel(QtCore.QAbstractItemModel):
+	"""A `QAbstractItemModel` proxy describing bin view columns available for sifting"""
 
 	DEFAULT_LIST_ORDER = [
 		BSBinSiftSourceType.NoColumn,
@@ -48,12 +48,24 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 
 	sig_bin_view_model_changed = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_view_model:binviewmodel.BSBinViewModel|None=None, list_order:list[BSBinSiftSourceType]|None=None, **kwargs):
+	def __init__(self, *args, bin_view_model:binviewmodel.BSBinViewModel, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._list_order     = list_order     or self.DEFAULT_LIST_ORDER
-		self._bin_view_model = bin_view_model or binviewmodel.BSBinViewModel()
+		self._source_models:dict[BSBinSiftSourceType, QtCore.QAbstractItemModel] = {
+			BSBinSiftSourceType.NoColumn:  QtGui.QStandardItemModel(parent=self),
+			BSBinSiftSourceType.SingleColumn: bin_view_model,
+			BSBinSiftSourceType.Range: QtGui.QStandardItemModel(parent=self),
+			BSBinSiftSourceType.AnyColumn: QtGui.QStandardItemModel(parent=self),
+		}
+
+		self._source_models[BSBinSiftSourceType.NoColumn].appendRow(QtGui.QStandardItem("None"))
+
+		self._source_models[BSBinSiftSourceType.AnyColumn].appendRow(QtGui.QStandardItem("Any"))
+
+		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 1"))
+		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 2"))
+		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 3"))
 		
 		# lol three days of troubleshooting and it turns out I didn't call this
 		self._setupBinViewModel()
@@ -61,21 +73,23 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	
 	def _setupBinViewModel(self):
 
-		self._bin_view_model.rowsAboutToBeInserted  .connect(self.binViewRowsAboutToBeInserted)
-		self._bin_view_model.rowsAboutToBeMoved     .connect(self.binViewRowsAboutToBeMoved)
-		self._bin_view_model.rowsAboutToBeRemoved   .connect(self.binViewRowsAboutToBeRemoved)
+		model = self._source_models[BSBinSiftSourceType.SingleColumn]
 
-		self._bin_view_model.rowsInserted           .connect(self.binViewRowsInserted)
-		self._bin_view_model.rowsMoved              .connect(self.binViewRowsMoved)
-		self._bin_view_model.rowsRemoved            .connect(self.binViewRowsRemoved)
-		
-		self._bin_view_model.layoutAboutToBeChanged .connect(self.binViewLayoutAboutToBeChanged)
-		self._bin_view_model.layoutChanged          .connect(self.binViewLayoutChanged)
+		model.rowsAboutToBeInserted  .connect(self.binViewRowsAboutToBeInserted)
+		model.rowsAboutToBeMoved     .connect(self.binViewRowsAboutToBeMoved)
+		model.rowsAboutToBeRemoved   .connect(self.binViewRowsAboutToBeRemoved)
 
-		self._bin_view_model.modelAboutToBeReset    .connect(self.binViewModelAboutToBeReset)
-		self._bin_view_model.modelReset             .connect(self.binViewModelReset)
+		model.rowsInserted           .connect(self.binViewRowsInserted)
+		model.rowsMoved              .connect(self.binViewRowsMoved)
+		model.rowsRemoved            .connect(self.binViewRowsRemoved)
+	
+		model.layoutAboutToBeChanged .connect(self.binViewLayoutAboutToBeChanged)
+		model.layoutChanged          .connect(self.binViewLayoutChanged)
 
-		self._bin_view_model.dataChanged            .connect(self.binViewDataChanged)
+		model.modelAboutToBeReset    .connect(self.binViewModelAboutToBeReset)
+		model.modelReset             .connect(self.binViewModelReset)
+
+		model.dataChanged            .connect(self.binViewDataChanged)
 
 	###
 	
@@ -179,13 +193,18 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	def setBinViewModel(self, model:binviewmodel.BSBinViewModel):
 		"""Set the source bin view model"""
 
-		if self._bin_view_model == model:
+		if BSBinSiftSourceType.SingleColumn in self._source_models and self._source_models[BSBinSiftSourceType.SingleColumn] == model:
 			return
 		
 		self.beginResetModel()
+
+		if BSBinSiftSourceType.SingleColumn in self._source_models:
+
+			self._source_models[BSBinSiftSourceType.SingleColumn].disconnect(self)
+#			del self._source_models[BSBinSiftSourceType.SingleColumn]
 		
-		self._bin_view_model.disconnect(self)
-		self._bin_view_model = model
+		self._source_models[BSBinSiftSourceType.SingleColumn] = model
+		
 		self._setupBinViewModel()
 
 		self.endResetModel()
@@ -195,7 +214,7 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	def binViewModel(self) -> binviewmodel.BSBinViewModel:
 		"""Get the source bin view model"""
 
-		return self._bin_view_model
+		return self._source_models[BSBinSiftSourceType.SingleColumn]
 	
 	###
 	
@@ -204,19 +223,10 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 
 		row_count = 0
 
-		if sift_source_type not in self._list_order:
+		if sift_source_type not in self._source_models:
 			raise ValueError(f"Source type {sift_source_type} is not in this model")
-
-		elif sift_source_type == BSBinSiftSourceType.SingleColumn:
-
-			# Bin View row count
-
-			row_count = self._bin_view_model.rowCount(QtCore.QModelIndex())
-		
-		else:
-
-			# One-off rows such as "Any" or "None"
-			row_count = 1
+			
+		row_count = self._source_models[sift_source_type].rowCount(QtCore.QModelIndex())
 
 		# Add separator to "end" if any rows were present
 
@@ -229,12 +239,12 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 	def _rowOffsetToSiftSource(self, to_sift_source:BSBinSiftSourceType|None=None) -> int:
 		"""Calculate the model's row offset to a given sift source section (or 'SSS')"""
 
-		if to_sift_source is not None and to_sift_source not in self._list_order:
+		if to_sift_source is not None and to_sift_source not in self._source_models:
 			raise ValueError(f"Source type {to_sift_source} is not in this model")
 		
 		row_offset = 0
 		
-		for current_sift_source in self._list_order:
+		for current_sift_source in self._source_models:
 
 			if to_sift_source is not None and to_sift_source == current_sift_source:
 				return row_offset
@@ -250,7 +260,7 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 
 		accumulated_rows = 0
 
-		for source_type in self._list_order:
+		for source_type in self._source_models:
 
 			source_row_count = self._rowCountForSiftSource(source_type)
 			
@@ -304,37 +314,13 @@ class BSBinSiftColumnsModel(QtCore.QAbstractItemModel):
 		
 		source_type = self._sourceTypeForIndex(index)
 
-		if source_type == BSBinSiftSourceType.AnyColumn:
-
-			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return self.tr("Any")
-			
-		elif source_type == BSBinSiftSourceType.NoColumn:
-
-			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return self.tr("None")
-			
-		elif source_type == BSBinSiftSourceType.SingleColumn:
-
-			# Map back to bin view model for any single-column data
-			row_offset  = self._rowOffsetToSiftSource(source_type)
-			return self._bin_view_model.index(index.row() - row_offset, 0, QtCore.QModelIndex()).data(role)
-			
-		elif source_type == BSBinSiftSourceType.Range:
-
-			# TODO: Group
-
-			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return self.tr("Value Range")
-			
-		elif source_type == None:	# Is separator:
+		if source_type is None: # Is separator:
 
 			if role == QtCore.Qt.ItemDataRole.AccessibleDescriptionRole:
 				return "separator"
 			
-		else:
+			return None
 
-			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return "lolwat" + str(source_type)
-
-		return None
+		# Map back to bin view model for any single-column data
+		row_offset  = self._rowOffsetToSiftSource(source_type)
+		return self._source_models[source_type].index(index.row() - row_offset, 0, QtCore.QModelIndex()).data(role)
