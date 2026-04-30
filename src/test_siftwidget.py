@@ -1,38 +1,43 @@
 import avb, avbutils
 from PySide6 import QtCore, QtWidgets
-from binspector.siftwidget import siftwidget
+from binspector.siftwidget import siftwidget, columnchoosermodel
+from binspector.binview import binviewmodel, binviewitemtypes
+from binspector.binfilters import binviewproxymodel
 
 app = QtWidgets.QApplication()
 app.setStyle("Fusion")
 
-wnd = siftwidget.BSSiftSettingsWidget()
+wnd_siftwidget = siftwidget.BSSiftSettingsWidget()
 
-font = wnd.font()
+font = wnd_siftwidget.font()
 font.setPointSizeF(font.pointSizeF() * 0.8)
 
-wnd.setWindowTitle("Custom Sift")
-wnd.setFont(font)
-wnd.setWindowFlag(QtCore.Qt.WindowType.Tool)
-wnd.show()
+wnd_siftwidget.setWindowTitle("Custom Sift")
+wnd_siftwidget.setFont(font)
+wnd_siftwidget.setWindowFlag(QtCore.Qt.WindowType.Tool)
+wnd_siftwidget.show()
 
-geo = wnd.geometry()
+geo = wnd_siftwidget.geometry()
 geo.setWidth(geo.height() * 1.75)
 
-wnd.setGeometry(geo)
-wnd.setFixedHeight(geo.height())
+wnd_siftwidget.setGeometry(geo)
+wnd_siftwidget.setFixedHeight(geo.height())
 
-wnd.btn_dialog.accepted.connect(app.quit)
-wnd.btn_dialog.rejected.connect(app.quit)
-wnd.btn_dialog.button(QtWidgets.QDialogButtonBox.StandardButton.Apply).clicked.connect(lambda: print(wnd.siftOptions()))
-wnd.btn_dialog.button(QtWidgets.QDialogButtonBox.StandardButton.Reset).clicked.connect(lambda: print(wnd.setSiftOptions()))
+model_binview       = binviewmodel.BSBinViewModel()
+model_binviewfilter = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=model_binview)
+model_sift_columns  = columnchoosermodel.BSBinSiftColumnChooserModel(bin_view_model=model_binviewfilter)
+
+wnd_siftwidget.setBinViewModel(model_binviewfilter)
 
 import sys
 with avb.open(sys.argv[1]) as bin_file:
-	bin_view = bin_file.content.view_setting
-	wnd.setBinView(bin_view)
-	wnd.setSiftOptions([
-		siftwidget.BSSiftOption.from_sift_item(s) for s in bin_file.content.sifted_settings
+	
+	model_binview.setBinViewInfo(
+		binviewitemtypes.BSBinViewInfo.from_binview(bin_file.content.view_setting)
+	)
+	
+	wnd_siftwidget.setSiftOptions([
+		avbutils.bins.BinSiftOption.from_sift_item(s) for s in bin_file.content.sifted_settings
 	])
-	print(bin_file.content.sifted)
 
 app.exec()
