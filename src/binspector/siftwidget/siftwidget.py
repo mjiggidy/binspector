@@ -6,7 +6,7 @@ import dataclasses
 import avb
 from PySide6 import QtCore, QtGui, QtWidgets
 from avbutils import bins
-from . import columnchoosermodel
+from . import columnsmodel
 
 class SiftOptionWidget(QtWidgets.QWidget):
 	
@@ -73,7 +73,7 @@ class SiftOptionWidget(QtWidgets.QWidget):
 		)
 	
 	@QtCore.Slot(list)
-	def setColumnsChooserModel(self, columns_chooser_model:columnchoosermodel.BSBinSiftColumnChooserModel):
+	def setColumnsChooserModel(self, columns_chooser_model:columnsmodel.BSBinSiftColumnChooserModel):
 
 		if self._cmb_match_column.model() == columns_chooser_model:
 			return
@@ -93,7 +93,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		super().__init__(*args, **kwargs)
 
-		self._columns_chooser_model = columnchoosermodel.BSBinSiftColumnChooserModel(bin_view_model=bin_view_model or QtCore.QIdentityProxyModel())
+		self._columns_chooser_model = columnsmodel.BSBinSiftColumnChooserModel(bin_view_model=bin_view_model or QtCore.QIdentityProxyModel())
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 

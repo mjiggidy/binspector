@@ -1,6 +1,6 @@
 import avb, avbutils
 from PySide6 import QtCore, QtWidgets
-from binspector.siftwidget import siftwidget, columnchoosermodel
+from binspector.siftwidget import columnsmodel, siftwidget
 from binspector.binview import binviewmodel, binviewitemtypes
 from binspector.binfilters import binviewproxymodel
 
@@ -25,7 +25,7 @@ wnd_siftwidget.setFixedHeight(geo.height())
 
 model_binview       = binviewmodel.BSBinViewModel()
 model_binviewfilter = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=model_binview)
-model_sift_columns  = columnchoosermodel.BSBinSiftColumnChooserModel(bin_view_model=model_binviewfilter)
+model_sift_columns  = columnsmodel.BSBinSiftColumnChooserModel(bin_view_model=model_binviewfilter)
 
 wnd_siftwidget.setBinViewModel(model_binviewfilter)
 
