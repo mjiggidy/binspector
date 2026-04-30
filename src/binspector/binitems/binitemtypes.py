@@ -41,7 +41,6 @@ class BSBinItemDataRoles(enum.IntEnum):
 
 	ScriptNotesRole      = enum.auto()
 	"""Data for Script View Mode extended comment"""
-
 	
 	ViewItemsRole        = enum.auto()
 	"""Return the view item dict"""
@@ -51,6 +50,49 @@ class BSBinItemDataRoles(enum.IntEnum):
 
 	TimecodeRangeRole    = enum.auto()
 	"""The primary timecode range for this item"""
+
+	FilmTCRangeRole      = enum.auto()
+	"""Film TC range"""
+
+	SoundTCRole          = enum.auto()
+	"""In-Out frame offset range"""
+
+	AuxTC1RangeRole      = enum.auto()
+	"""Timecode range"""
+
+	AuxTC2RangeRole      = enum.auto()
+	"""Timecode range"""
+
+	AuxTC3RangeRole     = enum.auto()
+	"""Timecode range"""
+
+	AuxTC4RangeRole      = enum.auto()
+	"""Timecode range"""
+
+	AuxTC5RangeRole      = enum.auto()
+	"""Timecode range"""
+
+	InkNumberRangeRole   = enum.auto()
+	"""Ink number range"""
+
+	AuxInkNumberRangeRole= enum.auto()
+	"""Ink number range"""
+
+	KNRangeRole          = enum.auto()
+	"""In-Out frame offset range"""
+
+	TCMarkInOutRangeRole = enum.auto()
+	"""In-Out frame offset range"""
+
+	KNMarkInOutRangeRole = enum.auto()
+	"""In-Out keycode offset range"""
+
+
+
+
+
+
+
 	
 
 class BSAbstractViewItem:

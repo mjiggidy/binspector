@@ -24,6 +24,8 @@ import avbutils
 from PySide6 import QtCore, QtGui
 from ..binview import binviewmodel, binviewitemtypes
 
+from . import binsiftrangesmodel
+
 class BSBinSiftSourceType(enum.Enum):
 	"""None? Any? A column? A range? YOU TELL ME, FRIENDOOOOO"""
 
@@ -52,10 +54,13 @@ class BSBinSiftColumnsChooserModel(QtCore.QAbstractItemModel):
 
 		super().__init__(*args, **kwargs)
 
+		self._sift_ranges_model = binsiftrangesmodel.BSSiftRangesProxyModel(parent=self)
+		self._sift_ranges_model.setSourceModel(bin_view_model)
+
 		self._source_models:dict[BSBinSiftSourceType, QtCore.QAbstractItemModel] = {
 			BSBinSiftSourceType.NoColumn:  QtGui.QStandardItemModel(parent=self),
 			BSBinSiftSourceType.SingleColumn: bin_view_model,
-			BSBinSiftSourceType.Range: QtGui.QStandardItemModel(parent=self),
+			BSBinSiftSourceType.Range: self._sift_ranges_model,
 			BSBinSiftSourceType.AnyColumn: QtGui.QStandardItemModel(parent=self),
 		}
 
@@ -63,9 +68,9 @@ class BSBinSiftColumnsChooserModel(QtCore.QAbstractItemModel):
 
 		self._source_models[BSBinSiftSourceType.AnyColumn].appendRow(QtGui.QStandardItem("Any"))
 
-		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 1"))
-		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 2"))
-		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 3"))
+#		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 1"))
+#		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 2"))
+#		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 3"))
 		
 		# lol three days of troubleshooting and it turns out I didn't call this
 		self._setupBinViewModel()

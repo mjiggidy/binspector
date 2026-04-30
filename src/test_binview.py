@@ -61,7 +61,7 @@ if __name__ == "__main__":
 	final_proxy         = QtCore.QIdentityProxyModel()
 	final_proxy.setSourceModel(bin_composite_model)
 
-	sift_columns_model  = binsiftcolumnsmodel.BSBinSiftColumnsModel(bin_view_model=bin_view_filter)
+	sift_columns_model  = binsiftcolumnsmodel.BSBinSiftColumnsChooserModel(bin_view_model=bin_view_filter)
 	
 	###
 	
