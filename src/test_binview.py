@@ -76,10 +76,12 @@ if __name__ == "__main__":
 	tree_binviewer.move(wnd_editor.geometry().topRight() + QtCore.QPoint(100,0))
 	tree_binviewer.show()
 
-	list_sift_columns = QtWidgets.QComboBox()
+	list_sift_columns = QtWidgets.QListView()
 	list_sift_columns.setModel(sift_columns_model)
 	tree_binviewer.move(wnd_editor.geometry().topLeft() + QtCore.QPoint(-100,0))
 	list_sift_columns.show()
+
+	list_sift_columns.activated.connect(lambda: print(list_sift_columns.currentData()))
 
 	#bin_item_filter.setAcceptedItemTypes(avbutils.bins.BinDisplayItemTypes.SOURCE)
 
