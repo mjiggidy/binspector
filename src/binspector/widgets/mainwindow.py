@@ -3,6 +3,8 @@ from os import PathLike
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from ..siftwidget import siftwidget
+
 from ..binviewprovider import binviewsources, providermodel
 
 from ..core import icon_registry, renaming
@@ -11,7 +13,7 @@ from ..binwidget import binwidget
 from ..binitems import binitemsmodel, binitemtypes
 from ..binview import binviewmodel, binviewitemtypes
 from ..managers import actions, binproperties, appearance
-from ..widgets import siftwidget, menus, toolboxes, buttons, about, overlaywidget
+from ..widgets import menus, toolboxes, buttons, about, overlaywidget
 from ..core import binloader, icon_engines, icon_providers
 from ..binvieweditor import editorwidget
 

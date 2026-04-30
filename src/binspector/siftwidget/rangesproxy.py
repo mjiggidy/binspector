@@ -12,10 +12,20 @@ class ColumnRangeTrigger:
 	range_role:binitemtypes.BSBinItemDataRoles
 
 class BSSiftRangesProxyModel(QtCore.QSortFilterProxyModel):
+	"""Present sift-able ranges, based on bin column visibility"""
 
 	def __init__(self, *args, **kwargs):
 
 		super().__init__(*args, **kwargs)
+
+		self._sort_collator = QtCore.QCollator()
+		self._sort_collator.setNumericMode(True)
+		self._sort_collator.setLocale(QtCore.QLocale.system())
+		self._sort_collator.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
+
+		self.setSortRole(QtCore.Qt.ItemDataRole.DisplayRole)
+		self.setDynamicSortFilter(True)
+		self.sort(0, QtCore.Qt.SortOrder.AscendingOrder)
 
 		self._range_triggers = {
 
@@ -97,6 +107,13 @@ class BSSiftRangesProxyModel(QtCore.QSortFilterProxyModel):
 		
 		return field_id in self._range_triggers
 	
+	def lessThan(self, source_left:QtCore.QModelIndex, source_right:QtCore.QModelIndex):
+		
+		return self._sort_collator.compare(
+			source_left .data(self.sortRole()),
+			source_right.data(self.sortRole()),
+		)
+	
 	def data(self, index:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole) -> typing.Any:
 		
 		field_id:avbutils.bins.BinColumnFormat = self.mapToSource(index).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
@@ -107,5 +124,14 @@ class BSSiftRangesProxyModel(QtCore.QSortFilterProxyModel):
 		
 		elif role == QtCore.Qt.ItemDataRole.UserRole:
 			return range_trigger.range_role
+		
+		elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
+
+			format_name = avbutils.bins.BinColumnFormat(
+				self.mapToSource(index).data(
+					binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole
+				)).name
+			
+			return self.tr("Sift based on {format_type} range").format(format_type=format_name)
 		
 		return super().data(index, role)

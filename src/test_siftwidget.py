@@ -1,6 +1,6 @@
 import avb, avbutils
 from PySide6 import QtCore, QtWidgets
-from binspector.widgets import siftwidget
+from binspector.siftwidget import siftwidget
 
 app = QtWidgets.QApplication()
 app.setStyle("Fusion")

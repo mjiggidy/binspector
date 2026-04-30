@@ -6,7 +6,6 @@ import logging, typing
 import avb, avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from binspector.textview import textviewproxymodel
 
 from ..core import icon_registry
 
@@ -18,7 +17,9 @@ from ..scriptview import scriptview, scriptproxy
 
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
-from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel, binsiftproxymodel, binsiftcolumnsmodel
+from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel, binsiftproxymodel
+
+from ..siftwidget import columnchoosermodel
 
 from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
 
@@ -67,7 +68,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._test_scriptmodel = scriptproxy.BSScriptViewProxyModel(parent=self)
 		self._test_scriptmodel.setSourceModel(self._bin_model_final)
 
-		self._test_sift_columns_model   = binsiftcolumnsmodel.BSBinSiftColumnsChooserModel(bin_view_model=self._bin_view_filter)
+		self._test_sift_columns_model   = columnchoosermodel.BSBinSiftColumnChooserModel(bin_view_model=self._bin_view_filter)
 		self._test_sift_columns_chooser = QtWidgets.QListView()
 		self._test_sift_columns_chooser.setModel(self._test_sift_columns_model)
 		self._test_sift_columns_chooser.show()

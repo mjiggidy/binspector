@@ -24,7 +24,7 @@ import avbutils
 from PySide6 import QtCore, QtGui
 from ..binview import binviewmodel, binviewitemtypes
 
-from . import binsiftrangesmodel
+from . import rangesproxy
 
 class BSBinSiftSourceType(enum.Enum):
 	"""None? Any? A column? A range? YOU TELL ME, FRIENDOOOOO"""
@@ -35,7 +35,7 @@ class BSBinSiftSourceType(enum.Enum):
 	AnyColumn    = enum.auto()
 
 
-class BSBinSiftColumnsChooserModel(QtCore.QAbstractItemModel):
+class BSBinSiftColumnChooserModel(QtCore.QAbstractItemModel):
 	"""A `QAbstractItemModel` proxy describing bin view columns available for sifting"""
 
 	DEFAULT_LIST_ORDER = [
@@ -54,7 +54,7 @@ class BSBinSiftColumnsChooserModel(QtCore.QAbstractItemModel):
 
 		super().__init__(*args, **kwargs)
 
-		self._sift_ranges_model = binsiftrangesmodel.BSSiftRangesProxyModel(parent=self)
+		self._sift_ranges_model = rangesproxy.BSSiftRangesProxyModel(parent=self)
 		self._sift_ranges_model.setSourceModel(bin_view_model)
 
 		self._source_models:dict[BSBinSiftSourceType, QtCore.QAbstractItemModel] = {
