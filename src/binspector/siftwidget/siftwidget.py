@@ -6,10 +6,12 @@ import dataclasses
 import avb
 from PySide6 import QtCore, QtGui, QtWidgets
 from avbutils import bins
+from . import columnchoosermodel
 
 class SiftOptionWidget(QtWidgets.QWidget):
 	
-	sig_option_set = QtCore.Signal()
+	sig_option_set                    = QtCore.Signal()
+	sig_columns_chooser_model_changed = QtCore.Signal(QtCore.QAbstractItemModel)
 
 	def __init__(self, *args, **kwargs):
 
@@ -71,24 +73,14 @@ class SiftOptionWidget(QtWidgets.QWidget):
 		)
 	
 	@QtCore.Slot(list)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
+	def setColumnsChooserModel(self, columns_chooser_model:columnchoosermodel.BSBinSiftColumnChooserModel):
+
+		if self._cmb_match_column.model() == columns_chooser_model:
+			return
 		
-		self._cmb_match_column.clear()
-
-		self._cmb_match_column.addItem(self.tr("Any"),None)
-		self._cmb_match_column.insertSeparator(self._cmb_match_column.count())
-
-		for bin_column in bin_view.columns:
-			self._cmb_match_column.addItem(bin_column.get("title",""), bin_column.get("type"))
-
-		self._cmb_match_column.insertSeparator(self._cmb_match_column.count())
-
-		self._cmb_match_column.addItem(self.tr("Start to End Range"), None)
-		self._cmb_match_column.addItem(self.tr("Sound TC Range"), None)
-
-		self._cmb_match_column.insertSeparator(self._cmb_match_column.count())
-
-		self._cmb_match_column.addItem(self.tr("None"), None)
+		self._cmb_match_column.setModel(columns_chooser_model)
+		
+		self.sig_columns_chooser_model_changed.emit(columns_chooser_model)
 		
 
 class BSSiftSettingsWidget(QtWidgets.QWidget):
@@ -97,9 +89,11 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 	sig_options_set = QtCore.Signal(bool, object)
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args, bin_view_model:QtCore.QAbstractItemModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
+
+		self._columns_chooser_model = columnchoosermodel.BSBinSiftColumnChooserModel(bin_view_model=bin_view_model or QtCore.QIdentityProxyModel())
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 
@@ -136,6 +130,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		for _ in range(self.CRITERIA_PER_SIFT):
 			wdg = SiftOptionWidget()
+			wdg.setColumnsChooserModel(self._columns_chooser_model)
 			wdg.sig_option_set.connect(lambda: self.sig_options_set.emit(*self.siftOptions()))
 			self._sift_top_widgets.append(wdg)
 			self.grp_sift_top.layout().addWidget(wdg)
@@ -144,6 +139,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		for _ in range(self.CRITERIA_PER_SIFT):
 			wdg = SiftOptionWidget()
+			wdg.setColumnsChooserModel(self._columns_chooser_model)
 			wdg.sig_option_set.connect(lambda: self.sig_options_set.emit(*self.siftOptions()))
 			self._sift_bot_widgets.append(wdg)
 			self.grp_sift_bottom.layout().addWidget(wdg)
@@ -151,15 +147,11 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		#self.layout().addWidget(self.btn_dialog)
 	
 	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
+	def setBinViewModel(self, bin_view_model:QtCore.QAbstractItemModel):
 
 		#print("HUH??")
 
-		for wdg in self._sift_top_widgets:
-			wdg.setBinView(bin_view)
-
-		for wdg in self._sift_bot_widgets:
-			wdg.setBinView(bin_view)
+		self._columns_chooser_model.setBinViewModel(bin_view_model)
 	
 	@QtCore.Slot(bool)
 	def setSiftEnabled(self, is_enabled:bool):

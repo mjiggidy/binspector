@@ -318,7 +318,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
 
 		self._sigs_binloader.sig_got_sift_settings           .connect(self._man_siftsettings.setSiftSettings)
-		self._man_siftsettings.sig_bin_view_changed          .connect(self._tool_sifting.setBinView)
+#		self._man_siftsettings.sig_bin_view_changed          .connect(self._tool_sifting.setBinViewModel)
 		self._man_siftsettings.sig_sift_settings_changed     .connect(self._tool_sifting.setSiftOptions)
 		self._man_siftsettings.sig_sift_enabled              .connect(self._tool_sifting.setSiftEnabled)
 		self._man_siftsettings.sig_sift_enabled              .connect(self._bin_widget.setSiftEnabled)
