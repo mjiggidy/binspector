@@ -198,6 +198,8 @@ class BSBinSiftColumnChooserModel(QtCore.QAbstractItemModel):
 	def setBinViewModel(self, model:binviewmodel.BSBinViewModel):
 		"""Set the source bin view model"""
 
+		# NOTE: Am I hard-coding this or no?  Need to clean up.
+
 		if BSBinSiftSourceType.SingleColumn in self._source_models and self._source_models[BSBinSiftSourceType.SingleColumn] == model:
 			return
 		
@@ -206,9 +208,13 @@ class BSBinSiftColumnChooserModel(QtCore.QAbstractItemModel):
 		if BSBinSiftSourceType.SingleColumn in self._source_models:
 
 			self._source_models[BSBinSiftSourceType.SingleColumn].disconnect(self)
-#			del self._source_models[BSBinSiftSourceType.SingleColumn]
+
+			self._source_models[BSBinSiftSourceType.SingleColumn] = model
 		
-		self._source_models[BSBinSiftSourceType.SingleColumn] = model
+		if BSBinSiftSourceType.Range in self._source_models:
+
+			self._source_models[BSBinSiftSourceType.Range].disconnect(self)
+			self._source_models[BSBinSiftSourceType.Range].setSourceModel(model)
 		
 		self._setupBinViewModel()
 
