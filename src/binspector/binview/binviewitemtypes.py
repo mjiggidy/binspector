@@ -154,8 +154,6 @@ class BSBinViewColumnInfo:
 			"is_hidden": self.is_hidden
 		}
 
-
-
 	@classmethod
 	def from_column(cls, bin_column_info:dict) -> typing.Self:
 
