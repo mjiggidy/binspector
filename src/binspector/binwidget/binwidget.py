@@ -17,7 +17,9 @@ from ..scriptview import scriptview, scriptproxy
 
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
-from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel, binsiftproxymodel
+
+from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel
+from ..binfilters.siftfilter import siftproxymodel
 
 from ..siftwidget import columnsmodel
 
@@ -56,7 +58,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self._bin_composite_model = bincompositemodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter, parent=self)
 
-		self._bin_sift_filter = binsiftproxymodel.BSBinSiftFilterProxyModel(parent=self)	# TODO
+		self._bin_sift_filter = siftproxymodel.BSBinSiftFilterProxyModel(parent=self)	# TODO
 		self._bin_sift_filter.setSourceModel(self._bin_composite_model)
 
 		self._bin_find_filter = binfindproxymodel.BSFindInBinProxyModel(parent=self)
