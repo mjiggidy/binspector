@@ -3,7 +3,7 @@ from PySide6 import QtCore
 
 from .. import abstractfiltermodel
 
-from .abstractoption import BSBinSiftAbstractOption
+from .siftoptions.abstractoption import BSBinSiftAbstractOption
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 

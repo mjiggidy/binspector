@@ -1,6 +1,5 @@
 
 from .abstractoption import BSBinSiftAbstractOption
-from binspector.binview import binviewitemtypes
 import typing
 
 import avbutils

@@ -1,7 +1,7 @@
 
 import typing
 from .siftanycolumn import BSSiftAnyColumnOption
-from binspector.binview import binviewitemtypes
+from ....binview import binviewitemtypes
 
 import avbutils
 from PySide6 import QtCore

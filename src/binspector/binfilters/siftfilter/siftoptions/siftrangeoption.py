@@ -1,6 +1,6 @@
 from PySide6 import QtCore
 from .abstractoption import BSBinSiftAbstractOption
-from ...binitems import binitemtypes
+from ....binitems import binitemtypes
 
 import avbutils, timecode
 
