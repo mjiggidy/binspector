@@ -2,9 +2,7 @@
 Widgets for sifting bin contents
 """
 
-import dataclasses
-import avb
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtWidgets
 from avbutils import bins
 
 from . import sourcesmodel
@@ -52,7 +50,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		self._chk_enable_sift.setText("Enable Sift")
 		self._chk_enable_sift.toggled.connect(lambda: self.sig_options_set.emit(*self.siftOptions()))
-		self.layout().addWidget(self._chk_enable_sift)
+#		self.layout().addWidget(self._chk_enable_sift)
 		
 		self.layout().addWidget(self.grp_sift_top)
 
