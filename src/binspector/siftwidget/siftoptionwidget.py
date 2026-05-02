@@ -1,4 +1,4 @@
-from . import columnsmodel
+from . import sourcesmodel
 
 from PySide6 import QtCore, QtWidgets
 from avbutils import bins
@@ -69,7 +69,7 @@ class SiftOptionWidget(QtWidgets.QWidget):
 		)
 
 	@QtCore.Slot(list)
-	def setColumnsChooserModel(self, columns_chooser_model:columnsmodel.BSBinSiftColumnChooserModel):
+	def setColumnsChooserModel(self, columns_chooser_model:sourcesmodel.BSSiftSourcesViewModel):
 
 		if self._cmb_match_column.model() == columns_chooser_model:
 			return

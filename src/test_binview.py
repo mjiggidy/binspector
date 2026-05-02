@@ -1,7 +1,7 @@
 import sys
 from PySide6 import QtCore, QtWidgets
 
-from binspector.siftwidget import columnsmodel
+from binspector.siftwidget import sourcesmodel
 from binspector.binview  import binviewitemtypes, binviewmodel, jsonadapter
 from binspector.binitems import binitemsmodel
 from binspector.textview import bincompositemodel
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 	final_proxy         = QtCore.QIdentityProxyModel()
 	final_proxy.setSourceModel(bin_composite_model)
 
-	sift_columns_model  = columnsmodel.BSBinSiftColumnChooserModel(bin_view_model=bin_view_filter)
+	sift_columns_model  = sourcesmodel.BSSiftSourcesViewModel(bin_view_model=bin_view_filter)
 	
 	###
 	

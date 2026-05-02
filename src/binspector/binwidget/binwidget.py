@@ -21,7 +21,7 @@ from ..binitems import binitemtypes, binitemsmodel
 from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel
 from ..binfilters.siftfilter import siftproxymodel
 
-from ..siftwidget import columnsmodel
+from ..siftwidget import sourcesmodel
 
 from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
 
@@ -70,7 +70,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._test_scriptmodel = scriptproxy.BSScriptViewProxyModel(parent=self)
 		self._test_scriptmodel.setSourceModel(self._bin_model_final)
 
-		self._test_sift_columns_model   = columnsmodel.BSBinSiftColumnChooserModel(bin_view_model=self._bin_view_filter)
+		self._test_sift_columns_model   = sourcesmodel.BSSiftSourcesViewModel(bin_view_model=self._bin_view_filter)
 		self._test_sift_columns_chooser = QtWidgets.QListView()
 		self._test_sift_columns_chooser.setModel(self._test_sift_columns_model)
 		self._test_sift_columns_chooser.show()

@@ -7,7 +7,7 @@ import avb
 from PySide6 import QtCore, QtGui, QtWidgets
 from avbutils import bins
 
-from . import columnsmodel
+from . import sourcesmodel
 
 from .siftoptionwidget import SiftOptionWidget
 
@@ -21,7 +21,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		super().__init__(*args, **kwargs)
 
-		self._columns_chooser_model = columnsmodel.BSBinSiftColumnChooserModel(bin_view_model=bin_view_model or QtCore.QIdentityProxyModel())
+		self._columns_chooser_model = sourcesmodel.BSSiftSourcesViewModel(bin_view_model=bin_view_model or QtCore.QIdentityProxyModel())
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 
