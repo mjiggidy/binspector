@@ -66,43 +66,52 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 		self._source_models[BSSiftSourceType.NoColumn] .appendRow(QtGui.QStandardItem("None"))
 		self._source_models[BSSiftSourceType.AnyColumn].appendRow(QtGui.QStandardItem("Any"))
 		
+		self._reset_count = 0
+
 		# lol three days of troubleshooting and it turns out I didn't call this
-		self._setupBinViewModel()
+		for source_key in self._source_models:
+			self._setupSourceModel(source_key)
 
 	
-	def _setupBinViewModel(self):
+	def _setupSourceModel(self, source_key:BSSiftSourceType):
 
-		model = self._source_models[BSSiftSourceType.SingleColumn]
+		model = self._source_models[source_key]
 
-		model.rowsAboutToBeInserted  .connect(self.binViewRowsAboutToBeInserted)
-		model.rowsAboutToBeMoved     .connect(self.binViewRowsAboutToBeMoved)
-		model.rowsAboutToBeRemoved   .connect(self.binViewRowsAboutToBeRemoved)
+		model.rowsAboutToBeInserted  .connect(self.sourceViewRowsAboutToBeInserted)
+		model.rowsAboutToBeMoved     .connect(self.sourceViewRowsAboutToBeMoved)
+		model.rowsAboutToBeRemoved   .connect(self.sourceViewRowsAboutToBeRemoved)
 
-		model.rowsInserted           .connect(self.binViewRowsInserted)
-		model.rowsMoved              .connect(self.binViewRowsMoved)
-		model.rowsRemoved            .connect(self.binViewRowsRemoved)
+		model.rowsInserted           .connect(self.sourceViewRowsInserted)
+		model.rowsMoved              .connect(self.sourceViewRowsMoved)
+		model.rowsRemoved            .connect(self.sourceViewRowsRemoved)
 	
-		model.layoutAboutToBeChanged .connect(self.binViewLayoutAboutToBeChanged)
-		model.layoutChanged          .connect(self.binViewLayoutChanged)
+		model.layoutAboutToBeChanged .connect(self.sourceViewLayoutAboutToBeChanged)
+		model.layoutChanged          .connect(self.sourceViewLayoutChanged)
 
-		model.modelAboutToBeReset    .connect(self.binViewModelAboutToBeReset)
-		model.modelReset             .connect(self.binViewModelReset)
+		model.modelAboutToBeReset    .connect(self.sourceViewModelAboutToBeReset)
+		model.modelReset             .connect(self.sourceViewModelReset)
 
-		model.dataChanged            .connect(self.binViewDataChanged)
+		model.dataChanged            .connect(self.sourceViewDataChanged)
 
 	###
+
+	def _sourceTypeForModel(self, model:QtCore.QAbstractItemModel) -> BSSiftSourceType:
+
+		return next(k for k,v in self._source_models.items() if v == model)
 	
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binViewRowsAboutToBeInserted(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
+	def sourceViewRowsAboutToBeInserted(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
 
 		if parent.isValid():
 			return
+		
+		source_type = self._sourceTypeForModel(self.sender())
+		offset     = self._rowOffsetToSiftSource(source_type)
 
-		offset = self._rowOffsetToSiftSource(BSSiftSourceType.SingleColumn)
 		self.beginInsertRows(QtCore.QModelIndex(), first + offset, last + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binViewRowsInserted(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
+	def sourceViewRowsInserted(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
 
 		if parent.isValid():
 			return
@@ -110,7 +119,7 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 		self.endInsertRows()
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
-	def binViewRowsAboutToBeMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int) -> None:
+	def sourceViewRowsAboutToBeMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int) -> None:
 
 		if sourceParent.isValid() or destinationParent.isValid():
 
@@ -119,67 +128,94 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 
 			return
 		
-		offset = self._rowOffsetToSiftSource(BSSiftSourceType.SingleColumn)
+		source_type = self._sourceTypeForModel(self.sender())
+		offset      = self._rowOffsetToSiftSource(source_type)
+
 		self.beginMoveRows(QtCore.QModelIndex(), sourceStart + offset, sourceEnd + offset, QtCore.QModelIndex(), destinationRow + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
-	def binViewRowsMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int) -> None:
+	def sourceViewRowsMoved(self, sourceParent:QtCore.QModelIndex, sourceStart:int, sourceEnd:int, destinationParent:QtCore.QModelIndex, destinationRow:int) -> None:
 
 		if sourceParent.isValid() or destinationParent.isValid():
 			return
-		
+
 		self.endMoveRows()
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binViewRowsAboutToBeRemoved(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
+	def sourceViewRowsAboutToBeRemoved(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
 
 		if parent.isValid():
 			return
 		
-		offset = self._rowOffsetToSiftSource(BSSiftSourceType.SingleColumn)
+		source_type = self._sourceTypeForModel(self.sender())
+		offset      = self._rowOffsetToSiftSource(source_type)
+
 		self.beginRemoveRows(QtCore.QModelIndex(), first + offset, last + offset)
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
-	def binViewRowsRemoved(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
+	def sourceViewRowsRemoved(self, parent:QtCore.QModelIndex, first:int, last:int) -> None:
 
 		if parent.isValid():
 			return
 		
 		self.endRemoveRows()
 
+	@QtCore.Slot(list, object)
+	def sourceViewLayoutAboutToBeChanged(self, parents:list[QtCore.QPersistentModelIndex]=None, hint:QtCore.QAbstractItemModel.LayoutChangeHint=None) -> None:
+
+		# If parents are defined
+		if parents and all(idx.isValid() for idx in parents):
+			return
+		
+		if hint == QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint:
+			return
+		
+		self.layoutAboutToBeChanged.emit([], hint)
+
 	@QtCore.Slot(list)
-	def binViewLayoutAboutToBeChanged(self, parents:list[QtCore.QPersistentModelIndex], hint:QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
+	def sourceViewLayoutChanged(self, parents:list[QtCore.QPersistentModelIndex], hint:QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
 
 		if not any(not idx.isValid() for idx in parents):
 			return
 		
-		self.layoutAboutToBeChanged.emit()
-
-	@QtCore.Slot(list)
-	def binViewLayoutChanged(self, parents:list[QtCore.QPersistentModelIndex], hint:QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
-
-		if not any(not idx.isValid() for idx in parents):
-			return
-		
-		self.layoutChanged.emit()
+		self.layoutChanged.emit([], hint)
 
 	@QtCore.Slot()
-	def binViewModelAboutToBeReset(self) -> None:
+	def sourceViewModelAboutToBeReset(self) -> None:
 		
-		self.beginResetModel()
+		if self._reset_count == 0:
+			print("**FINNA RESET")
+			self.beginResetModel()
+
+		else:
+			print("** NAH NOT RESET AGAIN")
+
+		self._reset_count += 1
+		
 
 	@QtCore.Slot()
-	def binViewModelReset(self) -> None:
+	def sourceViewModelReset(self) -> None:
+
+		self._reset_count -= 1
 		
-		self.endResetModel()
+		if self._reset_count == 0:
+			print("** DOIN IT")
+			self.endResetModel()
+		
+		elif self._reset_count < 0:
+			raise RuntimeError(f"End model reset called {abs(self._reset_count)} extra times...")
+		
+		else:
+			print("** NO")
 
 	@QtCore.Slot(QtCore.QModelIndex, QtCore.QModelIndex, list)
-	def binViewDataChanged(self, topLeft:QtCore.QModelIndex, bottomRight:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]) -> None:
+	def sourceViewDataChanged(self, topLeft:QtCore.QModelIndex, bottomRight:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]) -> None:
 		
 		if topLeft.column() != 0:
 			return
 		
-		offset = self._rowOffsetToSiftSource(BSSiftSourceType.SingleColumn)
+		source_type = self._sourceTypeForModel(self.sender())
+		offset      = self._rowOffsetToSiftSource(source_type)
 		
 		self.dataChanged.emit(
 			self.index(topLeft.row()     + offset, 0, QtCore.QModelIndex()),
@@ -203,14 +239,14 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 
 			self._source_models[BSSiftSourceType.SingleColumn].disconnect(self)
 
-			self._source_models[BSSiftSourceType.SingleColumn] = model
 		
 		if BSSiftSourceType.Range in self._source_models:
 
-			self._source_models[BSSiftSourceType.Range].disconnect(self)
 			self._source_models[BSSiftSourceType.Range].setSourceModel(model)
 		
-		self._setupBinViewModel()
+		
+		self._source_models[BSSiftSourceType.SingleColumn] = model
+		self._setupSourceModel(BSSiftSourceType.SingleColumn)
 
 		self.endResetModel()
 
