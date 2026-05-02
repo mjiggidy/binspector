@@ -7,7 +7,7 @@ from avbutils import bins
 
 from . import sourcesmodel
 
-from .siftoptionwidget import SiftOptionWidget
+from .siftcriteriawidget import BSSiftCriteriaWidget
 
 class BSSiftSettingsWidget(QtWidgets.QWidget):
 	
@@ -40,8 +40,8 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		self._chk_enable_sift = QtWidgets.QCheckBox()
 
-		self._sift_top_widgets:list[SiftOptionWidget] = []
-		self._sift_bot_widgets:list[SiftOptionWidget] = []
+		self._sift_top_widgets:list[BSSiftCriteriaWidget] = []
+		self._sift_bot_widgets:list[BSSiftCriteriaWidget] = []
 
 #		self.btn_dialog.setStandardButtons(
 #			QtWidgets.QDialogButtonBox.StandardButton.Apply|QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Ok|QtWidgets.QDialogButtonBox.StandardButton.Reset
@@ -62,7 +62,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 
 		for _ in range(self.CRITERIA_PER_SIFT):
-			wdg = SiftOptionWidget()
+			wdg = BSSiftCriteriaWidget()
 			wdg.setColumnsChooserModel(self._columns_chooser_model)
 			wdg.sig_criteria_set.connect(lambda: self.sig_options_set.emit(*self.siftCriteria()))
 			self._sift_top_widgets.append(wdg)
@@ -71,7 +71,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		self.layout().addWidget(self.grp_sift_bottom)
 
 		for _ in range(self.CRITERIA_PER_SIFT):
-			wdg = SiftOptionWidget()
+			wdg = BSSiftCriteriaWidget()
 			wdg.setColumnsChooserModel(self._columns_chooser_model)
 			wdg.sig_criteria_set.connect(lambda: self.sig_options_set.emit(*self.siftCriteria()))
 			self._sift_bot_widgets.append(wdg)

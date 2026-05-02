@@ -5,7 +5,7 @@ from . import sourcesmodel
 from PySide6 import QtCore, QtWidgets
 from avbutils import bins
 
-class SiftOptionWidget(QtWidgets.QWidget):
+class BSSiftCriteriaWidget(QtWidgets.QWidget):
 	"""A single sift option widget"""
 
 	sig_criteria_set                    = QtCore.Signal(object)
