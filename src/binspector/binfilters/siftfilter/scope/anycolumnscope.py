@@ -21,7 +21,7 @@ class BSSiftScopeAnyColumn(BSBinSiftAbstractScope):
 		self._sift_string      = sift_string
 		self._sift_role        = sift_role
 
-	def option_accepts_row(self, index:QtCore.QModelIndex) -> bool:
+	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
 
 		if not index.isValid():
 			return False

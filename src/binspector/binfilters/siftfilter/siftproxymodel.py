@@ -7,11 +7,11 @@ import avbutils
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
-	def __init__(self, *args, sift_options:list[avbutils.bins.BinSiftOption]|None=None, **kwargs):
+	def __init__(self, *args, sift_criteria:typing.Iterable|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
-		self._sift_options = sift_options or []
+		self._sift_criteria = list(sift_criteria) if sift_criteria is not None else []
 
 	@QtCore.Slot(bool)
 	def setEnabled(self, is_enabled:bool):
@@ -26,15 +26,13 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		self.sig_filter_toggled.emit(is_enabled)
 	
 	@QtCore.Slot(object)
-	def setSiftOptions(self, sift_options:typing.Iterable[avbutils.bins.BinSiftOption]):
+	def setSiftCriteria(self, sift_criteria:typing.Iterable):
 
-		if self._sift_options == sift_options:
+		if self._sift_criteria == sift_criteria:
 			return
 
 		self.beginFilterChange()
-
-		self._sift_options = list(sift_options)
-		
+		self._sift_criteria = list(sift_criteria)
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
 
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
@@ -47,4 +45,4 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		
 		source_index = self.sourceModel().index(source_row, 0, QtCore.QModelIndex())
 
-		return all(option.option_accepts_row(source_index) for option in self._sift_options)
+		return all(crit.option_accepts_row(source_index) for crit in self._sift_criteria)

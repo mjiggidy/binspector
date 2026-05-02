@@ -3,7 +3,7 @@ from . import BSBinSiftAbstractScope
 
 class BSSiftScopeNoColumn(BSBinSiftAbstractScope):
 
-	def option_accepts_row(self, index:QtCore.QModelIndex):
+	def scope_accepts_index(self, index:QtCore.QModelIndex):
 
 		# TODO: Verify
 

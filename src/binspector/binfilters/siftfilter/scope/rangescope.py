@@ -19,7 +19,7 @@ class BSSiftScopeRange(BSBinSiftAbstractScope):
 		self._sift_rule   = sift_rule
 		self._sift_string = sift_string
 
-	def option_accepts_row(self, index:QtCore.QModelIndex) -> bool:
+	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
 
 		if not index.isValid():
 			return False

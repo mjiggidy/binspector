@@ -4,5 +4,5 @@ import abc
 class BSBinSiftAbstractScope(abc.ABC):
 
 	@abc.abstractmethod
-	def option_accepts_row(self, index:QtCore.QModelIndex) -> bool:
+	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
 		pass

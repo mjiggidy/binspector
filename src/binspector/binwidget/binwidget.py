@@ -465,8 +465,8 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(object)
 	def setSiftOptions(self, sift_options:typing.Iterable[avbutils.bins.BinSiftOption]):
 
-		print("TODO")
-		self._bin_sift_filter.setSiftOptions(sift_options)
+		print("** TODO: setSiftOptions")
+		self._bin_sift_filter.setSiftCriteria(sift_options)
 
 
 	###
