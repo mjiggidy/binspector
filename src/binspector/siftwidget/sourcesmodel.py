@@ -20,9 +20,8 @@ sift goes back to "Any" column.
 """
 
 import enum
-import avbutils
 from PySide6 import QtCore, QtGui
-from ..binview import binviewmodel, binviewitemtypes
+from ..binview import binviewmodel
 
 from . import rangesmodel
 
@@ -38,12 +37,12 @@ class BSSiftSourceType(enum.Enum):
 class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 	"""A view model describing bin view columns and ranges available for sifting"""
 
-	DEFAULT_LIST_ORDER = [
-		BSSiftSourceType.NoColumn,
-		BSSiftSourceType.SingleColumn,
-		BSSiftSourceType.Range,
-		BSSiftSourceType.AnyColumn,
-	]
+#	DEFAULT_LIST_ORDER = [
+#		BSSiftSourceType.NoColumn,
+#		BSSiftSourceType.SingleColumn,
+#		BSSiftSourceType.Range,
+#		BSSiftSourceType.AnyColumn,
+#	]
 
 	SEPARATOR_ROW_SIZE = 1
 	"""How many rows a separator occupies i dunno"""
@@ -64,13 +63,8 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 			BSSiftSourceType.AnyColumn: QtGui.QStandardItemModel(parent=self),
 		}
 
-		self._source_models[BSSiftSourceType.NoColumn].appendRow(QtGui.QStandardItem("None"))
-
+		self._source_models[BSSiftSourceType.NoColumn] .appendRow(QtGui.QStandardItem("None"))
 		self._source_models[BSSiftSourceType.AnyColumn].appendRow(QtGui.QStandardItem("Any"))
-
-#		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 1"))
-#		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 2"))
-#		self._source_models[BSBinSiftSourceType.Range].appendRow(QtGui.QStandardItem("Range 3"))
 		
 		# lol three days of troubleshooting and it turns out I didn't call this
 		self._setupBinViewModel()
@@ -333,5 +327,10 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 			return None
 
 		# Map back to bin view model for any single-column data
-		row_offset  = self._rowOffsetToSiftSource(source_type)
-		return self._source_models[source_type].index(index.row() - row_offset, 0, QtCore.QModelIndex()).data(role)
+		row_offset   = self._rowOffsetToSiftSource(source_type)
+		source_index = self._source_models[source_type].index(index.row() - row_offset, 0, QtCore.QModelIndex())
+
+		if role == QtCore.Qt.ItemDataRole.UserRole:
+			return (source_type, source_index.data(QtCore.Qt.ItemDataRole.UserRole))
+		
+		return source_index.data(role)
