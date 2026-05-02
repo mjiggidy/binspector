@@ -184,11 +184,11 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 	def sourceViewModelAboutToBeReset(self) -> None:
 		
 		if self._reset_count == 0:
-			print("**FINNA RESET")
+#			print("**FINNA RESET")
 			self.beginResetModel()
 
-		else:
-			print("** NAH NOT RESET AGAIN")
+#		else:
+#			print("** NAH NOT RESET AGAIN")
 
 		self._reset_count += 1
 		
@@ -199,14 +199,14 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 		self._reset_count -= 1
 		
 		if self._reset_count == 0:
-			print("** DOIN IT")
+#			print("** DOIN IT")
 			self.endResetModel()
 		
 		elif self._reset_count < 0:
 			raise RuntimeError(f"End model reset called {abs(self._reset_count)} extra times...")
 		
-		else:
-			print("** NO")
+#		else:
+#			print("** NO")
 
 	@QtCore.Slot(QtCore.QModelIndex, QtCore.QModelIndex, list)
 	def sourceViewDataChanged(self, topLeft:QtCore.QModelIndex, bottomRight:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]) -> None:
