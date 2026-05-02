@@ -8,10 +8,11 @@ from avbutils import bins
 class SiftOptionWidget(QtWidgets.QWidget):
 	"""A single sift option widget"""
 
-	sig_option_set                    = QtCore.Signal(object)
-	sig_columns_chooser_model_changed = QtCore.Signal(QtCore.QAbstractItemModel)
+	sig_criteria_set                    = QtCore.Signal(object)
+	sig_columns_chooser_model_changed   = QtCore.Signal(QtCore.QAbstractItemModel)
 
-	DEFAULT_OPTION_CHANGED_TIMEOUT_MSEC = 500
+	DEFAULT_SIFT_CRITERIA               = bins.BinSiftOption(bins.BinSiftMethod.CONTAINS, "", "Any")
+	CRITERIA_CHANGED_TIMEOUT_MSEC       = 500
 
 	def __init__(self, *args, **kwargs):
 
@@ -19,18 +20,18 @@ class SiftOptionWidget(QtWidgets.QWidget):
 
 		self.setLayout(QtWidgets.QGridLayout())
 		self.layout().setContentsMargins(QtCore.QMargins(0,0,0,0))
+		self.layout().setSpacing(2)
 
 		self._txt_match_text   = QtWidgets.QLineEdit()
 		self._cmb_match_method = QtWidgets.QComboBox()
-		self._cmb_match_column = QtWidgets.QComboBox()
+		self._cmb_match_scope  = QtWidgets.QComboBox()
 
-		self._default_sift_option = bins.BinSiftOption(bins.BinSiftMethod.CONTAINS, "", "Any")
 
-		self._option_changed_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.DEFAULT_OPTION_CHANGED_TIMEOUT_MSEC)
+		self._criteria_changed_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.CRITERIA_CHANGED_TIMEOUT_MSEC)
 
-		self.layout().addWidget(self._cmb_match_method,  0, 0)
-		self.layout().addWidget(self._txt_match_text,  0, 1)
-		self.layout().addWidget(self._cmb_match_column, 0, 2)
+		self.layout().addWidget(self._cmb_match_method, 0, 0)
+		self.layout().addWidget(self._txt_match_text,   0, 1)
+		self.layout().addWidget(self._cmb_match_scope,  0, 2)
 
 		self._setupWidgets()
 		self._setupSignals()
@@ -44,37 +45,39 @@ class SiftOptionWidget(QtWidgets.QWidget):
 		#	#(column_name, column_index)
 		#	self._cmb_match_column.addItem(column_name, column_index)
 
-		self._cmb_match_column.setMinimumContentsLength(12)
-		self._cmb_match_column.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+		self._cmb_match_scope.setMinimumContentsLength(12)
+		self._cmb_match_scope.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
 
 	def _setupSignals(self):
 
-		self._txt_match_text.textChanged    .connect(self.siftTextSet)
-		self._cmb_match_method.activated    .connect(self.siftMethodChosen)
-		self._cmb_match_column.activated    .connect(self.siftSourceChosen)
+		self._txt_match_text.textChanged     .connect(self.siftTextSet)
+		self._cmb_match_method.activated     .connect(self.siftMethodChosen)
+		self._cmb_match_scope.activated      .connect(self.siftScopeChosen)
 
-		self._option_changed_timer.timeout  .connect(self.siftOptionSettled)
+		self._criteria_changed_timer.timeout .connect(self.siftCriteriaSettled)
 
 	@QtCore.Slot()
-	def siftOptionSettled(self):
+	def siftCriteriaSettled(self):
+		"""Sift criteria have survived the timer, emit it"""
 
-		self.sig_option_set.emit(self.siftOption())
-		print(self.siftOption())
+		self.sig_criteria_set.emit(self.siftCriteria())
+		print(self.siftCriteria())
 
 	@QtCore.Slot(object)
-	def setSiftOption(self, sift_option:bins.BinSiftOption):
+	def setSiftCriteria(self, sift_criteria:bins.BinSiftOption):
 
-		sift_option = sift_option or self._default_sift_option
+		sift_criteria = sift_criteria or self.DEFAULT_SIFT_CRITERIA
 
-		self._cmb_match_method.setCurrentIndex(self._cmb_match_method.findData(sift_option.sift_method))
-		self._txt_match_text.setText(sift_option.sift_text)
-		self._cmb_match_column.setCurrentText(sift_option.sift_column or "None")
+		self._cmb_match_method.setCurrentIndex(self._cmb_match_method.findData(sift_criteria.sift_method))
+		self._txt_match_text.setText(sift_criteria.sift_text)
+		self._cmb_match_scope.setCurrentText(sift_criteria.sift_column or "None")
 
 		#print(sift_option)
 
 		#self.sig_option_set.emit()
 
-	def siftOption(self) -> bins.BinSiftOption:
+	def siftCriteria(self) -> bins.BinSiftOption:
+		"""Build a `BinSiftOption` based on current user input"""
 
 		return bins.BinSiftOption(
 			sift_method = self.siftMethod(),
@@ -85,10 +88,10 @@ class SiftOptionWidget(QtWidgets.QWidget):
 	@QtCore.Slot(list)
 	def setColumnsChooserModel(self, columns_chooser_model:sourcesmodel.BSSiftSourcesViewModel):
 
-		if self._cmb_match_column.model() == columns_chooser_model:
+		if self._cmb_match_scope.model() == columns_chooser_model:
 			return
 
-		self._cmb_match_column.setModel(columns_chooser_model)
+		self._cmb_match_scope.setModel(columns_chooser_model)
 
 		self.sig_columns_chooser_model_changed.emit(columns_chooser_model)
 
@@ -106,21 +109,21 @@ class SiftOptionWidget(QtWidgets.QWidget):
 	@QtCore.Slot()
 	def siftTextSet(self):
 
-		self._option_changed_timer.start()
+		self._criteria_changed_timer.start()
 
 	@QtCore.Slot()
-	def siftSourceChosen(self):
+	def siftScopeChosen(self):
 
-		sift_source_type, _ = self._cmb_match_column.currentData()
+		sift_source_type, _ = self._cmb_match_scope.currentData()
 		
 		if sift_source_type == sourcesmodel.BSSiftSourceType.Range:
 			self.setSiftMethod(bins.BinSiftMethod.CONTAINS)
 
-		self._option_changed_timer.start()
+		self._criteria_changed_timer.start()
 
 	def siftSource(self) -> typing.Tuple[sourcesmodel.BSSiftSourceType, typing.Any]:
 
-		return self._cmb_match_column.currentData()
+		return self._cmb_match_scope.currentData()
 
 	@QtCore.Slot()
 	def siftMethodChosen(self):
@@ -135,13 +138,13 @@ class SiftOptionWidget(QtWidgets.QWidget):
 
 				self.setSiftSource(source_type=sourcesmodel.BSSiftSourceType.AnyColumn)
 
-		self._option_changed_timer.start()
+		self._criteria_changed_timer.start()
 
 	def setSiftSource(self, source_type:sourcesmodel.BSSiftSourceType):
 
 		if not source_type == sourcesmodel.BSSiftSourceType.AnyColumn:
 			raise NotImplementedError("Nope")
 		
-		self._cmb_match_column.setCurrentIndex(0)
+		self._cmb_match_scope.setCurrentIndex(0)
 
-		self._option_changed_timer.start()
+		self._criteria_changed_timer.start()

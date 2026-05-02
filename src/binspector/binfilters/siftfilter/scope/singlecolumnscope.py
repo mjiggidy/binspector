@@ -1,12 +1,12 @@
-
 import typing
-from .siftanycolumnoption import BSSiftAnyColumnOption
-from ....binview import binviewitemtypes
 
 import avbutils
 from PySide6 import QtCore
 
-class BSSiftSingleColumnOption(BSSiftAnyColumnOption):
+from . import BSSiftScopeAnyColumn
+from ....binview import binviewitemtypes
+
+class BSSiftScopeSingleColumn(BSSiftScopeAnyColumn):
 	"""Sift option involving a single column"""
 
 	def __init__(

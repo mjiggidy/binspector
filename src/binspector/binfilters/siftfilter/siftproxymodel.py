@@ -1,13 +1,13 @@
 import typing
 from PySide6 import QtCore
 
+from .  import scope
 from .. import abstractfiltermodel
-
-from .siftoptions.abstractoption import BSBinSiftAbstractOption
+import avbutils
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
-	def __init__(self, *args, sift_options:list[BSBinSiftAbstractOption]|None=None, **kwargs):
+	def __init__(self, *args, sift_options:list[avbutils.bins.BinSiftOption]|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -26,7 +26,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		self.sig_filter_toggled.emit(is_enabled)
 	
 	@QtCore.Slot(object)
-	def setSiftOptions(self, sift_options:typing.Iterable[BSBinSiftAbstractOption]):
+	def setSiftOptions(self, sift_options:typing.Iterable[avbutils.bins.BinSiftOption]):
 
 		if self._sift_options == sift_options:
 			return

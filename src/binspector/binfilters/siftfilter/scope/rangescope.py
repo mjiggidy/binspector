@@ -1,10 +1,10 @@
 from PySide6 import QtCore
-from .abstractoption import BSBinSiftAbstractOption
+from . import BSBinSiftAbstractScope
 from ....binitems import binitemtypes
 
 import avbutils, timecode
 
-class BSSiftRangeOption(BSBinSiftAbstractOption):
+class BSSiftScopeRange(BSBinSiftAbstractScope):
 
 	def __init__(
 		self,

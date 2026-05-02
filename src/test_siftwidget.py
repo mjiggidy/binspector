@@ -36,8 +36,8 @@ with avb.open(sys.argv[1]) as bin_file:
 		binviewitemtypes.BSBinViewInfo.from_binview(bin_file.content.view_setting)
 	)
 	
-	wnd_siftwidget.setSiftOptions([
-		avbutils.bins.BinSiftOption.from_sift_item(s) for s in bin_file.content.sifted_settings
-	])
+#	wnd_siftwidget.setSiftOptions([
+#		avbutils.bins.BinSiftOption.from_sift_item(s) for s in bin_file.content.sifted_settings
+#	])
 
 app.exec()

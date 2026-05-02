@@ -1,12 +1,11 @@
-
-from .abstractoption import BSBinSiftAbstractOption
 import typing
 
 import avbutils
 from PySide6 import QtCore
 
+from . import BSBinSiftAbstractScope
 
-class BSSiftAnyColumnOption(BSBinSiftAbstractOption):
+class BSSiftScopeAnyColumn(BSBinSiftAbstractScope):
 	"""Sift option involving a single column"""
 
 	def __init__(

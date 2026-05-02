@@ -1,7 +1,7 @@
 from PySide6 import QtCore
-from .abstractoption import BSBinSiftAbstractOption
+from . import BSBinSiftAbstractScope
 
-class BSSiftNoColumnOption(BSBinSiftAbstractOption):
+class BSSiftScopeNoColumn(BSBinSiftAbstractScope):
 
 	def option_accepts_row(self, index:QtCore.QModelIndex):
 
