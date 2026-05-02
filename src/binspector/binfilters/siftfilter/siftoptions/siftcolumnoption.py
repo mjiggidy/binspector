@@ -1,6 +1,6 @@
 
 import typing
-from .siftanycolumn import BSSiftAnyColumnOption
+from .siftanycolumnoption import BSSiftAnyColumnOption
 from ....binview import binviewitemtypes
 
 import avbutils
