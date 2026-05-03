@@ -163,7 +163,7 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 		if hint == QtCore.QAbstractItemModel.LayoutChangeHint.HorizontalSortHint:
 			return
 		
-		self.layoutAboutToBeChanged.emit([], hint)
+		self.layoutAboutToBeChanged.emit()
 
 	@QtCore.Slot(list)
 	def sourceViewLayoutChanged(self, parents:list[QtCore.QPersistentModelIndex], hint:QtCore.QAbstractItemModel.LayoutChangeHint) -> None:
@@ -171,7 +171,7 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 		if not any(not idx.isValid() for idx in parents):
 			return
 		
-		self.layoutChanged.emit([], hint)
+		self.layoutChanged.emit()
 
 	@QtCore.Slot()
 	def sourceViewModelAboutToBeReset(self) -> None:
