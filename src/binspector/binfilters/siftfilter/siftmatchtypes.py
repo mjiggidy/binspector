@@ -1,3 +1,4 @@
+from __future__ import annotations
 import enum, typing
 
 if typing.TYPE_CHECKING:
