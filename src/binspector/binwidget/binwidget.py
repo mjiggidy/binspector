@@ -412,8 +412,9 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(bool)
 	def setBinItemFiltersEnabled(self, are_enabled:bool):
 
-		print("TO DO")
+		#print("TO DO")
 		self._bin_items_filter.setEnabled(are_enabled)
+		self._bin_sift_filter.setEnabled(are_enabled)
 
 	@QtCore.Slot(int)
 	def hideBinColumn(self, logical_index:int):
