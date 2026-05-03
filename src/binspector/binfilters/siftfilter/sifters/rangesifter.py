@@ -32,10 +32,13 @@ class BSRangeSifter(BSAbstractSifter):
 
 			try:
 				# NOTE: Not doing this conversion in __init__ because I'm not sure what item values we'll uncover for now...
-				sift_value = timecode.Timecode(self._sift_string, rate=item_range.rate, mode=item_range.mode)
+
+				sift_string_santized = self._sift_string.strip(":; ")
+				sift_value = timecode.Timecode(sift_string_santized, rate=item_range.rate, mode=item_range.mode)
 
 			except Exception as e:
-				raise
+				
+				return False
 			
 			return sift_value in item_range
 		
