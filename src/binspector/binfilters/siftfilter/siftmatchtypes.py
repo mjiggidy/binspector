@@ -14,7 +14,7 @@ class BSSiftMatchTypes(enum.IntEnum):
 
 	BeginsWith     = 2
 	"""Column begins with a given string"""
-
+ 
 	MatchesExactly = 3
 	"""Column matches exactly a given string"""
 

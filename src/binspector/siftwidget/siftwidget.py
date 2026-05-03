@@ -10,6 +10,7 @@ from avbutils import bins
 from . import sourcesmodel
 
 from .siftcriteriawidget import BSSiftCriteriaWidget
+from ..binfilters.siftfilter import sifters
 
 class BSSiftSettingsWidget(QtWidgets.QWidget):
 	
@@ -109,7 +110,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		self.sig_criteria_set.emit(self.siftCriteria())
 
-	def siftCriteria(self) -> typing.Tuple[list[bins.BinSiftOption],list[bins.BinSiftOption]]:
+	def siftCriteria(self) -> typing.Tuple[list[sifters.BSAbstractSifter],list[sifters.BSAbstractSifter]]:
 		"""The sift criteria as currently set"""
 
 		return (

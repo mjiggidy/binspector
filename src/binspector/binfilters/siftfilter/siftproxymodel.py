@@ -1,13 +1,12 @@
 import typing
 from PySide6 import QtCore
 
-from .  import scope
+from .  import sifters
 from .. import abstractfiltermodel
-import avbutils
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
-	def __init__(self, *args, sift_criteria:typing.Iterable|None=None, **kwargs):
+	def __init__(self, *args, sift_criteria:typing.Iterable[sifters.BSAbstractSifter]|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -26,13 +25,16 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		self.sig_filter_toggled.emit(is_enabled)
 	
 	@QtCore.Slot(object)
-	def setSiftCriteria(self, sift_criteria:typing.Iterable):
+	def setSiftCriteria(self, criteria:typing.Tuple[list[sifters.BSAbstractSifter],list[sifters.BSAbstractSifter]]):
 
-		if self._sift_criteria == sift_criteria:
-			return
+		# NOTE: Just for now using crit 1
+		# Will want to convert this in like the widget or something instead
 
 		self.beginFilterChange()
-		self._sift_criteria = list(sift_criteria)
+
+		print("** FUC MAN")
+		
+#		self._sift_criteria = list(criteria_1)
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
 
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
@@ -45,4 +47,6 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		
 		source_index = self.sourceModel().index(source_row, 0, QtCore.QModelIndex())
 
-		return all(crit.option_accepts_row(source_index) for crit in self._sift_criteria)
+
+
+		return all(crit.scope_accepts_index(source_index) for crit in self._sift_criteria)
