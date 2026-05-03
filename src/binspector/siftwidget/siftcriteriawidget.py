@@ -89,17 +89,17 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 
 			return sifters.BSAnyColumnSifter(
 				match_type  = self.matchType(),
-				sift_string = self._txt_match_text.text(),
+				sift_string = self.siftText(),
 			)
 
 		elif source_type == sourcesmodel.BSSiftSourceType.NoColumn:
 
-			return sifters.BSNoColumnSifter()
+			return sifters.BSNoColumnSifter(self.siftText())
 		
 		elif source_type == sourcesmodel.BSSiftSourceType.Range:
 
 			return sifters.BSRangeSifter(
-				sift_string = self._txt_match_text.text(),
+				sift_string = self.siftText(),
 				data_role   = source_id,
 			)
 		
@@ -108,7 +108,7 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 			return sifters.BSSingleColumnSifter(
 				sift_column_info = source_id,
 				match_type       = self.matchType(),
-				sift_string      = self._txt_match_text.text()
+				sift_string      = self.siftText()
 			)
 
 		else:
@@ -140,6 +140,10 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 	def siftTextSet(self):
 
 		self._criteria_changed_timer.start()
+
+	def siftText(self) -> str:
+
+		return self._txt_match_text.text()
 
 	@QtCore.Slot()
 	def siftScopeChosen(self):
