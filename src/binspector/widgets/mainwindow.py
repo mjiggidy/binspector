@@ -82,7 +82,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
 		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
-		self._tool_sifting     = siftwidget.BSSiftSettingsWidget()
+		self._tool_sifting     = siftwidget.BSSiftSettingsWidget(bin_view_model=self._bin_widget._bin_view_filter) # TODO: More gracefully
 		self._dock_sifting     = QtWidgets.QDockWidget(self.tr("Sift Settings"))
 
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
@@ -323,7 +323,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #		self._man_siftsettings.sig_sift_enabled              .connect(self._tool_sifting.setSiftEnabled)
 #		self._man_siftsettings.sig_sift_enabled              .connect(self._bin_widget.setSiftEnabled)
 #		self._man_siftsettings.sig_sift_settings_changed     .connect(self._bin_widget.setSiftOptions)
-#		self._tool_sifting.sig_options_set                   .connect(self._man_siftsettings.setSiftSettings)
+		self._tool_sifting.sig_criteria_set                   .connect(self._bin_widget.setSiftCriteria)
 
 		# Bin Contents Toolbars
 		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self.userChangedSearchText)
