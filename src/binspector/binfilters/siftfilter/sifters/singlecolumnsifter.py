@@ -47,7 +47,7 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 
 		raise ValueError(f"Column {self._sift_column_info} not found")
 
-	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
+	def sifterAcceptsIndex(self, index:QtCore.QModelIndex) -> bool:
 
 		if not index.isValid() or not self._sift_string:
 			return True
@@ -82,3 +82,6 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 		else:
 			# SHOULD NEVER HAPPEN
 			raise ValueError(f"Unknown match type: {self._match_type}")
+		
+	def isValid(self):
+		return bool(self._sift_string)

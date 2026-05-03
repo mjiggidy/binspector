@@ -14,9 +14,12 @@ class BSNoColumnSifter(BSAbstractSifter):
 		self._sift_string = sift_string
 		self._data_role   = data_role
 
-	def scope_accepts_index(self, index:QtCore.QModelIndex):
+	def sifterAcceptsIndex(self, index:QtCore.QModelIndex):
 
 		if not index.isValid() or not self._sift_string:
 			return True
 
 		return False
+	
+	def isValid(self):
+		return bool(self._sift_string)

@@ -22,7 +22,7 @@ class BSAnyColumnSifter(BSAbstractSifter):
 		self._sift_string = sift_string
 		self._data_role   = data_role
 
-	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
+	def sifterAcceptsIndex(self, index:QtCore.QModelIndex) -> bool:
 
 		if not index.isValid() or not self._sift_string:
 			return True
@@ -58,3 +58,6 @@ class BSAnyColumnSifter(BSAbstractSifter):
 	
 	def caseSensitive(self) -> bool:
 		return False
+	
+	def isValid(self):
+		return bool(self._sift_string)
