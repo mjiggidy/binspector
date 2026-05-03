@@ -4,6 +4,7 @@ import avbutils
 from PySide6 import QtCore
 
 from . import BSAnyColumnSifter
+from ..siftmatchtypes import BSSiftMatchTypes
 from ....binview import binviewitemtypes
 
 class BSSingleColumnSifter(BSAnyColumnSifter):
@@ -12,17 +13,17 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 	def __init__(
 		self,
 		sift_column_info:binviewitemtypes.BSBinViewColumnInfo,
-		sift_rule:avbutils.bins.BinSiftMethod,
-		sift_string:str,
-		sift_role:QtCore.Qt.ItemDataRole|None=QtCore.Qt.ItemDataRole.DisplayRole
+		match_type      :BSSiftMatchTypes,
+		sift_string     :str,
+		data_role       :QtCore.Qt.ItemDataRole|None=QtCore.Qt.ItemDataRole.DisplayRole
 	):
 		
 		self._sift_column_info = sift_column_info
 
 		super().__init__(
-			sift_rule   = sift_rule,
+			match_type   = match_type,
 			sift_string = sift_string,
-			sift_role   = sift_role
+			data_role   = data_role
 		)
 
 	def filter_columns(self, index:QtCore.QModelIndex) -> typing.Generator[QtCore.QModelIndex, None, None]:

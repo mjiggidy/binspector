@@ -9,21 +9,21 @@ class BSRangeSifter(BSAbstractSifter):
 
 	def __init__(
 		self,
-		sift_role  :binitemtypes.BSBinItemDataRoles,
-		sift_string:str
+		sift_string:str,
+		data_role  :QtCore.Qt.ItemDataRole|None=QtCore.Qt.ItemDataRole.DisplayRole,
 	):
 	
 		super().__init__()
 
-		self._sift_role   = sift_role
 		self._sift_string = sift_string
+		self._data_role   = data_role
 
 	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
 
 		if not index.isValid():
 			return False
 		
-		item_range = index.data(self._sift_role)
+		item_range = index.data(self._data_role)
 
 		if item_range is None:
 			return False

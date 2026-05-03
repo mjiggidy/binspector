@@ -3,6 +3,7 @@ import typing
 import avbutils
 from PySide6 import QtCore
 
+from ..siftmatchtypes import BSSiftMatchTypes
 from . import BSAbstractSifter
 
 class BSAnyColumnSifter(BSAbstractSifter):
@@ -10,16 +11,16 @@ class BSAnyColumnSifter(BSAbstractSifter):
 
 	def __init__(
 		self,
-		sift_rule:avbutils.bins.BinSiftMethod,
+		match_type :BSSiftMatchTypes,
 		sift_string:str,
-		sift_role:QtCore.Qt.ItemDataRole|None=QtCore.Qt.ItemDataRole.DisplayRole
+		data_role  :QtCore.Qt.ItemDataRole|None=QtCore.Qt.ItemDataRole.DisplayRole
 	):
 
 		super().__init__()
 
-		self._sift_rule        = sift_rule
-		self._sift_string      = sift_string
-		self._sift_role        = sift_role
+		self._match_type  = match_type
+		self._sift_string = sift_string
+		self._data_role   = data_role
 
 	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
 
@@ -32,7 +33,7 @@ class BSAnyColumnSifter(BSAbstractSifter):
 		for col in self.filter_columns(index):
 
 			source_data = str(
-				index.siblingAtColumn(col).data(self._sift_role) if not None else "")
+				index.siblingAtColumn(col).data(self._data_role) if not None else "")
 			sift_string = self._sift_string
 
 			if not self.caseSensitive():
@@ -40,18 +41,18 @@ class BSAnyColumnSifter(BSAbstractSifter):
 				source_data = source_data.casefold()
 				sift_string = sift_string.casefold()
 
-			print(f"** {source_data=} {sift_string=} {self._sift_role=} {index=}")
+			print(f"** {source_data=} {sift_string=} {self._data_role=} {index=}")
 
-			if self._sift_rule == avbutils.bins.BinSiftMethod.BEGINS_WITH:
+			if self._match_type == avbutils.bins.BinSiftMethod.BEGINS_WITH:
 				return source_data.startswith(sift_string)
 
-			elif self._sift_rule == avbutils.bins.BinSiftMethod.CONTAINS:
+			elif self._match_type == avbutils.bins.BinSiftMethod.CONTAINS:
 				return sift_string in source_data
 
-			elif self._sift_rule == avbutils.bins.BinSiftMethod.MATCHES_EXACTLY:
+			elif self._match_type == avbutils.bins.BinSiftMethod.MATCHES_EXACTLY:
 				return source_data == sift_string
 
-			return ValueError(f"Unsupported sift rule: {self._sift_rule}")
+			return ValueError(f"Unsupported sift rule: {self._match_type}")
 		
 	def filter_columns(self, index:QtCore.QModelIndex) -> typing.Generator[QtCore.QModelIndex, None, None]:
 		"""Filter columns considered for sift"""
