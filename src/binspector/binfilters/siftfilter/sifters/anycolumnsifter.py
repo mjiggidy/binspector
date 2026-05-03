@@ -3,10 +3,10 @@ import typing
 import avbutils
 from PySide6 import QtCore
 
-from . import BSBinSiftAbstractScope
+from . import BSAbstractSifter
 
-class BSSiftScopeAnyColumn(BSBinSiftAbstractScope):
-	"""Sift option involving a single column"""
+class BSAnyColumnSifter(BSAbstractSifter):
+	"""Sift items for specified text in any column"""
 
 	def __init__(
 		self,
@@ -26,15 +26,21 @@ class BSSiftScopeAnyColumn(BSBinSiftAbstractScope):
 		if not index.isValid():
 			return False
 		
+		if not self._sift_string:
+			return True
+		
 		for col in self.filter_columns(index):
 
-			source_data = str(index.siblingAtColumn(col).data(self._sift_role)) if not None else ""
+			source_data = str(
+				index.siblingAtColumn(col).data(self._sift_role) if not None else "")
 			sift_string = self._sift_string
 
 			if not self.caseSensitive():
 				
 				source_data = source_data.casefold()
 				sift_string = sift_string.casefold()
+
+			print(f"** {source_data=} {sift_string=} {self._sift_role=} {index=}")
 
 			if self._sift_rule == avbutils.bins.BinSiftMethod.BEGINS_WITH:
 				return source_data.startswith(sift_string)

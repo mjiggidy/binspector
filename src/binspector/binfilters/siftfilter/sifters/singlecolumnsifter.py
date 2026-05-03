@@ -3,11 +3,11 @@ import typing
 import avbutils
 from PySide6 import QtCore
 
-from . import BSSiftScopeAnyColumn
+from . import BSAnyColumnSifter
 from ....binview import binviewitemtypes
 
-class BSSiftScopeSingleColumn(BSSiftScopeAnyColumn):
-	"""Sift option involving a single column"""
+class BSSingleColumnSifter(BSAnyColumnSifter):
+	"""Sift items for text in a  single specified column"""
 
 	def __init__(
 		self,
@@ -51,3 +51,12 @@ class BSSiftScopeSingleColumn(BSSiftScopeAnyColumn):
 				yield False
 		
 			yield True
+
+	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
+
+		if not index.isValid():
+			return False
+		
+		# TODO
+		print("TODO: Filter single column")
+		return True

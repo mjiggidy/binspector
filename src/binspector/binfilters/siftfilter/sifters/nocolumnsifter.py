@@ -1,7 +1,8 @@
 from PySide6 import QtCore
-from . import BSBinSiftAbstractScope
+from . import BSAbstractSifter
 
-class BSSiftScopeNoColumn(BSBinSiftAbstractScope):
+class BSNoColumnSifter(BSAbstractSifter):
+	"""Sift no column"""
 
 	def scope_accepts_index(self, index:QtCore.QModelIndex):
 

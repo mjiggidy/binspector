@@ -1,22 +1,21 @@
 from PySide6 import QtCore
-from . import BSBinSiftAbstractScope
+from . import BSAbstractSifter
 from ....binitems import binitemtypes
 
-import avbutils, timecode
+import timecode
 
-class BSSiftScopeRange(BSBinSiftAbstractScope):
+class BSRangeSifter(BSAbstractSifter):
+	"""Sift items for which a specified range contains a specified value"""
 
 	def __init__(
 		self,
 		sift_role  :binitemtypes.BSBinItemDataRoles,
-		sift_rule  :avbutils.bins.BinSiftMethod,
 		sift_string:str
 	):
 	
 		super().__init__()
 
 		self._sift_role   = sift_role
-		self._sift_rule   = sift_rule
 		self._sift_string = sift_string
 
 	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:

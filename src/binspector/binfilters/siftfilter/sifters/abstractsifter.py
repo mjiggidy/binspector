@@ -1,7 +1,8 @@
 from PySide6 import QtCore
 import abc
 
-class BSBinSiftAbstractScope(abc.ABC):
+class BSAbstractSifter(abc.ABC):
+	"""An abstract sifter"""
 
 	@abc.abstractmethod
 	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
