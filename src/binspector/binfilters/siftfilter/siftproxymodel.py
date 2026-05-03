@@ -32,7 +32,9 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 		self.beginFilterChange()
 
-		print("** FUC MAN")
+		crit1, crit2 = criteria
+
+		self._sift_criteria = crit1
 		
 #		self._sift_criteria = list(criteria_1)
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
