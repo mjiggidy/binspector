@@ -24,10 +24,7 @@ class BSAnyColumnSifter(BSAbstractSifter):
 
 	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
 
-		if not index.isValid():
-			return False
-		
-		if not self._sift_string:
+		if not index.isValid() or not self._sift_string:
 			return True
 		
 		for col in self.filter_columns(index):

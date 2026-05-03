@@ -20,7 +20,7 @@ class BSRangeSifter(BSAbstractSifter):
 
 	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
 
-		if not index.isValid():
+		if not index.isValid() or not self._sift_string:
 			return False
 		
 		item_range = index.data(self._data_role)

@@ -31,7 +31,6 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 
 		# Get sibling index for given header
 		source_model  = index.model()
-		source_column = None
 
 		for col in range(source_model.columnCount(QtCore.QModelIndex())):
 
@@ -44,20 +43,42 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 				if col_field_id == avbutils.bins.BinColumnFieldIDs.User and col_name != self._sift_column_info.display_name:
 					continue
 
-				source_column = col
-				break
+				return col
 
-			# Column not present in bin view
-			if source_column is None:
-				yield False
-		
-			yield True
+		raise ValueError(f"Column {self._sift_column_info} not found")
 
 	def scope_accepts_index(self, index:QtCore.QModelIndex) -> bool:
 
-		if not index.isValid():
-			return False
+		if not index.isValid() or not self._sift_string:
+			return True
 		
-		# TODO
-		print("TODO: Filter single column")
-		return True
+		col = self.filter_columns(index)
+		
+		sift_string = self._sift_string
+		source_data = str(
+			index.siblingAtColumn(col).data(self._data_role)
+			if not None else ""
+		)
+		
+		if not self.caseSensitive():
+
+			sift_string = sift_string.casefold()
+			source_data = source_data.casefold()
+		
+		# Match based on match type
+
+		if self._match_type == BSSiftMatchTypes.BeginsWith:
+
+			return source_data.startswith(sift_string)
+		
+		elif self._match_type == BSSiftMatchTypes.Contains:
+
+			return sift_string in source_data
+		
+		elif self._match_type == BSSiftMatchTypes.MatchesExactly:
+
+			return sift_string == source_data
+
+		else:
+			# SHOULD NEVER HAPPEN
+			raise ValueError(f"Unknown match type: {self._match_type}")
