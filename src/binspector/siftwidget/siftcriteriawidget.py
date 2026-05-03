@@ -12,7 +12,7 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 	sig_columns_chooser_model_changed   = QtCore.Signal(QtCore.QAbstractItemModel)
 
 	DEFAULT_SIFT_CRITERIA               = bins.BinSiftOption(bins.BinSiftMethod.CONTAINS, "", "Any")
-	CRITERIA_CHANGED_TIMEOUT_MSEC       = 500
+	CRITERIA_CHANGED_TIMEOUT_MSEC       = 200
 
 	def __init__(self, *args, **kwargs):
 
@@ -61,7 +61,6 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 		"""Sift criteria have survived the timer, emit it"""
 
 		self.sig_criteria_set.emit(self.siftCriteria())
-		print(self.siftCriteria())
 
 	@QtCore.Slot(object)
 	def setSiftCriteria(self, sift_criteria:bins.BinSiftOption):
