@@ -29,6 +29,8 @@ model_sift_columns  = sourcesmodel.BSSiftSourcesViewModel(bin_view_model=model_b
 
 wnd_siftwidget.setBinViewModel(model_binviewfilter)
 
+wnd_siftwidget.sig_criteria_set.connect(print)
+
 import sys
 with avb.open(sys.argv[1]) as bin_file:
 	
