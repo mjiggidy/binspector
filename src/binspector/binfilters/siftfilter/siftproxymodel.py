@@ -49,9 +49,23 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		
 		source_index = self.sourceModel().index(source_row, 0, QtCore.QModelIndex())
 
-		for criteria in self._sift_criteria:
+		sift_results = []
 
-			if not all(c.sifterAcceptsIndex(source_index) for c in criteria):
-				return False
-		
-		return True
+		# TODO: Yeah, yeah.  I'll come back to this.  IT WORKS THOUGH DOESN'T IT?? HUH??
+
+		for criteria_set in self._sift_criteria:
+
+			local_results = []
+			
+			for criteria in criteria_set:
+
+				# Invalid filters can be neither True nor False soooo
+				if not criteria.isValid():
+					continue
+
+				local_results.append(criteria.sifterAcceptsIndex(source_index))
+			
+			if local_results:
+				sift_results.append(all(local_results))
+
+		return any(sift_results) if sift_results else True
