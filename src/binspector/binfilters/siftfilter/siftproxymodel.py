@@ -6,7 +6,7 @@ from .. import abstractfiltermodel
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
-	def __init__(self, *args, sift_criteria:list[list[sifters.BSAbstractSifter]]|None=None, live_sift:bool=True, **kwargs):
+	def __init__(self, *args, sift_criteria:list[list[sifters.BSAbstractSifter]]|None=None, live_sift:bool=False, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
