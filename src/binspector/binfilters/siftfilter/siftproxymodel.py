@@ -6,11 +6,18 @@ from .. import abstractfiltermodel
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
-	def __init__(self, *args, sift_criteria:list[list[sifters.BSAbstractSifter]]|None=None, **kwargs):
+	def __init__(self, *args, sift_criteria:list[list[sifters.BSAbstractSifter]]|None=None, live_sift:bool=True, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		self._sift_criteria = sift_criteria if sift_criteria is not None else []
+
+		# NOTE to self:  Live Sift does two things:
+		# - Toggle dynamic filter here in the proxy so it responds to changes in data
+		# - Toggle if sig_criteria_set is emitted by the widget on every change, or when the 
+		#   user clicks a button to re-sift
+		
+		self.setDynamicSortFilter(live_sift)
 
 	@QtCore.Slot(bool)
 	def setEnabled(self, is_enabled:bool):
