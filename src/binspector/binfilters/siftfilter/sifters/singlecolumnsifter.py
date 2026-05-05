@@ -85,3 +85,7 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 		
 	def isValid(self):
 		return bool(self._sift_string)
+	
+	def siftColumnInfo(self) -> binviewitemtypes.BSBinViewColumnInfo:
+
+		return self._sift_column_info

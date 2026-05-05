@@ -61,3 +61,9 @@ class BSAnyColumnSifter(BSAbstractSifter):
 	
 	def isValid(self):
 		return bool(self._sift_string)
+	
+	def matchType(self) -> BSSiftMatchTypes:
+		return self._match_type
+
+	def siftString(self) -> str:
+		return self._sift_string
