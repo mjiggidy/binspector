@@ -166,8 +166,8 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 
 			return sifters.BSSingleColumnSifter(
 				sift_column_info = source_id,
+				sift_string      = self.text(),
 				match_type       = self.matchType(),
-				sift_string      = self.text()
 			)
 		
 		elif source_type == scopesmodel.BSSiftScopeType.AnyColumn:
@@ -180,8 +180,8 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 		elif source_type == scopesmodel.BSSiftScopeType.NoColumn:
 
 			return sifters.BSNoColumnSifter(
-				match_type = self.matchType(),
 				sift_string= self.text(),
+				match_type = self.matchType(),
 			)
 		
 		elif source_type == scopesmodel.BSSiftScopeType.Range:

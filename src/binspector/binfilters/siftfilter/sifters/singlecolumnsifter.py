@@ -13,9 +13,9 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 	def __init__(
 		self,
 		sift_column_info:binviewitemtypes.BSBinViewColumnInfo,
-		match_type      :BSSiftMatchTypes,
-		sift_string     :str,
-		data_role       :QtCore.Qt.ItemDataRole|None=QtCore.Qt.ItemDataRole.DisplayRole
+		sift_string     :str                    = "",
+		match_type      :BSSiftMatchTypes       = BSSiftMatchTypes.Contains,
+		data_role       :QtCore.Qt.ItemDataRole = QtCore.Qt.ItemDataRole.DisplayRole
 	):
 		
 		self._sift_column_info = sift_column_info

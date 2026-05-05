@@ -7,9 +7,9 @@ class BSAbstractSifter(abc.ABC):
 	"""An abstract sifter"""
 
 	def __init__(self,
-		sift_string:str,
-		match_type :BSSiftMatchTypes|None       = BSSiftMatchTypes.Contains,
-		data_role  :QtCore.Qt.ItemDataRole|None = QtCore.Qt.ItemDataRole.DisplayRole
+		sift_string:str                    = "",
+		match_type :BSSiftMatchTypes       = BSSiftMatchTypes.Contains,
+		data_role  :QtCore.Qt.ItemDataRole = QtCore.Qt.ItemDataRole.DisplayRole
 	):
 
 		self._sift_string = sift_string

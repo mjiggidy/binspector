@@ -9,8 +9,8 @@ class BSRangeSifter(BSAbstractSifter):
 
 	def __init__(
 		self,
-		sift_string:str,
-		data_role  :QtCore.Qt.ItemDataRole|None=QtCore.Qt.ItemDataRole.DisplayRole,
+		sift_string:str                    = "",
+		data_role  :QtCore.Qt.ItemDataRole = QtCore.Qt.ItemDataRole.DisplayRole,
 	):
 	
 
