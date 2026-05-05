@@ -38,3 +38,10 @@ class BSAbstractSifter(abc.ABC):
 		"""The model's item data role to be considered for the sift"""
 
 		return self._data_role
+	
+	def __eq__(self, other) -> bool:
+
+		if type(self) is not type(other):
+			return NotImplemented
+		
+		return self.__dict__ == other.__dict__
