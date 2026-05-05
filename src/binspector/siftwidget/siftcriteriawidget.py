@@ -104,6 +104,9 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 				self._cmb_match_scope.findData(sift_criteria.siftColumnInfo())
 			)
 
+		else:
+			raise ValueError(f"Unknown sifter round here: {sift_criteria}")
+
 		self.sig_criteria_set.emit(sift_criteria)
 
 	def criteria(self) -> sifters.BSAbstractSifter:
