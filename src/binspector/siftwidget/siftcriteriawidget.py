@@ -1,10 +1,12 @@
 import typing
 
-from . import scopesmodel
+from PySide6 import QtCore, QtWidgets
 
+from . import scopesmodel
 from ..binfilters.siftfilter import sifters, siftmatchtypes
 
-from PySide6 import QtCore, QtWidgets
+import avbutils
+
 
 class BSSiftCriteriaWidget(QtWidgets.QWidget):
 	"""A single sift option widget"""
@@ -15,7 +17,7 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 	sig_match_type_changed  = QtCore.Signal(object)
 	sig_text_changed        = QtCore.Signal(str)
 
-	DEFAULT_SIFT_CRITERIA               = sifters.BSAnyColumnSifter(siftmatchtypes.BSSiftMatchTypes.Contains, "")
+	DEFAULT_SIFT_CRITERIA               = sifters.BSAnyColumnSifter(sift_string="", match_type=siftmatchtypes.BSSiftMatchTypes.Contains)
 	CRITERIA_CHANGED_TIMEOUT_MSEC       = 200
 
 	def __init__(self, *args, sources_model:scopesmodel.BSSiftScopeViewModel, sift_criteria:sifters.BSAbstractSifter|None=None, **kwargs):
@@ -80,29 +82,75 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 		
 		scope_model:scopesmodel.BSSiftScopeViewModel = self._cmb_match_scope.model()
 		
-		if isinstance(sift_criteria, sifters.BSAnyColumnSifter):
+		if isinstance(sift_criteria, sifters.BSSingleColumnSifter):
+
+#			print(f"Look for ", sift_criteria.siftColumnInfo(), "in ", sift_criteria.siftColumnInfo())
+#			print(f"** Found: ", self._cmb_match_scope.findData(sift_criteria.siftColumnInfo()))
+			
+			ranges_available  = scope_model.rowCountForScope(scopesmodel.BSSiftScopeType.SingleColumn)
+
+			if not ranges_available:
+				raise ValueError("No column names available")
+			
+			ranges_offset = scope_model.rowOffsetToScope(scopesmodel.BSSiftScopeType.SingleColumn)
+
+			cmb_idx = None
+			
+			for row in range(ranges_offset, ranges_available + ranges_offset):
+
+				_, range_role = self._cmb_match_scope.itemData(row)
+
+				if sift_criteria.siftColumnInfo().field_id == range_role.field_id:
+				
+					# User columns need to be matched by name as well
+					if sift_criteria.siftColumnInfo().field_id == avbutils.bins.BinColumnFieldIDs.User \
+						and sift_criteria.siftColumnInfo().display_name != range_role.display_name:
+							continue
+
+					cmb_idx = row
+					break
+
+			if cmb_idx is None:
+				raise ValueError("Nope")
+
+			self._cmb_match_scope.setCurrentIndex(cmb_idx)
+
+		elif isinstance(sift_criteria, sifters.BSAnyColumnSifter):
 
 			self._cmb_match_scope.setCurrentIndex(
-				scope_model.rowOffsetToSiftSource(scopesmodel.BSSiftScopeType.AnyColumn)
+				scope_model.rowOffsetToScope(scopesmodel.BSSiftScopeType.AnyColumn)
 			)
 
 		elif isinstance(sift_criteria, sifters.BSNoColumnSifter):
 
 			self._cmb_match_scope.setCurrentIndex(
-				scope_model.rowOffsetToSiftSource(scopesmodel.BSSiftScopeType.NoColumn)
+				scope_model.rowOffsetToScope(scopesmodel.BSSiftScopeType.NoColumn)
 			)
 
 		elif isinstance(sift_criteria, sifters.BSRangeSifter):
 
-			self._cmb_match_scope.setCurrentIndex(
-				self._cmb_match_scope.findData(sift_criteria.dataRole())
-			)
+			ranges_available  = scope_model.rowCountForScope(scopesmodel.BSSiftScopeType.Range)
 
-		elif isinstance(sift_criteria, sifters.BSSingleColumnSifter):
+			if not ranges_available:
+				raise ValueError("No column names available")
+			
+			ranges_offset = scope_model.rowOffsetToScope(scopesmodel.BSSiftScopeType.Range)
 
-			self._cmb_match_scope.setCurrentIndex(
-				self._cmb_match_scope.findData(sift_criteria.siftColumnInfo())
-			)
+			cmb_idx = None
+			
+			for row in range(ranges_offset, ranges_available + ranges_offset):
+
+				_, range_role = self._cmb_match_scope.itemData(row)
+
+				if sift_criteria.dataRole() == range_role:
+				
+					cmb_idx = row
+					break
+
+			if cmb_idx is None:
+				raise ValueError("Nope")
+
+			self._cmb_match_scope.setCurrentIndex(cmb_idx)
 
 		else:
 			raise ValueError(f"Unknown sifter round here: {sift_criteria}")
@@ -114,16 +162,27 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 
 		source_type, source_id = self.siftSource()
 
-		if source_type == scopesmodel.BSSiftScopeType.AnyColumn:
+		if source_type == scopesmodel.BSSiftScopeType.SingleColumn:
+
+			return sifters.BSSingleColumnSifter(
+				sift_column_info = source_id,
+				match_type       = self.matchType(),
+				sift_string      = self.text()
+			)
+		
+		elif source_type == scopesmodel.BSSiftScopeType.AnyColumn:
 
 			return sifters.BSAnyColumnSifter(
-				match_type  = self.matchType(),
 				sift_string = self.text(),
+				match_type  = self.matchType(),
 			)
 
 		elif source_type == scopesmodel.BSSiftScopeType.NoColumn:
 
-			return sifters.BSNoColumnSifter(self.text())
+			return sifters.BSNoColumnSifter(
+				match_type = self.matchType(),
+				sift_string= self.text(),
+			)
 		
 		elif source_type == scopesmodel.BSSiftScopeType.Range:
 
@@ -132,14 +191,6 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 				data_role   = source_id,
 			)
 		
-		elif source_type == scopesmodel.BSSiftScopeType.SingleColumn:
-
-			return sifters.BSSingleColumnSifter(
-				sift_column_info = source_id,
-				match_type       = self.matchType(),
-				sift_string      = self.text()
-			)
-
 		else:
 			raise ValueError("Nuh uh")
 
@@ -230,7 +281,7 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 			
 			if sift_source_type == scopesmodel.BSSiftScopeType.Range:
 				self._cmb_match_scope.setCurrentIndex(
-					self._cmb_match_scope.model().rowOffsetToSiftSource(scopesmodel.BSSiftScopeType.AnyColumn)
+					self._cmb_match_scope.model().rowOffsetToScope(scopesmodel.BSSiftScopeType.AnyColumn)
 				)
 
 		self._criteria_changed_timer.start()

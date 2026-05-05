@@ -99,7 +99,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			return
 		
 		source_type = self._sourceTypeForModel(self.sender())
-		offset     = self.rowOffsetToSiftSource(source_type)
+		offset     = self.rowOffsetToScope(source_type)
 
 		self.beginInsertRows(QtCore.QModelIndex(), first + offset, last + offset)
 
@@ -122,7 +122,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			return
 		
 		source_type = self._sourceTypeForModel(self.sender())
-		offset      = self.rowOffsetToSiftSource(source_type)
+		offset      = self.rowOffsetToScope(source_type)
 
 		self.beginMoveRows(QtCore.QModelIndex(), sourceStart + offset, sourceEnd + offset, QtCore.QModelIndex(), destinationRow + offset)
 
@@ -141,7 +141,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			return
 		
 		source_type = self._sourceTypeForModel(self.sender())
-		offset      = self.rowOffsetToSiftSource(source_type)
+		offset      = self.rowOffsetToScope(source_type)
 
 		self.beginRemoveRows(QtCore.QModelIndex(), first + offset, last + offset)
 
@@ -208,7 +208,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			return
 		
 		source_type = self._sourceTypeForModel(self.sender())
-		offset      = self.rowOffsetToSiftSource(source_type)
+		offset      = self.rowOffsetToScope(source_type)
 		
 		self.dataChanged.emit(
 			self.index(topLeft.row()     + offset, 0, QtCore.QModelIndex()),
@@ -252,7 +252,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 	
 	###
 	
-	def _rowCountForSiftSource(self, sift_source_type:BSSiftScopeType, append_separator_if_enabled:bool=True) -> int:
+	def rowCountForScope(self, sift_source_type:BSSiftScopeType, append_separator_if_enabled:bool=True) -> int:
 		"""Calculate the number of rows for a given column source section.  Appends a separator assuming it's enabled."""
 
 		row_count = 0
@@ -270,7 +270,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 		else:
 			return 0
 	
-	def rowOffsetToSiftSource(self, to_sift_source:BSSiftScopeType|None=None) -> int:
+	def rowOffsetToScope(self, to_sift_source:BSSiftScopeType|None=None) -> int:
 		"""Calculate the model's row offset to a given sift source section (or 'SSS')"""
 
 		if to_sift_source is not None and to_sift_source not in self._source_models:
@@ -283,7 +283,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			if to_sift_source is not None and to_sift_source == current_sift_source:
 				return row_offset
 			
-			row_offset += self._rowCountForSiftSource(current_sift_source)
+			row_offset += self.rowCountForScope(current_sift_source)
 		
 		return row_offset
 	
@@ -296,7 +296,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 
 		for source_type in self._source_models:
 
-			source_row_count = self._rowCountForSiftSource(source_type)
+			source_row_count = self.rowCountForScope(source_type)
 			
 			if not source_row_count:
 				continue
@@ -319,7 +319,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			return 0
 
 		# Remove the final separator (if any rows exist at all) and return row count
-		return max(self.rowOffsetToSiftSource() - self.SEPARATOR_ROW_SIZE, 0)
+		return max(self.rowOffsetToScope() - self.SEPARATOR_ROW_SIZE, 0)
 
 	def columnCount(self, /, parent:QtCore.QModelIndex) -> int:
 		
@@ -356,7 +356,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			return None
 
 		# Map back to bin view model for any single-column data
-		row_offset   = self.rowOffsetToSiftSource(source_type)
+		row_offset   = self.rowOffsetToScope(source_type)
 		source_index = self._source_models[source_type].index(index.row() - row_offset, 0, QtCore.QModelIndex())
 
 		if role == QtCore.Qt.ItemDataRole.UserRole:

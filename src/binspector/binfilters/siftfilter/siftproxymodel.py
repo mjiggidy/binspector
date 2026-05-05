@@ -47,9 +47,9 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 		self.beginFilterChange()
 
-		crit1, crit2 = criteria
+		#crit1, crit2 = criteria
 
-		self._sift_criteria = [crit1, crit2]
+		self._sift_criteria = criteria
 		
 #		self._sift_criteria = list(criteria_1)
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)

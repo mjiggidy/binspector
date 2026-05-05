@@ -21,7 +21,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 	sig_criteria_set      = QtCore.Signal(object)
 	sig_live_sift_enabled = QtCore.Signal(bool)
 
-	def __init__(self, *args, bin_view_model:QtCore.QAbstractItemModel|None=None, live_sift:bool=True, **kwargs):
+	def __init__(self, *args, bin_view_model:QtCore.QAbstractItemModel|None=None, live_sift:bool=False, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -186,10 +186,18 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(object)
 	def setTopCriteria(self, criteria:list[sifters.BSAbstractSifter]):
 
+#		print("--- SET TOP")
+#		for c in criteria:
+#			print(c)
+
 		self._setSectionCriteria(self._sift_top_widgets, criteria=criteria)
 
 	@QtCore.Slot(object)
 	def setBottomCriteria(self, criteria:list[sifters.BSAbstractSifter]):
+
+#		print("--- SET BOTTOM")
+#		for c in criteria:
+#			print(c)
 
 		self._setSectionCriteria(self._sift_bot_widgets, criteria=criteria)
 
