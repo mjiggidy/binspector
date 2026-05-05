@@ -11,16 +11,16 @@ class BSAnyColumnSifter(BSAbstractSifter):
 
 	def __init__(
 		self,
-		match_type :BSSiftMatchTypes,
 		sift_string:str,
+		match_type :BSSiftMatchTypes,
 		data_role  :QtCore.Qt.ItemDataRole|None=QtCore.Qt.ItemDataRole.DisplayRole
 	):
 
-		super().__init__()
-
-		self._match_type  = match_type
-		self._sift_string = sift_string
-		self._data_role   = data_role
+		super().__init__(
+			sift_string = sift_string,
+			match_type  = match_type,
+			data_role   = data_role
+		)
 
 	def sifterAcceptsIndex(self, index:QtCore.QModelIndex) -> bool:
 
@@ -38,7 +38,7 @@ class BSAnyColumnSifter(BSAbstractSifter):
 				source_data = source_data.casefold()
 				sift_string = sift_string.casefold()
 
-			print(f"** {source_data=} {sift_string=} {self._data_role=} {index=}")
+#			print(f"** {source_data=} {sift_string=} {self._data_role=} {index=}")
 
 			if self._match_type == avbutils.bins.BinSiftMethod.BEGINS_WITH:
 				return source_data.startswith(sift_string)
@@ -61,9 +61,3 @@ class BSAnyColumnSifter(BSAbstractSifter):
 	
 	def isValid(self):
 		return bool(self._sift_string)
-	
-	def matchType(self) -> BSSiftMatchTypes:
-		return self._match_type
-
-	def siftString(self) -> str:
-		return self._sift_string

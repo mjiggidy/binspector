@@ -21,8 +21,8 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 		self._sift_column_info = sift_column_info
 
 		super().__init__(
-			match_type   = match_type,
 			sift_string = sift_string,
+			match_type  = match_type,
 			data_role   = data_role
 		)
 
@@ -87,5 +87,6 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 		return bool(self._sift_string)
 	
 	def siftColumnInfo(self) -> binviewitemtypes.BSBinViewColumnInfo:
+		"""The `BSBinViewColumnInfo` column for which to sift"""
 
 		return self._sift_column_info

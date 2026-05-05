@@ -12,11 +12,11 @@ class BSNoColumnSifter(BSAbstractSifter):
 		data_role  :QtCore.Qt.ItemDataRole|None = QtCore.Qt.ItemDataRole.DisplayRole
 	):
 		
-		super().__init__()
-
-		self._sift_string = sift_string
-		self._data_role   = data_role
-		self._match_type  = match_type
+		super().__init__(
+			sift_string = sift_string,
+			match_type  = match_type,
+			data_role   = data_role
+		)
 
 	def sifterAcceptsIndex(self, index:QtCore.QModelIndex):
 
@@ -27,9 +27,3 @@ class BSNoColumnSifter(BSAbstractSifter):
 	
 	def isValid(self):
 		return bool(self._sift_string)
-	
-	def matchType(self) -> BSSiftMatchTypes:
-		return self._match_type
-
-	def siftString(self) -> str:
-		return self._sift_string
