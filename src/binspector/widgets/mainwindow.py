@@ -60,7 +60,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 
 		self._man_binview      = binproperties.BSBinViewManager()
-		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
+#		self._man_siftsettings = binproperties.BSBinSiftSettingsManager()
 		self._man_appearance   = appearance.BSBinAppearanceSettingsManager()
 #		self._man_sorting      = binproperties.BSBinSortingPropertiesManager()
 		self._man_bindisplay   = binproperties.BSBinDisplaySettingsManager()
@@ -385,8 +385,8 @@ class BSMainWindow(QtWidgets.QMainWindow):
 	def binViewManager(self) -> binproperties.BSBinViewManager:
 		return self._man_binview
 	
-	def siftSettingsManager(self) -> binproperties.BSBinSiftSettingsManager:
-		return self._man_siftsettings
+#	def siftSettingsManager(self) -> binproperties.BSBinSiftSettingsManager:
+#		return self._man_siftsettings
 	
 	def appearanceManager(self) -> appearance.BSBinAppearanceSettingsManager:
 		return self._man_appearance

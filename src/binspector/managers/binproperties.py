@@ -113,22 +113,22 @@ class BSBinDisplaySettingsManager(QtCore.QObject):
 #		
 #		self.sig_bin_sorting_changed.emit([(QtCore.Qt.SortOrder(direction), column_name) for direction, column_name in sorting])
 
-class BSBinSiftSettingsManager(QtCore.QObject):
-
-	sig_sift_enabled          = QtCore.Signal(bool)
-	sig_bin_view_changed      = QtCore.Signal(object)
-	sig_sift_settings_changed = QtCore.Signal(object)
-
-	@QtCore.Slot(object)
-	def setBinView(self, bin_view:avb.bin.BinViewSetting):
-		self.sig_bin_view_changed.emit(bin_view)
-
-
-	@QtCore.Slot(bool, object)
-	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avbutils.bins.BinSiftOption]):
-		
-		self.sig_sift_settings_changed.emit(sift_settings)		
-		self.sig_sift_enabled.emit(sift_enabled)
+#class BSBinSiftSettingsManager(QtCore.QObject):
+#
+#	sig_sift_enabled          = QtCore.Signal(bool)
+#	sig_bin_view_changed      = QtCore.Signal(object)
+#	sig_sift_settings_changed = QtCore.Signal(object)
+#
+#	@QtCore.Slot(object)
+#	def setBinView(self, bin_view:avb.bin.BinViewSetting):
+#		self.sig_bin_view_changed.emit(bin_view)
+#
+#
+#	@QtCore.Slot(bool, object)
+#	def setSiftSettings(self, sift_enabled:bool, sift_settings:list[avbutils.bins.BinSiftOption]):
+#		
+#		self.sig_sift_settings_changed.emit(sift_settings)		
+#		self.sig_sift_enabled.emit(sift_enabled)
 
 #class BSBinItemsManager(QtCore.QObject):
 #	
