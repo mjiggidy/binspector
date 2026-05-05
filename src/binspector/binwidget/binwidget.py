@@ -36,6 +36,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	sig_bin_stats_updated        = QtCore.Signal(str)
 	sig_bin_view_enabled         = QtCore.Signal(bool)
 	sig_bin_view_source_selected = QtCore.Signal(object)
+	sig_live_sift_enabled        = QtCore.Signal(bool)
 
 	def __init__(self, *args, bin_items_model:binitemsmodel.BSBinItemModel, bin_view_model:binviewmodel.BSBinViewModel, **kwargs):
 
@@ -47,16 +48,29 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self.layout().setContentsMargins(0,0,0,0)
 		self.layout().setSpacing(0)
 		
-		
-		# Gaze upon these data models!  Very professional!
+		# Initial bin items and bin columns data models and their filters
 
 		self._bin_items_model  = bin_items_model
-		self._bin_items_filter = bindisplayproxymodel.BSBinDisplayFilterProxyModel(bin_items_model=self._bin_items_model, parent=self)
+		self._bin_items_filter = bindisplayproxymodel.BSBinDisplayFilterProxyModel(
+			bin_items_model=self._bin_items_model,
+			parent=self
+		)
 		
 		self._bin_view_model   = bin_view_model
-		self._bin_view_filter  = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=self._bin_view_model, parent=self)
+		self._bin_view_filter  = binviewproxymodel.BSBinViewFilterProxyModel(
+			bin_columns_model=self._bin_view_model,
+			parent=self
+		)
 
-		self._bin_composite_model = bincompositemodel.BSBinCompositeModel(item_model=self._bin_items_filter, view_model=self._bin_view_filter, parent=self)
+		# Filtered bin items and bin view columns get combined into a composite table view model
+
+		self._bin_composite_model = bincompositemodel.BSBinCompositeModel(
+			item_model=self._bin_items_filter,
+			view_model=self._bin_view_filter,
+			parent=self
+		)
+
+		# The composite model gets filtered by Sift and Find In Bin
 
 		self._bin_sift_filter = siftproxymodel.BSBinSiftFilterProxyModel(parent=self)	# TODO
 		self._bin_sift_filter.setSourceModel(self._bin_composite_model)
@@ -64,20 +78,20 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_find_filter = binfindproxymodel.BSFindInBinProxyModel(parent=self)
 		self._bin_find_filter.setSourceModel(self._bin_sift_filter)
 
+		# Final model is QIdentityProxyModel, which does nothing new but serves as the 
+		# intentional end of the chain to which views may subscribe.  Indubitably!  Pip pip!
+		
 		self._bin_model_final = QtCore.QIdentityProxyModel(parent=self)
 		self._bin_model_final.setSourceModel(self._bin_find_filter)
 
 		self._test_scriptmodel = scriptproxy.BSScriptViewProxyModel(parent=self)
 		self._test_scriptmodel.setSourceModel(self._bin_model_final)
 
-		self._test_sift_columns_model   = scopesmodel.BSSiftScopeViewModel(bin_view_model=self._bin_view_filter)
-		self._test_sift_columns_chooser = QtWidgets.QListView()
-		self._test_sift_columns_chooser.setModel(self._test_sift_columns_model)
-		self._test_sift_columns_chooser.show()
-		
 
-#		self._bin_filter_model_deprecated    = textviewproxymodel.BSBTextViewSortFilterProxyModelDEPRECATED(text_view_model=self._bin_composite_model)
-		self._selection_model     = QtCore.QItemSelectionModel(self._bin_model_final, parent=self)
+		self._selection_model     = QtCore.QItemSelectionModel(
+			model=self._bin_model_final,
+			parent=self
+		)
 
 		# Save initial palette for later togglin'
 		self._default_palette   = self.palette()
@@ -336,52 +350,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 
 		self.viewModeChanged()
 
-
-		# Entering Frame View Mode
-		# Sync selected items from selection model
-#		if view_mode == avbutils.bins.BinDisplayModes.FRAME:
-#			
-#			self._viewmode_frame.scene().setSelectedItems(
-#				list(x.row() for x in self._selection_model.selectedRows())
-#			)
-#
-#s		# Entering Script View Mode
-#s		if view_mode == avbutils.bins.BinDisplayModes.SCRIPT:
-#s
-#s			# Sync header widths
-#s			for col in filter(lambda c:  not self._viewmode_text.header().isSectionHidden(c), range(self._viewmode_text.header().count())):
-#s
-#s				col_size = self._viewmode_text.header().sectionSize(col)
-#s				self._viewmode_script.header().resizeSection(col+1, col_size)
-#s
-#s#			self._viewmode_script.selectionModel().clearSelection()
-#s
-#s			self._viewmode_script.selectionModel().select(
-#s				self._test_scriptmodel.mapSelectionFromSource(
-#s					self._viewmode_text.selectionModel().selection()
-#s				),
-#s				QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect,
-#s			)
-
-		# Leaving Frame Mode
-		# Sync selection back to selection model
-#		elif old_view_mode == avbutils.bins.BinDisplayModes.FRAME:
-#
-#			self._selection_model.clearSelection()
-#
-#			for row, item in enumerate(self._viewmode_frame.scene()._bin_items):
-#
-#				if not item.isSelected():
-#					continue
-#
-#				self._selection_model.select(
-#					self._bin_model_final.index(row, 0, QtCore.QModelIndex()),
-#					QtCore.QItemSelectionModel.SelectionFlag.Select | \
-#					  QtCore.QItemSelectionModel.SelectionFlag.Rows
-#				)
-
-
-
 	def viewMode(self) -> avbutils.BinDisplayModes:
 		"""Current view mode"""
 
@@ -392,10 +360,10 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	# Bin Views and Filters
 	###
 
-	@QtCore.Slot(avbutils.bins.BinDisplayItemTypes)
-	def setBinDisplayItemTypes(self, item_types:avbutils.bins.BinDisplayItemTypes):
-		
-		self._bin_items_filter.setAcceptedItemTypes(item_types)
+#	@QtCore.Slot(avbutils.bins.BinDisplayItemTypes)
+#	def setBinDisplayItemTypes(self, item_types:avbutils.bins.BinDisplayItemTypes):
+#		
+#		self._bin_items_filter.setAcceptedItemTypes(item_types)
 
 	@QtCore.Slot(bool)
 	def setBinColumnFiltersDisabled(self, are_disabled:bool):
@@ -458,16 +426,25 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 			logging.getLogger(__name__).debug("Auto-sizing all columns")
 			self.textView().header().resizeSections(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
-	@QtCore.Slot(bool)
-	def setSiftEnabled(self, is_enabled:bool):
 
-		self._bin_sift_filter.setEnabled(is_enabled)
+	###
+	# The filters
+	###
+	
+	def siftFilter(self) -> siftproxymodel.BSBinSiftFilterProxyModel:
+		"""Bin sift filter"""
 
-	@QtCore.Slot(object)
-	def setSiftCriteria(self, criteria:typing.Tuple[typing.Iterable[avbutils.bins.BinSiftOption],typing.Iterable[avbutils.bins.BinSiftOption]]):
+		return self._bin_sift_filter
+	
+	def itemDisplayFilter(self) -> bindisplayproxymodel.BSBinDisplayFilterProxyModel:
+		"""Bin display items filter"""
 
-#		print("** setSiftOptions", criteria)
-		self._bin_sift_filter.setSiftCriteria(criteria)
+		return self._bin_items_filter
+	
+	def columnsFilter(self) -> binviewproxymodel.BSBinViewFilterProxyModel:
+		"""Bin view columns filter"""
+
+		return self._bin_view_filter
 
 
 	###
