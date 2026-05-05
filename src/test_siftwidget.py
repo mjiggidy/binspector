@@ -1,11 +1,14 @@
 import avb, avbutils
 from PySide6 import QtCore, QtWidgets
-from binspector.siftwidget import siftwidget, sourcesmodel
+from binspector.siftwidget import scopesmodel, siftwidget
 from binspector.binview import binviewmodel, binviewitemtypes
 from binspector.binfilters import binviewproxymodel
 
 app = QtWidgets.QApplication()
 app.setStyle("Fusion")
+
+model_binview       = binviewmodel.BSBinViewModel()
+model_binviewfilter = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=model_binview)
 
 wnd_siftwidget = siftwidget.BSSiftSettingsWidget()
 
@@ -23,9 +26,7 @@ geo.setWidth(geo.height() * 1.75)
 wnd_siftwidget.setGeometry(geo)
 wnd_siftwidget.setFixedHeight(geo.height())
 
-model_binview       = binviewmodel.BSBinViewModel()
-model_binviewfilter = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=model_binview)
-model_sift_columns  = sourcesmodel.BSSiftSourcesViewModel(bin_view_model=model_binviewfilter)
+model_sift_columns  = scopesmodel.BSSiftScopeViewModel(bin_view_model=model_binviewfilter)
 
 wnd_siftwidget.setBinViewModel(model_binviewfilter)
 
@@ -41,5 +42,7 @@ with avb.open(sys.argv[1]) as bin_file:
 #	wnd_siftwidget.setSiftOptions([
 #		avbutils.bins.BinSiftOption.from_sift_item(s) for s in bin_file.content.sifted_settings
 #	])
+
+wnd_siftwidget.resetAllCriteria()
 
 app.exec()

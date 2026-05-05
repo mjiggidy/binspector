@@ -25,7 +25,7 @@ from ..binview import binviewmodel
 
 from . import rangesmodel
 
-class BSSiftSourceType(enum.Enum):
+class BSSiftScopeType(enum.Enum):
 	"""None? Any? A column? A range? YOU TELL ME, FRIENDOOOOO"""
 
 	NoColumn     = enum.auto()
@@ -34,7 +34,7 @@ class BSSiftSourceType(enum.Enum):
 	AnyColumn    = enum.auto()
 
 
-class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
+class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 	"""A view model for choosing sifters for sifting"""
 
 	SEPARATOR_ROW_SIZE = 1
@@ -49,15 +49,15 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 		self._sift_ranges_model = rangesmodel.BSSiftRangesProxyModel(parent=self)
 		self._sift_ranges_model.setSourceModel(bin_view_model)
 
-		self._source_models:dict[BSSiftSourceType, QtCore.QAbstractItemModel] = {
-			BSSiftSourceType.NoColumn:  QtGui.QStandardItemModel(parent=self),
-			BSSiftSourceType.SingleColumn: bin_view_model,
-			BSSiftSourceType.Range: self._sift_ranges_model,
-			BSSiftSourceType.AnyColumn: QtGui.QStandardItemModel(parent=self),
+		self._source_models:dict[BSSiftScopeType, QtCore.QAbstractItemModel] = {
+			BSSiftScopeType.NoColumn:  QtGui.QStandardItemModel(parent=self),
+			BSSiftScopeType.SingleColumn: bin_view_model,
+			BSSiftScopeType.Range: self._sift_ranges_model,
+			BSSiftScopeType.AnyColumn: QtGui.QStandardItemModel(parent=self),
 		}
 
-		self._source_models[BSSiftSourceType.NoColumn] .appendRow(QtGui.QStandardItem("None"))
-		self._source_models[BSSiftSourceType.AnyColumn].appendRow(QtGui.QStandardItem("Any"))
+		self._source_models[BSSiftScopeType.NoColumn] .appendRow(QtGui.QStandardItem("None"))
+		self._source_models[BSSiftScopeType.AnyColumn].appendRow(QtGui.QStandardItem("Any"))
 		
 		self._reset_count = 0
 
@@ -66,7 +66,7 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 			self._setupSourceModel(source_key)
 
 	
-	def _setupSourceModel(self, source_key:BSSiftSourceType):
+	def _setupSourceModel(self, source_key:BSSiftScopeType):
 
 		model = self._source_models[source_key]
 
@@ -88,7 +88,7 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 
 	###
 
-	def _sourceTypeForModel(self, model:QtCore.QAbstractItemModel) -> BSSiftSourceType:
+	def _sourceTypeForModel(self, model:QtCore.QAbstractItemModel) -> BSSiftScopeType:
 
 		return next(k for k,v in self._source_models.items() if v == model)
 	
@@ -223,23 +223,23 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 
 		# NOTE: Am I hard-coding this or no?  Need to clean up.
 
-		if BSSiftSourceType.SingleColumn in self._source_models and self._source_models[BSSiftSourceType.SingleColumn] == model:
+		if BSSiftScopeType.SingleColumn in self._source_models and self._source_models[BSSiftScopeType.SingleColumn] == model:
 			return
 		
 		self.beginResetModel()
 
-		if BSSiftSourceType.SingleColumn in self._source_models:
+		if BSSiftScopeType.SingleColumn in self._source_models:
 
-			self._source_models[BSSiftSourceType.SingleColumn].disconnect(self)
+			self._source_models[BSSiftScopeType.SingleColumn].disconnect(self)
 
 		
-		if BSSiftSourceType.Range in self._source_models:
+		if BSSiftScopeType.Range in self._source_models:
 
-			self._source_models[BSSiftSourceType.Range].setSourceModel(model)
+			self._source_models[BSSiftScopeType.Range].setSourceModel(model)
 		
 		
-		self._source_models[BSSiftSourceType.SingleColumn] = model
-		self._setupSourceModel(BSSiftSourceType.SingleColumn)
+		self._source_models[BSSiftScopeType.SingleColumn] = model
+		self._setupSourceModel(BSSiftScopeType.SingleColumn)
 
 		self.endResetModel()
 
@@ -248,11 +248,11 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 	def binViewModel(self) -> binviewmodel.BSBinViewModel:
 		"""Get the source bin view model"""
 
-		return self._source_models[BSSiftSourceType.SingleColumn]
+		return self._source_models[BSSiftScopeType.SingleColumn]
 	
 	###
 	
-	def _rowCountForSiftSource(self, sift_source_type:BSSiftSourceType, append_separator_if_enabled:bool=True) -> int:
+	def _rowCountForSiftSource(self, sift_source_type:BSSiftScopeType, append_separator_if_enabled:bool=True) -> int:
 		"""Calculate the number of rows for a given column source section.  Appends a separator assuming it's enabled."""
 
 		row_count = 0
@@ -270,7 +270,7 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 		else:
 			return 0
 	
-	def rowOffsetToSiftSource(self, to_sift_source:BSSiftSourceType|None=None) -> int:
+	def rowOffsetToSiftSource(self, to_sift_source:BSSiftScopeType|None=None) -> int:
 		"""Calculate the model's row offset to a given sift source section (or 'SSS')"""
 
 		if to_sift_source is not None and to_sift_source not in self._source_models:
@@ -287,7 +287,7 @@ class BSSiftSourcesViewModel(QtCore.QAbstractItemModel):
 		
 		return row_offset
 	
-	def _sourceTypeForIndex(self, index:QtCore.QModelIndex) -> BSSiftSourceType|None:
+	def _sourceTypeForIndex(self, index:QtCore.QModelIndex) -> BSSiftScopeType|None:
 		"""Map er back"""
 
 		row = index.row()
