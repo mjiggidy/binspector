@@ -1,6 +1,6 @@
 import typing
 
-from . import sourcesmodel
+from . import scopesmodel
 
 from ..binfilters.siftfilter import sifters, siftmatchtypes
 
@@ -9,13 +9,16 @@ from PySide6 import QtCore, QtWidgets
 class BSSiftCriteriaWidget(QtWidgets.QWidget):
 	"""A single sift option widget"""
 
-	sig_criteria_set                    = QtCore.Signal(object)
-	sig_columns_chooser_model_changed   = QtCore.Signal(QtCore.QAbstractItemModel)
+	sig_criteria_set        = QtCore.Signal(object)
+	sig_scope_model_changed = QtCore.Signal(QtCore.QAbstractItemModel)
+	sig_scope_changed       = QtCore.Signal(object)
+	sig_match_type_changed  = QtCore.Signal(object)
+	sig_text_changed        = QtCore.Signal(str)
 
 	DEFAULT_SIFT_CRITERIA               = sifters.BSAnyColumnSifter(siftmatchtypes.BSSiftMatchTypes.Contains, "")
 	CRITERIA_CHANGED_TIMEOUT_MSEC       = 200
 
-	def __init__(self, *args, sources_model:sourcesmodel.BSSiftSourcesViewModel, sift_criteria:sifters.BSAbstractSifter|None=None, **kwargs):
+	def __init__(self, *args, sources_model:scopesmodel.BSSiftScopeViewModel, sift_criteria:sifters.BSAbstractSifter|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -29,15 +32,11 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 
 		self._criteria_changed_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.CRITERIA_CHANGED_TIMEOUT_MSEC)
 
-		self.layout().addWidget(self._cmb_match_type,  0, 0)
-		self.layout().addWidget(self._txt_match_text,  0, 1)
-		self.layout().addWidget(self._cmb_match_scope, 0, 2)
-
 		self._setupWidgets()
 		self._setupSignals()
 
 		if sift_criteria:
-			self.setSiftCriteria(sift_criteria)
+			self.setCriteria(sift_criteria)
 
 	def _setupWidgets(self):
 
@@ -49,24 +48,29 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 		self._cmb_match_type.addItem(self.tr("Begins With:"),     siftmatchtypes.BSSiftMatchTypes.BeginsWith)
 		self._cmb_match_type.addItem(self.tr("Matches Exactly:"), siftmatchtypes.BSSiftMatchTypes.MatchesExactly)
 
+		self.layout().addWidget(self._cmb_match_type,  0, 0)
+		self.layout().addWidget(self._txt_match_text,  0, 1)
+		self.layout().addWidget(self._cmb_match_scope, 0, 2)
+
 	def _setupSignals(self):
 
-		self._txt_match_text.textChanged     .connect(self.siftTextSet)
-		self._cmb_match_type.activated       .connect(self.siftTypeChosen)
-		self._cmb_match_scope.activated      .connect(self.siftScopeChosen)
+		self._txt_match_text.textChanged     .connect(self.textChosen)
+		self._cmb_match_type.activated       .connect(self.matchTypeChosen)
+		self._cmb_match_scope.activated      .connect(self.scopeChosen)
 
-		self._criteria_changed_timer.timeout .connect(self.siftCriteriaSettled)
+		self._criteria_changed_timer.timeout .connect(self.criteriaSettled)
 
 	@QtCore.Slot()
-	def siftCriteriaSettled(self):
+	def criteriaSettled(self):
 		"""Sift criteria have survived the timer, emit it"""
 
-		self.sig_criteria_set.emit(self.siftCriteria())
+		self.sig_criteria_set.emit(self.criteria())
 
 	@QtCore.Slot(object)
-	def setSiftCriteria(self, sift_criteria:sifters.BSAbstractSifter):
+	def setCriteria(self, sift_criteria:sifters.BSAbstractSifter):
+		"""Set the sift criteria for this widget"""
 
-		if self.siftCriteria() == sift_criteria:
+		if self.criteria() == sift_criteria:
 			return
 
 		sift_criteria = sift_criteria or self.DEFAULT_SIFT_CRITERIA
@@ -74,18 +78,18 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 		self._cmb_match_type.setCurrentIndex(self._cmb_match_type.findData(sift_criteria.matchType()))
 		self._txt_match_text.setText(sift_criteria.siftString())
 		
-		scope_model:sourcesmodel.BSSiftSourcesViewModel = self._cmb_match_scope.model()
+		scope_model:scopesmodel.BSSiftScopeViewModel = self._cmb_match_scope.model()
 		
 		if isinstance(sift_criteria, sifters.BSAnyColumnSifter):
 
 			self._cmb_match_scope.setCurrentIndex(
-				scope_model.rowOffsetToSiftSource(sourcesmodel.BSSiftSourceType.AnyColumn)
+				scope_model.rowOffsetToSiftSource(scopesmodel.BSSiftScopeType.AnyColumn)
 			)
 
 		elif isinstance(sift_criteria, sifters.BSNoColumnSifter):
 
 			self._cmb_match_scope.setCurrentIndex(
-				scope_model.rowOffsetToSiftSource(sourcesmodel.BSSiftSourceType.NoColumn)
+				scope_model.rowOffsetToSiftSource(scopesmodel.BSSiftScopeType.NoColumn)
 			)
 
 		elif isinstance(sift_criteria, sifters.BSRangeSifter):
@@ -100,51 +104,60 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 				self._cmb_match_scope.findData(sift_criteria.siftColumnInfo())
 			)
 
-	def siftCriteria(self) -> sifters.BSAbstractSifter:
+		self.sig_criteria_set.emit(sift_criteria)
+
+	def criteria(self) -> sifters.BSAbstractSifter:
 		"""Build a `BSAbstractSifter` based on current user input"""
 
 		source_type, source_id = self.siftSource()
 
-		if source_type == sourcesmodel.BSSiftSourceType.AnyColumn:
+		if source_type == scopesmodel.BSSiftScopeType.AnyColumn:
 
 			return sifters.BSAnyColumnSifter(
 				match_type  = self.matchType(),
-				sift_string = self.siftText(),
+				sift_string = self.text(),
 			)
 
-		elif source_type == sourcesmodel.BSSiftSourceType.NoColumn:
+		elif source_type == scopesmodel.BSSiftScopeType.NoColumn:
 
-			return sifters.BSNoColumnSifter(self.siftText())
+			return sifters.BSNoColumnSifter(self.text())
 		
-		elif source_type == sourcesmodel.BSSiftSourceType.Range:
+		elif source_type == scopesmodel.BSSiftScopeType.Range:
 
 			return sifters.BSRangeSifter(
-				sift_string = self.siftText(),
+				sift_string = self.text(),
 				data_role   = source_id,
 			)
 		
-		elif source_type == sourcesmodel.BSSiftSourceType.SingleColumn:
+		elif source_type == scopesmodel.BSSiftScopeType.SingleColumn:
 
 			return sifters.BSSingleColumnSifter(
 				sift_column_info = source_id,
 				match_type       = self.matchType(),
-				sift_string      = self.siftText()
+				sift_string      = self.text()
 			)
 
 		else:
 			raise ValueError("Nuh uh")
 
 	@QtCore.Slot(list)
-	def setColumnsChooserModel(self, columns_chooser_model:sourcesmodel.BSSiftSourcesViewModel):
+	def setScopeChooserModel(self, scope_chooser_model:scopesmodel.BSSiftScopeViewModel):
+		"""Set the scope chooser model"""
 
-		if self._cmb_match_scope.model() == columns_chooser_model:
+		if self._cmb_match_scope.model() == scope_chooser_model:
 			return
 
-		self._cmb_match_scope.setModel(columns_chooser_model)
+		self._cmb_match_scope.setModel(scope_chooser_model)
 
-		self.sig_columns_chooser_model_changed.emit(columns_chooser_model)
+		self.sig_scope_model_changed.emit(scope_chooser_model)
 
-	def setMatchType(self, match_type:sourcesmodel.BSSiftSourceType):
+	def scopeChooserModel(self) -> scopesmodel.BSSiftScopeViewModel:
+		"""The scope chooser model"""
+
+		return self._cmb_match_scope.model()
+
+	def setMatchType(self, match_type:scopesmodel.BSSiftScopeType):
+		"""Set the string matching strategy to use during the sift"""
 
 		if self._cmb_match_type.currentData() == match_type:
 			return
@@ -153,34 +166,58 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 			self._cmb_match_type.findData(match_type)
 		)
 
+		self.sig_match_type_changed.emit(match_type)
+
 	def matchType(self) -> siftmatchtypes.BSSiftMatchTypes:
+		"""The string matching strategy to use during the sift"""
+
 		return self._cmb_match_type.currentData()
 	
-	@QtCore.Slot()
-	def siftTextSet(self):
+	@QtCore.Slot(str)
+	def setText(self, sift_text:str) -> str:
+		"""Set the text for which to sift"""
 
-		self._criteria_changed_timer.start()
+		if self._txt_match_text.text() == sift_text:
+			return
 
-	def siftText(self) -> str:
+		self._txt_match_text.setText(sift_text)
+
+		self.sig_text_changed.emit(sift_text)
+	
+	def text(self) -> str:
+		"""The text for which to sift"""
 
 		return self._txt_match_text.text()
 
+	def siftSource(self) -> typing.Tuple[scopesmodel.BSSiftScopeType, typing.Any]:
+
+		return self._cmb_match_scope.currentData()
+
+	def scope(self) -> scopesmodel.BSSiftScopeType:
+		"""Which scope to sift -- such as a particular column, a particular range, etc."""
+
+		return self._cmb_match_scope.currentData()
+	
 	@QtCore.Slot()
-	def siftScopeChosen(self):
+	def textChosen(self):
+		"""User typed something"""
+
+		self._criteria_changed_timer.start()
+
+	@QtCore.Slot()
+	def scopeChosen(self):
+		"""User set the scope"""
 
 		sift_source_type, _ = self._cmb_match_scope.currentData()
 		
-		if sift_source_type == sourcesmodel.BSSiftSourceType.Range:
+		if sift_source_type == scopesmodel.BSSiftScopeType.Range:
 			self.setMatchType(siftmatchtypes.BSSiftMatchTypes.Contains)
 
 		self._criteria_changed_timer.start()
 
-	def siftSource(self) -> typing.Tuple[sourcesmodel.BSSiftSourceType, typing.Any]:
-
-		return self._cmb_match_scope.currentData()
-
 	@QtCore.Slot()
-	def siftTypeChosen(self):
+	def matchTypeChosen(self):
+		"""User set the sift match type"""
 
 		sift_method = self._cmb_match_type.currentData()
 		
@@ -188,21 +225,9 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 
 			sift_source_type, _ = self.siftSource()
 			
-			if sift_source_type == sourcesmodel.BSSiftSourceType.Range:
-
-				self.setSiftSource(source_type=sourcesmodel.BSSiftSourceType.AnyColumn)
-
-		self._criteria_changed_timer.start()
-
-	def setSiftSource(self, source_type:sourcesmodel.BSSiftSourceType):
-
-		if not source_type == sourcesmodel.BSSiftSourceType.AnyColumn:
-			raise NotImplementedError("Nope")
-		
-		sift_scope_model:sourcesmodel.BSSiftSourcesViewModel = self._cmb_match_scope.model()
-		
-		self._cmb_match_scope.setCurrentIndex(
-			sift_scope_model.rowOffsetToSiftSource(sourcesmodel.BSSiftSourceType.AnyColumn)
-		)
+			if sift_source_type == scopesmodel.BSSiftScopeType.Range:
+				self._cmb_match_scope.setCurrentIndex(
+					self._cmb_match_scope.model().rowOffsetToSiftSource(scopesmodel.BSSiftScopeType.AnyColumn)
+				)
 
 		self._criteria_changed_timer.start()
