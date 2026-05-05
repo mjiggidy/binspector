@@ -6,6 +6,8 @@ from .. import abstractfiltermodel
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
+	DEFAULT_CRITERIA = [[sifters.BSAnyColumnSifter()]*3]*2
+
 	sig_live_sift_enabled = QtCore.Signal(bool)
 	"""Live Sift was toggled on or off"""
 
@@ -15,8 +17,8 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 	def __init__(self, *args, sift_criteria:list[list[sifters.BSAbstractSifter]]|None=None, live_sift:bool=False, **kwargs):
 
 		super().__init__(*args, **kwargs)
-
-		self._sift_criteria = sift_criteria if sift_criteria is not None else []
+		
+		self._sift_criteria = sift_criteria or list(self.DEFAULT_CRITERIA)
 
 		# NOTE to self:  Live Sift does two things:
 		# - Toggle dynamic filter here in the proxy so it responds to changes in data
@@ -24,6 +26,11 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		#   user clicks a button to re-sift
 		
 		self.setDynamicSortFilter(live_sift)
+
+	@QtCore.Slot()
+	def resetSiftCriteria(self):
+
+		self.setSiftCriteria(None)
 
 	@QtCore.Slot(bool)
 	def setEnabled(self, is_enabled:bool):
@@ -45,13 +52,16 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		# NOTE: Just for now using crit 1
 		# Will want to convert this in like the widget or something instead
 
+		if not criteria:
+			criteria = list(self.DEFAULT_CRITERIA)
+
+		if self._sift_criteria == criteria:
+			return
+
 		self.beginFilterChange()
 
-		#crit1, crit2 = criteria
-
 		self._sift_criteria = criteria
-		
-#		self._sift_criteria = list(criteria_1)
+
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
 
 		self.sig_criteria_changed.emit(self._sift_criteria)
@@ -83,7 +93,17 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 		sift_results = []
 
-		# TODO: Yeah, yeah.  I'll come back to this.  IT WORKS THOUGH DOESN'T IT?? HUH??
+		# TODO: Yeah, yeah.  I'll come back to this.
+		# IT WORKS THOUGH DOESN'T IT?? HUH??  Or maybe it doesn't, 
+		# if you're reading this.
+
+		# Sift Criteria is a list of lists of "and" criterion
+		# Each "and" list result is then compared with "or."
+		# So "Match this, this, and this; or this, this, and this."
+		
+		# Criterion without a sift string set is considered invalid 
+		# and neither True nor False.  Otherwise it janks up the sift 
+		# boolean logic.
 
 		for criteria_set in self._sift_criteria:
 

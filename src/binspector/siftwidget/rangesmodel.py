@@ -11,6 +11,75 @@ class ColumnRangeTrigger:
 	name:str
 	range_role:binitemtypes.BSBinItemDataRoles
 
+DEFAULT_RANGE_TRIGGERS:dict[avbutils.bins.BinColumnFieldIDs, ColumnRangeTrigger] = {
+
+	avbutils.bins.BinColumnFieldIDs.Start: ColumnRangeTrigger(
+		name = "Start to End Range",
+		range_role= binitemtypes.BSBinItemDataRoles.TimecodeRangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.AuxiliaryTC1: ColumnRangeTrigger(
+		name = "Auxiliary TC 1 Range",
+		range_role= binitemtypes.BSBinItemDataRoles.AuxTC1RangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.AuxiliaryTC2: ColumnRangeTrigger(
+		name = "Auxiliary TC 2 Range",
+		range_role= binitemtypes.BSBinItemDataRoles.AuxTC2RangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.AuxiliaryTC3: ColumnRangeTrigger(
+		name = "Auxiliary TC 3 Range",
+		range_role= binitemtypes.BSBinItemDataRoles.AuxTC3RangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.AuxiliaryTC4: ColumnRangeTrigger(
+		name = "Auxiliary TC 4 Range",
+		range_role= binitemtypes.BSBinItemDataRoles.AuxTC4RangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.AuxiliaryTC5: ColumnRangeTrigger(
+		name = "Auxiliary TC 5 Range",
+		range_role= binitemtypes.BSBinItemDataRoles.AuxTC5RangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.InkNumber: ColumnRangeTrigger(
+		name = "Ink Number Range",
+		range_role= binitemtypes.BSBinItemDataRoles.InkNumberRangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.MarkIn: ColumnRangeTrigger(
+		name = "Mark In to Out Range",
+		range_role= binitemtypes.BSBinItemDataRoles.TCMarkInOutRangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.AuxiliaryInk: ColumnRangeTrigger(
+		name = "Auxiliary Ink Range",
+		range_role= binitemtypes.BSBinItemDataRoles.AuxInkNumberRangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.KNMarkIn: ColumnRangeTrigger(
+		name = "KN Mark In to Out Range",
+		range_role= binitemtypes.BSBinItemDataRoles.KNMarkInOutRangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.FilmTC: ColumnRangeTrigger(
+		name = "Film TC Range",
+		range_role= binitemtypes.BSBinItemDataRoles.FilmTCRangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.KNStart: ColumnRangeTrigger(
+		name = "KN Start to End Range",
+		range_role= binitemtypes.BSBinItemDataRoles.KNRangeRole,
+	),
+
+	avbutils.bins.BinColumnFieldIDs.SoundTC: ColumnRangeTrigger(
+		name = "Sound TC Range",
+		range_role= binitemtypes.BSBinItemDataRoles.SoundTCRole,
+	),
+
+}
+
 class BSSiftRangesProxyModel(QtCore.QSortFilterProxyModel):
 	"""Present sift-able ranges, based on bin column visibility"""
 
@@ -27,74 +96,7 @@ class BSSiftRangesProxyModel(QtCore.QSortFilterProxyModel):
 		self.setDynamicSortFilter(True)
 		self.sort(0, QtCore.Qt.SortOrder.AscendingOrder)
 
-		self._range_triggers = {
-
-			avbutils.bins.BinColumnFieldIDs.Start: ColumnRangeTrigger(
-				name = self.tr("Start to End Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.TimecodeRangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.AuxiliaryTC1: ColumnRangeTrigger(
-				name = self.tr("Auxiliary TC 1 Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.AuxTC1RangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.AuxiliaryTC2: ColumnRangeTrigger(
-				name = self.tr("Auxiliary TC 2 Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.AuxTC2RangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.AuxiliaryTC3: ColumnRangeTrigger(
-				name = self.tr("Auxiliary TC 3 Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.AuxTC3RangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.AuxiliaryTC4: ColumnRangeTrigger(
-				name = self.tr("Auxiliary TC 4 Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.AuxTC4RangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.AuxiliaryTC5: ColumnRangeTrigger(
-				name = self.tr("Auxiliary TC 5 Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.AuxTC5RangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.InkNumber: ColumnRangeTrigger(
-				name = self.tr("Ink Number Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.InkNumberRangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.MarkIn: ColumnRangeTrigger(
-				name = self.tr("Mark In to Out Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.TCMarkInOutRangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.AuxiliaryInk: ColumnRangeTrigger(
-				name = self.tr("Auxiliary Ink Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.AuxInkNumberRangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.KNMarkIn: ColumnRangeTrigger(
-				name = self.tr("KN Mark In to Out Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.KNMarkInOutRangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.FilmTC: ColumnRangeTrigger(
-				name = self.tr("Film TC Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.FilmTCRangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.KNStart: ColumnRangeTrigger(
-				name = self.tr("KN Start to End Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.KNRangeRole,
-			),
-
-			avbutils.bins.BinColumnFieldIDs.SoundTC: ColumnRangeTrigger(
-				name = self.tr("Sound TC Range"),
-				range_role= binitemtypes.BSBinItemDataRoles.SoundTCRole,
-			),
-
-		}
+		self._range_triggers = DEFAULT_RANGE_TRIGGERS.copy()
 
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 
