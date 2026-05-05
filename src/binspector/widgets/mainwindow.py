@@ -321,7 +321,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_sifting.sig_criteria_set                  .connect(self._bin_widget.siftFilter().setSiftCriteria)
 		self._tool_sifting.sig_live_sift_enabled             .connect(self._bin_widget.siftFilter().setLiveSiftEnabled)
 		self._bin_widget.siftFilter().sig_live_sift_enabled  .connect(self._tool_sifting.setLiveSiftEnabled)
-#		self._bin_widget.siftFilter().sig_criteria_changed   .connect(self._tool_sifting.setCritera)
+		self._bin_widget.siftFilter().sig_criteria_changed   .connect(self._tool_sifting.setCriteria)
 
 		# Bin Contents Toolbars
 		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self.userChangedSearchText)
