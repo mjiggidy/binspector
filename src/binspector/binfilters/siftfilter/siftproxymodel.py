@@ -6,6 +6,12 @@ from .. import abstractfiltermodel
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
+	sig_live_sift_enabled = QtCore.Signal(bool)
+	"""Live Sift was toggled on or off"""
+
+	sig_criteria_changed  = QtCore.Signal(object)
+	"""Sift criteria was changed"""
+
 	def __init__(self, *args, sift_criteria:list[list[sifters.BSAbstractSifter]]|None=None, live_sift:bool=False, **kwargs):
 
 		super().__init__(*args, **kwargs)
@@ -21,6 +27,8 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 	@QtCore.Slot(bool)
 	def setEnabled(self, is_enabled:bool):
+
+		# NOTE: isEnabled() implemented in base class
 
 		if self._is_enabled == is_enabled:
 			return
@@ -45,6 +53,23 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		
 #		self._sift_criteria = list(criteria_1)
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
+
+		self.sig_criteria_changed.emit(self._sift_criteria)
+
+	def siftCriteria(self) -> list[list[sifters.BSAbstractSifter]]:
+
+		return self._sift_criteria
+	
+	@QtCore.Slot(bool)
+	def setLiveSiftEnabled(self, is_enabled:bool):
+
+		if self.dynamicSortFilter() == is_enabled:
+			return
+		
+		self.setDynamicSortFilter(True)
+		self.invalidateRowsFilter()
+
+		self.sig_live_sift_enabled.emit(is_enabled)
 
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 

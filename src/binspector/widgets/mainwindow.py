@@ -82,7 +82,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
 		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
-		self._tool_sifting     = siftwidget.BSSiftSettingsWidget(bin_view_model=self._bin_widget._bin_view_filter) # TODO: More gracefully
+		self._tool_sifting     = siftwidget.BSSiftSettingsWidget(bin_view_model=self._bin_widget.columnsFilter())
 		self._dock_sifting     = QtWidgets.QDockWidget(self.tr("Sift Settings"))
 
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
@@ -281,7 +281,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		# Bin Settings Toolboxes
 		self._man_bindisplay.sig_bin_display_changed         .connect(self._tool_bindisplay.setFlags)
-		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.setBinDisplayItemTypes)
+		self._man_bindisplay.sig_bin_display_changed         .connect(self._bin_widget.itemDisplayFilter().setAcceptedItemTypes)
 		self._tool_bindisplay.sig_flags_changed              .connect(self._man_bindisplay.setBinDisplayFlags)
 
 		# Appearance to binwidget
@@ -318,12 +318,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 #		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
 
 		self._sigs_binloader.sig_got_sift_settings           .connect(self._man_siftsettings.setSiftSettings) # NOTE: Instead, this'll be set on the sift model
-#		self._man_siftsettings.sig_bin_view_changed          .connect(self._tool_sifting.setBinViewModel)
-		#self._man_siftsettings.sig_sift_settings_changed     .connect(self._tool_sifting.setSiftOptions)
-#		self._man_siftsettings.sig_sift_enabled              .connect(self._tool_sifting.setSiftEnabled)
-#		self._man_siftsettings.sig_sift_enabled              .connect(self._bin_widget.setSiftEnabled)
-#		self._man_siftsettings.sig_sift_settings_changed     .connect(self._bin_widget.setSiftOptions)
-		self._tool_sifting.sig_criteria_set                   .connect(self._bin_widget.setSiftCriteria)
+		self._tool_sifting.sig_criteria_set                  .connect(self._bin_widget.siftFilter().setSiftCriteria)
+		self._tool_sifting.sig_live_sift_enabled             .connect(self._bin_widget.siftFilter().setLiveSiftEnabled)
+		self._bin_widget.siftFilter().sig_live_sift_enabled  .connect(self._tool_sifting.setLiveSiftEnabled)
+#		self._bin_widget.siftFilter().sig_criteria_changed   .connect(self._tool_sifting.setCritera)
 
 		# Bin Contents Toolbars
 		self._bin_widget.topWidgetBar().searchBox().textChanged.connect(self.userChangedSearchText)
