@@ -31,7 +31,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 		sig_got_mob                     = QtCore.Signal() # For progress bar
 		sig_got_mobs                    = QtCore.Signal(object)
 		sig_got_sort_settings           = QtCore.Signal(object)
-		sig_got_sift_settings           = QtCore.Signal(bool, object)
+		sig_got_sift_settings           = QtCore.Signal(object)
 		sig_got_bin_display_settings    = QtCore.Signal(object)
 		sig_got_bin_appearance_settings = QtCore.Signal(object, object, object, object, object, object, object)
 
@@ -95,7 +95,8 @@ class BSBinViewLoader(QtCore.QRunnable):
 			
 			logging.getLogger(__name__).debug("Begin view settings")
 
-			self._signals.sig_got_view_settings     .emit(binparser.bin_view_setting_from_bin(bin_handle.content))
+			view_setting = binparser.bin_view_setting_from_bin(bin_handle.content)
+			self._signals.sig_got_view_settings     .emit(view_setting)
 			self._signals.sig_got_text_column_widths.emit(binparser.bin_column_widths_from_bin(bin_handle.content))
 			self._signals.sig_got_frame_mode_scale  .emit(binparser.bin_frame_view_scale_from_bin(bin_handle.content))
 			self._signals.sig_got_script_mode_scale .emit(binparser.bin_scipt_view_scale_from_bin(bin_handle.content))
@@ -107,7 +108,7 @@ class BSBinViewLoader(QtCore.QRunnable):
 			logging.getLogger(__name__).debug("End display mode")
 
 			logging.getLogger(__name__).debug("Begin sift settings")
-			self._signals.sig_got_sift_settings.emit(*binparser.sift_settings_from_bin(bin_handle.content))
+			self._signals.sig_got_sift_settings.emit(binparser.sift_settings_from_bin(bin_handle.content, view_setting=view_setting))
 			logging.getLogger(__name__).debug("End sift settings")
 
 			logging.getLogger(__name__).debug("Begin sort settings")

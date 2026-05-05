@@ -6,15 +6,14 @@ Also used by `.binloader`
 import avb, avbutils, timecode
 from ..binitems import binitemtypes
 from ..binview  import binviewitemtypes
+from ..binfilters.siftfilter import sifters, siftmatchtypes
+from ..siftwidget import rangesmodel
 
 def bin_display_flags_from_bin(bin_content:avb.bin.Bin) -> avbutils.BinDisplayItemTypes:
 	return avbutils.BinDisplayItemTypes.get_options_from_bin(bin_content)
 	
-def bin_view_setting_from_bin(bin_content:avb.bin.Bin) -> avb.bin.BinViewSetting:
-	
-	#bin_view = bin_content.view_setting
-#	bin_view.property_data = avb.core.AVBPropertyData(bin_view.property_data) # Dereference before closing file
-	
+def bin_view_setting_from_bin(bin_content:avb.bin.Bin) -> binviewitemtypes.BSBinViewInfo:
+		
 	return binviewitemtypes.BSBinViewInfo.from_binview(bin_content.view_setting)
 
 def bin_frame_view_scale_from_bin(bin_content:avb.bin.Bin) -> int:
@@ -39,8 +38,74 @@ def bin_column_widths_from_bin(bin_content:avb.bin.Bin) -> dict[str, int]:
 	
 	return bin_column_widths
 	
-def sift_settings_from_bin(bin_content:avb.bin.Bin) -> tuple[bool, list[avbutils.bins.BinSiftOption]]:
-	return avbutils.bins.BinSiftOption.from_bin(bin_content)
+def sift_settings_from_bin(bin_content:avb.bin.Bin, view_setting:binviewitemtypes.BSBinViewInfo) -> tuple[list[sifters.BSAbstractSifter], list[sifters.BSAbstractSifter]]:
+	
+	if not bin_content.sifted:
+		return None
+	
+	bin_sift_settings:list[avb.bin.SiftItem] = reversed(bin_content.sifted_settings)
+
+	processed_sift_settings:list[sifters.BSAbstractSifter] = []
+	
+	for sift_item in bin_sift_settings:
+
+		sift_item:avb.bin.SiftItem = sift_item
+
+		print(list(sift_item.property_data.items()))
+
+		sift_string = sift_item.string
+		column_name = str(sift_item.column)
+		match_type = siftmatchtypes.BSSiftMatchTypes(sift_item.method)
+
+		if column_name == "None":
+
+			processed_sift_settings.append(
+				sifters.BSNoColumnSifter(
+					sift_string  = sift_string,
+					match_type   = match_type
+				)
+			)
+		
+		elif column_name in list(c.display_name for c in view_setting.columns):
+
+			processed_sift_settings.append(
+				sifters.BSSingleColumnSifter(
+					sift_column_info = view_setting.columns[list(c.display_name for c in view_setting.columns).index(column_name)],
+					sift_string = sift_string,
+					match_type = match_type,
+				)
+			)
+		
+		elif column_name.endswith("Range"): # Ugh I hate it
+
+			for _, trigger in rangesmodel.DEFAULT_RANGE_TRIGGERS.items():
+
+				if column_name.casefold() == trigger.name.casefold():
+
+					processed_sift_settings.append(
+						sifters.BSRangeSifter(
+							sift_string=sift_string,
+							data_role=trigger.range_role,
+						)
+					)
+
+					break
+
+		
+
+		else:
+			
+			processed_sift_settings.append(
+				sifters.BSAnyColumnSifter(
+					sift_string  = sift_string,
+					match_type   = match_type
+				)
+			)
+
+	if not len(processed_sift_settings) == 6:
+		raise ValueError(f"Expected exactly 6 sift settings, got {len(processed_sift_settings)}")
+
+	return (processed_sift_settings[:3], processed_sift_settings[3:])
 	
 def sort_settings_from_bin(bin_content:avb.bin.Bin) -> list[list[int, str]]:
 	return bin_content.sort_columns
