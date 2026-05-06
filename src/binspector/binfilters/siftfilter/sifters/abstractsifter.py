@@ -39,6 +39,11 @@ class BSAbstractSifter(abc.ABC):
 
 		return self._data_role
 	
+	def isValid(self) -> bool:
+		"""This sifter is ready to go"""
+
+		return bool(self._sift_string)
+	
 	def __eq__(self, other) -> bool:
 
 		if type(self) is not type(other):

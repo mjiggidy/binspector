@@ -46,6 +46,3 @@ class BSRangeSifter(BSAbstractSifter):
 		
 		else:
 			raise NotImplementedError(f"** Sift range not yet supported for {repr(item_range)}")
-		
-	def isValid(self):
-		return bool(self._sift_string)

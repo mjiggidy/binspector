@@ -21,6 +21,3 @@ class BSNoColumnSifter(BSAbstractSifter):
 	def sifterAcceptsIndex(self, index:QtCore.QModelIndex):
 
 		return True
-	
-	def isValid(self):
-		return bool(self._sift_string)
