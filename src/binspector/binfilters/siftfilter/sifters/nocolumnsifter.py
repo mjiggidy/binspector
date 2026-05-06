@@ -4,7 +4,7 @@ from . import BSAbstractSifter
 from ..siftmatchtypes import BSSiftMatchTypes
 
 class BSNoColumnSifter(BSAbstractSifter):
-	"""Sift no column"""
+	"""Sift no column -- basically an inactive sifter I guess"""
 
 	def __init__(self,
 		sift_string:str                    = "",
@@ -20,10 +20,7 @@ class BSNoColumnSifter(BSAbstractSifter):
 
 	def sifterAcceptsIndex(self, index:QtCore.QModelIndex):
 
-		if not index.isValid() or not self._sift_string:
-			return True
-
-		return False
+		return True
 	
 	def isValid(self):
 		return bool(self._sift_string)
