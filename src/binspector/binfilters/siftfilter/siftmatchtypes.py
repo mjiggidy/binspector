@@ -1,13 +1,12 @@
 from __future__ import annotations
 import enum, typing
 
-if typing.TYPE_CHECKING:
-	import avb
-
 class BSSiftMatchTypes(enum.IntEnum):
 	"""How to match text for sifting"""
 
 	# NOTE: SiftItems are listed in reverse order
+	# NOTE: This corresponds to the sift values returned by pyavb
+	# NOTE: i kissy u
 
 	Contains       = 1
 	"""Column contains a given string"""
@@ -17,9 +16,3 @@ class BSSiftMatchTypes(enum.IntEnum):
  
 	MatchesExactly = 3
 	"""Column matches exactly a given string"""
-
-	@classmethod
-	def from_sift_item(cls, sift_item:avb.bin.SiftItem) -> typing.Self:
-		"""Lookup the sift method based on the method `int`"""
-
-		return cls(sift_item.method)

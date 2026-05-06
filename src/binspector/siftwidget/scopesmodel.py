@@ -19,20 +19,12 @@ When a column or range is selected, but the binview changes so the appropriate c
 sift goes back to "Any" column.
 """
 
-import enum
 from PySide6 import QtCore, QtGui
+
+from ..binfilters.siftfilter.siftscopetypes import BSSiftScopeType
 from ..binview import binviewmodel
 
 from . import rangesmodel
-
-class BSSiftScopeType(enum.Enum):
-	"""None? Any? A column? A range? YOU TELL ME, FRIENDOOOOO"""
-
-	NoColumn     = enum.auto()
-	SingleColumn = enum.auto()
-	Range        = enum.auto()
-	AnyColumn    = enum.auto()
-
 
 class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 	"""A view model for choosing sifters for sifting"""
