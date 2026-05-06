@@ -43,48 +43,10 @@ class BSSingleColumnSifter(BSAnyColumnSifter):
 				if col_field_id == avbutils.bins.BinColumnFieldIDs.User and col_name != self._sift_column_info.display_name:
 					continue
 
-				return col
+				yield index.siblingAtColumn(col)
+				return
 
 		raise ValueError(f"Column {self._sift_column_info} not found")
-
-	def sifterAcceptsIndex(self, index:QtCore.QModelIndex) -> bool:
-
-		if not index.isValid() or not self._sift_string:
-			return True
-		
-		col = self.filter_columns(index)
-		
-		sift_string = self._sift_string
-		source_data = str(
-			index.siblingAtColumn(col).data(self._data_role)
-			if not None else ""
-		)
-		
-		if not self.caseSensitive():
-
-			sift_string = sift_string.casefold()
-			source_data = source_data.casefold()
-		
-		# Match based on match type
-
-		if self._match_type == BSSiftMatchTypes.BeginsWith:
-
-			return source_data.startswith(sift_string)
-		
-		elif self._match_type == BSSiftMatchTypes.Contains:
-
-			return sift_string in source_data
-		
-		elif self._match_type == BSSiftMatchTypes.MatchesExactly:
-
-			return sift_string == source_data
-
-		else:
-			# SHOULD NEVER HAPPEN
-			raise ValueError(f"Unknown match type: {self._match_type}")
-		
-	def isValid(self):
-		return bool(self._sift_string)
 	
 	def siftColumnInfo(self) -> binviewitemtypes.BSBinViewColumnInfo:
 		"""The `BSBinViewColumnInfo` column for which to sift"""
