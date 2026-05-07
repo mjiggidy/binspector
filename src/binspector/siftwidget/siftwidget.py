@@ -42,7 +42,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		self._sift_top_widgets:list[BSSiftCriteriaWidget] = []
 		self._sift_bot_widgets:list[BSSiftCriteriaWidget] = []
 		
-		self._criteria_changed_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.DEFAULT_CRITERIA_TIMEOUT_MS)
+		self._live_criteria_settle_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.DEFAULT_CRITERIA_TIMEOUT_MS)
 		
 		self._chk_live_sift = QtWidgets.QCheckBox()
 
@@ -95,14 +95,14 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		lay_buttons = QtWidgets.QHBoxLayout()
 		lay_buttons.addWidget(self._chk_live_sift)
 		lay_buttons.addStretch()
-		lay_buttons.addWidget(self._btn_clear)
 		lay_buttons.addWidget(self._btn_apply)
+		lay_buttons.addWidget(self._btn_clear)
 
 		self.layout().addLayout(lay_buttons)
 
 	def _setupSignals(self):
 
-		self._criteria_changed_timer.timeout.connect(self.criteriaSettled)
+		self._live_criteria_settle_timer.timeout.connect(self.criteriaSettled)
 		self._btn_apply.clicked.connect(self.criteriaSettled)
 		self._btn_clear.clicked.connect(self.resetAllCriteria)
 
@@ -126,7 +126,8 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		
 		self._live_sift_enabled = is_enabled
 
-		self._btn_apply.setDisabled(self._live_sift_enabled)
+		self._btn_apply.setHidden(self._live_sift_enabled)
+		self._btn_apply.setDisabled(True) # Either way, I guess
 
 		self.sig_live_sift_enabled.emit(is_enabled)
 
@@ -145,14 +146,21 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 	def criteriaChanged(self):
 		"""Sift criteria was changed"""
 
+
 		if self._live_sift_enabled:
-			self._criteria_changed_timer.start()
+			self._live_criteria_settle_timer.start()
+		
+		else:
+			self._btn_apply.setEnabled(True)
 
 	@QtCore.Slot()
 	def criteriaSettled(self):
 		"""Sift criteria is final"""
 
 		self.sig_criteria_set.emit(self.criteria())
+
+		if not self._live_sift_enabled:
+			self._btn_apply.setDisabled(True)
 
 	def criteria(self) -> typing.Tuple[list[sifters.BSAbstractSifter],list[sifters.BSAbstractSifter]]:
 		"""The sift criteria as currently set"""
@@ -172,6 +180,9 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 			)
 		)
 
+		if not self._live_sift_enabled:
+			self._btn_apply.setEnabled(True)
+
 	@QtCore.Slot(object)
 	def setCriteria(self, criteria:typing.Tuple[list[sifters.BSAbstractSifter],list[sifters.BSAbstractSifter]]):
 
@@ -182,6 +193,8 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		
 		self.setTopCriteria(criteria[0])
 		self.setBottomCriteria(criteria[1])
+
+		self._btn_apply.setDisabled(True)
 
 	@QtCore.Slot(object)
 	def setTopCriteria(self, criteria:list[sifters.BSAbstractSifter]):
