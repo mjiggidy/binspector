@@ -10,6 +10,7 @@ class BSSettingsPanel(QtWidgets.QWidget):
 	sig_item_padding_changed     = QtCore.Signal(object)
 	sig_use_column_widths_changed= QtCore.Signal(bool)
 	sig_use_live_sift_changed    = QtCore.Signal(bool)
+	sig_use_sift_settings_changed= QtCore.Signal(bool)
 
 	def __init__(self, *args, **kwargs):
 
@@ -33,6 +34,9 @@ class BSSettingsPanel(QtWidgets.QWidget):
 
 		self._chk_use_live_sift     = QtWidgets.QCheckBox()
 		self._chk_use_live_sift.clicked.connect(self.sig_use_live_sift_changed)
+
+		self._chk_use_sift_settings = QtWidgets.QCheckBox()
+		self._chk_use_sift_settings.clicked.connect(self.sig_use_sift_settings_changed)
 
 		self._spn_padding_width  = QtWidgets.QSpinBox()
 		self._spn_padding_width.valueChanged.connect(self.calculateNewPadding)
@@ -58,7 +62,8 @@ class BSSettingsPanel(QtWidgets.QWidget):
 
 		self.layout().addRow(self.tr("On Startup"), self._cmb_startup_behavior)
 		self.layout().addRow(self.tr("Use Saved Column Widths"), self._chk_use_column_widths)
-		self.layout().addRow(self.tr("Use Live Sift"), self._chk_use_live_sift)
+		self.layout().addRow(self.tr("Use Live Sift"), self._chk_use_live_sift) # NOTE: Also gets saved via Sift Settings window...?
+		self.layout().addRow(self.tr("Use Sift Settings From Bin"), self._chk_use_sift_settings)
 		self.layout().addRow(self.tr("List Item (W)"), self._spn_padding_width)
 		self.layout().addRow(self.tr("List Item (H)"), self._spn_padding_height)
 		self.layout().addRow(self.tr("Use Fancy Animations"), self._chk_use_animations)
@@ -110,3 +115,8 @@ class BSSettingsPanel(QtWidgets.QWidget):
 	def setLiveSiftEnabled(self, is_enabled:bool):
 
 		self._chk_use_live_sift.setChecked(is_enabled)
+
+	@QtCore.Slot(bool)
+	def setUseSiftSettingsFromBin(self, is_enabled:bool):
+
+		self._chk_use_sift_settings.setChecked(is_enabled)

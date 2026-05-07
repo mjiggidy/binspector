@@ -16,6 +16,7 @@ from ..managers import actions, binproperties, appearance
 from ..widgets import menus, toolboxes, buttons, about, overlaywidget
 from ..core import binloader, icon_engines, icon_providers
 from ..binvieweditor import editorwidget
+from ..binfilters.siftfilter import sifters
 
 DEFAULT_FIND_IN_BIN_REFRESH_INTERVAL_MSEC:int = 500
 
@@ -69,6 +70,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		# Define signals
 		self._queue_size       = 500  # Mobs to batch-load
 		self._use_animation    = True # Use animated progress bar
+		self._use_sift         = True 
 		self._sigs_binloader   = binloader.BSBinViewLoader.Signals()
 
 		# Define animators
@@ -317,7 +319,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._sigs_binloader.sig_got_mobs                    .connect(self.addBinItems, QtCore.Qt.ConnectionType.BlockingQueuedConnection) # These fellas pile up
 #		self._sigs_binloader.sig_got_mobs                    .connect(self.updateLoadingBar, QtCore.Qt.ConnectionType.BlockingQueuedConnection)
 
-		self._sigs_binloader.sig_got_sift_settings           .connect(self._bin_widget.siftFilter().setSiftCriteria)
+		self._sigs_binloader.sig_got_sift_settings           .connect(self.setSiftCriteriaFromBin)
 		self._tool_sifting.sig_criteria_set                  .connect(self._bin_widget.siftFilter().setSiftCriteria)
 		self._tool_sifting.sig_live_sift_enabled             .connect(self._bin_widget.siftFilter().setLiveSiftEnabled)
 		self._bin_widget.siftFilter().sig_live_sift_enabled  .connect(self._tool_sifting.setLiveSiftEnabled)
@@ -406,6 +408,10 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 	def mobQueueSize(self) -> int:
 		return self._queue_size
+	
+	@QtCore.Slot(bool)
+	def setUseSiftCriteriaFromBin(self, use_sift:bool):
+		self._use_sift = use_sift
 	
 	@QtCore.Slot(bool)
 	def setUseAnimation(self, use_animation:bool):
@@ -573,6 +579,15 @@ class BSMainWindow(QtWidgets.QMainWindow):
 			self._anim_progress.start()
 		else:
 			self._bin_widget.topWidgetBar().progressBar().setValue(self._bin_widget.topWidgetBar().progressBar().value() + len(mobs_list))
+
+	@QtCore.Slot(object)
+	def setSiftCriteriaFromBin(self, criteria:list[list[sifters.BSAbstractSifter]]):
+
+		if not self._use_sift:
+			return
+		
+		self.binContentsWidget().siftFilter().setSiftCriteria(criteria)
+		logging.getLogger(__name__).debug("Loaded sift settings from bin: %s", repr(criteria))
 	
 	@QtCore.Slot()
 	def cleanupAfterBinLoading(self):

@@ -282,3 +282,15 @@ class BSSettingsManager:
 		use_live_sift = self.settings("bs").value("BinSettingsToggles/use_live_sift", False, bool)
 		logging.getLogger(__name__).debug("Returning use_live_sift: %s", use_live_sift)
 		return use_live_sift
+	
+	@QtCore.Slot(bool)
+	def setUseSiftCriteria(self, use_sift:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/use_sift_criteria", use_sift)
+		logging.getLogger(__name__).debug("Set use_sift_criteria: %s", use_sift)
+	
+	def useSiftCriteria(self) -> bool:
+		
+		use_sift = self.settings("bs").value("BinSettingsToggles/use_sift_criteria", False, bool)
+		logging.getLogger(__name__).debug("Returning use_sift_criteria: %s", use_sift)
+		return use_sift
