@@ -47,10 +47,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		self.sig_filter_toggled.emit(is_enabled)
 	
 	@QtCore.Slot(object)
-	def setSiftCriteria(self, criteria:typing.Tuple[list[sifters.BSAbstractSifter],list[sifters.BSAbstractSifter]]):
-
-		# NOTE: Just for now using crit 1
-		# Will want to convert this in like the widget or something instead
+	def setSiftCriteria(self, criteria:list[list[sifters.BSAbstractSifter],list[sifters.BSAbstractSifter]]):
 
 		if not criteria:
 			criteria = list(self.DEFAULT_CRITERIA)
@@ -115,9 +112,18 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 				if not criteria.isValid():
 					continue
 
-				local_results.append(criteria.sifterAcceptsIndex(source_index))
+				accepted = criteria.sifterAcceptsIndex(source_index)
+
+				local_results.append(accepted)
+
+				if not accepted: # ngmi
+					break
 			
 			if local_results:
+				
+				if all(local_results): # We got em, fellas.
+					return True
+
 				sift_results.append(all(local_results))
 
 		return any(sift_results) if sift_results else True
