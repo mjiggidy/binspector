@@ -84,6 +84,13 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 		self._chk_live_sift.setText(self.tr("Live Sift"))
 		self._chk_live_sift.setChecked(self._live_sift_enabled)
+		self._chk_live_sift.setToolTip(
+			"""
+			<strong>Enable Live Sift</strong><br/>
+			When enabled, bin contents are sifted immediately 
+			as criteria is changed, or bin item data is altered.
+			"""
+		)
 		self._chk_live_sift.toggled.connect(self.setLiveSiftEnabled)
 				
 		self._btn_apply.setText(self.tr("Apply"))
@@ -126,8 +133,13 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		
 		self._live_sift_enabled = is_enabled
 
+		self._chk_live_sift.setChecked(is_enabled)
+
 		self._btn_apply.setHidden(self._live_sift_enabled)
 		self._btn_apply.setDisabled(True) # Either way, I guess
+
+		if is_enabled: # Submit criteria to kick er off
+			self.criteriaSettled()
 
 		self.sig_live_sift_enabled.emit(is_enabled)
 

@@ -9,6 +9,7 @@ class BSSettingsPanel(QtWidgets.QWidget):
 	sig_scrollbar_scale_changed  = QtCore.Signal(object)
 	sig_item_padding_changed     = QtCore.Signal(object)
 	sig_use_column_widths_changed= QtCore.Signal(bool)
+	sig_use_live_sift_changed    = QtCore.Signal(bool)
 
 	def __init__(self, *args, **kwargs):
 
@@ -25,10 +26,13 @@ class BSSettingsPanel(QtWidgets.QWidget):
 			self._cmb_startup_behavior.addItem(b.value, b)
 
 		self._chk_use_animations = QtWidgets.QCheckBox()
-		self._chk_use_animations.toggled.connect(self.sig_use_animations_changed)
+		self._chk_use_animations.clicked.connect(self.sig_use_animations_changed)
 
 		self._chk_use_column_widths = QtWidgets.QCheckBox()
-		self._chk_use_column_widths.toggled.connect(self.sig_use_column_widths_changed)
+		self._chk_use_column_widths.clicked.connect(self.sig_use_column_widths_changed)
+
+		self._chk_use_live_sift     = QtWidgets.QCheckBox()
+		self._chk_use_live_sift.clicked.connect(self.sig_use_live_sift_changed)
 
 		self._spn_padding_width  = QtWidgets.QSpinBox()
 		self._spn_padding_width.valueChanged.connect(self.calculateNewPadding)
@@ -54,6 +58,7 @@ class BSSettingsPanel(QtWidgets.QWidget):
 
 		self.layout().addRow(self.tr("On Startup"), self._cmb_startup_behavior)
 		self.layout().addRow(self.tr("Use Saved Column Widths"), self._chk_use_column_widths)
+		self.layout().addRow(self.tr("Use Live Sift"), self._chk_use_live_sift)
 		self.layout().addRow(self.tr("List Item (W)"), self._spn_padding_width)
 		self.layout().addRow(self.tr("List Item (H)"), self._spn_padding_height)
 		self.layout().addRow(self.tr("Use Fancy Animations"), self._chk_use_animations)
@@ -100,3 +105,8 @@ class BSSettingsPanel(QtWidgets.QWidget):
 	def setStartupBehavior(self, behavior:BSStartupBehavior):
 
 		self._cmb_startup_behavior.setCurrentText(behavior.value)
+
+	@QtCore.Slot(bool)
+	def setLiveSiftEnabled(self, is_enabled:bool):
+
+		self._chk_use_live_sift.setChecked(is_enabled)
