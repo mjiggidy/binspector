@@ -20,7 +20,7 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 	sig_text_changed        = QtCore.Signal(str)
 
 	DEFAULT_SIFT_CRITERIA               = sifters.BSAnyColumnSifter(sift_string="", match_type=siftmatchtypes.BSSiftMatchTypes.Contains)
-	CRITERIA_CHANGED_TIMEOUT_MSEC       = 200
+	CRITERIA_CHANGED_TIMEOUT_MSEC       = 100
 
 	def __init__(self, *args, sources_model:scopesmodel.BSSiftScopeViewModel, sift_criteria:sifters.BSAbstractSifter|None=None, **kwargs):
 
@@ -34,6 +34,8 @@ class BSSiftCriteriaWidget(QtWidgets.QWidget):
 		self._cmb_match_type  = QtWidgets.QComboBox()
 		self._cmb_match_scope = QtWidgets.QComboBox(model=sources_model)
 
+		# NOTE to self: Not sure I really need to throttle signals here, since siftwidget 
+		# does that anyway.  It's just... you know... the typing...
 		self._criteria_changed_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.CRITERIA_CHANGED_TIMEOUT_MSEC)
 
 		self._setupWidgets()
