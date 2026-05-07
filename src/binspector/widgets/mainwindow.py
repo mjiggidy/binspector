@@ -537,6 +537,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._man_actions._act_stopcurrent.setVisible(True)
 		
 		self._bin_item_model.clear()
+		self._bin_widget.siftFilter().resetSiftCriteria()
 		
 		self._bin_widget.topWidgetBar().progressBar().setFormat(self.tr("Loading bin properties..."))
 		self._bin_widget.topWidgetBar().progressBar().show()
