@@ -1,6 +1,7 @@
 import sys
 from PySide6 import QtCore, QtWidgets
-from binspector.binviewprovider import storagemodel, providermodel
+from binspector.binviewprovider import providermodel
+from binspector.storage import storagemodel
 
 PATH = "/Users/mjordan/Library/Application Support/GlowingPixel/Binspector/binviews"
 

@@ -3,7 +3,8 @@ import avb
 from PySide6 import QtCore, QtWidgets
 
 from binspector.binview import binviewitemtypes
-from binspector.binviewprovider import binviewsources, providermodel, storagemodel
+from binspector.binviewprovider import binviewsources, providermodel
+from binspector.storage import storagemodel
 from binspector.widgets import binviewcombobox
 
 # Hack me bra

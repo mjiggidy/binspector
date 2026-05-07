@@ -1,7 +1,9 @@
 import typing, dataclasses, logging
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from . import binviewsources, storagemodel
+from ..storage import storagemodel
+
+from . import binviewsources
 from ..binview import binviewitemtypes, jsonadapter
 
 #DEFAULT_MODIFIED_SYMBOL = "*"
@@ -75,9 +77,9 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 		self.layoutAboutToBeChanged.emit()
 
 		for row in range(
-			self._storage_model.rowCount(self._storage_model.rootIndex())):
+			self._storage_model.rowCount(self._storage_model.rootPathIndex())):
 			
-			file_index = self._storage_model.index(row, 0, self._storage_model.rootIndex())
+			file_index = self._storage_model.index(row, 0, self._storage_model.rootPathIndex())
 
 			bin_info = binviewsources.BSBinViewSourceFile(
 				self._storage_model.fileInfo(file_index).absoluteFilePath(),
@@ -93,7 +95,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def storageFoundNewFiles(self, parent:QtCore.QModelIndex, first:int, last:int):
 
-		if parent != self._storage_model.rootIndex():
+		if parent != self._storage_model.rootPathIndex():
 			return
 		
 		self.beginInsertRows(QtCore.QModelIndex(), first + self._stored_views_row_offset(), last + self._stored_views_row_offset())
@@ -122,7 +124,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def storageRemovedFiles(self, parent:QtCore.QModelIndex, first:int, last:int):
 
-		if parent != self._storage_model.rootIndex():
+		if parent != self._storage_model.rootPathIndex():
 			return
 		
 		self.beginRemoveRows(QtCore.QModelIndex(), first + self._stored_views_row_offset(), last + self._stored_views_row_offset()+1)
@@ -172,7 +174,7 @@ class BSBinViewProviderModel(QtCore.QAbstractItemModel):
 			if stored_binview.name() == binview_source.name():
 			
 				self._storage_model.moveToTrash(
-					self._storage_model.index(row, 0, self._storage_model.rootIndex())
+					self._storage_model.index(row, 0, self._storage_model.rootPathIndex())
 				)
 
 				self.sig_stored_sources_changed.emit()

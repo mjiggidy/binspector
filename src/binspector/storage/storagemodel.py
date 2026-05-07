@@ -14,7 +14,7 @@ class BSFileSystemModel(QtWidgets.QFileSystemModel):
 
 		super().__init__(*args, **kwargs)
 
-	def rootIndex(self) -> QtCore.QModelIndex:
+	def rootPathIndex(self) -> QtCore.QModelIndex:
 		"""The root index to the current root path"""
 
 		if not self.rootPath():
@@ -45,7 +45,6 @@ class BSFileSystemModel(QtWidgets.QFileSystemModel):
 		
 		# Force a lil refresharooni
 		self.setRootPath(self.rootPath())
-
 	
 	def writeToFile(self, file_name:str, contents:bytes|bytearray|str) -> QtCore.QFileInfo:
 		"""Write file safely with a tempfile"""

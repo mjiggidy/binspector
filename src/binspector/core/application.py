@@ -6,7 +6,9 @@ import qtlogrelay
 from   PySide6 import QtCore, QtGui, QtWidgets
 from   os import PathLike
 
-from ..binviewprovider import binviewsources, storagemodel
+from ..storage import storagemodel
+
+from ..binviewprovider import binviewsources
 
 from . import settings, config
 from ..managers import windows, software_updates
@@ -14,7 +16,7 @@ from ..widgets  import mainwindow, settingswindow
 from ..logs   import logmodels, logwidget
 from ..res      import translations
 from ..binview  import binviewitemtypes
-from ..binviewprovider import storagemodel
+from ..storage import storagemodel
 
 BIN_VIEW_PATH = "binviews"
 
