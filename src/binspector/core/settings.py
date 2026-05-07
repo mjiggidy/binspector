@@ -270,3 +270,15 @@ class BSSettingsManager:
 		show_grid = self.settings("bs").value("BinSettingsToggles/show_frame_grid", False, bool)
 		logging.getLogger(__name__).debug("Returning show_frame_grid: %s", show_grid)
 		return show_grid
+	
+	@QtCore.Slot(bool)
+	def setUseLiveSift(self, use_live_sift:bool):
+
+		self.settings("bs").setValue("BinSettingsToggles/use_live_sift", use_live_sift)
+		logging.getLogger(__name__).debug("Set use_live_sift: %s", use_live_sift)
+	
+	def useLiveSift(self) -> bool:
+		
+		use_live_sift = self.settings("bs").value("BinSettingsToggles/use_live_sift", False, bool)
+		logging.getLogger(__name__).debug("Returning use_live_sift: %s", use_live_sift)
+		return use_live_sift

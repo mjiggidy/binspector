@@ -73,8 +73,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		if self.dynamicSortFilter() == is_enabled:
 			return
 		
-		self.setDynamicSortFilter(True)
-		self.invalidateRowsFilter()
+		self.setDynamicSortFilter(is_enabled)
 
 		self.sig_live_sift_enabled.emit(is_enabled)
 
