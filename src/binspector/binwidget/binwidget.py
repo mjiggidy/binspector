@@ -18,8 +18,8 @@ from ..scriptview import scriptview, scriptproxy
 from ..binview import binviewitemtypes, binviewmodel
 from ..binitems import binitemtypes, binitemsmodel
 
-from ..binfilters import bindisplayproxymodel, binviewproxymodel, binfindproxymodel
-from ..binfilters.siftfilter import siftproxymodel
+from ..binfilters import bindisplayproxymodel, binviewproxymodel
+from ..binfilters.siftfilter import siftproxymodel, sifters, siftmatchtypes
 
 from ..siftwidget import scopesmodel
 
@@ -75,7 +75,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._bin_sift_filter = siftproxymodel.BSBinSiftFilterProxyModel(parent=self)	# TODO
 		self._bin_sift_filter.setSourceModel(self._bin_composite_model)
 
-		self._bin_find_filter = binfindproxymodel.BSFindInBinProxyModel(parent=self)
+		self._bin_find_filter = siftproxymodel.BSBinSiftFilterProxyModel(parent=self, sift_criteria=[[sifters.BSAnyColumnSifter()]])
 		self._bin_find_filter.setSourceModel(self._bin_sift_filter)
 
 		# Final model is QIdentityProxyModel, which does nothing new but serves as the 
@@ -393,9 +393,14 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(str)
 	def setSearchText(self, search_text:str):
 
-		self._bin_find_filter.setSearchText(search_text)
+		search_text = search_text if search_text.strip() else ""
 
-
+		sift_criterion = sifters.BSAnyColumnSifter(
+			sift_string = search_text,
+			match_type = siftmatchtypes.BSSiftMatchTypes.Contains,
+		)
+		
+		self._bin_find_filter.setSiftCriteria([[sift_criterion]])
 
 	@QtCore.Slot(dict)
 	def setTextColumnWidthsFromBin(self, column_widths:dict[str,int]|None=None):
