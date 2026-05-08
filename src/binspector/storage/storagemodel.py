@@ -10,10 +10,6 @@ from PySide6 import QtCore, QtWidgets
 class BSFileSystemModel(QtWidgets.QFileSystemModel):
 	"""A File System Model that does nice things nicely thank you"""
 
-	def __init__(self, *args, **kwargs):
-
-		super().__init__(*args, **kwargs)
-
 	def rootPathIndex(self) -> QtCore.QModelIndex:
 		"""The root index to the current root path"""
 
@@ -45,6 +41,8 @@ class BSFileSystemModel(QtWidgets.QFileSystemModel):
 		
 		# Force a lil refresharooni
 		self.setRootPath(self.rootPath())
+
+		return True
 	
 	def writeToFile(self, file_name:str, contents:bytes|bytearray|str) -> QtCore.QFileInfo:
 		"""Write file safely with a tempfile"""
