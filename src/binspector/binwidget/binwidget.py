@@ -25,6 +25,8 @@ from ..siftwidget import scopesmodel
 
 from ..core.config import BSTextViewModeConfig, BSFrameViewModeConfig, BSScriptViewModeConfig
 
+from ..widgets import binviewcombobox
+
 class BSBinContentsWidget(QtWidgets.QWidget):
 	"""Display bin contents and controls"""
 
@@ -216,8 +218,6 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top.sig_frame_scale_changed.connect(self._viewmode_frame.setZoom)
 		self._section_top.sig_script_scale_changed.connect(self._viewmode_script.setFrameScale)
 
-		self._section_top.binViewSelector().sig_binview_source_selected.connect(self.sig_bin_view_source_selected)
-
 		# NOTE: Maybe do this different?
 		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
 
@@ -230,6 +230,11 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 	###
 	# View Mode Widgets
 	###
+
+	def binViewSelector(self) -> binviewcombobox.BSBinViewSelectorComboBox:
+		"""You know.  The little bin view drop-down thingy."""
+		
+		return self._section_top.binViewSelector()
 
 	def textView(self) -> textview.BSBinTextView:
 		"""Text View Mode widget"""
