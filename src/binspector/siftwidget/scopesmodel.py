@@ -73,8 +73,8 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 		model.layoutAboutToBeChanged .connect(self.sourceViewLayoutAboutToBeChanged)
 		model.layoutChanged          .connect(self.sourceViewLayoutChanged)
 
-		model.modelAboutToBeReset    .connect(self.sourceViewModelAboutToBeReset)
-		model.modelReset             .connect(self.sourceViewModelReset)
+		model.modelAboutToBeReset    .connect(self.beginResetModel)
+		model.modelReset             .connect(self.endResetModel)
 
 		model.dataChanged            .connect(self.sourceViewDataChanged)
 
@@ -166,11 +166,11 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 		self.layoutChanged.emit()
 
 	@QtCore.Slot()
-	def sourceViewModelAboutToBeReset(self) -> None:
+	def beginResetModel(self) -> None:
 		
 		if self._reset_count == 0:
 #			print("**FINNA RESET")
-			self.beginResetModel()
+			super().beginResetModel()
 
 #		else:
 #			print("** NAH NOT RESET AGAIN")
@@ -179,13 +179,13 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 		
 
 	@QtCore.Slot()
-	def sourceViewModelReset(self) -> None:
+	def endResetModel(self) -> None:
 
 		self._reset_count -= 1
 		
 		if self._reset_count == 0:
 #			print("** DOIN IT")
-			self.endResetModel()
+			super().endResetModel()
 		
 		elif self._reset_count < 0:
 			raise RuntimeError(f"End model reset called {abs(self._reset_count)} extra times...")

@@ -3,6 +3,8 @@ from PySide6 import QtCore, QtWidgets
 from binspector.siftwidget import scopesmodel, siftwidget
 from binspector.binview import binviewmodel, binviewitemtypes
 from binspector.binfilters import binviewproxymodel
+from binspector.binfilters.siftfilter import sifters
+from binspector.binitems import binitemtypes
 
 app = QtWidgets.QApplication()
 app.setStyle("Fusion")
@@ -44,5 +46,20 @@ with avb.open(sys.argv[1]) as bin_file:
 #	])
 
 wnd_siftwidget.resetAllCriteria()
+
+my_criteria = [
+	[
+		sifters.BSAnyColumnSifter(),
+		sifters.BSRangeSifter(data_role=binitemtypes.BSBinItemDataRoles.TimecodeRangeRole),
+		sifters.BSAnyColumnSifter(),
+	],
+	[
+		sifters.BSNoColumnSifter(),
+		sifters.BSSingleColumnSifter(sift_column_info=binviewitemtypes.BSBinViewColumnInfo(avbutils.bins.BinColumnFieldIDs.Tracks, format_id=avbutils.bins.BinColumnFormat.UserText, display_name="Tracks", is_hidden=False)),
+		sifters.BSAnyColumnSifter(sift_string="Heehee")
+	]
+]
+
+wnd_siftwidget.setCriteria(my_criteria)
 
 app.exec()

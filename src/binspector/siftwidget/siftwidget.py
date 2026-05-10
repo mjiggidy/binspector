@@ -9,14 +9,14 @@ from avbutils import bins
 
 from . import scopesmodel
 
-from .siftcriteriawidget import BSSiftCriteriaWidget
+from .criterionwidget import BSSiftCriterionWidget
 from ..binfilters.siftfilter import sifters
 
 class BSSiftSettingsWidget(QtWidgets.QWidget):
 	
 	CRITERIA_PER_SIFT           = 3
 	DEFAULT_CRITERIA_TIMEOUT_MS = 200
-	DEFAULT_SIFT_CRITERIA       = BSSiftCriteriaWidget.DEFAULT_SIFT_CRITERIA
+	DEFAULT_SIFT_CRITERIA       = BSSiftCriterionWidget.DEFAULT_SIFT_CRITERION
 
 	sig_criteria_set      = QtCore.Signal(object)
 	sig_live_sift_enabled = QtCore.Signal(bool)
@@ -39,8 +39,8 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		self.grp_sift_top    = QtWidgets.QGroupBox()
 		self.grp_sift_bottom = QtWidgets.QGroupBox()
 	
-		self._sift_top_widgets:list[BSSiftCriteriaWidget] = []
-		self._sift_bot_widgets:list[BSSiftCriteriaWidget] = []
+		self._sift_top_widgets:list[BSSiftCriterionWidget] = []
+		self._sift_bot_widgets:list[BSSiftCriterionWidget] = []
 		
 		self._live_criteria_settle_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.DEFAULT_CRITERIA_TIMEOUT_MS)
 		
@@ -50,10 +50,10 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		self._btn_clear = QtWidgets.QPushButton()
 
 		for _ in range(self.CRITERIA_PER_SIFT):
-			self._sift_top_widgets.append(BSSiftCriteriaWidget(sources_model=self._columns_chooser_model))
+			self._sift_top_widgets.append(BSSiftCriterionWidget(sources_model=self._columns_chooser_model))
 
 		for _ in range(self.CRITERIA_PER_SIFT):
-			self._sift_bot_widgets.append(BSSiftCriteriaWidget(sources_model=self._columns_chooser_model))
+			self._sift_bot_widgets.append(BSSiftCriterionWidget(sources_model=self._columns_chooser_model))
 		
 		self._setupWidgets()
 		self._setupSignals()
@@ -114,10 +114,10 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		self._btn_clear.clicked.connect(self.resetAllCriteria)
 
 		for wdg in self._sift_top_widgets:
-			wdg.sig_criteria_set.connect(self.criteriaChanged)
+			wdg.sig_criterion_set.connect(self.criteriaChanged)
 
 		for wdg in self._sift_bot_widgets:
-			wdg.sig_criteria_set.connect(self.criteriaChanged)
+			wdg.sig_criterion_set.connect(self.criteriaChanged)
 
 	@QtCore.Slot(bool)
 	def setLiveSiftEnabled(self, is_enabled:bool):
@@ -178,8 +178,8 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		"""The sift criteria as currently set"""
 
 		return (
-			[s.criteria() for s in self._sift_top_widgets],
-			[s.criteria() for s in self._sift_bot_widgets]
+			[s.criterion() for s in self._sift_top_widgets],
+			[s.criterion() for s in self._sift_bot_widgets]
 		)
 	
 	@QtCore.Slot()
@@ -196,7 +196,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 			self._btn_apply.setEnabled(True)
 
 	@QtCore.Slot(object)
-	def setCriteria(self, criteria:typing.Tuple[list[sifters.BSAbstractSifter],list[sifters.BSAbstractSifter]]):
+	def setCriteria(self, criteria:list[list[sifters.BSAbstractSifter]],):
 
 		# TODO: Think about this when I'm having a "good" day
 
@@ -211,25 +211,17 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(object)
 	def setTopCriteria(self, criteria:list[sifters.BSAbstractSifter]):
 
-#		print("--- SET TOP")
-#		for c in criteria:
-#			print(c)
-
 		self._setSectionCriteria(self._sift_top_widgets, criteria=criteria)
 
 	@QtCore.Slot(object)
 	def setBottomCriteria(self, criteria:list[sifters.BSAbstractSifter]):
 
-#		print("--- SET BOTTOM")
-#		for c in criteria:
-#			print(c)
-
 		self._setSectionCriteria(self._sift_bot_widgets, criteria=criteria)
 
-	def _setSectionCriteria(self, widget_list:list[BSSiftCriteriaWidget], criteria:list[sifters.BSAbstractSifter]):
+	def _setSectionCriteria(self, widget_list:list[BSSiftCriterionWidget], criteria:list[sifters.BSAbstractSifter]):
 
 		if len(criteria) != len(widget_list):
 			raise ValueError(f"A set of exactly {len(widget_list)} criteria must be provided (got {criteria})")
 		
 		for widget, criteria in zip(widget_list, criteria):
-			widget.setCriteria(criteria)
+			widget.setCriterion(criteria)
