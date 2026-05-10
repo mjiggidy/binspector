@@ -1,15 +1,19 @@
-from PySide6 import QtCore
-import abc
+import abc, typing
 
-from ..siftmatchtypes import BSSiftMatchTypes
+from PySide6 import QtCore
+
+from ....binview import binviewitemtypes
+from .. import siftmatchtypes
+
+import avb
 
 class BSAbstractSifter(abc.ABC):
 	"""An abstract sifter"""
 
 	def __init__(self,
-		sift_string:str                    = "",
-		match_type :BSSiftMatchTypes       = BSSiftMatchTypes.Contains,
-		data_role  :QtCore.Qt.ItemDataRole = QtCore.Qt.ItemDataRole.DisplayRole
+		sift_string:str                             = "",
+		match_type :siftmatchtypes.BSSiftMatchTypes = siftmatchtypes.BSSiftMatchTypes.Contains,
+		data_role  :QtCore.Qt.ItemDataRole          = QtCore.Qt.ItemDataRole.DisplayRole
 	):
 
 		self._sift_string = sift_string
@@ -29,7 +33,7 @@ class BSAbstractSifter(abc.ABC):
 
 		return self._sift_string
 
-	def matchType(self) -> BSSiftMatchTypes:
+	def matchType(self) -> siftmatchtypes.BSSiftMatchTypes:
 		"""How to match the string"""
 
 		return self._match_type
@@ -50,3 +54,79 @@ class BSAbstractSifter(abc.ABC):
 			return NotImplemented
 		
 		return self.__dict__ == other.__dict__
+
+	@classmethod
+	def sift_settings_from_bin(cls, bin_content:avb.bin.Bin, view_setting:binviewitemtypes.BSBinViewInfo) -> list[list[typing.Self]]:
+		
+		processed_sift_settings:list[BSAbstractSifter] = []
+
+		if not bin_content.sifted:
+			return processed_sift_settings
+		
+		# Sift settings are stored in reverse
+		bin_sift_settings:list[avb.bin.SiftItem] = reversed(bin_content.sifted_settings)
+		
+		for sift_item in bin_sift_settings:
+
+			sift_string = sift_item.string
+			column_name = str(sift_item.column)
+			match_type  = siftmatchtypes.BSSiftMatchTypes(sift_item.method)
+
+			if column_name == "None":
+
+				from .nocolumnsifter import BSNoColumnSifter
+
+				processed_sift_settings.append(
+					BSNoColumnSifter(
+						sift_string  = sift_string,
+						match_type   = match_type
+					)
+				)
+			
+			elif column_name in list(c.display_name for c in view_setting.columns):
+
+				from .singlecolumnsifter import BSSingleColumnSifter
+
+				processed_sift_settings.append(
+					BSSingleColumnSifter(
+						sift_column_info = view_setting.columns[list(c.display_name for c in view_setting.columns).index(column_name)],
+						sift_string = sift_string,
+						match_type = match_type,
+					)
+				)
+			
+			elif column_name.endswith("Range"): # Ugh I hate it
+
+				from .rangesifter import BSRangeSifter, SIFT_RANGE_COLUMN_DEPENDENCIES
+
+				for _, range_info in SIFT_RANGE_COLUMN_DEPENDENCIES.items():
+
+					if column_name.casefold() == range_info.range_name.casefold():
+
+						processed_sift_settings.append(
+							BSRangeSifter(
+								sift_string=sift_string,
+								data_role=range_info.range_role,
+							)
+						)
+
+						break
+
+			else:
+
+				from .anycolumnsifter import BSAnyColumnSifter
+				
+				processed_sift_settings.append(
+					BSAnyColumnSifter(
+						sift_string  = sift_string,
+						match_type   = match_type
+					)
+				)
+
+		if not len(processed_sift_settings) == 6:
+			raise ValueError(f"Expected exactly 6 sift settings, got {len(processed_sift_settings)}")
+
+		return [
+			processed_sift_settings[:3], 
+			processed_sift_settings[3:],
+		]
