@@ -219,7 +219,7 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 		self._section_top.sig_script_scale_changed.connect(self._viewmode_script.setFrameScale)
 
 		# NOTE: Maybe do this different?
-		self._bin_view_model.sig_bin_view_info_set.connect(lambda: self.setTextColumnWidthsFromBin())
+		self._bin_view_model.sig_bin_view_info_set.connect(self.binViewChanged)
 
 	def setShowColumnEditorAction(self, action:QtGui.QAction):
 		"""Show column editor needs a global action"""
@@ -369,6 +369,13 @@ class BSBinContentsWidget(QtWidgets.QWidget):
 #	def setBinDisplayItemTypes(self, item_types:avbutils.bins.BinDisplayItemTypes):
 #		
 #		self._bin_items_filter.setAcceptedItemTypes(item_types)
+
+	@QtCore.Slot(object)
+	def binViewChanged(self):
+
+		self.setTextColumnWidthsFromBin()
+
+#		self.siftFilter().resetSiftCriteria()
 
 	@QtCore.Slot(bool)
 	def setBinColumnFiltersDisabled(self, are_disabled:bool):

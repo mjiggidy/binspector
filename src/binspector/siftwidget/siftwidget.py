@@ -23,6 +23,8 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 	def __init__(self, *args, bin_view_model:QtCore.QAbstractItemModel|None=None, live_sift:bool=False, **kwargs):
 
+		logging.getLogger(__name__).debug("Hello from me")
+
 		super().__init__(*args, **kwargs)
 
 		self._columns_chooser_model = scopesmodel.BSSiftScopeViewModel(bin_view_model=bin_view_model or QtCore.QIdentityProxyModel())
@@ -196,8 +198,8 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 			self._btn_apply.setEnabled(True)
 
 	@QtCore.Slot(object)
-	def setCriteria(self, criteria:list[list[sifters.BSAbstractSifter]],):
-
+	def setCriteria(self, criteria:list[list[sifters.BSAbstractSifter]]):
+#		print("Uh")
 		# TODO: Think about this when I'm having a "good" day
 
 		if len(criteria) != 2:
@@ -211,17 +213,18 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 	@QtCore.Slot(object)
 	def setTopCriteria(self, criteria:list[sifters.BSAbstractSifter]):
 
-		self._setSectionCriteria(self._sift_top_widgets, criteria=criteria)
+		self.setSectionCriteria(self._sift_top_widgets, criteria=criteria)
 
 	@QtCore.Slot(object)
 	def setBottomCriteria(self, criteria:list[sifters.BSAbstractSifter]):
 
-		self._setSectionCriteria(self._sift_bot_widgets, criteria=criteria)
+		self.setSectionCriteria(self._sift_bot_widgets, criteria=criteria)
 
-	def _setSectionCriteria(self, widget_list:list[BSSiftCriterionWidget], criteria:list[sifters.BSAbstractSifter]):
+	def setSectionCriteria(self, widget_list:list[BSSiftCriterionWidget], criteria:list[sifters.BSAbstractSifter]):
 
 		if len(criteria) != len(widget_list):
 			raise ValueError(f"A set of exactly {len(widget_list)} criteria must be provided (got {criteria})")
 		
-		for widget, criteria in zip(widget_list, criteria):
-			widget.setCriterion(criteria)
+		for widget, criterion in zip(widget_list, criteria):
+			logging.getLogger(__name__).debug("Critera set to %s", self.criteria)
+			widget.setCriterion(criterion)

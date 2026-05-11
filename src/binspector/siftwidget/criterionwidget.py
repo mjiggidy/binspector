@@ -1,11 +1,9 @@
-import typing
+import typing, logging
 
 from PySide6 import QtCore, QtWidgets
 
-import binspector.binfilters.siftfilter.siftscopetypes
-
 from . import scopesmodel
-from ..binfilters.siftfilter import sifters, siftmatchtypes
+from ..binfilters.siftfilter import sifters, siftmatchtypes, siftscopetypes
 
 import avbutils
 
@@ -37,12 +35,9 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 		# NOTE to self: Not sure I really need to throttle signals here, since siftwidget 
 		# does that anyway.  It's just... you know... the typing...
 		self._criterion_changed_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.CRITERION_CHANGED_TIMEOUT_MSEC)
-
 		self._setupWidgets()
 		self._setupSignals()
-
-		if sift_criterion:
-			self.setCriterion(sift_criterion)
+		self.setCriterion(sift_criterion)
 
 	def _setupWidgets(self):
 
@@ -76,11 +71,15 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 	def setCriterion(self, sift_criterion:sifters.BSAbstractSifter):
 		"""Set the sift criterion for this widget"""
 
-		if self.criterion() == sift_criterion:
-			return
-
 		sift_criterion = sift_criterion or self.DEFAULT_SIFT_CRITERION
+		
+		logging.getLogger(__name__).debug("Boudda set criterion: %s", sift_criterion)
+		
+		if self.criterion() == sift_criterion:
 
+			logging.getLogger(__name__).debug("...BUT I RETURNT INSTEAD! HAHA!")
+			return
+		
 		self._cmb_match_type.setCurrentIndex(self._cmb_match_type.findData(sift_criterion.matchType()))
 		self._txt_match_text.setText(sift_criterion.siftString())
 		
@@ -88,25 +87,31 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 		
 		if isinstance(sift_criterion, sifters.BSSingleColumnSifter):
 			
-			cmb_idx = self.indexForSingleColumn(sift_criterion)
-			self._cmb_match_scope.setCurrentIndex(cmb_idx)
+			self._cmb_match_scope.setCurrentIndex(
+				self.indexForSingleColumn(sift_criterion)
+			)
 
 		elif isinstance(sift_criterion, sifters.BSAnyColumnSifter):
 
+			logging.getLogger(__name__).debug("Now am here heehe")
+
+			logging.getLogger(__name__).debug("Index gon be %s", scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.AnyColumn))
+
 			self._cmb_match_scope.setCurrentIndex(
-				scope_model.rowOffsetToScope(binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.AnyColumn)
+				scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.AnyColumn)
 			)
 
 		elif isinstance(sift_criterion, sifters.BSNoColumnSifter):
 
 			self._cmb_match_scope.setCurrentIndex(
-				scope_model.rowOffsetToScope(binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.NoColumn)
+				scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.NoColumn)
 			)
 
 		elif isinstance(sift_criterion, sifters.BSRangeSifter):
 
-			cmb_idx = self.indexForRangeColumn(sift_criterion)
-			self._cmb_match_scope.setCurrentIndex(cmb_idx)
+			self._cmb_match_scope.setCurrentIndex(
+				self.indexForRangeColumn(sift_criterion)
+			)
 
 		else:
 			raise ValueError(f"Unknown sifter round here: {sift_criterion}")
@@ -118,7 +123,7 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		source_type, source_id = self.siftSource()
 
-		if source_type == binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.SingleColumn:
+		if source_type == siftscopetypes.BSSiftScopeType.SingleColumn:
 
 			return sifters.BSSingleColumnSifter(
 				sift_column_info = source_id,
@@ -126,21 +131,21 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 				match_type       = self.matchType(),
 			)
 		
-		elif source_type == binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.AnyColumn:
+		elif source_type == siftscopetypes.BSSiftScopeType.AnyColumn:
 
 			return sifters.BSAnyColumnSifter(
 				sift_string = self.text(),
 				match_type  = self.matchType(),
 			)
 
-		elif source_type == binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.NoColumn:
+		elif source_type == siftscopetypes.BSSiftScopeType.NoColumn:
 
 			return sifters.BSNoColumnSifter(
 				sift_string= self.text(),
 				match_type = self.matchType(),
 			)
 		
-		elif source_type == binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.Range:
+		elif source_type == siftscopetypes.BSSiftScopeType.Range:
 
 			return sifters.BSRangeSifter(
 				sift_string = self.text(),
@@ -154,12 +159,12 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		scope_model:scopesmodel.BSSiftScopeViewModel = self._cmb_match_scope.model()
 
-		ranges_available  = scope_model.rowCountForScope(binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.SingleColumn)
+		ranges_available  = scope_model.rowCountForScope(siftscopetypes.BSSiftScopeType.SingleColumn)
 
 		if not ranges_available:
 			raise ValueError("No column names available")
 		
-		ranges_offset = scope_model.rowOffsetToScope(binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.SingleColumn)
+		ranges_offset = scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.SingleColumn)
 
 		cmb_idx = None
 		
@@ -186,12 +191,12 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		scope_model:scopesmodel.BSSiftScopeViewModel = self._cmb_match_scope.model()
 		
-		ranges_available  = scope_model.rowCountForScope(binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.Range)
+		ranges_available  = scope_model.rowCountForScope(siftscopetypes.BSSiftScopeType.Range)
 
 		if not ranges_available:
 			raise ValueError("No column names available")
 		
-		ranges_offset = scope_model.rowOffsetToScope(binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.Range)
+		ranges_offset = scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.Range)
 
 		cmb_idx = None
 		
@@ -225,7 +230,7 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		return self._cmb_match_scope.model()
 
-	def setMatchType(self, match_type:binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType):
+	def setMatchType(self, match_type:siftscopetypes.BSSiftScopeType):
 		"""Set the string matching strategy to use during the sift"""
 
 		if self._cmb_match_type.currentData() == match_type:
@@ -258,11 +263,11 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		return self._txt_match_text.text()
 
-	def siftSource(self) -> typing.Tuple[binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType, typing.Any]:
+	def siftSource(self) -> typing.Tuple[siftscopetypes.BSSiftScopeType, typing.Any]:
 
 		return self._cmb_match_scope.currentData()
 
-	def scope(self) -> binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType:
+	def scope(self) -> siftscopetypes.BSSiftScopeType:
 		"""Which scope to sift -- such as a particular column, a particular range, etc."""
 
 		return self._cmb_match_scope.currentData()
@@ -279,7 +284,7 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		sift_source_type, _ = self._cmb_match_scope.currentData()
 		
-		if sift_source_type == binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.Range:
+		if sift_source_type == siftscopetypes.BSSiftScopeType.Range:
 			self.setMatchType(siftmatchtypes.BSSiftMatchTypes.Contains)
 
 		self._criterion_changed_timer.start()
@@ -294,9 +299,9 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 			sift_source_type, _ = self.siftSource()
 			
-			if sift_source_type == binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.Range:
+			if sift_source_type == siftscopetypes.BSSiftScopeType.Range:
 				self._cmb_match_scope.setCurrentIndex(
-					self._cmb_match_scope.model().rowOffsetToScope(binspector.binfilters.siftfilter.siftscopetypes.BSSiftScopeType.AnyColumn)
+					self._cmb_match_scope.model().rowOffsetToScope(siftscopetypes.BSSiftScopeType.AnyColumn)
 				)
 
 		self._criterion_changed_timer.start()

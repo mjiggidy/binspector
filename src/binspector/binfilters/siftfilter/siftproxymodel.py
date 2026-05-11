@@ -1,4 +1,4 @@
-import typing
+import logging
 from PySide6 import QtCore
 
 from .  import sifters
@@ -29,8 +29,10 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 	@QtCore.Slot()
 	def resetSiftCriteria(self):
-
+		"""Reset sift criteria to defaults"""
+		
 		self.setSiftCriteria(None)
+
 
 	@QtCore.Slot(bool)
 	def setEnabled(self, is_enabled:bool):
@@ -53,13 +55,15 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 			criteria = list(self.DEFAULT_CRITERIA)
 
 		if self._sift_criteria == criteria:
+
+			logging.getLogger(__name__).debug("Sift critera unchanged")
 			return
 
 		self.beginFilterChange()
-
 		self._sift_criteria = criteria
-
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
+		
+		logging.getLogger(__name__).debug("Sift criteria changed (%s)", self._sift_criteria)
 
 		self.sig_criteria_changed.emit(self._sift_criteria)
 
