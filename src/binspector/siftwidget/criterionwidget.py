@@ -32,9 +32,12 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 		self._cmb_match_type  = QtWidgets.QComboBox()
 		self._cmb_match_scope = QtWidgets.QComboBox(model=sources_model)
 
+		self._last_selected_criteria = None  # Store selection when model is reset
+
 		# NOTE to self: Not sure I really need to throttle signals here, since siftwidget 
 		# does that anyway.  It's just... you know... the typing...
 		self._criterion_changed_timer = QtCore.QTimer(parent=self, singleShot=True, interval=self.CRITERION_CHANGED_TIMEOUT_MSEC)
+
 		self._setupWidgets()
 		self._setupSignals()
 		self.setCriterion(sift_criterion)
@@ -61,11 +64,54 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		self._criterion_changed_timer.timeout.connect(self.criterionSettled)
 
+		self._cmb_match_scope.model().modelAboutToBeReset.connect(self.sourceModelAboutToBeReset)
+		self._cmb_match_scope.model().modelReset.connect(self.sourceModelReset)
+
+	@QtCore.Slot()
+	def sourceModelAboutToBeReset(self):
+
+		self._last_selected_criteria = self.criterion()
+#		logging.getLogger(__name__).debug("Before model reset, criteria was %s", repr(self._last_selected_criteria))
+
+	@QtCore.Slot()
+	def sourceModelReset(self):
+
+		if not self._last_selected_criteria:
+			return
+		
+		new_idx = self.getScopeIndexForSifter(self._last_selected_criteria)
+
+		self._cmb_match_scope.setCurrentIndex(new_idx if new_idx is not None else 0)
+
+		if new_idx is None:
+			logging.getLogger(__name__).debug("Losing scope for criteria %s", self._last_selected_criteria)
+		
+#		logging.getLogger(__name__).debug("After model reset, criteria was idx=%s, data=%s", new_idx, repr(self._cmb_match_scope.currentData()))
+
 	@QtCore.Slot()
 	def criterionSettled(self):
 		"""Sift criterion has survived the timer, emit it"""
 
 		self.sig_criterion_set.emit(self.criterion())
+
+	def getScopeIndexForSifter(self, criterion:sifters.BSAbstractSifter) -> int:
+
+		scope_model = self._cmb_match_scope.model()
+
+		if isinstance(criterion, sifters.BSSingleColumnSifter):
+			return self.indexForSingleColumn(criterion)
+
+		elif isinstance(criterion, sifters.BSAnyColumnSifter):
+			return scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.AnyColumn)
+
+		elif isinstance(criterion, sifters.BSNoColumnSifter):
+			return scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.NoColumn)
+
+		elif isinstance(criterion, sifters.BSRangeSifter):
+			return self.indexForRangeColumn(criterion)
+
+		else:
+			raise ValueError(f"Invalid sifter round here: {criterion}")
 
 	@QtCore.Slot(object)
 	def setCriterion(self, sift_criterion:sifters.BSAbstractSifter):
@@ -73,55 +119,36 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		sift_criterion = sift_criterion or self.DEFAULT_SIFT_CRITERION
 		
-		logging.getLogger(__name__).debug("Setting criterion: %s", sift_criterion)
-		
 		if self.criterion() == sift_criterion:
 
-#			logging.getLogger(__name__).debug("...BUT I RETURNT INSTEAD! HAHA!")
+			logging.getLogger(__name__).debug("Criterion remains unchanged")
 			return
 		
+		logging.getLogger(__name__).debug("Setting criterion: %s", sift_criterion)
+
 		self._cmb_match_type.setCurrentIndex(self._cmb_match_type.findData(sift_criterion.matchType()))
 		self._txt_match_text.setText(sift_criterion.siftString())
 		
-		scope_model:scopesmodel.BSSiftScopeViewModel = self._cmb_match_scope.model()
-		
-		if isinstance(sift_criterion, sifters.BSSingleColumnSifter):
-			
-			self._cmb_match_scope.setCurrentIndex(
-				self.indexForSingleColumn(sift_criterion)
-			)
-
-		elif isinstance(sift_criterion, sifters.BSAnyColumnSifter):
-
-			logging.getLogger(__name__).debug("Now am here heehe")
-
-			logging.getLogger(__name__).debug("Index gon be %s", scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.AnyColumn))
-
-			self._cmb_match_scope.setCurrentIndex(
-				scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.AnyColumn)
-			)
-
-		elif isinstance(sift_criterion, sifters.BSNoColumnSifter):
-
-			self._cmb_match_scope.setCurrentIndex(
-				scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.NoColumn)
-			)
-
-		elif isinstance(sift_criterion, sifters.BSRangeSifter):
-
-			self._cmb_match_scope.setCurrentIndex(
-				self.indexForRangeColumn(sift_criterion)
-			)
-
-		else:
-			raise ValueError(f"Unknown sifter round here: {sift_criterion}")
+		scope_index = self.getScopeIndexForSifter(sift_criterion)
+		self._cmb_match_scope.setCurrentIndex(scope_index if scope_index is not None else 0)
 
 		self.sig_criterion_set.emit(sift_criterion)
 
 	def criterion(self) -> sifters.BSAbstractSifter:
 		"""Build a `BSAbstractSifter` based on current user input"""
 
+		if not self.siftSource():
+
+			logging.getLogger(__name__).error("Weird thing here")
+
+			return sifters.BSNoColumnSifter(
+				sift_string= self.text(),
+				match_type = self.matchType(),
+			)
+		
 		source_type, source_id = self.siftSource()
+
+		print("Got here")
 
 		if source_type == siftscopetypes.BSSiftScopeType.SingleColumn:
 
@@ -162,13 +189,14 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 		ranges_available  = scope_model.rowCountForScope(siftscopetypes.BSSiftScopeType.SingleColumn)
 
 		if not ranges_available:
-			raise ValueError("No column names available")
+			return None
+#			raise ValueError("No column names available")
 		
 		ranges_offset = scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.SingleColumn)
 
 		cmb_idx = None
 		
-		for row in range(ranges_offset, ranges_available + ranges_offset - 1):
+		for row in range(ranges_offset, ranges_available + ranges_offset - 1):  # NOTE: -1?
 
 			_, range_role = self._cmb_match_scope.itemData(row)
 
@@ -182,8 +210,8 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 				cmb_idx = row
 				break
 
-		if cmb_idx is None:
-			raise ValueError("Nope")
+#		if cmb_idx is None:
+#			raise ValueError("Nope")
 		
 		return cmb_idx
 	
@@ -194,7 +222,8 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 		ranges_available  = scope_model.rowCountForScope(siftscopetypes.BSSiftScopeType.Range)
 
 		if not ranges_available:
-			raise ValueError("No column names available")
+			return None
+#			raise ValueError("No column names available")
 		
 		ranges_offset = scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.Range)
 
@@ -209,8 +238,8 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 				cmb_idx = row
 				break
 
-		if cmb_idx is None:
-			raise ValueError("Nope")
+#		if cmb_idx is None:
+#			raise ValueError("Nope")
 
 		return cmb_idx
 

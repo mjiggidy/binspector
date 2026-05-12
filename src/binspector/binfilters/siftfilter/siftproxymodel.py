@@ -94,7 +94,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 					# Pass through criterion that reference columns still remaining
 
-					logging.getLogger(__name__).debug("Sift passes: %s", repr(criterion))
+#					logging.getLogger(__name__).debug("Sift passes: %s", repr(criterion))
 					validated_criterion_set.append(criterion)
 				
 				else:
@@ -107,7 +107,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 							match_type  = criterion.matchType(),
 						)
 
-					logging.getLogger(__name__).debug("Sift to be reset:", repr(modified_criterion))
+					logging.getLogger(__name__).debug("Sift to be reset: %s", repr(modified_criterion))
 
 					validated_criterion_set.append(modified_criterion)
 
@@ -130,7 +130,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 				if self.criterionReferencesAvailableColumn(criterion):
 
-					logging.getLogger(__name__).debug("Sift passes: %s", repr(criterion))
+#					logging.getLogger(__name__).debug("Sift passes: %s", repr(criterion))
 					validated_criterion_set.append(criterion)
 				
 				else:
@@ -140,7 +140,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 							match_type  = criterion.matchType(),
 						)
 
-					logging.getLogger(__name__).debug("Sift to be reset:", repr(modified_criterion))
+					logging.getLogger(__name__).debug("Sift to be reset: %s", repr(modified_criterion))
 
 					validated_criterion_set.append(modified_criterion)
 
@@ -224,7 +224,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		self._sift_criteria = criteria
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
 		
-		logging.getLogger(__name__).debug("Sift criteria changed (%s)", self._sift_criteria)
+		logging.getLogger(__name__).debug("Sift criteria changed: (%s)", self._sift_criteria)
 
 		self.sig_criteria_changed.emit(self._sift_criteria)
 

@@ -582,7 +582,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 
 		if not self._use_sift:
 			return
-		
+#		print("** FROM BIN, GOT ", criteria)
 		self.binContentsWidget().siftFilter().setSiftCriteria(criteria)
 		logging.getLogger(__name__).debug("Loaded sift settings from bin: %s", repr(criteria))
 	

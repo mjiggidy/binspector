@@ -23,7 +23,7 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 
 	def __init__(self, *args, bin_view_model:QtCore.QAbstractItemModel|None=None, live_sift:bool=False, **kwargs):
 
-		logging.getLogger(__name__).debug("Hello from me")
+#		logging.getLogger(__name__).debug("Hello from me")
 
 		super().__init__(*args, **kwargs)
 
@@ -226,5 +226,5 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 			raise ValueError(f"A set of exactly {len(widget_list)} criteria must be provided (got {criteria})")
 		
 		for widget, criterion in zip(widget_list, criteria):
-			logging.getLogger(__name__).debug("Critera set to %s", self.criteria)
+			logging.getLogger(__name__).debug("Critera set to %s", criterion)
 			widget.setCriterion(criterion)
