@@ -42,6 +42,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 			self.sourceModel().disconnect(self)
 
 		source_model.columnsAboutToBeRemoved.connect(self.sourceColumnsAboutToBeRemoved)
+		source_model.modelReset             .connect(self.sourceModelReset)
 		
 		return super().setSourceModel(source_model)
 	
@@ -50,28 +51,37 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 		# Evaluate which columns will be removed, and set any related filters to 'None' to deactivate
 
-		# Determine the column info about to be removed
-		column_infos_to_be_removed:list[binviewitemtypes.BSBinViewColumnInfo] = []
+		# Determine which columns will remain
+		column_infos_to_be_remaining:list[tuple[avbutils.bins.BinColumnFieldIDs, str]] = []
 		
-		for col_idx in range(first, last+1):
+		for col_idx in range(self.sourceModel().columnCount(source_parent)):
 
-			field_id_removing = self.sourceModel().headerData(
+			# Filter out columns that will be leaving us
+			if col_idx in range(first, last+1):
+				logging.getLogger(__name__).debug("I hear we're removing: %s", self.sourceModel().headerData(
+					col_idx,
+					QtCore.Qt.Orientation.Horizontal,
+					binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole
+				))
+				continue
+
+			field_id_remaining = self.sourceModel().headerData(
 				col_idx,
 				QtCore.Qt.Orientation.Horizontal,
 				binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole
 			)
 
-			name_removing = self.sourceModel().headerData(
+			name_remaining = self.sourceModel().headerData(
 				col_idx,
 				QtCore.Qt.Orientation.Horizontal,
 				binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole
 			)
 
-			column_data = (field_id_removing, name_removing)
-			column_infos_to_be_removed.append(column_data)
+			column_data = (field_id_remaining, name_remaining)
+			column_infos_to_be_remaining.append(column_data)
 
-			logging.getLogger(__name__).debug("I hear we're removing: %s", name_removing)
-
+		# Pass through valid criteria, or rewrite any references to columns that will no longer be available
+		
 		validated_sift_criteria:SiftCriteria = []
 
 		for criterion_set in self._sift_criteria:
@@ -80,30 +90,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 			for criterion in criterion_set:
 
-				is_valid = True
-
-				# Ensure this criterion does not reference a column in the removals list
-#				logging.getLogger(__name__).debug("Looking at %s...", criterion)
-
-				if isinstance(criterion, sifters.BSSingleColumnSifter):
-
-					if criterion.siftColumnInfo().field_id == avbutils.bins.BinColumnFieldIDs.User:
-						is_valid = (criterion.siftColumnInfo().field_id, criterion.siftColumnInfo().display_name) not in column_infos_to_be_removed
-					
-					else:
-						is_valid = criterion.siftColumnInfo().field_id not in map(lambda i: i[0], column_infos_to_be_removed)
-
-				elif isinstance(criterion, sifters.BSRangeSifter):
-					
-					for range_field_id, info in sifters.rangesifter.SIFT_RANGE_COLUMN_DEPENDENCIES.items():
-						
-						if info.range_role == criterion.dataRole():
-							is_valid = range_field_id not in map(lambda i: i[0], column_infos_to_be_removed)
-							break
-
-				# Either pass through the existing criterion, or set to NoColumn if the column gon b goin byebye night night.
-
-				if is_valid:
+				if self.criterionReferencesAvailableColumn(criterion, column_infos_to_be_remaining):
 
 					logging.getLogger(__name__).debug("Sift passes: %s", repr(criterion))
 					validated_criterion_set.append(criterion)
@@ -122,6 +109,77 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 			validated_sift_criteria.append(validated_criterion_set)
 		
 		self.setSiftCriteria(validated_sift_criteria)
+
+	@QtCore.Slot()
+	def sourceModelReset(self):
+
+		# Ensure sift criteria references columns that exist
+
+		validated_sift_criteria:SiftCriteria = []
+
+		for criterion_set in self._sift_criteria:
+
+			validated_criterion_set = []
+
+			for criterion in criterion_set:
+
+				if self.criterionReferencesAvailableColumn(criterion):
+
+					logging.getLogger(__name__).debug("Sift passes: %s", repr(criterion))
+					validated_criterion_set.append(criterion)
+				
+				else:
+					
+					modified_criterion = sifters.BSNoColumnSifter(
+							sift_string = criterion.siftString(),
+							match_type  = criterion.matchType(),
+						)
+
+					logging.getLogger(__name__).debug("Sift to be reset:", repr(modified_criterion))
+
+					validated_criterion_set.append(modified_criterion)
+
+			validated_sift_criteria.append(validated_criterion_set)
+		
+		self.setSiftCriteria(validated_sift_criteria)
+
+	def criterionReferencesAvailableColumn(self,
+		criterion        :sifters.BSAbstractSifter,
+		columns_available:list[tuple[avbutils.bins.BinColumnFieldIDs, str]]|None=None
+	) -> bool:
+		"""Does this here criterion reference a column that is actually available in the current bin view?"""
+
+		columns_available = columns_available or [
+			(
+				self.sourceModel().headerData(col, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole),
+				self.sourceModel().headerData(col, QtCore.Qt.Orientation.Horizontal, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
+			)
+			for col in range(self.sourceModel().columnCount(QtCore.QModelIndex()))
+		]
+
+
+		is_valid = True
+
+		# Ensure this criterion does not reference a column in the removals list
+#				logging.getLogger(__name__).debug("Looking at %s...", criterion)
+
+		if isinstance(criterion, sifters.BSSingleColumnSifter):
+
+			if criterion.siftColumnInfo().field_id == avbutils.bins.BinColumnFieldIDs.User:
+				is_valid = (criterion.siftColumnInfo().field_id, criterion.siftColumnInfo().display_name) in columns_available
+			
+			else:
+				is_valid = criterion.siftColumnInfo().field_id in map(lambda i: i[0], columns_available)
+
+		elif isinstance(criterion, sifters.BSRangeSifter):
+			
+			for range_field_id, info in sifters.rangesifter.SIFT_RANGE_COLUMN_DEPENDENCIES.items():
+				
+				if info.range_role == criterion.dataRole():
+					is_valid = range_field_id in map(lambda i: i[0], columns_available)
+					break
+
+		return is_valid
 
 	###
 
