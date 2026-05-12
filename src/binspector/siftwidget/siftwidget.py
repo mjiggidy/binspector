@@ -226,5 +226,5 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 			raise ValueError(f"A set of exactly {len(widget_list)} criteria must be provided (got {criteria})")
 		
 		for widget, criterion in zip(widget_list, criteria):
-			logging.getLogger(__name__).debug("Critera set to %s", criterion)
+			logging.getLogger(__name__).debug("Setting criterion set to %s", criterion)
 			widget.setCriterion(criterion)

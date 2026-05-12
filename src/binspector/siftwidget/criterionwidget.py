@@ -148,7 +148,7 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 		
 		source_type, source_id = self.siftSource()
 
-		print("Got here")
+#		print("Got here")
 
 		if source_type == siftscopetypes.BSSiftScopeType.SingleColumn:
 
