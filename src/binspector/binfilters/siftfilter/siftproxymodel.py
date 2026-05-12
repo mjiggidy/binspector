@@ -1,12 +1,18 @@
-import logging
+import logging, typing
 from PySide6 import QtCore
 
 from .  import sifters
 from .. import abstractfiltermodel
+from ...binview import binviewitemtypes
+
+import avbutils
+
+SiftCriteria:typing.TypeAlias = list[list[sifters.BSAbstractSifter]]
+"""A list lists of `and` criteria, each to be compared with `or`"""
 
 class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
-	DEFAULT_CRITERIA = [[sifters.BSAnyColumnSifter()]*3]*2
+	DEFAULT_CRITERIA:SiftCriteria = [[sifters.BSAnyColumnSifter()]*3]*2
 
 	sig_live_sift_enabled = QtCore.Signal(bool)
 	"""Live Sift was toggled on or off"""
@@ -14,7 +20,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 	sig_criteria_changed  = QtCore.Signal(object)
 	"""Sift criteria was changed"""
 
-	def __init__(self, *args, sift_criteria:list[list[sifters.BSAbstractSifter]]|None=None, live_sift:bool=False, **kwargs):
+	def __init__(self, *args, sift_criteria:SiftCriteria|None=None, live_sift:bool=False, **kwargs):
 
 		super().__init__(*args, **kwargs)
 		
@@ -26,6 +32,89 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		#   user clicks a button to re-sift
 		
 		self.setDynamicSortFilter(live_sift)
+
+	def setSourceModel(self, source_model:QtCore.QAbstractItemModel):
+		
+		if self.sourceModel() == source_model:
+			return
+		
+		if self.sourceModel():
+			self.sourceModel().disconnect(self)
+
+		source_model.columnsAboutToBeRemoved.connect(self.sourceColumnsAboutToBeRemoved)
+		
+		return super().setSourceModel(source_model)
+	
+	@QtCore.Slot(QtCore.QModelIndex, int, int)
+	def sourceColumnsAboutToBeRemoved(self, source_parent:QtCore.QModelIndex, first:int, last:int):
+
+		# Evaluate which columns will be removed, and set any related filters to 'None' to deactivate
+
+		# Determine the column info about to be removed
+		column_infos_to_be_removed:list[binviewitemtypes.BSBinViewColumnInfo] = []
+		
+		for col_idx in range(first, last+1):
+
+			column_data = self.sourceModel().headerData(
+				col_idx,
+				QtCore.Qt.Orientation.Horizontal,
+				binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo
+			)
+
+			logging.getLogger(__name__).debug("I hear we're removing: %s", column_data)
+
+			column_infos_to_be_removed.append(column_data)
+
+		validated_sift_criteria:SiftCriteria = []
+
+		for criterion_set in self._sift_criteria:
+
+			validated_criterion_set = []
+
+			for criterion in criterion_set:
+
+				is_valid = True
+
+				# Ensure this criterion does not reference a column in the removals list
+#				logging.getLogger(__name__).debug("Looking at %s...", criterion)
+
+				if isinstance(criterion, sifters.BSSingleColumnSifter):
+
+					if criterion.siftColumnInfo().field_id == avbutils.bins.BinColumnFieldIDs.User:
+						is_valid = (criterion.siftColumnInfo().field_id, criterion.siftColumnInfo().display_name) not in map(lambda i: (i.field_id, i.display_name) , column_infos_to_be_removed)
+					
+					else:
+#						print("*** IM HERE AT ELAST")
+#						print(list(map(lambda i: i.field_id, column_infos_to_be_removed)))
+						is_valid = criterion.siftColumnInfo().field_id not in map(lambda i: i.field_id, column_infos_to_be_removed)
+
+				elif isinstance(criterion, sifters.BSRangeSifter):
+					pass
+
+				# Either pass through the existing criterion, or set to NoColumn if the column gon b goin byebye night night.
+
+
+				if is_valid:
+
+					logging.getLogger(__name__).debug("Sift passes: %s", repr(criterion))
+					validated_criterion_set.append(criterion)
+				
+				else:
+					
+					modified_criterion = sifters.BSNoColumnSifter(
+							sift_string = criterion.siftString(),
+							match_type  = criterion.matchType(),
+						)
+
+					logging.getLogger(__name__).debug("Sift to be reset:", repr(modified_criterion))
+
+					validated_criterion_set.append(modified_criterion)
+
+			validated_sift_criteria.append(validated_criterion_set)
+		
+		self.setSiftCriteria(validated_sift_criteria)
+
+	###
 
 	@QtCore.Slot()
 	def resetSiftCriteria(self):
@@ -49,7 +138,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		self.sig_filter_toggled.emit(is_enabled)
 	
 	@QtCore.Slot(object)
-	def setSiftCriteria(self, criteria:list[list[sifters.BSAbstractSifter],list[sifters.BSAbstractSifter]]):
+	def setSiftCriteria(self, criteria:SiftCriteria):
 
 		if not criteria:
 			criteria = list(self.DEFAULT_CRITERIA)
@@ -67,7 +156,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 		self.sig_criteria_changed.emit(self._sift_criteria)
 
-	def siftCriteria(self) -> list[list[sifters.BSAbstractSifter]]:
+	def siftCriteria(self) -> SiftCriteria:
 
 		return self._sift_criteria
 	
