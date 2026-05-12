@@ -55,15 +55,22 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		
 		for col_idx in range(first, last+1):
 
-			column_data = self.sourceModel().headerData(
+			field_id_removing = self.sourceModel().headerData(
 				col_idx,
 				QtCore.Qt.Orientation.Horizontal,
-				binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo
+				binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole
 			)
 
-			logging.getLogger(__name__).debug("I hear we're removing: %s", column_data)
+			name_removing = self.sourceModel().headerData(
+				col_idx,
+				QtCore.Qt.Orientation.Horizontal,
+				binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole
+			)
 
+			column_data = (field_id_removing, name_removing)
 			column_infos_to_be_removed.append(column_data)
+
+			logging.getLogger(__name__).debug("I hear we're removing: %s", name_removing)
 
 		validated_sift_criteria:SiftCriteria = []
 
@@ -81,18 +88,20 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 				if isinstance(criterion, sifters.BSSingleColumnSifter):
 
 					if criterion.siftColumnInfo().field_id == avbutils.bins.BinColumnFieldIDs.User:
-						is_valid = (criterion.siftColumnInfo().field_id, criterion.siftColumnInfo().display_name) not in map(lambda i: (i.field_id, i.display_name) , column_infos_to_be_removed)
+						is_valid = (criterion.siftColumnInfo().field_id, criterion.siftColumnInfo().display_name) not in column_infos_to_be_removed
 					
 					else:
-#						print("*** IM HERE AT ELAST")
-#						print(list(map(lambda i: i.field_id, column_infos_to_be_removed)))
-						is_valid = criterion.siftColumnInfo().field_id not in map(lambda i: i.field_id, column_infos_to_be_removed)
+						is_valid = criterion.siftColumnInfo().field_id not in map(lambda i: i[0], column_infos_to_be_removed)
 
 				elif isinstance(criterion, sifters.BSRangeSifter):
-					pass
+					
+					for range_field_id, info in sifters.rangesifter.SIFT_RANGE_COLUMN_DEPENDENCIES.items():
+						
+						if info.range_role == criterion.dataRole():
+							is_valid = range_field_id not in map(lambda i: i[0], column_infos_to_be_removed)
+							break
 
 				# Either pass through the existing criterion, or set to NoColumn if the column gon b goin byebye night night.
-
 
 				if is_valid:
 
