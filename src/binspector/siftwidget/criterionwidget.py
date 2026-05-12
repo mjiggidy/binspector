@@ -73,11 +73,11 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		sift_criterion = sift_criterion or self.DEFAULT_SIFT_CRITERION
 		
-		logging.getLogger(__name__).debug("Boudda set criterion: %s", sift_criterion)
+		logging.getLogger(__name__).debug("Setting criterion: %s", sift_criterion)
 		
 		if self.criterion() == sift_criterion:
 
-			logging.getLogger(__name__).debug("...BUT I RETURNT INSTEAD! HAHA!")
+#			logging.getLogger(__name__).debug("...BUT I RETURNT INSTEAD! HAHA!")
 			return
 		
 		self._cmb_match_type.setCurrentIndex(self._cmb_match_type.findData(sift_criterion.matchType()))
