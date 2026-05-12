@@ -92,10 +92,15 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 
 				if self.criterionReferencesAvailableColumn(criterion, column_infos_to_be_remaining):
 
+					# Pass through criterion that reference columns still remaining
+
 					logging.getLogger(__name__).debug("Sift passes: %s", repr(criterion))
 					validated_criterion_set.append(criterion)
 				
 				else:
+
+					# Set as a No Column criterion with sift string and match type preserved
+					# Essentially just turning it off but not blowing everything away
 					
 					modified_criterion = sifters.BSNoColumnSifter(
 							sift_string = criterion.siftString(),
