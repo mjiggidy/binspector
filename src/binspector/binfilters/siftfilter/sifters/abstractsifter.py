@@ -53,7 +53,11 @@ class BSAbstractSifter(abc.ABC):
 		if type(self) is not type(other):
 			return NotImplemented
 		
-		return self.__dict__ == other.__dict__
+		return all({
+			self.siftString() == other.siftString(),
+			self.matchType()  == other.matchType(),
+			self.dataRole()   == other.dataRole(),
+		})
 
 	@classmethod
 	def sift_settings_from_bin(cls, bin_content:avb.bin.Bin, view_setting:binviewitemtypes.BSBinViewInfo) -> list[list[typing.Self]]:
@@ -125,6 +129,7 @@ class BSAbstractSifter(abc.ABC):
 
 		if not len(processed_sift_settings) == 6:
 			raise ValueError(f"Expected exactly 6 sift settings, got {len(processed_sift_settings)}")
+		
 
 		return [
 			processed_sift_settings[:3], 
