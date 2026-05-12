@@ -21,3 +21,8 @@ class BSNoColumnSifter(BSAbstractSifter):
 	def sifterAcceptsIndex(self, index:QtCore.QModelIndex):
 
 		return True
+	
+	def isValid(self) -> bool:
+		"""No Column sift is essentially perma-inactive"""
+
+		return False
