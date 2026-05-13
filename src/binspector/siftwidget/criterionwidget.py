@@ -186,25 +186,25 @@ class BSSiftCriterionWidget(QtWidgets.QWidget):
 
 		scope_model:scopesmodel.BSSiftScopeViewModel = self._cmb_match_scope.model()
 
-		ranges_available  = scope_model.rowCountForScope(siftscopetypes.BSSiftScopeType.SingleColumn)
+		columns_available_count  = scope_model.rowCountForScope(siftscopetypes.BSSiftScopeType.SingleColumn)
 
-		if not ranges_available:
+		if not columns_available_count:
 			return None
 #			raise ValueError("No column names available")
 		
-		ranges_offset = scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.SingleColumn)
+		index_offset = scope_model.rowOffsetToScope(siftscopetypes.BSSiftScopeType.SingleColumn)
 
 		cmb_idx = None
 		
-		for row in range(ranges_offset, ranges_available + ranges_offset - 1):  # NOTE: -1?
+		for row in range(index_offset, columns_available_count + index_offset - 1):  # NOTE: -1?
 
-			_, range_role = self._cmb_match_scope.itemData(row)
+			_, bin_column_info = self._cmb_match_scope.itemData(row)
 
-			if criterion.siftColumnInfo().field_id == range_role.field_id:
+			if criterion.siftColumnInfo().field_id == bin_column_info.field_id:
 			
 				# User columns need to be matched by name as well
 				if criterion.siftColumnInfo().field_id == avbutils.bins.BinColumnFieldIDs.User \
-					and criterion.siftColumnInfo().display_name != range_role.display_name:
+					and criterion.siftColumnInfo().display_name != bin_column_info.display_name:
 						continue
 
 				cmb_idx = row

@@ -10,7 +10,7 @@ from avbutils import bins
 from . import scopesmodel
 
 from .criterionwidget import BSSiftCriterionWidget
-from ..binfilters.siftfilter import sifters
+from ..binfilters.siftfilter import sifters, siftproxymodel
 
 class BSSiftSettingsWidget(QtWidgets.QWidget):
 	
@@ -21,13 +21,13 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 	sig_criteria_set      = QtCore.Signal(object)
 	sig_live_sift_enabled = QtCore.Signal(bool)
 
-	def __init__(self, *args, bin_view_model:QtCore.QAbstractItemModel|None=None, live_sift:bool=False, **kwargs):
+	def __init__(self, *args, sift_filter_model:siftproxymodel.BSBinSiftFilterProxyModel|None=None, live_sift:bool=False, **kwargs):
 
 #		logging.getLogger(__name__).debug("Hello from me")
 
 		super().__init__(*args, **kwargs)
 
-		self._columns_chooser_model = scopesmodel.BSSiftScopeViewModel(bin_view_model=bin_view_model or QtCore.QIdentityProxyModel())
+		self._columns_chooser_model = scopesmodel.BSSiftScopeViewModel(sift_filter_model=sift_filter_model or siftproxymodel.BSBinSiftFilterProxyModel())
 
 		self._live_sift_enabled = live_sift
 
@@ -151,10 +151,10 @@ class BSSiftSettingsWidget(QtWidgets.QWidget):
 		return self._live_sift_enabled
 
 	@QtCore.Slot(object)
-	def setBinViewModel(self, bin_view_model:QtCore.QAbstractItemModel):
+	def setSiftFilterModel(self, sift_filter_model:siftproxymodel.BSBinSiftFilterProxyModel):
 		"""Set the bin view model for the sources chooser"""
 
-		self._columns_chooser_model.setBinViewModel(bin_view_model)
+		self._columns_chooser_model.setSiftFilterModel(sift_filter_model)
 	
 	@QtCore.Slot()
 	def criteriaChanged(self):

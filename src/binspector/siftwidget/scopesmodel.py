@@ -22,7 +22,7 @@ sift goes back to "Any" column.
 from PySide6 import QtCore, QtGui
 
 from ..binfilters.siftfilter.siftscopetypes import BSSiftScopeType
-from ..binview import binviewmodel
+from ..binfilters.siftfilter import siftproxymodel
 
 from . import rangesmodel
 
@@ -32,18 +32,18 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 	SEPARATOR_ROW_SIZE = 1
 	"""How many rows a separator occupies i dunno"""
 
-	sig_bin_view_model_changed = QtCore.Signal(object)
+	sig_sift_filter_changed = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_view_model:binviewmodel.BSBinViewModel, **kwargs):
+	def __init__(self, *args, sift_filter_model:siftproxymodel.BSBinSiftFilterProxyModel|None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
 		sift_ranges_model = rangesmodel.BSSiftRangesProxyModel(parent=self)
-		sift_ranges_model.setSourceModel(bin_view_model)
+#		sift_ranges_model.setSourceModel(sift_filter_model)
 
 		self._source_models:dict[BSSiftScopeType, QtCore.QAbstractItemModel] = {
 			BSSiftScopeType.NoColumn:     QtGui.QStandardItemModel(parent=self),
-			BSSiftScopeType.SingleColumn: bin_view_model,
+			BSSiftScopeType.SingleColumn: sift_filter_model,
 			BSSiftScopeType.Range:        sift_ranges_model,
 			BSSiftScopeType.AnyColumn: QtGui.QStandardItemModel(parent=self),
 		}
@@ -62,13 +62,29 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 
 		model = self._source_models[source_key]
 
-		model.rowsAboutToBeInserted  .connect(self.sourceViewRowsAboutToBeInserted)
-		model.rowsAboutToBeMoved     .connect(self.sourceViewRowsAboutToBeMoved)
-		model.rowsAboutToBeRemoved   .connect(self.sourceViewRowsAboutToBeRemoved)
+		if source_key == BSSiftScopeType.SingleColumn:
 
-		model.rowsInserted           .connect(self.sourceViewRowsInserted)
-		model.rowsMoved              .connect(self.sourceViewRowsMoved)
-		model.rowsRemoved            .connect(self.sourceViewRowsRemoved)
+			model.columnsAboutToBeInserted  .connect(self.sourceViewRowsAboutToBeInserted)
+			model.columnsAboutToBeMoved     .connect(self.sourceViewRowsAboutToBeMoved)
+			model.columnsAboutToBeRemoved   .connect(self.sourceViewRowsAboutToBeRemoved)
+
+			model.columnsInserted           .connect(self.sourceViewRowsInserted)
+			model.columnsMoved              .connect(self.sourceViewRowsMoved)
+			model.columnsRemoved            .connect(self.sourceViewRowsRemoved)
+
+			model.headerDataChanged         .connect(self.sourceSiftFilterColumnsChanged)
+
+		else:
+
+			model.rowsAboutToBeInserted  .connect(self.sourceViewRowsAboutToBeInserted)
+			model.rowsAboutToBeMoved     .connect(self.sourceViewRowsAboutToBeMoved)
+			model.rowsAboutToBeRemoved   .connect(self.sourceViewRowsAboutToBeRemoved)
+
+			model.rowsInserted           .connect(self.sourceViewRowsInserted)
+			model.rowsMoved              .connect(self.sourceViewRowsMoved)
+			model.rowsRemoved            .connect(self.sourceViewRowsRemoved)
+			
+			model.dataChanged            .connect(self.sourceViewDataChanged)
 	
 		model.layoutAboutToBeChanged .connect(self.sourceViewLayoutAboutToBeChanged)
 		model.layoutChanged          .connect(self.sourceViewLayoutChanged)
@@ -76,7 +92,6 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 		model.modelAboutToBeReset    .connect(self.beginResetModel)
 		model.modelReset             .connect(self.endResetModel)
 
-		model.dataChanged            .connect(self.sourceViewDataChanged)
 
 	###
 
@@ -91,7 +106,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			return
 		
 		source_type = self._sourceTypeForModel(self.sender())
-		offset     = self.rowOffsetToScope(source_type)
+		offset      = self.rowOffsetToScope(source_type)
 		
 		self.beginInsertRows(QtCore.QModelIndex(), first + offset, last + offset)
 		
@@ -208,36 +223,50 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			roles
 		)
 
+	def sourceSiftFilterColumnsChanged(self, orientation:QtCore.Qt.Orientation, first:int, last:int):
+		"""Sift columns available to the sift filter have changed"""
+
+		# NOTE: This is unique to single column sift model, analogous
+		# to sourceViewDataChanged (above) for the others
+
+		if orientation != QtCore.Qt.Orientation.Horizontal:
+			return
+		
+		source_type = self._sourceTypeForModel(self.sender())
+		offset      = self.rowOffsetToScope(source_type)
+		
+		self.dataChanged.emit(
+			self.index(first + offset, 0, QtCore.QModelIndex()),
+			self.index(last  + offset, 0, QtCore.QModelIndex()),
+
+		)
+
 	###
 	
-	def setBinViewModel(self, model:binviewmodel.BSBinViewModel):
+	def setSiftFilterModel(self, sift_filter_model:siftproxymodel.BSBinSiftFilterProxyModel):
 		"""Set the source bin view model"""
 
 		# NOTE: Am I hard-coding this or no?  Need to clean up.
 
-		if BSSiftScopeType.SingleColumn in self._source_models and self._source_models[BSSiftScopeType.SingleColumn] == model:
+		if BSSiftScopeType.SingleColumn in self._source_models and self._source_models[BSSiftScopeType.SingleColumn] == sift_filter_model:
 			return
 		
 		self.beginResetModel()
 
 		if BSSiftScopeType.SingleColumn in self._source_models:
-
 			self._source_models[BSSiftScopeType.SingleColumn].disconnect(self)
-
 		
 		if BSSiftScopeType.Range in self._source_models:
-
-			self._source_models[BSSiftScopeType.Range].setSourceModel(model)
+			self._source_models[BSSiftScopeType.Range].setSourceModel(sift_filter_model)
 		
-		
-		self._source_models[BSSiftScopeType.SingleColumn] = model
+		self._source_models[BSSiftScopeType.SingleColumn] = sift_filter_model
 		self._setupSourceModel(BSSiftScopeType.SingleColumn)
 
 		self.endResetModel()
 
-		self.sig_bin_view_model_changed.emit(model)
+		self.sig_sift_filter_changed.emit(sift_filter_model)
 
-	def binViewModel(self) -> binviewmodel.BSBinViewModel:
+	def siftFilterModel(self) -> siftproxymodel.BSBinSiftFilterProxyModel:
 		"""Get the source bin view model"""
 
 		return self._source_models[BSSiftScopeType.SingleColumn]
@@ -251,8 +280,13 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 
 		if sift_source_type not in self._source_models:
 			raise ValueError(f"Source type {sift_source_type} is not in this model")
+		
+		# Transpose sift column headers to rows
+		if sift_source_type == BSSiftScopeType.SingleColumn:
+			row_count = self._source_models[sift_source_type].columnCount(QtCore.QModelIndex())
 			
-		row_count = self._source_models[sift_source_type].rowCount(QtCore.QModelIndex())
+		else:
+			row_count = self._source_models[sift_source_type].rowCount(QtCore.QModelIndex())
 
 		# Add separator to "end" if any rows were present
 
@@ -357,9 +391,21 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 
 		# Map back to bin view model for any single-column data
 		row_offset   = self.rowOffsetToScope(source_type)
-		source_index = self._source_models[source_type].index(index.row() - row_offset, 0, QtCore.QModelIndex())
 
-		if role == QtCore.Qt.ItemDataRole.UserRole:
-			return (source_type, source_index.data(QtCore.Qt.ItemDataRole.UserRole))
-		
-		return source_index.data(role)
+		if source_type == BSSiftScopeType.SingleColumn: # Transpose columns from sift filter
+
+			header_data = self._source_models[source_type].headerData(index.row() - row_offset, QtCore.Qt.Orientation.Horizontal, role)
+
+			if role == QtCore.Qt.ItemDataRole.UserRole:
+				return (source_type, header_data)
+			
+			return header_data
+
+
+		else:
+			source_index = self._source_models[source_type].index(index.row() - row_offset, 0, QtCore.QModelIndex())
+
+			if role == QtCore.Qt.ItemDataRole.UserRole:
+				return (source_type, source_index.data(QtCore.Qt.ItemDataRole.UserRole))
+			
+			return source_index.data(role)

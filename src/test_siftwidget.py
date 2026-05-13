@@ -1,38 +1,40 @@
 import avb, avbutils
 from PySide6 import QtCore, QtWidgets
 from binspector.siftwidget import scopesmodel, siftwidget
+from binspector.textview import bincompositemodel
 from binspector.binview import binviewmodel, binviewitemtypes
 from binspector.binfilters import binviewproxymodel
-from binspector.binfilters.siftfilter import sifters
-from binspector.binitems import binitemtypes
+from binspector.binfilters.siftfilter import sifters, siftproxymodel
+from binspector.binitems import binitemtypes, binitemsmodel
 
 app = QtWidgets.QApplication()
 app.setStyle("Fusion")
 
 model_binview       = binviewmodel.BSBinViewModel()
 model_binviewfilter = binviewproxymodel.BSBinViewFilterProxyModel(bin_columns_model=model_binview)
+model_binitems      = binitemsmodel.BSBinItemModel()
+model_composite     = bincompositemodel.BSBinCompositeModel(item_model=model_binitems, view_model=model_binviewfilter)
+model_siftfilter    = siftproxymodel.BSBinSiftFilterProxyModel()
+model_siftfilter.setSourceModel(model_composite)
 
+# Just a temp bin viewer
+wnd_binviewer = QtWidgets.QTreeView()
+wnd_binviewer.setModel(model_siftfilter)
+wnd_binviewer.show()
+
+# Sift Widget
 wnd_siftwidget = siftwidget.BSSiftSettingsWidget()
-
-font = wnd_siftwidget.font()
-font.setPointSizeF(font.pointSizeF() * 0.8)
-
+wnd_siftwidget.setSiftFilterModel(model_siftfilter)
 wnd_siftwidget.setWindowTitle("Custom Sift")
-wnd_siftwidget.setFont(font)
 wnd_siftwidget.setWindowFlag(QtCore.Qt.WindowType.Tool)
 wnd_siftwidget.show()
-
 geo = wnd_siftwidget.geometry()
 geo.setWidth(geo.height() * 1.75)
-
 wnd_siftwidget.setGeometry(geo)
 wnd_siftwidget.setFixedHeight(geo.height())
 
-model_sift_columns  = scopesmodel.BSSiftScopeViewModel(bin_view_model=model_binviewfilter)
 
-wnd_siftwidget.setBinViewModel(model_binviewfilter)
 
-wnd_siftwidget.sig_criteria_set.connect(print)
 
 import sys
 with avb.open(sys.argv[1]) as bin_file:
@@ -40,10 +42,6 @@ with avb.open(sys.argv[1]) as bin_file:
 	model_binview.setBinViewInfo(
 		binviewitemtypes.BSBinViewInfo.from_binview(bin_file.content.view_setting)
 	)
-	
-#	wnd_siftwidget.setSiftOptions([
-#		avbutils.bins.BinSiftOption.from_sift_item(s) for s in bin_file.content.sifted_settings
-#	])
 
 wnd_siftwidget.resetAllCriteria()
 

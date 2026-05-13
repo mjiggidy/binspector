@@ -84,7 +84,7 @@ class BSMainWindow(QtWidgets.QMainWindow):
 		self._tool_bindisplay  = toolboxes.BSBinDisplaySettingsView(icon_registry=icon_registry.BIN_ITEM_TYPE_ICON_REGISTRY)
 		self._dock_bindisplay  = QtWidgets.QDockWidget(self.tr("Bin Display Settings"))
 		
-		self._tool_sifting     = siftwidget.BSSiftSettingsWidget(bin_view_model=self._bin_widget.columnsFilter())
+		self._tool_sifting     = siftwidget.BSSiftSettingsWidget(sift_filter_model=self._bin_widget.siftFilter())
 		self._dock_sifting     = QtWidgets.QDockWidget(self.tr("Sift Settings"))
 
 		self._tool_appearance  = toolboxes.BSBinAppearanceSettingsView()
