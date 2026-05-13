@@ -58,6 +58,10 @@ class BSAbstractSifter(abc.ABC):
 			self.matchType()  == other.matchType(),
 			self.dataRole()   == other.dataRole(),
 		})
+	
+	def __repr__(self) -> str:
+
+		return f"<{self.__class__.__name__} at {id(self):#x}: dataRole={self.dataRole().name}; matchType={self.matchType().name}, siftString=\"{self.siftString()}\">"
 
 	@classmethod
 	def sift_settings_from_bin(cls, bin_content:avb.bin.Bin, view_setting:binviewitemtypes.BSBinViewInfo) -> list[list[typing.Self]]:
