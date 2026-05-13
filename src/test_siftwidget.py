@@ -1,6 +1,6 @@
 import avb, avbutils
 from PySide6 import QtCore, QtWidgets
-from binspector.siftwidget import scopesmodel, siftwidget
+from binspector.siftwidget import siftwidget
 from binspector.textview import bincompositemodel
 from binspector.binview import binviewmodel, binviewitemtypes
 from binspector.binfilters import binviewproxymodel
@@ -34,8 +34,6 @@ wnd_siftwidget.setGeometry(geo)
 wnd_siftwidget.setFixedHeight(geo.height())
 
 
-
-
 import sys
 with avb.open(sys.argv[1]) as bin_file:
 	
@@ -59,5 +57,7 @@ my_criteria = [
 ]
 
 wnd_siftwidget.setCriteria(my_criteria)
+
+wnd_siftwidget.sig_criteria_set.connect(print)
 
 app.exec()

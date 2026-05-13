@@ -38,7 +38,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 
 		super().__init__(*args, **kwargs)
 
-		sift_ranges_model = rangesmodel.BSSiftRangesProxyModel(parent=self)
+		sift_ranges_model = rangesmodel.BSSiftRangesModel(parent=self, sift_filter_model=sift_filter_model)
 #		sift_ranges_model.setSourceModel(sift_filter_model)
 
 		self._source_models:dict[BSSiftScopeType, QtCore.QAbstractItemModel] = {
@@ -257,7 +257,7 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			self._source_models[BSSiftScopeType.SingleColumn].disconnect(self)
 		
 		if BSSiftScopeType.Range in self._source_models:
-			self._source_models[BSSiftScopeType.Range].setSourceModel(sift_filter_model)
+			self._source_models[BSSiftScopeType.Range].setSiftFilterModel(sift_filter_model)
 		
 		self._source_models[BSSiftScopeType.SingleColumn] = sift_filter_model
 		self._setupSourceModel(BSSiftScopeType.SingleColumn)
