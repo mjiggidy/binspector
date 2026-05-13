@@ -224,7 +224,7 @@ class BSBinSiftFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		self._sift_criteria = criteria
 		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
 		
-		logging.getLogger(__name__).debug("Sift criteria changed: (%s)", self._sift_criteria)
+		logging.getLogger(__name__).debug("Sift criteria changed: %s", self._sift_criteria)
 
 		self.sig_criteria_changed.emit(self._sift_criteria)
 
