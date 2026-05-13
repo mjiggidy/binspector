@@ -38,13 +38,13 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 
 		super().__init__(*args, **kwargs)
 
-		self._sift_ranges_model = rangesmodel.BSSiftRangesProxyModel(parent=self)
-		self._sift_ranges_model.setSourceModel(bin_view_model)
+		sift_ranges_model = rangesmodel.BSSiftRangesProxyModel(parent=self)
+		sift_ranges_model.setSourceModel(bin_view_model)
 
 		self._source_models:dict[BSSiftScopeType, QtCore.QAbstractItemModel] = {
-			BSSiftScopeType.NoColumn:  QtGui.QStandardItemModel(parent=self),
+			BSSiftScopeType.NoColumn:     QtGui.QStandardItemModel(parent=self),
 			BSSiftScopeType.SingleColumn: bin_view_model,
-			BSSiftScopeType.Range: self._sift_ranges_model,
+			BSSiftScopeType.Range:        sift_ranges_model,
 			BSSiftScopeType.AnyColumn: QtGui.QStandardItemModel(parent=self),
 		}
 
@@ -306,7 +306,8 @@ class BSSiftScopeViewModel(QtCore.QAbstractItemModel):
 			if row < accumulated_rows:
 				return None
 		
-		raise IndexError(f"Model does not contain row {repr(index)}")
+		# Just.. like... just don't, man
+		return BSSiftScopeType.NoColumn
 		
 ####
 
