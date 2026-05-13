@@ -5,7 +5,7 @@ Widget bar for the top o' the bin widget
 import avbutils
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from ..widgets import buttons, sliders, binviewcombobox
+from ..widgets import buttons, sliders, binviewcombobox, loadingbar
 
 # I Think I Overthought This: The Module
 #
@@ -69,7 +69,7 @@ class BSBinContentsTopWidgetBar(BSAbstractBinContentsWidgetBar):
 		self._btn_reload          = buttons.BSActionPushButton(show_text=False)
 		self._btn_stop            = buttons.BSActionPushButton(show_text=False)
 
-		self._prg_loading         = QtWidgets.QProgressBar()
+		self._prg_loading         = loadingbar.BSAnimatedProgressBar()
 
 		self._btngrp_viewmode     = QtWidgets.QButtonGroup()
 		self._btn_viewmode_list   = buttons.BSPalettedActionPushButton(show_text=False)
