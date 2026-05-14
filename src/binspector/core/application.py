@@ -294,8 +294,8 @@ class BSMainApplication(QtWidgets.QApplication):
 
 		window.binViewProviderModel().setStorageModel(self._bin_view_storage_model)
 
-		window.binContentsWidget().siftFilter().setLiveSiftEnabled(self._man_settings.useLiveSift())
-		window.binContentsWidget().siftFilter().sig_live_sift_enabled.connect(self._man_settings.setUseLiveSift)
+#		window.binContentsWidget().siftFilter().setLiveSiftEnabled(self._man_settings.useLiveSift())
+#		window.binContentsWidget().siftFilter().sig_live_sift_enabled.connect(self._man_settings.setUseLiveSift)
 
 		window.setUseSiftCriteriaFromBin(self._man_settings.useSiftCriteria())
 
@@ -477,7 +477,7 @@ class BSMainApplication(QtWidgets.QApplication):
 			self._wnd_settings.sig_use_column_widths_changed.connect(self._man_settings.setUseSavedColumnWidths)
 			self._wnd_settings.sig_use_column_widths_changed.connect(lambda use_col_widths: [w.setUseSavedColumnWidths(use_col_widths) for w in self._man_binwindows.windows()])
 
-			self._wnd_settings.sig_use_live_sift_changed.connect(self._man_settings.setUseLiveSift)
+#			self._wnd_settings.sig_use_live_sift_changed.connect(self._man_settings.setUseLiveSift)
 			
 			self._wnd_settings.sig_use_sift_settings_changed.connect(self._man_settings.setUseSiftCriteria)
 			self._wnd_settings.sig_use_sift_settings_changed.connect(lambda use_sift: [w.setUseSiftCriteriaFromBin(use_sift) for w in self._man_binwindows.windows()])
