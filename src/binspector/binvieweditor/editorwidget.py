@@ -2,7 +2,7 @@ import logging
 
 from PySide6 import QtWidgets, QtGui, QtCore
 
-from . import editorview
+from . import editorview, editorproxymodel
 
 from ..binviewprovider import providermodel, binviewsources
 from ..binview import binviewmodel, binviewitemtypes
@@ -36,8 +36,11 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_add       = QtWidgets.QPushButton()
 		self._btn_view_list_delete    = QtWidgets.QPushButton()
 		
-		# Editor View
+		# Editor View/Model
+		self._model_editor = editorproxymodel.BSBinViewColumnEditorProxyModel(parent=self)
+		
 		self._view_editor = editorview.BSBinViewColumnListView()
+		self._view_editor.setModel(self._model_editor)
 
 		# Action Buttons
 		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Toggle Visibility"))
@@ -76,7 +79,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._cmb_bin_view_list.sig_binview_source_selected.connect(self.sig_bin_view_source_selected)
 
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
-		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
+#		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
 
 		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel())
 		self.setBinViewProvider(bin_view_provider or providermodel.BSBinViewProviderModel())
@@ -94,13 +97,13 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
-		if self._view_editor.model().sourceModel() == bin_view_model:
+		if self._model_editor.sourceModel() == bin_view_model:
 			return
 		
 		logging.getLogger(__name__).debug("Setting editor model to %s", bin_view_model.binViewName())
 		
 		# NOTE: This was commented out and probably ruining my life but I don't remember why yet.  So hello, future me.
-		self._view_editor.model().setSourceModel(bin_view_model)
+		self._model_editor.setSourceModel(bin_view_model)
 	
 	def setBinViewProvider(self, bin_view_provider:providermodel.BSBinViewProviderModel):
 
@@ -143,7 +146,10 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	def requestExportBinView(self):
 		"""Prepare binview as a dict for export"""
 
-		binview_info:binviewitemtypes.BSBinViewInfo = self._view_editor.model().sourceModel().binViewInfo()
+		if not self._model_editor.sourceModel():
+			raise ValueError("No bin view to save")
+
+		binview_info:binviewitemtypes.BSBinViewInfo = self._model_editor.sourceModel().binViewInfo()
 
 		if binview_info is None:
 			raise ValueError("No bin view to save")

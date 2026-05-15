@@ -37,7 +37,7 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		# Headers
 		self.verticalHeader()  .setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		self.verticalHeader()  .hide()
-#		self.horizontalHeader().hide()
+		self.horizontalHeader().hide()
 
 		# Scrolling
 		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
