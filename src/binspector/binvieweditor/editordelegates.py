@@ -2,8 +2,9 @@ from __future__ import annotations
 import typing
 
 from PySide6 import QtWidgets, QtGui, QtCore
-from ..binview import binviewitemtypes
+
 from . import editorproxymodel
+from ..binview import binviewitemtypes
 
 if typing.TYPE_CHECKING:
 	from . import editorwidget
@@ -22,7 +23,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		# which isn't even clear as I write it here. lol TODO: Refactor
 		
 		#item:viewmodelitems.LBAbstractViewHeaderItem = index.data(QtCore.Qt.ItemDataRole.UserRole)
-		role =index.model().featureForIndex(index)
+		editor_feature = index.model().headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 		
 		is_hidden = index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
@@ -37,45 +38,45 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			option.font = font
 			option.fontmetrics = QtGui.QFontMetrics(font)
 			
-		if role == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn and option.state & QtWidgets.QStyle.StateFlag.State_HasFocus:
+		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn and option.state & QtWidgets.QStyle.StateFlag.State_HasFocus:
 			option.palette.setCurrentColorGroup(QtGui.QPalette.ColorGroup.Active)
 		
 		super().paint(painter, option, index)
 
-	def editorEvent(self, event:QtCore.QEvent, model:editorproxymodel.BSBinViewColumnEditorProxyModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
+	def editorEvent(self, event:QtCore.QEvent, model:QtCore.QAbstractItemModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
 
 		#print(model.featureForIndex(index))
 
-		role = model.featureForIndex(index)
+		editor_feature = model.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 
 		if not event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 			return False
 
-		if role == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
+		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
 
 			self.sig_hide_column_index.emit(index)
 			return True
 		
-		elif role == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn and model.userCanDelete(index):
+		elif editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn and model.userCanDelete(index):
 #			print("Delegate says remove ", index.siblingAtColumn(0).data(QtCore.Qt.ItemDataRole.DisplayRole))
 			self.sig_remove_column_index.emit(index)
 
 		return False
 
 	
-	def setModelData(self, editor:QtWidgets.QWidget, model:editorproxymodel.BSBinViewColumnEditorProxyModel, index:QtCore.QModelIndex):
+	def setModelData(self, editor:QtWidgets.QWidget, model:QtCore.QAbstractItemModel, index:QtCore.QModelIndex):
 		
-		role = model.featureForIndex(index)
+		editor_feature = model.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 
-		if role == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
+		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
 
 			column_name = editor.text()
 			self.sig_rename_column_for_index.emit(index, column_name)
 	
 	def setEditorData(self, editor:QtWidgets.QLineEdit, index:QtCore.QModelIndex):
 		
-		role = index.model().featureForIndex(index)
+		editor_feature = index.model().headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 
-		if role == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
+		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
 			column_name = index.data(QtCore.Qt.ItemDataRole.DisplayRole)
 			editor.setText(column_name)

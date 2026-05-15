@@ -1,5 +1,6 @@
 from PySide6 import QtWidgets, QtCore
-from . import editorproxymodel, editordelegates
+
+from . import editordelegates, editorproxymodel
 
 class BSBinViewColumnListView(QtWidgets.QTableView):
 	"""A QTableView for bin view column data"""
@@ -36,13 +37,13 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		# Headers
 		self.verticalHeader()  .setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 		self.verticalHeader()  .hide()
-		self.horizontalHeader().hide()
+#		self.horizontalHeader().hide()
 
 		# Scrolling
 		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
 		# Model
-		self.setModel(editorproxymodel.BSBinViewColumnEditorProxyModel())
+#		self.setModel(editorproxymodel_old.BSBinViewColumnEditorProxyModelDEPRECATED())
 
 	@QtCore.Slot()
 	def toggleColumnSelection(self):
@@ -55,11 +56,12 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 	def toggleSelectedVisibility(self):
 
 		for row_index in self.selectionModel().selectedRows():
+			pass
 	
-			self.model().toggleBinColumnVisibiltyForIndex(row_index)
+#			self.model().toggleBinColumnVisibiltyForIndex(row_index)
 	###
 
-	def setModel(self, model:editorproxymodel.BSBinViewColumnEditorProxyModel):
+	def setModel(self, model:QtCore.QAbstractItemModel):
 		
 		if self.model() == model:
 			return
@@ -67,20 +69,20 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		super().setModel(model)
 
 		# NOTE: Need better way to do this for model/delegate reassignments
-		self.itemDelegate().sig_hide_column_index.connect(self.model().toggleBinColumnVisibiltyForIndex)
-		self.itemDelegate().sig_remove_column_index.connect(self.model().removeBinColumnForIndex)
-		self.itemDelegate().sig_rename_column_for_index.connect(self.model().renameColumnForIndex)
+#		self.itemDelegate().sig_hide_column_index.connect(self.model().toggleBinColumnVisibiltyForIndex)
+#		self.itemDelegate().sig_remove_column_index.connect(self.model().removeBinColumnForIndex)
+#		self.itemDelegate().sig_rename_column_for_index.connect(self.model().renameColumnForIndex)
 		
 		self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+		self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
 		
-		for col, feat in enumerate(model.features()):
+		for col in range(model.columnCount(QtCore.QModelIndex())):
+
+			feat = model.headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
+
 			if feat == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
 				self.horizontalHeader().setSectionResizeMode(col, QtWidgets.QHeaderView.ResizeMode.Stretch)
-	
-	def model(self) -> editorproxymodel.BSBinViewColumnEditorProxyModel:
-		"""This model returns a proxy model"""
 
-		return super().model()
 	
 	def itemDelegate(self) -> editordelegates.BSBinViewColumnDelegate:
 		return super().itemDelegate()

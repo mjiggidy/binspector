@@ -2,8 +2,9 @@ import logging
 
 from PySide6 import QtWidgets, QtGui, QtCore
 
+from . import editorview
+
 from ..binviewprovider import providermodel, binviewsources
-from . import editorproxymodel, editorview
 from ..binview import binviewmodel, binviewitemtypes
 from ..widgets import binviewcombobox
 
