@@ -1,7 +1,7 @@
 import enum
 
 from ..binview import binviewitemtypes
-from PySide6 import QtCore
+from PySide6 import QtCore, QtGui
 
 import avbutils
 
@@ -53,6 +53,8 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		sourceModel.dataChanged.connect(self.sourceModelDataChanged)
 		
 		super().setSourceModel(sourceModel)
+
+		print("Source set", sourceModel)
 
 	### Source Model Malarky
 
@@ -113,10 +115,16 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		)
 
 	def mapToSource(self, proxyIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
+
+		if not proxyIndex.isValid() or not self.sourceModel():
+			return QtCore.QModelIndex()
 		
 		return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex())
 	
 	def mapFromSource(self, sourceIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
+
+		if not sourceIndex.isValid() or not self.sourceModel():
+			return QtCore.QModelIndex()
 		
 		return self.index(sourceIndex.row(), 0, QtCore.QModelIndex())
 
@@ -144,6 +152,8 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		if parent.isValid():
 			return QtCore.QModelIndex()
 		
+#		print(f"Proxy creating index for: {row=}, {column=}")
+		
 		return self.createIndex(row, column)
 	
 	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
@@ -158,25 +168,31 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 				return data_format.name[0].upper()
 			
 			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
-				return data_format.name
+				return self.tr("<strong>Column Data Format</strong><br/>{data_format_name}").format(data_format_name = data_format.name.title())
 			
-		if editor_feature == BSBinViewColumnEditorFeature.VisibilityColumn:
+		elif editor_feature == BSBinViewColumnEditorFeature.VisibilityColumn:
 
 			is_hidden = self.mapToSource(proxyIndex).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
-			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return "Y" if is_hidden else "N"
+			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+				return QtGui.QIcon(":/icons/gui/toggle_visibilty_off.svg") if is_hidden else  QtGui.QIcon(":/icons/gui/toggle_visibilty_on.svg")
+			if role == QtCore.Qt.ItemDataRole.ToolTipRole:
+				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}").format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
+
 			
-		if editor_feature == BSBinViewColumnEditorFeature.DeleteColumn:
+		elif editor_feature == BSBinViewColumnEditorFeature.DeleteColumn:
 
 			is_deletable = self._columnCanBeDeletedIsThatCorrectPlease(
 				self.mapToSource(proxyIndex).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
 			)
 
-			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return "X" if is_deletable else ""
+			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+				
+				# Allow delete if user field
+				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove) if is_deletable else QtGui.QIcon()
 
-		return self.mapToSource(proxyIndex).data(role)
+		else:
+			return self.mapToSource(proxyIndex).data(role)
 	
 	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole):
 
@@ -188,12 +204,12 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		if role == QtCore.Qt.ItemDataRole.UserRole:
 			return editor_feature
 		
-		if role == QtCore.Qt.ItemDataRole.DisplayRole:
-			return editor_feature.name
+#		if role == QtCore.Qt.ItemDataRole.DisplayRole:
+#			return editor_feature.name
 	
 	def flags(self, index:QtCore.QModelIndex):
 		
-		editor_feature = self._editor_features[index.column()]
+#		editor_feature = self._editor_features[index.column()]
 		
 		flags = \
 			QtCore.Qt.ItemFlag.ItemIsEnabled | \
