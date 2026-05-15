@@ -42,9 +42,6 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		# Scrolling
 		self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
-		# Model
-#		self.setModel(editorproxymodel_old.BSBinViewColumnEditorProxyModelDEPRECATED())
-
 	@QtCore.Slot()
 	def toggleColumnSelection(self):
 
@@ -73,15 +70,15 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 #		self.itemDelegate().sig_remove_column_index.connect(self.model().removeBinColumnForIndex)
 #		self.itemDelegate().sig_rename_column_for_index.connect(self.model().renameColumnForIndex)
 		
-		self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-		self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
-		
 		for col in range(model.columnCount(QtCore.QModelIndex())):
 
-			feat = model.headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
+			editor_feature = model.headerData(col, QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 
-			if feat == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
+			if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.NameColumn:
 				self.horizontalHeader().setSectionResizeMode(col, QtWidgets.QHeaderView.ResizeMode.Stretch)
+
+			else:
+				self.horizontalHeader().setSectionResizeMode(col,QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
 	
 	def itemDelegate(self) -> editordelegates.BSBinViewColumnDelegate:
