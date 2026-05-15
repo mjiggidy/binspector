@@ -136,7 +136,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		if not sourceIndex.isValid() or not self.sourceModel():
 			return QtCore.QModelIndex()
 		
-		return self.index(sourceIndex.row(), 0, QtCore.QModelIndex())
+		return self.index(sourceIndex.row(), self._editor_features.index(BSBinViewColumnEditorFeature.NameColumn), QtCore.QModelIndex())
 
 	### Model Malarky
 
@@ -165,42 +165,43 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		return self.createIndex(row, column)
 	
 	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
+
+		if not self.sourceModel() or not proxyIndex.isValid():
+			return
 		
 		editor_feature = self._editor_features[proxyIndex.column()]
 
-		if editor_feature == BSBinViewColumnEditorFeature.DataFormatColumn:
+		if editor_feature == BSBinViewColumnEditorFeature.NameColumn:
+			return self.sourceModel().index(proxyIndex.row(), 0).data(role)
+
+		elif editor_feature == BSBinViewColumnEditorFeature.DataFormatColumn:
 			
-			data_format:avbutils.bins.BinColumnFormat = self.mapToSource(proxyIndex).data(binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
+			data_format:avbutils.bins.BinColumnFormat = self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
 
 			if role == QtCore.Qt.ItemDataRole.DisplayRole:
 				return data_format.name[0].upper()
-			
 			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
 				return self.tr("<strong>Column Data Format</strong><br/>{data_format_name}").format(data_format_name = data_format.name.title())
 			
 		elif editor_feature == BSBinViewColumnEditorFeature.VisibilityColumn:
 
-			is_hidden = self.mapToSource(proxyIndex).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+			is_hidden = self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
 			if role == QtCore.Qt.ItemDataRole.DecorationRole:
-				return QtGui.QIcon(":/icons/gui/toggle_visibilty_off.svg") if is_hidden else  QtGui.QIcon(":/icons/gui/toggle_visibilty_on.svg")
-			if role == QtCore.Qt.ItemDataRole.ToolTipRole:
+				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear)
+			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
 				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}").format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
-
 			
 		elif editor_feature == BSBinViewColumnEditorFeature.DeleteColumn:
 
 			is_deletable = self._columnCanBeDeletedIsThatCorrectPlease(
-				self.mapToSource(proxyIndex).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
+				self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
 			)
 
 			if role == QtCore.Qt.ItemDataRole.DecorationRole:
-				
 				# Allow delete if user field
-				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove) if is_deletable else QtGui.QIcon()
+				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditClear) if is_deletable else QtGui.QIcon()
 
-		elif editor_feature == BSBinViewColumnEditorFeature.NameColumn:
-			return self.mapToSource(proxyIndex).data(role)
 	
 	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole):
 
