@@ -1,15 +1,44 @@
+import enum
+
 from PySide6 import QtCore
 from . import abstractfiltermodel
 from ..binview import binviewitemtypes
 
+class BSBinViewFilterOptions(enum.IntFlag):
+	"""Bin View Filter Option Flags"""
+
+	ShowHidden  = enum.auto()
+	ShowVisible = enum.auto()
+	ShowAll     = ShowHidden|ShowVisible
+
 class BSBinViewFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxyModel):
 
-	def __init__(self, *args, bin_columns_model:QtCore.QAbstractItemModel|None=None, is_enabled=True, **kwargs):
+	DEFAULT_FILTER_OPTIONS = BSBinViewFilterOptions.ShowVisible
+
+	def __init__(self, *args, bin_columns_model:QtCore.QAbstractItemModel|None=None, bin_view_options:BSBinViewFilterOptions|None=None, is_enabled=True, **kwargs):
 		
 		super().__init__(*args, is_enabled=is_enabled, **kwargs)
 
+		self._bin_view_options = bin_view_options or self.DEFAULT_FILTER_OPTIONS
+
 		if bin_columns_model:
 			self.setSourceModel(bin_columns_model)
+
+	@QtCore.Slot(object)
+	def setBinViewOptions(self, bin_view_options:BSBinViewFilterOptions):
+		"""Set which bin columns to accept"""
+		
+		if self._bin_view_options == bin_view_options:
+			return
+		
+		self.beginFilterChange()
+		self._bin_view_options = bin_view_options
+		self.endFilterChange(QtCore.QSortFilterProxyModel.Direction.Rows)
+
+	def binViewOptions(self) -> BSBinViewFilterOptions:
+		"""Which bin columns are accepted"""
+
+		return self._bin_view_options
 			
 	def filterAcceptsRow(self, source_row:int, source_parent:QtCore.QModelIndex) -> bool:
 		
@@ -18,7 +47,11 @@ class BSBinViewFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		
 		is_hidden = self.sourceModel().index(source_row, 0, source_parent).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
-		return not is_hidden
+		if is_hidden:
+			return self._bin_view_options & BSBinViewFilterOptions.ShowHidden
+		
+		else:
+			return self._bin_view_options & BSBinViewFilterOptions.ShowVisible
 	
 	def setEnabled(self, is_enabled:bool):
 		
