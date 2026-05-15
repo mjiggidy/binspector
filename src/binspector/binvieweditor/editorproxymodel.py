@@ -1,13 +1,11 @@
-import logging
+import enum
 
-from PySide6 import QtCore, QtGui
-import enum, typing
-from ..binview import binviewitemtypes, binviewmodel
-from ..res import icons_gui
+from ..binview import binviewitemtypes
+from PySide6 import QtCore
 
 import avbutils
 
-class BSBinViewColumnEditorFeature(enum.Enum):
+class BSBinViewColumnEditorFeature(enum.IntEnum):
 	"""Editor column features"""
 
 	GripperColumn     = enum.auto()
@@ -17,106 +15,67 @@ class BSBinViewColumnEditorFeature(enum.Enum):
 	DeleteColumn      = enum.auto()
 
 class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
-	"""Proxy model for editing bin view column data"""
 
-	DEFAULT_FLAGS = QtCore.Qt.ItemFlag.ItemIsSelectable|QtCore.Qt.ItemFlag.ItemIsEnabled
+	def __init__(self, *args, **kwargs):
 
-	def __init__(self):
+		super().__init__(*args, **kwargs)
 
-		super().__init__()
-
-		self._editor_columns:list[BSBinViewColumnEditorFeature] = [
+		self._editor_features:list[BSBinViewColumnEditorFeature] = [
+			BSBinViewColumnEditorFeature.DataFormatColumn,
 			BSBinViewColumnEditorFeature.NameColumn,
 			BSBinViewColumnEditorFeature.DeleteColumn,
-			BSBinViewColumnEditorFeature.DataFormatColumn,
 			BSBinViewColumnEditorFeature.VisibilityColumn,
 		]
 
-	def binViewName(self):
+	###
 
-		if not self.sourceModel():
-			return None
+	def setSourceModel(self, sourceModel:QtCore.QAbstractItemModel):
 		
-		return self.sourceModel().binViewName()
-
-	def setSourceModel(self, bin_view_model:binviewmodel.BSBinViewModel):
-		"""Set the source bin view model to edit"""
-
-		if self.sourceModel() == bin_view_model:
+		if self.sourceModel() == sourceModel:
 			return
 		
-		self.beginResetModel()
-
 		if self.sourceModel():
 			self.sourceModel().disconnect(self)
 
-		super().setSourceModel(bin_view_model)
+		sourceModel.rowsAboutToBeRemoved.connect(self.sourceModelAboutToRemoveRows)
+		sourceModel.rowsRemoved.connect(self.sourceModelRemovedRows)
 
-		logging.getLogger(__name__).debug("SETTING UP EDITOR FOR %s", bin_view_model.binViewName())
+		sourceModel.rowsAboutToBeInserted.connect(self.sourceModelAboutToInsertRows)
+		sourceModel.rowsInserted.connect(self.sourceModelInsertedRows)
 
-		self.sourceModel().rowsAboutToBeRemoved.connect(self.sourceModelAboutToRemoveRows)
-		self.sourceModel().rowsRemoved.connect(self.sourceModelRemovedRows)
+		sourceModel.rowsAboutToBeMoved.connect(self.sourceModelAboutToMoveRows)
+		sourceModel.rowsMoved.connect(self.sourceModelMovedRows)
+
+		sourceModel.modelAboutToBeReset.connect(self.modelAboutToBeReset)
+		sourceModel.modelReset.connect(self.modelReset)
+
+		sourceModel.layoutChanged.connect(self.layoutChanged)
+		sourceModel.dataChanged.connect(self.sourceModelDataChanged)
 		
-		self.sourceModel().rowsAboutToBeInserted.connect(self.sourceModelAboutToInsertRows)
-		self.sourceModel().rowsInserted.connect(self.sourceModelInsertedRows)
+		super().setSourceModel(sourceModel)
 
-		self.sourceModel().rowsAboutToBeMoved.connect(self.sourceModelAboutToMoveRows)
-		self.sourceModel().rowsMoved.connect(self.sourceModelMovedRows)
-
-		self.sourceModel().modelAboutToBeReset.connect(self.modelAboutToBeReset)
-		self.sourceModel().modelReset.connect(self.modelReset)
-		self.sourceModel().layoutChanged.connect(self.layoutChanged)
-
-		self.endResetModel()
-
-	def binViewModel(self) -> binviewmodel.BSBinViewModel:
-
-		return self.sourceModel()
-	
-
-
-	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
-	def sourceModelAboutToMoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int, destination:QtCore.QModelIndex, dest_row:int):
-#		print("He")
-
-		self.beginMoveRows(QtCore.QModelIndex(), row_start, row_end, QtCore.QModelIndex(), dest_row)
-
-	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
-	def sourceModelMovedRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int, destination:QtCore.QModelIndex, dest_row:int):
-
-		self.endMoveRows()
-
-		
+	### Source Model Malarky
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def sourceModelAboutToRemoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
 
-		if self.mapFromSource(parent).isValid():
+		if parent.isValid():
 			return
 		
-		# NOTE: Big ol' caveat here that I'm just gonna pretend won't be a terrible problem in the future:
-		# I'm trusting that row numbers remain contiguous between the source and proxy so I can still say "start at 
-		# row 5 and delete the next 5" without worrying about there being any breaks in the run between the source  
-		# and proxy due to different proxy row mappings.
-		# I've been writing code since 1990 but I think I'm still a terrible programmer probably.
-		# 12 year old kids on YouTube do it better than me
-		# I'm too old to change
-		# What do I do
-		
 		self.beginRemoveRows(QtCore.QModelIndex(), row_start, row_end)
-	
+
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def sourceModelRemovedRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
 
-		if self.mapFromSource(parent).isValid():
+		if parent.isValid():
 			return
 		
 		self.endRemoveRows()
-	
+
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def sourceModelAboutToInsertRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
 		
-		if self.mapFromSource(parent).isValid():
+		if parent.isValid():
 			return
 		
 		self.beginInsertRows(QtCore.QModelIndex(), row_start, row_end)
@@ -124,205 +83,61 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def sourceModelInsertedRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
 
-		if self.mapFromSource(parent).isValid():
+		if parent.isValid():
 			return
 		
 		self.endInsertRows()
 
-	def features(self) -> list[BSBinViewColumnEditorFeature]:
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def sourceModelAboutToMoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int, destination:QtCore.QModelIndex, dest_row:int):
 
-		return list(self._editor_columns)
-
-	def featureForColumn(self, column:int) -> BSBinViewColumnEditorFeature:
-		"""Return the editor feature for a given logical column"""
-
-		return self._editor_columns[column]
-	
-	def featureForIndex(self, index:QtCore.QModelIndex) -> BSBinViewColumnEditorFeature:
-		"""Determine editor column feature for a given index"""
-
-		return self.featureForColumn(index.column())
-	
-	def binViewColumnForIndex(self, index:QtCore.QModelIndex) -> binviewitemtypes.BSBinViewColumnInfo:
-		"""Get the `BSBinViewColumnInfo` for a given index"""
-
-		if not index.isValid():
-			return None
-		
-		return self.sourceModel().data(binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo)
-	
-	def binColumnIsHiddenForIndex(self, index:QtCore.QModelIndex) -> bool:
-		return self.data(index, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
-
-	def setBinColumnHiddenForIndex(self, index:QtCore.QModelIndex, is_hidden:bool=True):
-
-		source_index = self.mapToSource(index.siblingAtColumn(0))
-		new_is_hidden = not source_index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
-		return self.setData(index, new_is_hidden, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
-
-	@QtCore.Slot(QtCore.QModelIndex, str)
-	def renameColumnForIndex(self, index:QtCore.QModelIndex, name:str) -> bool:
-
-		source_index = self.mapToSource(index.siblingAtColumn(0))
-		return self.sourceModel().setData(source_index, name, binviewitemtypes.BSBinViewColumnInfoRole.DisplayNameRole)
-
-	@QtCore.Slot(QtCore.QModelIndex)
-	def toggleBinColumnVisibiltyForIndex(self, index:QtCore.QModelIndex):
-		
-		is_hidden = self.binColumnIsHiddenForIndex(index)
-		self.setBinColumnVisibleForIndex(index, is_hidden)
-
-	@QtCore.Slot(QtCore.QModelIndex)
-	def removeBinColumnForIndex(self, index:QtCore.QModelIndex):
-
-		if not self.userCanDelete(index) or not index.isValid():
-			# Nice try fella
-			return
-		
-		src_idx = self.mapToSource(index)
-
-		if not src_idx.isValid():
-#			print("Map to source returned invalid index")
-			return False
-		
-#		print(f"Source model to remove row {src_idx.row()}: {src_idx.data(QtCore.Qt.ItemDataRole.DisplayRole)}")
-
-		self.sourceModel().removeRow(src_idx.row(), src_idx.parent())
-	
-	@QtCore.Slot()
-	def appendUserColumn(self):
-		"""Add a user-text column"""
-
-		parent = QtCore.QModelIndex()
-
-		self.sourceModel().insertRow(self.sourceModel().rowCount(parent), parent)
-	
-#def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
-#	
-#	if parent.isValid():
-#		return False
-#
-#	src_idx = self.mapToSource(self.index(row, 0, parent))
-#
-#	if not src_idx.isValid():
-#		print("Map to source returned invalid index")
-#		return False
-#	
-#	print(f"Source model to remove row {src_idx.row()}: {src_idx.data(QtCore.Qt.ItemDataRole.DisplayRole)}")
-#
-#	self.sourceModel().removeRow(src_idx.row(), src_idx.parent())
-#
-#	return True
-
-
-	def setBinColumnVisibleForIndex(self, index:QtCore.QModelIndex, is_visible:bool=True):
-		self.setBinColumnHiddenForIndex(index, not is_visible)
-
-	def userCanDelete(self, index:QtCore.QModelIndex) -> bool:
-		"""Rules for user-deletable field"""
-
-		return self.mapToSource(index).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User
-	
-	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
-		"""
-		Editor proxy index data uses (row,feature) to access editor bin column data, and (row,0) for bin column info's data roles
-		
-		Example data model access: `self.index(5, 0).data(binviewitems.BSBinColumnInfoRole.IsHiddenRole)`  
-		Example editor proxy access: `self.index(5,  BSBinViewColumnEditorFeature.VisibilityColumn).data(QtCore.Qt.ItemDataRole.DecorationRole)`
-		"""
-
-		
-		feature = self.featureForIndex(proxyIndex)
-
-		source_index =  self.mapToSource(proxyIndex)
-		
-		if feature == BSBinViewColumnEditorFeature.NameColumn:
-
-			return source_index.data(role)
-
-		elif feature == BSBinViewColumnEditorFeature.VisibilityColumn:
-			
-			is_hidden =source_index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
-			
-			if role == QtCore.Qt.ItemDataRole.DecorationRole:
-				return QtGui.QIcon(":/icons/gui/toggle_visibilty_off.svg") if is_hidden else  QtGui.QIcon(":/icons/gui/toggle_visibilty_on.svg")
-			if role == QtCore.Qt.ItemDataRole.ToolTipRole:
-				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}").format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
-
-		elif feature == BSBinViewColumnEditorFeature.DataFormatColumn:
-
-			data_format:avbutils.bins.BinColumnFormat = source_index.data(binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
-
-			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return str(data_format)[0]
-			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
-				return self.tr("<strong>Column Data Format</strong><br/>{data_format_name}").format(data_format_name = data_format.name.title())
-		
-		elif feature == BSBinViewColumnEditorFeature.DeleteColumn:
-
-			can_delete = self.userCanDelete(proxyIndex)
-
-			if role == QtCore.Qt.ItemDataRole.DecorationRole:
-				
-				# Allow delete if user field
-				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove) if can_delete else QtGui.QIcon()
-		
-			if role == QtGui.Qt.ItemDataRole.ToolTipRole:
-
-				if can_delete:
-					return self.tr("<strong>Remove User Column</strong><br/>Remove this user column from the current bin view")
-		
-	def setData(self, index:QtCore.QModelIndex, value:typing.Any, /, role:QtCore.Qt.ItemDataRole):
-
-		if not super().setData(index, value, role):
-			return False
-		
-		index_start = index.siblingAtColumn(0)
-		index_end   = index.siblingAtColumn(self.columnCount(index.parent())-1)
-
-		self.dataChanged.emit(index_start, index_end)
-		return True
-	
-	def updateRowForIndex(self, index:QtCore.QModelIndex):
-		"""Emit `dataChanged` for the entire row"""
-
-		index_start = index.siblingAtColumn(0)
-		index_end   = index.siblingAtColumn(self.columnCount(index.parent())-1)
-
-		self.dataChanged.emit(index_start, index_end)
-#		print("updateRowForIndex says HEEE")
-
-	@QtCore.Slot(object, object, object)
-	def sourceDataChanged(self, source_index_start:QtCore.QModelIndex, source_index_end:QtCore.QModelIndex, roles:list):
-
-		# NOTE: Haven't needed/tested this yet.  Maybe just rewrite instead of making this work because you know.
-		# But I'm guessing when the sourceModel is changed via other means, I'll need to intercept its dataChanged
-		# map the proxy and re-emit)
-
-		# Map source index to proxy and get new first/last order based on row
-		proxy_first_row, proxy_last_row = sorted(self.mapFromSource(source_index_start).row(), self.mapFromSource(source_index_end).row())
-
-		for proxy_row in range(proxy_first_row, proxy_last_row+1):
-
-			self.updateRowForIndex(self.index(proxy_first_row, 0, QtCore.QModelIndex()))
-#			print("Update proxy row", proxy_row)
-	
-	def columnCount(self, /, parent:QtCore.QModelIndex):
-		
 		if parent.isValid():
-			return 0
+			return
+
+		self.beginMoveRows(QtCore.QModelIndex(), row_start, row_end, QtCore.QModelIndex(), dest_row)
+
+	@QtCore.Slot(QtCore.QModelIndex, int, int, QtCore.QModelIndex, int)
+	def sourceModelMovedRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int, destination:QtCore.QModelIndex, dest_row:int):
+
+		if parent.isValid():
+			return
+
+		self.endMoveRows()
+
+	@QtCore.Slot(QtCore.QModelIndex, QtCore.QModelIndex, list)
+	def sourceModelDataChanged(self, topLeft:QtCore.QModelIndex, bottomRight:QtCore.QModelIndex, roles:list[QtCore.Qt.ItemDataRole]):
+
+		self.dataChanged.emit(
+			self.index(topLeft.row(), 0, QtCore.QModelIndex()),
+			self.index(bottomRight.row(), self.columnCount(QtCore.QModelIndex()) - 1, QtCore.QModelIndex())
+		)
+
+	def mapToSource(self, proxyIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
 		
-		return len(self._editor_columns)
+		return self.sourceModel().index(proxyIndex.row(), 0, QtCore.QModelIndex())
+	
+	def mapFromSource(self, sourceIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
+		
+		return self.index(sourceIndex.row(), 0, QtCore.QModelIndex())
+
+	### Model Malarky
+
+	def columnCount(self, /, parent:QtCore.QModelIndex) -> int:
+		return 0 if parent.isValid() else len(self._editor_features)
 	
 	def rowCount(self, /, parent:QtCore.QModelIndex) -> int:
 
-		if parent.isValid():
-			return 0
-		
-		if not self.sourceModel():
+		if not self.sourceModel() or parent.isValid():
 			return 0
 		
 		return self.sourceModel().rowCount(QtCore.QModelIndex())
+	
+	def parent(self, child:QtCore.QModelIndex) -> QtCore.QModelIndex:
+		
+		return QtCore.QModelIndex()
+	
+	def hasChildren(self, /, parent:QtCore.QModelIndex) -> bool:
+		return False
 	
 	def index(self, row:int, column:int, /, parent:QtCore.QModelIndex):
 
@@ -331,71 +146,108 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		
 		return self.createIndex(row, column)
 	
-	def parent(self, index:QtCore.QModelIndex) -> QtCore.QModelIndex:
-
-		return QtCore.QModelIndex()
-	
-	def flags(self, index):
+	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
 		
-		flags = QtCore.Qt.ItemFlag(self.DEFAULT_FLAGS)
+		editor_feature = self._editor_features[proxyIndex.column()]
+
+		if editor_feature == BSBinViewColumnEditorFeature.DataFormatColumn:
+			
+			data_format:avbutils.bins.BinColumnFormat = self.mapToSource(proxyIndex).data(binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
+
+			if role == QtCore.Qt.ItemDataRole.DisplayRole:
+				return data_format.name[0].upper()
+			
+			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
+				return data_format.name
+			
+		if editor_feature == BSBinViewColumnEditorFeature.VisibilityColumn:
+
+			is_hidden = self.mapToSource(proxyIndex).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+
+			if role == QtCore.Qt.ItemDataRole.DisplayRole:
+				return "Y" if is_hidden else "N"
+			
+		if editor_feature == BSBinViewColumnEditorFeature.DeleteColumn:
+
+			is_deletable = self._columnCanBeDeletedIsThatCorrectPlease(
+				self.mapToSource(proxyIndex).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
+			)
+
+			if role == QtCore.Qt.ItemDataRole.DisplayRole:
+				return "X" if is_deletable else ""
+
+		return self.mapToSource(proxyIndex).data(role)
+	
+	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole):
+
+		if orientation != QtCore.Qt.Orientation.Horizontal:
+			return
+		
+		editor_feature = self._editor_features[section]
+
+		if role == QtCore.Qt.ItemDataRole.UserRole:
+			return editor_feature
+		
+		if role == QtCore.Qt.ItemDataRole.DisplayRole:
+			return editor_feature.name
+	
+	def flags(self, index:QtCore.QModelIndex):
+		
+		editor_feature = self._editor_features[index.column()]
+		
+		flags = \
+			QtCore.Qt.ItemFlag.ItemIsEnabled | \
+			QtCore.Qt.ItemFlag.ItemIsSelectable | \
+			QtCore.Qt.ItemFlag.ItemNeverHasChildren
 
 		# Allow dropping between items (invalid indexes)
 		if not index.isValid():
 			return QtCore.Qt.ItemFlag.ItemIsDropEnabled
 		
-		# Column Name Edidiable if user field and we're talkin bout the name column here
-		if self.featureForIndex(index) == BSBinViewColumnEditorFeature.NameColumn and index.data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User:
-			flags |= QtCore.Qt.ItemFlag.ItemIsEditable
+		# Column Name Edididable if user field and we're talkin bout the name column here
+#		if editor_feature == BSBinViewColumnEditorFeature.NameColumn \
+#		   and self.mapToSource(index).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User:
+#			flags |= QtCore.Qt.ItemFlag.ItemIsEditable
 		
 		return flags | QtCore.Qt.ItemFlag.ItemIsDragEnabled
 	
-	def mapFromSource(self, sourceIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
-		
-		# NOTE: 02 Feb 2026 11:0am: This is officially the dumbest I've been yet.
-		# Took me like two weeks to figure out THIS WAS ALL I EVER NEEDED TO DO.
+	### Draggityy Droppity Mimeity businesses
 
-		return self.index(sourceIndex.row(), sourceIndex.column(), sourceIndex.parent())
-	
-	def mapToSource(self, proxyIndex:QtCore.QModelIndex) -> QtCore.QModelIndex:
-		
-		if not proxyIndex.isValid():
-			return QtCore.QModelIndex()
-
-		return self.sourceModel().index(proxyIndex.row(), proxyIndex.column(), QtCore.QModelIndex())
-	
 	def supportedDragActions(self) -> QtCore.Qt.DropAction:
 		return QtCore.Qt.DropAction.MoveAction
 	
 	def supportedDropActions(self)-> QtCore.Qt.DropAction:
 		return QtCore.Qt.DropAction.MoveAction
 	
-	def moveRows(self, sourceParent, sourceRow, count, destinationParent, destinationChild):
-		
-		source_row_start = self.mapToSource(self.sourceModel().index(sourceRow, 0, QtCore.QModelIndex())).row()
-		source_row_dest  = self.mapToSource(self.sourceModel().index(destinationChild, 0, QtCore.QModelIndex())).row()
-
-		#print("GON BE MOVAN FROM ", sourceRow, " TO ", destinationChild)
-
-		return self.sourceModel().moveRows(QtCore.QModelIndex(), source_row_start, count, QtCore.QModelIndex(), source_row_dest)
-
-		#return super().moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild)
-	
 	def mimeTypes(self):
-		return ['application/x-qabstractitemmodeldatalist']
+		return ["application/x-qabstractitemmodeldatalist"]
 	
 	def canDropMimeData(self, data:QtCore.QMimeData, action:QtCore.Qt.DropAction, row:int, column:int, parent:QtCore.QModelIndex):
-		
 		# Only allow drops *between* items
 		# (Pairs with flags() returning ItemFalgs.ItemAcceptsDrops for invalid QModelIndexes)
-
 		return not parent.isValid()
+
+	def moveRows(self, sourceParent:QtCore.QModelIndex, sourceRow:int, count:int, destinationParent:QtCore.QModelIndex, destinationChild:int):
+
+		self.sourceModel().moveRows(
+			QtCore.QModelIndex(),
+			sourceRow,
+			count,
+			QtCore.QModelIndex(),
+			destinationChild
+		)
+		
+		return super().moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild)
 	
-	def to_json_dict(self) -> dict[str,typing.Any]:
-		"""Export a JSON-ready `dict` of this binview"""
+	def dropMimeData(self, data:QtCore.QMimeData, action:QtCore.Qt.DropAction, row:int, column:int, parent:QtCore.QModelIndex) -> bool:
 
-		import json
+		if action == QtCore.Qt.DropAction.MoveAction and data.hasFormat("application/x-qabstractitemmodeldatalist"):
+			return True
 
-		if not self.sourceModel():
-			raise ValueError("No bin view is currently defined")
+		return super().dropMimeData(data, action, row, column, parent)
+	
+	### Helper junk
 
-		return self.sourceModel().to_json_dict()
+	def _columnCanBeDeletedIsThatCorrectPlease(self, field_id:avbutils.bins.BinColumnFieldIDs) -> bool:
+
+		return field_id == avbutils.bins.BinColumnFieldIDs.User
