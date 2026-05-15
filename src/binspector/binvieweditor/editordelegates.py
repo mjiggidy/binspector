@@ -45,13 +45,12 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 	def editorEvent(self, event:QtCore.QEvent, model:QtCore.QAbstractItemModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
 
-		#print(model.featureForIndex(index))
+		print("delegate editorEvent got index ", index)
 
 		editor_feature = model.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 
 		self.initStyleOption(option, index)
 
-		print("Mm hmm", index)
 		if not event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 			return False
 
