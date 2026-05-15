@@ -214,6 +214,8 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 	
 	def moveRows(self, sourceParent:QtCore.QModelIndex, sourceRow:int, count:int, destinationParent:QtCore.QModelIndex, destinationChild:int):
 		
+#		print(f"Hey I got {sourceRow=} {count=} {destinationChild=}")
+		
 		self.beginMoveRows(sourceParent, sourceRow, sourceRow + count-1, destinationParent, destinationChild)
 
 		# NOTE: This confuses me every time I look at it.  Imanita do better here.
@@ -238,6 +240,7 @@ class BSBinViewModel(QtCore.QAbstractItemModel):
 		
 		return True
 	
-	def dropMimeData(self, data, action, row, column, parent):
+#	def dropMimeData(self, data, action, row, column, parent):
 #		print("Huh")
-		return super().dropMimeData(data, action, row, column, parent)
+#		return True
+#		return super().dropMimeData(data, action, row, column, parent)
