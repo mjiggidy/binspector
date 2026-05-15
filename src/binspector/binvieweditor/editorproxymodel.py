@@ -46,17 +46,27 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		sourceModel.rowsAboutToBeMoved.connect(self.sourceModelAboutToMoveRows)
 		sourceModel.rowsMoved.connect(self.sourceModelMovedRows)
 
-		sourceModel.modelAboutToBeReset.connect(self.modelAboutToBeReset)
-		sourceModel.modelReset.connect(self.modelReset)
+		sourceModel.modelAboutToBeReset.connect(self.sourceModelAboutToReset)
+		sourceModel.modelReset.connect(self.sourceModelReset)
 
 		sourceModel.layoutChanged.connect(self.layoutChanged)
 		sourceModel.dataChanged.connect(self.sourceModelDataChanged)
 		
 		super().setSourceModel(sourceModel)
 
-		print("Source set", sourceModel)
+#		print("Source set", sourceModel)
 
 	### Source Model Malarky
+
+	@QtCore.Slot()
+	def sourceModelAboutToReset(self):
+
+		self.beginResetModel()
+
+	@QtCore.Slot()
+	def sourceModelReset(self):
+
+		self.endResetModel()
 
 	@QtCore.Slot(QtCore.QModelIndex, int, int)
 	def sourceModelAboutToRemoveRows(self, parent:QtCore.QModelIndex, row_start:int, row_end:int):
@@ -257,6 +267,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 	
 	def dropMimeData(self, data:QtCore.QMimeData, action:QtCore.Qt.DropAction, row:int, column:int, parent:QtCore.QModelIndex) -> bool:
 
+		# Accept drop-to-move-column actions
 		if action == QtCore.Qt.DropAction.MoveAction and data.hasFormat("application/x-qabstractitemmodeldatalist"):
 			return True
 

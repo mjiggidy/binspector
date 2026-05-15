@@ -6,6 +6,7 @@ from . import editorview, editorproxymodel
 
 from ..binviewprovider import providermodel, binviewsources
 from ..binview import binviewmodel, binviewitemtypes
+from ..binfilters import binviewproxymodel
 from ..widgets import binviewcombobox
 
 DEFAULT_ILLEGAL_FILENAME_CHARS = ("\\", "/", "<", ">", "?", "*", ":")
@@ -23,7 +24,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 	sig_bin_view_source_selected = QtCore.Signal(object)
 
-	def __init__(self, *args, bin_view_provider:providermodel.BSBinViewProviderModel|None=None, bin_view_model:binviewmodel.BSBinViewModel|None=None, **kwargs):
+	def __init__(self, *args, bin_view_model:binviewmodel.BSBinViewModel|None=None, bin_view_provider:providermodel.BSBinViewProviderModel|None=None, **kwargs):
 
 		super().__init__(*args, **kwargs)
 
@@ -36,23 +37,39 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_add       = QtWidgets.QPushButton()
 		self._btn_view_list_delete    = QtWidgets.QPushButton()
 		
+		self._model_binviewfilter     = binviewproxymodel.BSBinViewFilterProxyModel(parent=self)
+#		self._model_binviewfilter.setSourceModel(bin_view_model)
+
 		# Editor View/Model
 		self._model_editor = editorproxymodel.BSBinViewColumnEditorProxyModel(parent=self)
+		self._model_editor.setSourceModel(self._model_binviewfilter)
+
 		
 		self._view_editor = editorview.BSBinViewColumnListView()
 		self._view_editor.setModel(self._model_editor)
+
+		# Filter Options
+		self._chk_show_hidden  = QtWidgets.QCheckBox(text=self.tr("Show Hidden"))
+		self._chk_show_visible = QtWidgets.QCheckBox(text=self.tr("Show Visible"))
+
+		self._chk_show_hidden .setChecked(self._model_binviewfilter.binViewOptions()  & binviewproxymodel.BSBinViewFilterOptions.ShowHidden)
+		self._chk_show_visible.setChecked(self._model_binviewfilter.binViewOptions() & binviewproxymodel.BSBinViewFilterOptions.ShowVisible)
+
+		self._chk_show_hidden.clicked.connect(self.userChangedFilters)
+		self._chk_show_visible.clicked.connect(self.userChangedFilters)
+
 
 		# Action Buttons
 		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Toggle Visibility"))
 		self._btn_add_col    = QtWidgets.QPushButton(self.tr("Add User Column"))
 
 
-		self._lay_view_list = QtWidgets.QHBoxLayout()
-		self._lay_view_list.setSpacing(0)
+		lay_view_list = QtWidgets.QHBoxLayout()
+		lay_view_list.setSpacing(0)
 
-		self._lay_view_list.addWidget(self._cmb_bin_view_list)
-		self._lay_view_list.addWidget(self._btn_view_list_add)
-		self._lay_view_list.addWidget(self._btn_view_list_delete)
+		lay_view_list.addWidget(self._cmb_bin_view_list)
+		lay_view_list.addWidget(self._btn_view_list_add)
+		lay_view_list.addWidget(self._btn_view_list_delete)
 
 		self._cmb_bin_view_list.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, self._cmb_bin_view_list.sizePolicy().verticalPolicy()))
 		self._btn_view_list_add.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
@@ -61,7 +78,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_add.clicked.connect(self.requestExportBinView)
 		self._btn_view_list_delete.clicked.connect(self.requestDeleteBinView)
 
-		self.layout().addLayout(self._lay_view_list)
+		self.layout().addLayout(lay_view_list)
 
 		self.layout().addWidget(QtWidgets.QLabel(self.tr("Add, Modify, and Rearrange Columns:")))
 		self.layout().addWidget(self._view_editor)
@@ -73,6 +90,11 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._lay_buttons.addStretch()
 		self._lay_buttons.addWidget(self._btn_toggle_all)
 
+		lay_filters = QtWidgets.QHBoxLayout()
+		lay_filters.addWidget(self._chk_show_hidden)
+		lay_filters.addWidget(self._chk_show_visible)
+		self.layout().addLayout(lay_filters)
+
 		self.layout().addLayout(self._lay_buttons)
 
 #		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
@@ -81,10 +103,23 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
 #		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
 
-		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel())
-		self.setBinViewProvider(bin_view_provider or providermodel.BSBinViewProviderModel())
+		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel(parent=self))
+		self.setBinViewProvider(bin_view_provider or providermodel.BSBinViewProviderModel(parent=self))
 
 		self._view_editor.activated.connect(self.binColumnDoubleClicked)
+
+	@QtCore.Slot()
+	def userChangedFilters(self):
+
+		bin_view_options = binviewproxymodel.BSBinViewFilterOptions(0)
+
+		if self._chk_show_hidden.isChecked():
+			bin_view_options |= binviewproxymodel.BSBinViewFilterOptions.ShowHidden
+
+		if self._chk_show_visible.isChecked():
+			bin_view_options |= binviewproxymodel.BSBinViewFilterOptions.ShowVisible
+
+		self._model_binviewfilter.setBinViewOptions(bin_view_options)
 	
 	@QtCore.Slot(QtCore.QModelIndex)
 	def binColumnDoubleClicked(self, index:QtCore.QModelIndex):
@@ -92,18 +127,14 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self.sig_focus_column_requested.emit(index.data(binviewitemtypes.BSBinViewColumnInfoRole.RawColumnInfo))
 
-	def _setupComboBox(self):
-		"""Set up the bin view selector"""
-
 	def setBinViewModel(self, bin_view_model:binviewmodel.BSBinViewModel):
 
-		if self._model_editor.sourceModel() == bin_view_model:
-			return
-		
-		logging.getLogger(__name__).debug("Setting editor model to %s", bin_view_model.binViewName())
-		
-		# NOTE: This was commented out and probably ruining my life but I don't remember why yet.  So hello, future me.
-		self._model_editor.setSourceModel(bin_view_model)
+#		if self._model_editor.sourceModel() == bin_view_model:
+#			return
+#		
+		logging.getLogger(__name__).debug("Setting editor model to %s", repr(bin_view_model))
+
+		self._model_binviewfilter.setSourceModel(bin_view_model)
 	
 	def setBinViewProvider(self, bin_view_provider:providermodel.BSBinViewProviderModel):
 
