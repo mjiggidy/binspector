@@ -162,8 +162,6 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		if parent.isValid():
 			return QtCore.QModelIndex()
 		
-#		print(f"Proxy creating index for: {row=}, {column=}")
-		
 		return self.createIndex(row, column)
 	
 	def data(self, proxyIndex:QtCore.QModelIndex, /, role:QtCore.Qt.ItemDataRole):
@@ -201,7 +199,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 				# Allow delete if user field
 				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove) if is_deletable else QtGui.QIcon()
 
-		else:
+		elif editor_feature == BSBinViewColumnEditorFeature.NameColumn:
 			return self.mapToSource(proxyIndex).data(role)
 	
 	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole):
@@ -219,8 +217,6 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 	
 	def flags(self, index:QtCore.QModelIndex):
 		
-#		editor_feature = self._editor_features[index.column()]
-		
 		flags = \
 			QtCore.Qt.ItemFlag.ItemIsEnabled | \
 			QtCore.Qt.ItemFlag.ItemIsSelectable | \
@@ -230,6 +226,8 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		if not index.isValid():
 			return QtCore.Qt.ItemFlag.ItemIsDropEnabled
 		
+#		editor_feature = self._editor_features[index.column()]
+
 		# Column Name Edididable if user field and we're talkin bout the name column here
 #		if editor_feature == BSBinViewColumnEditorFeature.NameColumn \
 #		   and self.mapToSource(index).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.User:
