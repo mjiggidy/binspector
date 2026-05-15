@@ -49,6 +49,9 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 		editor_feature = model.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 
+		self.initStyleOption(option, index)
+
+		print("Mm hmm", index)
 		if not event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 			return False
 
@@ -60,6 +63,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		elif editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn and model.userCanDelete(index):
 #			print("Delegate says remove ", index.siblingAtColumn(0).data(QtCore.Qt.ItemDataRole.DisplayRole))
 			self.sig_remove_column_index.emit(index)
+			return True
 
 		return False
 
