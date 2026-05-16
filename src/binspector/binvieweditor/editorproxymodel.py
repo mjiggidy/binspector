@@ -136,7 +136,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		if not sourceIndex.isValid() or not self.sourceModel():
 			return QtCore.QModelIndex()
 		
-		return self.index(sourceIndex.row(), self._editor_features.index(BSBinViewColumnEditorFeature.NameColumn), QtCore.QModelIndex())
+		return self.index(sourceIndex.row(), 0, QtCore.QModelIndex())
 
 	### Model Malarky
 
@@ -189,8 +189,12 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 			if role == QtCore.Qt.ItemDataRole.DecorationRole:
 				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear)
+
 			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
 				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}").format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
+			
+			elif role == QtCore.Qt.ItemDataRole.UserRole:
+				return True
 			
 		elif editor_feature == BSBinViewColumnEditorFeature.DeleteColumn:
 
@@ -201,6 +205,10 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			if role == QtCore.Qt.ItemDataRole.DecorationRole:
 				# Allow delete if user field
 				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditClear) if is_deletable else QtGui.QIcon()
+			
+			if role == QtCore.Qt.ItemDataRole.UserRole:
+
+				return is_deletable
 
 	
 	def headerData(self, section:int, orientation:QtCore.Qt.Orientation, /, role:QtCore.Qt.ItemDataRole):

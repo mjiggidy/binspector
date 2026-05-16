@@ -5,6 +5,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 
 from . import editorproxymodel
 from ..binview import binviewitemtypes
+import avbutils
 
 if typing.TYPE_CHECKING:
 	from . import editorwidget
@@ -16,13 +17,10 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 	sig_rename_column_for_index = QtCore.Signal(QtCore.QModelIndex, str)
 
 
-	def paint(self, painter:QtGui.QPainter, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
+	def paint(self, painter:QtGui.QPainter, option_item:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
-		# NOTE: This gets confusing
-		# The column editor view model returns the bin view column view item from its UserRole
-		# which isn't even clear as I write it here. lol TODO: Refactor
-		
-		#item:viewmodelitems.LBAbstractViewHeaderItem = index.data(QtCore.Qt.ItemDataRole.UserRole)
+
+		view_widget:QtWidgets.QAbstractItemView = option_item.widget
 		editor_feature = index.model().headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 		
 		is_hidden = index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
@@ -31,37 +29,90 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 		# Show hidden as dimmed
 		if is_hidden:
-			option.state &= ~QtWidgets.QStyle.StateFlag.State_Enabled
 
-			font = QtGui.QFont(option.font)
+			option_item.state &= ~QtWidgets.QStyle.StateFlag.State_Enabled
+
+			font = QtGui.QFont(option_item.font)
 			font.setItalic(True)
-			option.font = font
-			option.fontmetrics = QtGui.QFontMetrics(font)
+			option_item.font = font
+			option_item.fontmetrics = QtGui.QFontMetrics(font)
 			
-		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn and option.state & QtWidgets.QStyle.StateFlag.State_HasFocus:
-			option.palette.setCurrentColorGroup(QtGui.QPalette.ColorGroup.Active)
+#		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn and option.state & QtWidgets.QStyle.StateFlag.State_HasFocus:
+#			option.palette.setCurrentColorGroup(QtGui.QPalette.ColorGroup.Active)
+
+		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:
+
+			#min_size = min(option_item.rect.width(), option_item.rect.height())
+			button_rect = QtCore.QRect(option_item.rect)
+			button_rect = button_rect.marginsRemoved(QtCore.QMargins(2,1,2,1))
+
+
+			button_option = QtWidgets.QStyleOptionButton()
+			button_option.rect = button_rect
+			button_option.icon = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
+			button_option.iconSize = QtCore.QSize(*[view_widget.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_SmallIconSize)*.75]*2)
+			button_option.state = option_item.state
+
+			style = option_item.widget.style()
+			style.drawControl(QtWidgets.QStyle.ControlElement.CE_PushButton, button_option, painter)
+
+		elif editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn:
+
+			is_deletable = index.data(QtCore.Qt.ItemDataRole.UserRole)
+
+			if not is_deletable:
+				super().paint(painter, option_item, index)
+				return
+			
+			button_rect = QtCore.QRect(option_item.rect)
+			button_rect = button_rect.marginsRemoved(QtCore.QMargins(2,1,2,1))
+
+			button_option = QtWidgets.QStyleOptionButton()
+			button_option.rect = button_rect
+			button_option.icon = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
+			button_option.iconSize = QtCore.QSize(*[view_widget.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_SmallIconSize)*.75]*2)
+			button_option.state = option_item.state
+
+			style = option_item.widget.style()
+			style.drawControl(QtWidgets.QStyle.ControlElement.CE_PushButton, button_option, painter)
+
+
+		else:
 		
-		super().paint(painter, option, index)
+			super().paint(painter, option_item, index)
 
-	def editorEvent(self, event:QtCore.QEvent, model:QtCore.QAbstractItemModel, option:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
-
-		print("delegate editorEvent got index ", index)
-
-		editor_feature = model.headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
-
-		self.initStyleOption(option, index)
+	def editorEvent(self, event:QtCore.QEvent, model:QtCore.QAbstractItemModel, option_item:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
 
 		if not event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 			return False
+		
+		
+		view_widget:QtWidgets.QAbstractItemView = option_item.widget
+		# NOTE: Boy this was awful.  The index gets mappedFromSource so the column always = 0
+		# Need to ask the view instead I guess...?
+		actual_index   = view_widget.indexAt(event.pos())
+		editor_feature = model.headerData(actual_index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
+
+		self.initStyleOption(option_item, actual_index)
+
+
+		
+		print("delegate editorEvent got index ", actual_index)
 
 		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
-
-			self.sig_hide_column_index.emit(index)
+#			print("Delegate says hide column", actual_index)
+			self.sig_hide_column_index.emit(actual_index)
 			return True
 		
-		elif editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn and model.userCanDelete(index):
-#			print("Delegate says remove ", index.siblingAtColumn(0).data(QtCore.Qt.ItemDataRole.DisplayRole))
-			self.sig_remove_column_index.emit(index)
+		elif editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn:
+			
+#			print("User clicked delete col")
+
+			if actual_index.data(QtCore.Qt.ItemDataRole.UserRole):
+#				print("Delegate says remove ", actual_index.data(QtCore.Qt.ItemDataRole.UserRole))
+				self.sig_remove_column_index.emit(actual_index)
+
+			
 			return True
 
 		return False
