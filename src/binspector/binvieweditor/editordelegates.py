@@ -44,7 +44,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 			#min_size = min(option_item.rect.width(), option_item.rect.height())
 			button_rect = QtCore.QRect(option_item.rect)
-			button_rect = button_rect.marginsRemoved(QtCore.QMargins(2,1,2,1))
+			button_rect = button_rect.marginsRemoved(QtCore.QMargins(1,1,1,1))
 
 
 			button_option = QtWidgets.QStyleOptionButton()
@@ -65,7 +65,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 				return
 			
 			button_rect = QtCore.QRect(option_item.rect)
-			button_rect = button_rect.marginsRemoved(QtCore.QMargins(2,1,2,1))
+			button_rect = button_rect.marginsRemoved(QtCore.QMargins(1,1,1,1))
 
 			button_option = QtWidgets.QStyleOptionButton()
 			button_option.rect = button_rect
