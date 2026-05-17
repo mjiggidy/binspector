@@ -30,83 +30,98 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 		self.setLayout(QtWidgets.QVBoxLayout())
 		
-		# Bin View Name Display
-		self._bin_view_provider       = None
+		# Bin View Save, Restore, and Delete
 		self._cmb_bin_view_list       = binviewcombobox.BSBinViewSelectorComboBox()
-
 		self._btn_view_list_add       = QtWidgets.QPushButton()
 		self._btn_view_list_delete    = QtWidgets.QPushButton()
+
 		
+		self._model_binviewprovider   = None
 		self._model_binviewfilter     = binviewproxymodel.BSBinViewFilterProxyModel(parent=self)
-#		self._model_binviewfilter.setSourceModel(bin_view_model)
+		self._model_editor            = editorproxymodel.BSBinViewColumnEditorProxyModel(parent=self)
 
 		# Editor View/Model
-		self._model_editor = editorproxymodel.BSBinViewColumnEditorProxyModel(parent=self)
-		self._model_editor.setSourceModel(self._model_binviewfilter)
-
-		
 		self._view_editor = editorview.BSBinViewColumnListView()
-		self._view_editor.setModel(self._model_editor)
 
 		# Filter Options
 		self._chk_show_hidden  = QtWidgets.QCheckBox(text=self.tr("Show Hidden"))
 		self._chk_show_visible = QtWidgets.QCheckBox(text=self.tr("Show Visible"))
-
-		self._chk_show_hidden .setChecked(self._model_binviewfilter.binViewOptions()  & binviewproxymodel.BSBinViewFilterOptions.ShowHidden)
-		self._chk_show_visible.setChecked(self._model_binviewfilter.binViewOptions() & binviewproxymodel.BSBinViewFilterOptions.ShowVisible)
-
-		self._chk_show_hidden.clicked.connect(self.userChangedFilters)
-		self._chk_show_visible.clicked.connect(self.userChangedFilters)
-
+		
 
 		# Action Buttons
 		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Toggle Visibility"))
 		self._btn_add_col    = QtWidgets.QPushButton(self.tr("Add User Column"))
 
+		
 
+		
+		self._setupWidgets()
+		self._setupSignals()
+
+		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel(parent=self))
+		self.setBinViewProvider(bin_view_provider or providermodel.BSBinViewProviderModel(parent=self))
+
+	def _setupWidgets(self):
+
+		# Editor View
+		
+		self._cmb_bin_view_list.setSizePolicy(
+			QtWidgets.QSizePolicy(
+				QtWidgets.QSizePolicy.Policy.MinimumExpanding,
+				self._cmb_bin_view_list.sizePolicy().verticalPolicy()
+			)
+		)
+		
 		lay_view_list = QtWidgets.QHBoxLayout()
 		lay_view_list.setSpacing(0)
-
 		lay_view_list.addWidget(self._cmb_bin_view_list)
 		lay_view_list.addWidget(self._btn_view_list_add)
 		lay_view_list.addWidget(self._btn_view_list_delete)
 
-		self._cmb_bin_view_list.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, self._cmb_bin_view_list.sizePolicy().verticalPolicy()))
-		self._btn_view_list_add.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
-		self._btn_view_list_delete.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove))
 
-		self._btn_view_list_add.clicked.connect(self.requestExportBinView)
-		self._btn_view_list_delete.clicked.connect(self.requestDeleteBinView)
+		self._model_editor.setSourceModel(self._model_binviewfilter)
+		self._view_editor .setModel(self._model_editor)
 
 		self.layout().addLayout(lay_view_list)
-
 		self.layout().addWidget(QtWidgets.QLabel(self.tr("Add, Modify, and Rearrange Columns:")))
 		self.layout().addWidget(self._view_editor)
 
-		self._lay_buttons = QtWidgets.QHBoxLayout()
 
+		# Filter Columns By Visibility
 
-		self._lay_buttons.addWidget(self._btn_add_col)
-		self._lay_buttons.addStretch()
-		self._lay_buttons.addWidget(self._btn_toggle_all)
+		self._chk_show_hidden .setChecked(self._model_binviewfilter.binViewOptions() & binviewproxymodel.BSBinViewFilterOptions.ShowHidden)
+		self._chk_show_visible.setChecked(self._model_binviewfilter.binViewOptions() & binviewproxymodel.BSBinViewFilterOptions.ShowVisible)
 
 		lay_filters = QtWidgets.QHBoxLayout()
 		lay_filters.addWidget(self._chk_show_hidden)
 		lay_filters.addWidget(self._chk_show_visible)
 		self.layout().addLayout(lay_filters)
 
-		self.layout().addLayout(self._lay_buttons)
+		# Toggle Buttons (eh..?)
+		
+		self._btn_view_list_add.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
+		self._btn_view_list_delete.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove))
 
-#		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
+		lay_buttons = QtWidgets.QHBoxLayout()
+		lay_buttons.addWidget(self._btn_add_col)
+		lay_buttons.addStretch()
+		lay_buttons.addWidget(self._btn_toggle_all)
+		self.layout().addLayout(lay_buttons)
+
+	def _setupSignals(self):
+
 		self._cmb_bin_view_list.sig_binview_source_selected.connect(self.sig_bin_view_source_selected)
-
-		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
-#		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
-
-		self.setBinViewModel   (bin_view_model    or binviewmodel.BSBinViewModel(parent=self))
-		self.setBinViewProvider(bin_view_provider or providermodel.BSBinViewProviderModel(parent=self))
-
+		self._btn_view_list_add.clicked.connect(self.requestExportBinView)
+		self._btn_view_list_delete.clicked.connect(self.requestDeleteBinView)
+		
 		self._view_editor.activated.connect(self.binColumnDoubleClicked)
+		
+		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
+#		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
+#		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
+		
+		self._chk_show_hidden.clicked.connect(self.userChangedFilters)
+		self._chk_show_visible.clicked.connect(self.userChangedFilters)
 
 	@QtCore.Slot()
 	def userChangedFilters(self):
@@ -138,19 +153,19 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 	
 	def setBinViewProvider(self, bin_view_provider:providermodel.BSBinViewProviderModel):
 
-		if self._bin_view_provider == bin_view_provider:
+		if self._model_binviewprovider == bin_view_provider:
 			return
 		
-		if self._bin_view_provider is not None:
-			self._bin_view_provider.disconnect(self)
+		if self._model_binviewprovider is not None:
+			self._model_binviewprovider.disconnect(self)
 		
 		bin_view_provider.rowsInserted.connect(self.updateButtonState)
 		bin_view_provider.rowsRemoved .connect(self.updateButtonState)
 		bin_view_provider.modelReset  .connect(self.updateButtonState)
 		
-		self._bin_view_provider = bin_view_provider
+		self._model_binviewprovider = bin_view_provider
 
-		self._cmb_bin_view_list.setModel(self._bin_view_provider)
+		self._cmb_bin_view_list.setModel(self._model_binviewprovider)
 
 	@QtCore.Slot()
 	def updateButtonState(self):
@@ -158,7 +173,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 #		print("Haha yeah I know oh boy")
 
-		binview_source = self._bin_view_provider.sessionBinViewSources()[0] if self._bin_view_provider.sessionBinViewSources() else None
+		binview_source = self._model_binviewprovider.sessionBinViewSources()[0] if self._model_binviewprovider.sessionBinViewSources() else None
 
 		if binview_source is None:
 #			print("**Well gall darn")
@@ -170,7 +185,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_delete.setEnabled(
 			binview_source is not None \
 			and not binview_source.isModified() \
-			and binview_source.name() in (bvs.name() for bvs in self._bin_view_provider.storedBinViewSources()) \
+			and binview_source.name() in (bvs.name() for bvs in self._model_binviewprovider.storedBinViewSources()) \
 		)
 
 	@QtCore.Slot()
@@ -190,7 +205,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if not save_name:
 			return
 		
-		file_info = self._bin_view_provider.saveAsStoredBinView(binview_info, save_name)
+		file_info = self._model_binviewprovider.saveAsStoredBinView(binview_info, save_name)
 
 		if file_info:
 
@@ -222,7 +237,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 			
 			return
 		
-		self._bin_view_provider.deleteStoredBinViewSource(binview_source)
+		self._model_binviewprovider.deleteStoredBinViewSource(binview_source)
 
 	def _isValidFileName(self, filename:str) -> bool:
 
@@ -270,7 +285,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 
 			
 			# Start over if overwrite is "undesirable" to the "user"
-			if save_name in [bvs.name() for bvs in self._bin_view_provider.storedBinViewSources()]:
+			if save_name in [bvs.name() for bvs in self._model_binviewprovider.storedBinViewSources()]:
 
 				user_choice = QtWidgets.QMessageBox.question(
 					self,

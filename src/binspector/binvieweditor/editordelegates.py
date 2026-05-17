@@ -86,18 +86,13 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		if not event.type() == QtCore.QEvent.Type.MouseButtonRelease:
 			return False
 		
-		
-		view_widget:QtWidgets.QAbstractItemView = option_item.widget
 		# NOTE: Boy this was awful.  The index gets mappedFromSource so the column always = 0
 		# Need to ask the view instead I guess...?
+		view_widget:QtWidgets.QAbstractItemView = option_item.widget
 		actual_index   = view_widget.indexAt(event.pos())
 		editor_feature = model.headerData(actual_index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 
-		self.initStyleOption(option_item, actual_index)
-
-
-		
-		print("delegate editorEvent got index ", actual_index)
+#		print("delegate editorEvent got index ", actual_index)
 
 		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
 #			print("Delegate says hide column", actual_index)

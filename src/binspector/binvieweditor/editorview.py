@@ -102,5 +102,5 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		
 		if not self.model() or parent.isValid():
 			return
-		print("Ok...")
-		print(self.model().removeRow(row, QtCore.QModelIndex()))
+		
+		self.model().removeRow(row, QtCore.QModelIndex())
