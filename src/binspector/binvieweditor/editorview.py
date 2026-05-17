@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets, QtCore
 
 from . import editordelegates, editorproxymodel
+from ..binview import binviewitemtypes
 
 class BSBinViewColumnListView(QtWidgets.QTableView):
 	"""A QTableView for bin view column data"""
@@ -67,8 +68,8 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		super().setModel(model)
 
 		# NOTE: Need better way to do this for model/delegate reassignments
-#		self.itemDelegate().sig_hide_column_index.connect(self.model().toggleBinColumnVisibiltyForIndex)
-#		self.itemDelegate().sig_remove_column_index.connect(self.model().removeBinColumnForIndex)
+		self.itemDelegate().sig_hide_column_index.connect(self.toggleBinColumnVisibility)
+		self.itemDelegate().sig_remove_column_index.connect(self.removeUserColumn)
 #		self.itemDelegate().sig_rename_column_for_index.connect(self.model().renameColumnForIndex)
 		
 		for col in range(model.columnCount(QtCore.QModelIndex())):
@@ -81,15 +82,25 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 			else:
 				self.horizontalHeader().setSectionResizeMode(col,QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
+
 	
 	def itemDelegate(self) -> editordelegates.BSBinViewColumnDelegate:
 		return super().itemDelegate()
 	
-#	def setItemDelegate(self, delegate:editordelegates.BSBinViewColumnDelegate):
-#		
-#		if self.itemDelegate() == delegate:
-#			return
-#
-#		delegate.sig_hide_column_index.connect(self.model().toggleBinColumnVisibiltyForIndex)
-#		
-#		super().setItemDelegate(delegate)
+	@QtCore.Slot(int, QtCore.QModelIndex)
+	def toggleBinColumnVisibility(self, row:int, parent:QtCore.QModelIndex):
+
+		if not self.model() or parent.isValid():
+			return
+		
+		row_index = self.model().index(row, 1, QtCore.QModelIndex())
+		is_hidden = row_index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+		self.model().setData(row_index, not is_hidden, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+
+	@QtCore.Slot(int, QtCore.QModelIndex)
+	def removeUserColumn(self, row:int, parent:QtCore.QModelIndex):
+		
+		if not self.model() or parent.isValid():
+			return
+		print("Ok...")
+		print(self.model().removeRow(row, QtCore.QModelIndex()))

@@ -12,9 +12,9 @@ if typing.TYPE_CHECKING:
 
 class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
-	sig_hide_column_index       = QtCore.Signal(QtCore.QModelIndex)
-	sig_remove_column_index     = QtCore.Signal(QtCore.QModelIndex)
-	sig_rename_column_for_index = QtCore.Signal(QtCore.QModelIndex, str)
+	sig_hide_column_index       = QtCore.Signal(int, QtCore.QModelIndex)
+	sig_remove_column_index     = QtCore.Signal(int, QtCore.QModelIndex)
+	sig_rename_column_for_index = QtCore.Signal(int, QtCore.QModelIndex, str)
 
 
 	def paint(self, painter:QtGui.QPainter, option_item:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
@@ -101,7 +101,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
 #			print("Delegate says hide column", actual_index)
-			self.sig_hide_column_index.emit(actual_index)
+			self.sig_hide_column_index.emit(actual_index.row(), QtCore.QModelIndex())
 			return True
 		
 		elif editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn:
@@ -110,7 +110,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 			if actual_index.data(QtCore.Qt.ItemDataRole.UserRole):
 #				print("Delegate says remove ", actual_index.data(QtCore.Qt.ItemDataRole.UserRole))
-				self.sig_remove_column_index.emit(actual_index)
+				self.sig_remove_column_index.emit(actual_index.row(), QtCore.QModelIndex())
 
 			
 			return True
