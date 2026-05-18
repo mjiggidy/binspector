@@ -126,7 +126,18 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and event.button() == QtCore.Qt.MouseButton.LeftButton:
 
 				#view_widget.update(actual_index)
-				for selected_button_index in view_widget.selectionModel().selectedRows(actual_index.column()):
+				
+				selected_rows = view_widget.selectionModel().selectedRows(actual_index.column())
+				
+				if not selected_rows:
+					
+					# Hmmmm....
+					return True
+				
+				
+				# NOTE: Doin' this in reverse row order so as not to change row indexes
+				
+				for selected_button_index in sorted(selected_rows, key=lambda i: i.row(), reverse=True):
 
 					if selected_button_index.data(QtCore.Qt.ItemDataRole.UserRole):
 						self.sig_hide_column_index.emit(selected_button_index.row(), QtCore.QModelIndex())
@@ -139,17 +150,35 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			
 #			print("User clicked delete col")
 
-			if event.type() == QtCore.QEvent.Type.MouseButtonPress and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
-		
-				view_widget.update(actual_index)
-			
-			elif event.type() == QtCore.QEvent.Type.MouseButtonRelease and event.buttons() & QtCore.Qt.MouseButton.LeftButton:
-				
-				if actual_index.data(QtCore.Qt.ItemDataRole.UserRole):
-					
-					self.sig_remove_column_index.emit(actual_index.row(), QtCore.QModelIndex())
+			can_delete = actual_index.data(QtCore.Qt.ItemDataRole.UserRole)
 
-				view_widget.update(actual_index)
+			if can_delete and event.type() == QtCore.QEvent.Type.MouseButtonPress and event.button() == QtCore.Qt.MouseButton.LeftButton:
+
+				for selected_button_index in view_widget.selectionModel().selectedRows(actual_index.column()):
+
+					if not selected_button_index.data(QtCore.Qt.ItemDataRole.UserRole):
+						view_widget.selectionModel().select(selected_button_index, QtCore.QItemSelectionModel.SelectionFlag.Deselect|QtCore.QItemSelectionModel.SelectionFlag.Rows)
+					else:
+						view_widget.update(selected_button_index)
+			
+			elif can_delete and event.type() == QtCore.QEvent.Type.MouseButtonRelease and event.button() == QtCore.Qt.MouseButton.LeftButton:
+				
+				selected_rows = view_widget.selectionModel().selectedRows(actual_index.column())
+				
+				if not selected_rows:
+					
+					# Hmmmm....
+					return True
+				
+				
+				# NOTE: Doin' this in reverse row order so as not to change row indexes
+				
+				for selected_button_index in sorted(selected_rows, key=lambda i: i.row(), reverse=True):
+
+					if selected_button_index.data(QtCore.Qt.ItemDataRole.UserRole):
+						self.sig_remove_column_index.emit(selected_button_index.row(), QtCore.QModelIndex())
+
+					view_widget.update(selected_button_index)
 
 			#return True
 
