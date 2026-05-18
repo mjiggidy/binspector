@@ -95,6 +95,7 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		
 		row_index = self.model().index(row, 1, QtCore.QModelIndex())
 		is_hidden = row_index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+
 		self.model().setData(row_index, not is_hidden, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
 	@QtCore.Slot(int, QtCore.QModelIndex)
@@ -104,3 +105,8 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 			return
 		
 		self.model().removeRow(row, QtCore.QModelIndex())
+
+	def sizeHintForRow(self, row:int):
+		
+		# Uniform row heights
+		return super().sizeHintForRow(0)
