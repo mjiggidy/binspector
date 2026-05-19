@@ -5,6 +5,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 
 from . import editorproxymodel
 from ..binview import binviewitemtypes
+from ..utils import palettes
 import avbutils
 
 if typing.TYPE_CHECKING:
@@ -144,9 +145,16 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			button_rect = QtCore.QRect(option_item.rect).marginsRemoved(self.DEFAULT_BUTTON_MARGINS)
 			button_icon  = self.buttonIconForFeature(editor_feature, is_deletable)
 
+			is_dark_mode = palettes.colors_are_dark_mode(option_item.palette.color(QtGui.QPalette.ColorRole.WindowText),option_item.palette.color(QtGui.QPalette.ColorRole.Window))
+
+			button_palette = QtGui.QPalette(option_item.palette)
+			button_palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(128,64,64) if is_dark_mode else QtGui.QColor(255,64,64))   # Border
+			button_palette.setColor(QtGui.QPalette.ColorRole.Button, QtGui.QColor(64,32,32)  if is_dark_mode else QtGui.QColor(255,200,200)) # Button base
+
 			button_option = QtWidgets.QStyleOptionButton()
 			button_option.rect = button_rect
 			button_option.icon = button_icon
+			button_option.palette = button_palette
 			button_option.iconSize = QtCore.QSize(*[view_widget.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_SmallIconSize)*.75]*2)
 			button_option.state = option_item.state
 
