@@ -104,7 +104,11 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 	def editorEvent(self, event:QtCore.QEvent, model:QtCore.QAbstractItemModel, option_item:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
 
-		if event.type() not in (QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseButtonPress, QtCore.QEvent.Type.MouseButtonRelease):
+
+		
+
+
+		if event.type() not in (QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseButtonPress, QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseMove):
 			return False
 		
 		# NOTE: Boy this was awful.  The index gets mappedFromSource so the column always = 0
@@ -116,8 +120,15 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 #		print("delegate editorEvent got index ", actual_index)
 
-		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
 
+
+
+		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:  # TODO: Use checked State?
+		
+			# NO DRAGGIN IF THEY BUTTINS
+			if event.type() == QtCore.QEvent.Type.MouseMove:
+				return True
+			
 			if event.type() == QtCore.QEvent.Type.MouseButtonPress and event.button() == QtCore.Qt.MouseButton.LeftButton:
 				
 
