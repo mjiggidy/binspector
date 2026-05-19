@@ -16,7 +16,8 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 		self.setShowGrid(False)
 		self.setAlternatingRowColors(True)
 		self.setAutoScroll(True)
-#		self.setSelectionBehavior(QtWidgets.QTableView.SelectionBehavior.SelectItems)
+#		self.setAutoScrollMargin(128)
+		self.setSelectionBehavior(QtWidgets.QTableView.SelectionBehavior.SelectItems)
 		
 		# Text
 		self.setWordWrap(False)
