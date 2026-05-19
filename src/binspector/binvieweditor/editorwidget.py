@@ -240,12 +240,13 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		if not self._model_editor.sourceModel():
 			raise ValueError("No bin view to save")
 
-		binview_info:binviewitemtypes.BSBinViewInfo = self._model_editor.sourceModel().binViewInfo()
-
-		if binview_info is None:
+		# NOTE: This is real fragile but ugh
+		binview_source:binviewitemtypes.BSBinViewInfo|None = self._cmb_bin_view_list.currentData()
+		if binview_source is None or not binview_source.binViewInfo():
 			raise ValueError("No bin view to save")
-
-		save_name = self._promptForBinViewName()
+		
+		binview_info = binview_source.binViewInfo()
+		save_name    = self._promptForBinViewName(self._cmb_bin_view_list.currentText())
 
 		if not save_name:
 			return
@@ -300,7 +301,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		
 		return True
 	
-	def _promptForBinViewName(self) -> str|None:
+	def _promptForBinViewName(self, suggestion:str) -> str|None:
 
 		while True:
 
@@ -311,7 +312,7 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 				self,
 				self.tr("View Name"),
 				self.tr("Name your view:"),
-				text = self._cmb_bin_view_list.currentText()
+				text = suggestion
 			)
 
 			if not was_serious_about_it:
