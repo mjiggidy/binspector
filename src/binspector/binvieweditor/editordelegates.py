@@ -18,6 +18,55 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 	DEFAULT_BUTTON_MARGINS = QtCore.QMargins(1,1,1,1)
 
+	DEFAULT_BUTTON_ICONS = \
+	{
+		editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:{
+			True:  QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear),
+			False: QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds),
+		},
+
+		editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn: {
+			True: QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditClear),
+		}
+	}
+
+	DEFAULT_FORMAT_ICONS = \
+	{
+		avbutils.bins.BinColumnFormat.UserText:   QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.UserOffline),
+		avbutils.bins.BinColumnFormat.CodecInfo:  QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.CameraVideo),
+		avbutils.bins.BinColumnFormat.DateTime:   QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AppointmentSoon),
+		avbutils.bins.BinColumnFormat.Frame:      QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.VideoDisplay),
+		avbutils.bins.BinColumnFormat.FrameCount: QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AddressBookNew),
+		avbutils.bins.BinColumnFormat.FrameRate:  QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.AppointmentMissed),
+		avbutils.bins.BinColumnFormat.Icon:       QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.MediaFlash),
+		avbutils.bins.BinColumnFormat.Perf:       QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditCut),
+		avbutils.bins.BinColumnFormat.Strict:     QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.SystemLockScreen),
+		avbutils.bins.BinColumnFormat.Timecode:   QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.MediaSeekForward),
+	}
+
+	def __init__(self, *args, **kwargs):
+
+		super().__init__(*args, **kwargs)
+
+		self._button_icon_provider = self.DEFAULT_BUTTON_ICONS
+		self._format_icon_provider = self.DEFAULT_FORMAT_ICONS
+
+		self._btn_aspect_ratio = 1.3
+
+	def buttonIconForFeature(self, editor_feature:editorproxymodel.BSBinViewColumnEditorFeature, data:typing.Any) -> QtGui.QIcon:
+
+		return self._button_icon_provider.get(editor_feature, dict()).get(data, QtGui.QIcon())
+	
+	def buttonIconForFormat(self, format:avbutils.bins.BinColumnFormat) -> QtGui.QIcon:
+
+		return self._format_icon_provider.get(format, QtGui.QIcon())
+
+	def setButtonIconProvider(self, icon_provider:dict[editorproxymodel.BSBinViewColumnEditorFeature, dict[typing.Any, QtGui.QIcon]]):
+
+		if self._button_icon_provider == icon_provider:
+			return
+		
+		self._button_icon_provider = icon_provider
 
 	def paint(self, painter:QtGui.QPainter, option_item:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
@@ -28,12 +77,13 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		editor_feature = index.model().headerData(index.column(), QtCore.Qt.Orientation.Horizontal, QtCore.Qt.ItemDataRole.UserRole)
 
 		
-		is_hidden = index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+		can_be_hidden = index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
+		is_hidden     = index.siblingAtColumn(1).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
 		option_item.state &= ~QtWidgets.QStyle.StateFlag.State_HasFocus
 
 		# Show hidden as dimmed
-		if is_hidden:
+		if can_be_hidden:
 
 			option_item.state &= ~QtWidgets.QStyle.StateFlag.State_Enabled
 
@@ -47,16 +97,27 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 		if editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:
 
+			can_be_hidden =  index.data(QtCore.Qt.ItemDataRole.UserRole)
+
+			if not can_be_hidden:
+				return super().paint(painter, option_item, index)
+			
+			option_empty = QtWidgets.QStyleOptionViewItem(option_item)
+			option_empty.text = None
+			super().paint(painter, option_empty, index)
+
+#			print(is_hidden)
+
 			#min_size = min(option_item.rect.width(), option_item.rect.height())
-			button_rect = QtCore.QRect(option_item.rect)
-			button_rect = button_rect.marginsRemoved(self.DEFAULT_BUTTON_MARGINS)
+			button_rect = QtCore.QRect(option_item.rect).marginsRemoved(self.DEFAULT_BUTTON_MARGINS)
+			button_icon  = self.buttonIconForFeature(editor_feature, is_hidden)
 
 
-			button_option = QtWidgets.QStyleOptionButton()
-			button_option.rect = button_rect
-			button_option.icon = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
-			button_option.iconSize = QtCore.QSize(*[view_widget.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_SmallIconSize)*.75]*2)
-			button_option.state = option_item.state
+			button_option          = QtWidgets.QStyleOptionButton()
+			button_option.rect     = button_rect
+			button_option.icon     = button_icon
+			button_option.iconSize = QtCore.QSize(*[view_widget.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_SmallIconSize) * 0.75]*2)
+			button_option.state    = option_item.state
 
 			if all((
 				option_item.state & QtWidgets.QStyle.StateFlag.State_Selected,
@@ -73,16 +134,19 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			is_deletable = index.data(QtCore.Qt.ItemDataRole.UserRole)
 
 			if not is_deletable:
-				
-				super().paint(painter, option_item, index)
-				return
+				return super().paint(painter, option_item, index)
+			
+			option_empty = QtWidgets.QStyleOptionViewItem(option_item)
+			option_empty.text = None
+			super().paint(painter, option_empty, index)
 			
 			button_rect = QtCore.QRect(option_item.rect)
-			button_rect = button_rect.marginsRemoved(self.DEFAULT_BUTTON_MARGINS)
+			button_rect = QtCore.QRect(option_item.rect).marginsRemoved(self.DEFAULT_BUTTON_MARGINS)
+			button_icon  = self.buttonIconForFeature(editor_feature, is_deletable)
 
 			button_option = QtWidgets.QStyleOptionButton()
 			button_option.rect = button_rect
-			button_option.icon = index.data(QtCore.Qt.ItemDataRole.DecorationRole)
+			button_option.icon = button_icon
 			button_option.iconSize = QtCore.QSize(*[view_widget.style().pixelMetric(QtWidgets.QStyle.PixelMetric.PM_SmallIconSize)*.75]*2)
 			button_option.state = option_item.state
 
@@ -97,6 +161,21 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			style = option_item.widget.style()
 			style.drawControl(QtWidgets.QStyle.ControlElement.CE_PushButton, button_option, painter)
 
+		elif editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.DataFormatColumn:
+
+			option_empty = QtWidgets.QStyleOptionViewItem(option_item)
+			option_empty.text = ""
+			super().paint(painter, option_empty, index)
+
+			format_icon = self.buttonIconForFormat(index.data(QtCore.Qt.ItemDataRole.UserRole))
+
+			format_icon.paint(
+				painter,
+				option_item.rect.marginsRemoved(QtCore.QMargins(3,1,3,1)),
+				QtCore.Qt.AlignmentFlag.AlignCenter,
+				QtGui.QIcon.Mode.Disabled if is_hidden else QtGui.QIcon.Mode.Selected if option_item.state & QtWidgets.QStyle.StateFlag.State_Selected else QtGui.QIcon.Mode.Normal,
+				QtGui.QIcon.State.Off if is_hidden else QtGui.QIcon.State.On,
+			)
 
 		else:
 		
@@ -202,8 +281,11 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 		return super().editorEvent(event, model, option_item, index)
 	
-	def sizeHint(self, option, index):
-		return super().sizeHint(option, index)
+	def sizeHint(self, option, index) -> QtCore.QSize:
+
+		height = super().sizeHint(option, index).height()
+
+		return QtCore.QSize(height * self._btn_aspect_ratio, height)
 
 	
 	def setModelData(self, editor:QtWidgets.QWidget, model:QtCore.QAbstractItemModel, index:QtCore.QModelIndex):

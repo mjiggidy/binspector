@@ -172,6 +172,12 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		editor_feature = self._editor_features[proxyIndex.column()]
 
 		if editor_feature == BSBinViewColumnEditorFeature.NameColumn:
+
+			if self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole) == avbutils.bins.BinColumnFieldIDs.BinItemIcon\
+			   and role == QtCore.Qt.ItemDataRole.DisplayRole:
+				
+				return self.tr("[Icon]")
+
 			return self.sourceModel().index(proxyIndex.row(), 0).data(role)
 
 		elif editor_feature == BSBinViewColumnEditorFeature.DataFormatColumn:
@@ -179,19 +185,28 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			data_format:avbutils.bins.BinColumnFormat = self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
 
 			if role == QtCore.Qt.ItemDataRole.DisplayRole:
-				return data_format.name[0].upper()
-			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
-				return self.tr("<strong>Column Data Format</strong><br/>{data_format_name}").format(data_format_name = data_format.name.title())
+				return None
+			
+			if role == QtCore.Qt.ItemDataRole.ToolTipRole:
+
+				return self.tr("<strong>Column Data Format</strong><br/>{data_format_name}")\
+					.format(data_format_name = data_format.name.title())
+			
+			elif role == QtCore.Qt.ItemDataRole.UserRole:
+
+				return self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
 			
 		elif editor_feature == BSBinViewColumnEditorFeature.VisibilityColumn:
 
 			is_hidden = self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
-			if role == QtCore.Qt.ItemDataRole.DecorationRole:
-				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear)
+#			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+#				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear)
 
-			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
-				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}.  Click to toggle visiblity of this, and any other selected columns").format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
+			if role == QtCore.Qt.ItemDataRole.ToolTipRole:
+
+				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}.  Click to toggle visiblity of this, and any other selected columns")\
+					.format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
 			
 			elif role == QtCore.Qt.ItemDataRole.UserRole:
 				return True
@@ -202,12 +217,13 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 				self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
 			)
 
-			if role == QtCore.Qt.ItemDataRole.DecorationRole:
-				# Allow delete if user field
-				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditClear) if is_deletable else QtGui.QIcon()
+#			if role == QtCore.Qt.ItemDataRole.DecorationRole:
+#				# Allow delete if user field
+#				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditClear) if is_deletable else QtGui.QIcon()
 			
-			elif role == QtCore.Qt.ItemDataRole.ToolTipRole and is_deletable:
-				return self.tr("<strong>Delete User Column</strong><br/>Permanently remove {column_name}, and any other selected user columns, from this bin view").format(column_name = proxyIndex.siblingAtColumn(1).data(QtCore.Qt.ItemDataRole.DisplayRole))
+			if role == QtCore.Qt.ItemDataRole.ToolTipRole and is_deletable:
+				return self.tr("<strong>Delete User Column</strong><br/>Permanently remove {column_name}, and any other selected user columns, from this bin view")\
+					.format(column_name = proxyIndex.siblingAtColumn(1).data(QtCore.Qt.ItemDataRole.DisplayRole))
 			
 			if role == QtCore.Qt.ItemDataRole.UserRole:
 

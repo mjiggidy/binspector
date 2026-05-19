@@ -10,7 +10,7 @@ class BSBinViewColumnListView(QtWidgets.QTableView):
 
 		super().__init__()
 
-		self.setItemDelegate(editordelegates.BSBinViewColumnDelegate())
+		self.setItemDelegate(editordelegates.BSBinViewColumnDelegate(parent=self))
 		
 		# Background 'n' grid
 		self.setShowGrid(False)

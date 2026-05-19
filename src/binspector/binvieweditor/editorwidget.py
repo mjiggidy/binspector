@@ -37,7 +37,13 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_add       = QtWidgets.QPushButton()
 		self._btn_view_list_delete    = QtWidgets.QPushButton()
 
-		
+		# Icons 'n' delegates
+		self._icon_visible  = QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear)
+		self._icon_hidden   = QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds)
+		self._icon_delete   = QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditClear)
+		self._icon_none     = QtGui.QIcon()
+
+		# Models
 		self._model_binviewprovider   = None
 		self._model_binviewfilter     = binviewproxymodel.BSBinViewFilterProxyModel(parent=self)
 		self._model_editor            = editorproxymodel.BSBinViewColumnEditorProxyModel(parent=self)
@@ -46,16 +52,12 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._view_editor = editorview.BSBinViewColumnListView()
 
 		# Filter Options
-		self._chk_show_hidden  = QtWidgets.QCheckBox(text=self.tr("Hidden"))
-		self._chk_show_visible = QtWidgets.QCheckBox(text=self.tr("Visible"))
+		self._chk_show_hidden  = QtWidgets.QCheckBox(icon=self._icon_hidden)
+		self._chk_show_visible = QtWidgets.QCheckBox(icon=self._icon_visible)
 		
-
 		# Action Buttons
 #		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Toggle Visibility"))
 		self._btn_add_col    = QtWidgets.QPushButton(self.tr("Add User Column"))
-
-		
-
 		
 		self._setupWidgets()
 		self._setupSignals()
@@ -88,6 +90,20 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self.layout().addWidget(QtWidgets.QLabel(self.tr("Add, Modify, and Rearrange Columns:")))
 		self.layout().addWidget(self._view_editor)
 
+		# Icons
+		self._view_editor.itemDelegate().setButtonIconProvider({
+			editorproxymodel.BSBinViewColumnEditorFeature.VisibilityColumn:{
+				# Is Hidden?
+				True:  self._icon_hidden,
+				False: self._icon_visible,
+			},
+
+			editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn: {
+				# Allow Delete?
+				True: self._icon_delete,
+			}
+		})
+
 
 		# Filter Columns By Visibility
 
@@ -95,8 +111,8 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._chk_show_visible.setChecked(self._model_binviewfilter.binViewOptions() & binviewproxymodel.BSBinViewFilterOptions.ShowVisible)
 
 		lay_filters = QtWidgets.QHBoxLayout()
-		lay_filters.addWidget(self._chk_show_hidden)
 		lay_filters.addWidget(self._chk_show_visible)
+		lay_filters.addWidget(self._chk_show_hidden)
 		lay_filters.addStretch()
 		lay_filters.addWidget(self._btn_add_col)
 		self.layout().addLayout(lay_filters)
