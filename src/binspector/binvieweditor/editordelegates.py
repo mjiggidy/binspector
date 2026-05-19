@@ -105,10 +105,8 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 	def editorEvent(self, event:QtCore.QEvent, model:QtCore.QAbstractItemModel, option_item:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
 
 
-		
-
-
 		if event.type() not in (QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseButtonPress, QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseMove):
+#			print("Discarding ", event.type().name)
 			return False
 		
 		# NOTE: Boy this was awful.  The index gets mappedFromSource so the column always = 0
@@ -163,9 +161,15 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			
 #			print("User clicked delete col")
 
+#			print(event.type().name)
+
 			can_delete = actual_index.data(QtCore.Qt.ItemDataRole.UserRole)
 
-			if can_delete and event.type() == QtCore.QEvent.Type.MouseButtonPress and event.button() == QtCore.Qt.MouseButton.LeftButton:
+			# NONNA THAT DRAGGIN THE BATTIN
+			if can_delete and event.type() == QtCore.QEvent.Type.MouseMove:
+				return True
+
+			elif can_delete and event.type() == QtCore.QEvent.Type.MouseButtonPress and event.button() == QtCore.Qt.MouseButton.LeftButton:
 
 				for selected_button_index in view_widget.selectionModel().selectedRows(actual_index.column()):
 
@@ -194,6 +198,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 					view_widget.update(selected_button_index)
 
 			#return True
+
 
 		return super().editorEvent(event, model, option_item, index)
 	
