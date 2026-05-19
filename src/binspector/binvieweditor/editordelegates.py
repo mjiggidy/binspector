@@ -16,6 +16,8 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 	sig_remove_column_index     = QtCore.Signal(int, QtCore.QModelIndex)
 	sig_rename_column_for_index = QtCore.Signal(int, QtCore.QModelIndex, str)
 
+	DEFAULT_BUTTON_MARGINS = QtCore.QMargins(1,1,1,1)
+
 
 	def paint(self, painter:QtGui.QPainter, option_item:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex):
 
@@ -28,7 +30,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 		
 		is_hidden = index.data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
-		#option.state &= ~QtWidgets.QStyle.StateFlag.State_HasFocus
+		option_item.state &= ~QtWidgets.QStyle.StateFlag.State_HasFocus
 
 		# Show hidden as dimmed
 		if is_hidden:
@@ -47,7 +49,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 			#min_size = min(option_item.rect.width(), option_item.rect.height())
 			button_rect = QtCore.QRect(option_item.rect)
-			button_rect = button_rect.marginsRemoved(QtCore.QMargins(1,1,1,1))
+			button_rect = button_rect.marginsRemoved(self.DEFAULT_BUTTON_MARGINS)
 
 
 			button_option = QtWidgets.QStyleOptionButton()
@@ -76,7 +78,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 				return
 			
 			button_rect = QtCore.QRect(option_item.rect)
-			button_rect = button_rect.marginsRemoved(QtCore.QMargins(1,1,1,1))
+			button_rect = button_rect.marginsRemoved(self.DEFAULT_BUTTON_MARGINS)
 
 			button_option = QtWidgets.QStyleOptionButton()
 			button_option.rect = button_rect
