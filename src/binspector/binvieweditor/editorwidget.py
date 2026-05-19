@@ -4,6 +4,8 @@ from PySide6 import QtWidgets, QtGui, QtCore
 
 from . import editorview, editorproxymodel
 
+import avbutils
+
 from ..binviewprovider import providermodel, binviewsources
 from ..binview import binviewmodel, binviewitemtypes
 from ..binfilters import binviewproxymodel
@@ -44,12 +46,12 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._view_editor = editorview.BSBinViewColumnListView()
 
 		# Filter Options
-		self._chk_show_hidden  = QtWidgets.QCheckBox(text=self.tr("Show Hidden"))
-		self._chk_show_visible = QtWidgets.QCheckBox(text=self.tr("Show Visible"))
+		self._chk_show_hidden  = QtWidgets.QCheckBox(text=self.tr("Hidden"))
+		self._chk_show_visible = QtWidgets.QCheckBox(text=self.tr("Visible"))
 		
 
 		# Action Buttons
-		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Toggle Visibility"))
+#		self._btn_toggle_all = QtWidgets.QPushButton(self.tr("Toggle Visibility"))
 		self._btn_add_col    = QtWidgets.QPushButton(self.tr("Add User Column"))
 
 		
@@ -95,6 +97,8 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		lay_filters = QtWidgets.QHBoxLayout()
 		lay_filters.addWidget(self._chk_show_hidden)
 		lay_filters.addWidget(self._chk_show_visible)
+		lay_filters.addStretch()
+		lay_filters.addWidget(self._btn_add_col)
 		self.layout().addLayout(lay_filters)
 
 		# Toggle Buttons (eh..?)
@@ -102,11 +106,11 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_add.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListAdd))
 		self._btn_view_list_delete.setIcon(QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.ListRemove))
 
-		lay_buttons = QtWidgets.QHBoxLayout()
-		lay_buttons.addWidget(self._btn_add_col)
-		lay_buttons.addStretch()
-		lay_buttons.addWidget(self._btn_toggle_all)
-		self.layout().addLayout(lay_buttons)
+	#	lay_buttons = QtWidgets.QHBoxLayout()
+	#	lay_buttons.addWidget(s)
+	#	lay_buttons.addStretch()
+#	#	lay_buttons.addWidget(self._btn_toggle_all)
+	#	self.layout().addLayout(lay_buttons)
 
 	def _setupSignals(self):
 
@@ -116,12 +120,37 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		
 		self._view_editor.activated.connect(self.binColumnDoubleClicked)
 		
-		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
+#		self._btn_toggle_all.clicked.connect(self._view_editor.toggleSelectedVisibility)
 #		self._cmb_bin_view_list.currentTextChanged.connect(self.updateButtonState)
-#		self._btn_add_col.clicked.connect(self._view_editor.model().appendUserColumn)
+		self._btn_add_col.clicked.connect(self.addUserColumn)
 		
 		self._chk_show_hidden.clicked.connect(self.userChangedFilters)
 		self._chk_show_visible.clicked.connect(self.userChangedFilters)
+
+	@QtCore.Slot()
+	def addUserColumn(self):
+
+		name, did_it = QtWidgets.QInputDialog.getText(
+			self,
+			self.tr("Add User Column"),
+			self.tr("Enter a name for the new user column:")
+		)
+
+		if not did_it:
+			return
+		
+		new_row = self._model_editor.rowCount(QtCore.QModelIndex())
+
+		self._model_editor.insertRow(
+			new_row, QtCore.QModelIndex()
+		)
+
+		new_item = self._model_editor.index(new_row, 1, QtCore.QModelIndex())
+		print(f"Inserted {new_item}, {name}")
+		self._model_editor.setData(new_item, name, QtCore.Qt.ItemDataRole.DisplayRole)
+		self._model_editor.setData(new_item, avbutils.bins.BinColumnFieldIDs.User, binviewitemtypes.BSBinViewColumnInfoRole.FieldIdRole)
+		self._model_editor.setData(new_item, avbutils.bins.BinColumnFormat.UserText, binviewitemtypes.BSBinViewColumnInfoRole.FormatIdRole)
+		self._model_editor.setData(new_item, False, binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
 	@QtCore.Slot()
 	def userChangedFilters(self):

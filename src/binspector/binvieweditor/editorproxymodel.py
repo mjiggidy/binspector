@@ -191,7 +191,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear)
 
 			elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
-				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}").format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
+				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}.  Click to toggle visiblity of this, and any other selected columns").format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
 			
 			elif role == QtCore.Qt.ItemDataRole.UserRole:
 				return True
@@ -205,6 +205,9 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			if role == QtCore.Qt.ItemDataRole.DecorationRole:
 				# Allow delete if user field
 				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditClear) if is_deletable else QtGui.QIcon()
+			
+			elif role == QtCore.Qt.ItemDataRole.ToolTipRole and is_deletable:
+				return self.tr("<strong>Delete User Column</strong><br/>Permanently remove {column_name}, and any other selected user columns, from this bin view").format(column_name = proxyIndex.siblingAtColumn(1).data(QtCore.Qt.ItemDataRole.DisplayRole))
 			
 			if role == QtCore.Qt.ItemDataRole.UserRole:
 
