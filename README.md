@@ -2,4 +2,4 @@
 
 
 >[!Note]
->Binspector contains no AI-generated code, because I'm an actual programmer.
+>Binspector contains no AI-generated code.
