@@ -26,17 +26,20 @@ class BSBinViewColumnInfoRole(enum.IntEnum):
 	RawColumnInfo   = QtCore.Qt.ItemDataRole.UserRole
 	"""Full `BSBinViewColumnInfo` object"""
 
-	FieldNameRole   = QtCore.Qt.ItemDataRole.UserRole + 5
+	FieldNameRole   = QtCore.Qt.ItemDataRole.UserRole + 1
 	"""Raw Field Name"""
 	
-	FieldIdRole     = QtCore.Qt.ItemDataRole.UserRole + 1
+	FieldIdRole     = QtCore.Qt.ItemDataRole.UserRole + 2
 	"""Bin column field identifier"""
 
-	FormatIdRole    = QtCore.Qt.ItemDataRole.UserRole + 2
+	FormatIdRole    = QtCore.Qt.ItemDataRole.UserRole + 3
 	"""Bin column data format identifier"""
 
-	IsHiddenRole    = QtCore.Qt.ItemDataRole.UserRole + 3
+	IsHiddenRole    = QtCore.Qt.ItemDataRole.UserRole + 4
 	"""Bin column visibility"""
+
+	_SentinelRole    = QtCore.Qt.ItemDataRole.UserRole + 5
+	"""Empty role to indicate the last offset from `QtCore.Qt.ItemDataRole.UserRole"""
 
 @dataclasses.dataclass
 class BSBinViewInfo:
