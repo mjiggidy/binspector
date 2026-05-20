@@ -100,7 +100,7 @@ class BSBinViewFilterProxyModel(abstractfiltermodel.BSAbstractBinSortFilterProxy
 		
 		if role == BSBinViewFilterRole.IsPermanentlyVisibleRole:
 			
-			self.indexIsPermanentItem(index)
+			return self.indexIsPermanentItem(index)
 		
 		return super().data(index, role)
 	

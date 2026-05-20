@@ -11,6 +11,8 @@ from ..binview import binviewmodel, binviewitemtypes
 from ..binfilters import binviewproxymodel
 from ..widgets import binviewcombobox
 
+from ..res import icons_binvieweditor
+
 DEFAULT_ILLEGAL_FILENAME_CHARS = ("\\", "/", "<", ">", "?", "*", ":")
 
 class BSBinViewColumnEditor(QtWidgets.QWidget):
@@ -38,9 +40,9 @@ class BSBinViewColumnEditor(QtWidgets.QWidget):
 		self._btn_view_list_delete    = QtWidgets.QPushButton()
 
 		# Icons 'n' delegates
-		self._icon_visible  = QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear)
-		self._icon_hidden   = QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds)
-		self._icon_delete   = QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.EditClear)
+		self._icon_visible  = QtGui.QIcon(":/icons/editorwidget/visibility_on.svg")
+		self._icon_hidden   = QtGui.QIcon(":/icons/editorwidget/visibility_off.svg")
+		self._icon_delete   = QtGui.QIcon(":/icons/editorwidget/delete.svg")
 		self._icon_none     = QtGui.QIcon()
 
 		# Models

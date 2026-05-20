@@ -1,6 +1,7 @@
 import enum
 
 from ..binview import binviewitemtypes
+from ..binfilters import binviewproxymodel
 from PySide6 import QtCore, QtGui
 
 import avbutils
@@ -198,18 +199,21 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			
 		elif editor_feature == BSBinViewColumnEditorFeature.VisibilityColumn:
 
-			is_hidden = self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
-
-#			if role == QtCore.Qt.ItemDataRole.DecorationRole:
-#				return QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherFewClouds) if is_hidden else QtGui.QIcon.fromTheme(QtGui.QIcon.ThemeIcon.WeatherClear)
+			is_permanently_visible = self.sourceModel().index(proxyIndex.row(), 0).data(binviewproxymodel.BSBinViewFilterRole.IsPermanentlyVisibleRole)
+			is_hidden              = self.sourceModel().index(proxyIndex.row(), 0).data(binviewitemtypes.BSBinViewColumnInfoRole.IsHiddenRole)
 
 			if role == QtCore.Qt.ItemDataRole.ToolTipRole:
 
-				return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}.  Click to toggle visiblity of this, and any other selected columns")\
+				if is_permanently_visible:
+
+					return self.tr("<strong>Permanent Column</strong><br/>This column cannot be hidden")
+					
+				else:
+					return self.tr("<strong>Toggle Column Visibility</strong><br/>This column is currently {is_hidden}.  Click to toggle visiblity of this, and any other selected columns")\
 					.format(is_hidden = self.tr("hidden", "Referring to column visibility") if is_hidden else self.tr("visible",  "Referring to column visibility"))
 			
 			elif role == QtCore.Qt.ItemDataRole.UserRole:
-				return True
+				return not self.sourceModel().index(proxyIndex.row(), 0).data(binviewproxymodel.BSBinViewFilterRole.IsPermanentlyVisibleRole)
 			
 		elif editor_feature == BSBinViewColumnEditorFeature.DeleteColumn:
 
