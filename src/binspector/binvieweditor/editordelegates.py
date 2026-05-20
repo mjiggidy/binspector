@@ -191,8 +191,7 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 
 	def editorEvent(self, event:QtCore.QEvent, model:QtCore.QAbstractItemModel, option_item:QtWidgets.QStyleOptionViewItem, index:QtCore.QModelIndex) -> bool:
 
-
-		if event.type() not in (QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseButtonPress, QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseMove):
+		if event.type() not in (QtCore.QEvent.Type.MouseButtonRelease, QtCore.QEvent.Type.MouseButtonPress, QtCore.QEvent.Type.MouseMove):
 #			print("Discarding ", event.type().name)
 			return False
 		
@@ -245,10 +244,6 @@ class BSBinViewColumnDelegate(QtWidgets.QStyledItemDelegate):
 			#return True
 		
 		elif editor_feature == editorproxymodel.BSBinViewColumnEditorFeature.DeleteColumn:
-			
-#			print("User clicked delete col")
-
-#			print(event.type().name)
 
 			can_delete = actual_index.data(QtCore.Qt.ItemDataRole.UserRole)
 
