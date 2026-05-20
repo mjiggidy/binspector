@@ -12,6 +12,7 @@ from ..binwidget import itemdelegates
 from ..core import icon_providers, icon_registry
 
 from ..binview import binviewitemtypes
+from ..binfilters import binviewproxymodel
 
 import avbutils
 
@@ -112,6 +113,11 @@ class BSBinTextView(QtWidgets.QTreeView):
 		
 		act_hide_col = QtGui.QAction(self.tr("Hide {column_name}".format(column_name=column_name)), parent=self.header())
 		act_hide_col.triggered.connect(functools.partial(self.sig_hide_column_requested.emit, idx_logical))
+
+		is_permanent = self.model().headerData(idx_logical, QtCore.Qt.Orientation.Horizontal, binviewproxymodel.BSBinViewFilterRole.IsPermanentlyVisibleRole)
+		if is_permanent:
+			act_hide_col.setEnabled(False)
+			act_hide_col.setToolTip(self.tr("This is a permanent column that cannot be hidden."))
 		
 		menu.addAction(act_hide_col)
 
