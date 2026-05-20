@@ -281,7 +281,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 
 	def moveRows(self, sourceParent:QtCore.QModelIndex, sourceRow:int, count:int, destinationParent:QtCore.QModelIndex, destinationChild:int):
 
-		self.sourceModel().moveRows(
+		return self.sourceModel().moveRows(
 			QtCore.QModelIndex(),
 			sourceRow,
 			count,
@@ -289,7 +289,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 			destinationChild
 		)
 		
-		return super().moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild)
+#		return super().moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild)
 	
 	def removeRow(self, row:int, /, parent:QtCore.QModelIndex) -> bool:
 		
@@ -303,7 +303,7 @@ class BSBinViewColumnEditorProxyModel(QtCore.QAbstractProxyModel):
 		# Accept drop-to-move-column actions
 		if action == QtCore.Qt.DropAction.MoveAction and data.hasFormat("application/x-qabstractitemmodeldatalist"):
 			return True
-
+	
 		return super().dropMimeData(data, action, row, column, parent)
 	
 	### Helper junk
